@@ -295,11 +295,33 @@ h1, h2, h3, h4 { font-weight: 900; }
   background: linear-gradient(180deg, rgba(15,10,4,0.9), rgba(15,10,4,0.98));
   border-top: 1px solid rgba(201,168,76,0.2); flex-shrink: 0;
 }
+#hand-cards-wrapper {
+  display: flex; align-items: flex-end; gap: 0; padding: 6px 4px;
+}
+#fixed-card-slot {
+  flex-shrink: 0; display: flex; align-items: flex-end; padding-right: 8px;
+  margin-right: 8px; border-right: 2px solid rgba(201,168,76,0.25);
+}
+#fixed-card-slot .card {
+  border-color: rgba(201,168,76,0.7);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5), 0 0 12px rgba(201,168,76,0.25), inset 0 0 8px rgba(201,168,76,0.08);
+}
+#fixed-card-slot .card:hover {
+  box-shadow: 0 12px 40px rgba(0,0,0,0.7), 0 0 25px rgba(201,168,76,0.4);
+}
+#fixed-card-slot .card .card-pin {
+  position: absolute; top: 2px; right: 4px; font-size: 0.7rem; z-index: 3;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+}
+#fixed-card-slot .card.in-sentence {
+  opacity: 0.5; transform: scale(0.95);
+  pointer-events: auto;
+}
 #hand-cards {
   display: flex; justify-content: center; gap: 8px;
-  flex-wrap: nowrap; overflow-x: auto; padding: 6px 4px;
+  flex-wrap: nowrap; overflow-x: auto; padding: 0 4px;
   scrollbar-width: thin; scrollbar-color: rgba(201,168,76,0.3) transparent;
-  align-items: flex-end;
+  align-items: flex-end; flex: 1;
 }
 #hand-controls {
   display: flex; justify-content: space-between; align-items: center;
@@ -1035,7 +1057,10 @@ h1, h2, h3, h4 { font-weight: 900; }
       <div class="player-statuses" id="combat-status-effects-bar"></div>
     </div>
     <div id="hand-area">
-      <div id="hand-cards"></div>
+      <div id="hand-cards-wrapper">
+        <div id="fixed-card-slot"></div>
+        <div id="hand-cards"></div>
+      </div>
       <div id="hand-controls">
         <div style="display:flex;gap:10px;">
           <button class="btn btn-vermillion" id="chant-btn" onclick="chantSentence()" style="font-size:0.85rem;padding:0.5em 1.8em;">吟诵</button>
@@ -1466,7 +1491,6 @@ function makeCard(def) {
 function createStarterDeck() {
   const deck = [];
   const add = (key, n) => { for(let i=0;i<n;i++) deck.push(makeCard({...WORD_DEFS[key], key})); };
-  add('wo', 2);
   add('zhan', 2);
   add('zou', 1);
   add('shou', 1);
@@ -1483,6 +1507,7 @@ function getCardPool(rarity) {
   const pool = [];
   for (const [key, def] of Object.entries(WORD_DEFS)) {
     if (def.rarity === rarity) {
+      if (key === 'wo') continue; // 「我」is a fixed permanent card, not in pool
       if (def.unlockable && !META.unlockedCards.includes(key)) continue;
       pool.push(key);
     }
@@ -2813,6 +2838,7 @@ function drawCards(count) {
 
 function getEffectiveCost(card) {
   if (card._isEnemyTarget || card._isSelfTarget) return 0;
+  if (card._isFixedWo) return 0;
   if (G.allCardsCostZero) return 0;
   return card.cost;
 }
@@ -3092,6 +3118,35 @@ function getPosColor(pos) {
 }
 
 function renderHand() {
+  // Render fixed 「我」card
+  const fixedSlot = document.getElementById('fixed-card-slot');
+  fixedSlot.innerHTML = '';
+  const fixedWoDef = WORD_DEFS.wo;
+  const fixedCard = { ...fixedWoDef, key: 'wo', upgraded: false, cost: 0, _isFixedCard: true, id: 'fixed_wo' };
+  const fixedEl = createCardElement(fixedCard, null, { noClick: true });
+  // Add pin icon
+  const pin = document.createElement('div');
+  pin.className = 'card-pin';
+  pin.textContent = '📌';
+  fixedEl.appendChild(pin);
+  // Check if already in sentence
+  const woInSentence = G.sentence.some(c => c._isFixedWo);
+  if (woInSentence) fixedEl.classList.add('in-sentence');
+  fixedEl.style.cursor = 'pointer';
+  fixedEl.onclick = () => {
+    // Add a clone to sentence (can be used multiple times, remove old first for simplicity or allow multiple)
+    if (G.sentence.some(c => c._isFixedWo)) return; // only one at a time
+    const woSentenceCard = {
+      ...fixedWoDef, key: 'wo', upgraded: false, cost: 0,
+      _isFixedWo: true, id: 'fixed_wo_' + Math.random().toString(36).substr(2, 5),
+    };
+    G.sentence.push(woSentenceCard);
+    playSFX('card');
+    renderCombat();
+  };
+  fixedSlot.appendChild(fixedEl);
+
+  // Render normal hand
   const handEl = document.getElementById('hand-cards');
   handEl.innerHTML = '';
   G.hand.forEach((card, idx) => {
@@ -3215,6 +3270,7 @@ function chantSentence() {
   G.sentence = [];
   sentenceCards.forEach(card => {
     if (card._isEnemyTarget || card._isSelfTarget) return;
+    if (card._isFixedWo) return; // Fixed 「我」card is permanent, never discarded
     const idx = G.hand.indexOf(card);
     if (idx >= 0) G.hand.splice(idx, 1);
     if (card.exhaust || (card.pos === 'verb' && card._shouldExhaust)) {
