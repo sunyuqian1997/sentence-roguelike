@@ -26,12 +26,14 @@
   --purple-dark: #7d3c98;
   --cyan: #7ec8c8;
   --cyan-dark: #4a8a8a;
+  --orange: #e8873a;
+  --orange-dark: #b5632a;
 }
 html, body {
   width: 100%; height: 100%; overflow: hidden;
   background: var(--bg); color: var(--paper);
   font-family: 'Noto Serif SC', 'SimSun', serif;
-  font-size: 16px;
+  font-size: 21px;
 }
 h1, h2, h3, h4 { font-weight: 700; }
 .brush-font { font-family: 'Ma Shan Zheng', cursive; }
@@ -268,6 +270,10 @@ h1, h2, h3, h4 { font-weight: 700; }
   background: rgba(155,89,182,0.2) !important; font-size: 1.2rem;
   font-family: 'Ma Shan Zheng', cursive;
 }
+.sentence-word.exclamation-word {
+  border: 2px solid var(--orange) !important; color: var(--orange) !important;
+  background: rgba(232,135,58,0.2) !important; font-weight: 900;
+}
 
 /* Sentence preview — calligraphy style */
 #sentence-preview {
@@ -351,6 +357,13 @@ h1, h2, h3, h4 { font-weight: 700; }
 .card.pos-connector .card-pos-tag { background: linear-gradient(90deg, rgba(138,130,117,0.6), rgba(138,130,117,0.3)); }
 .card.pos-punctuation .card-pos-tag { background: linear-gradient(90deg, rgba(155,89,182,0.7), rgba(155,89,182,0.4)); }
 
+/* Exclamation (感叹词) */
+.card.pos-exclamation { background: linear-gradient(150deg, #3a2a10, #2a1a08, #1a1005); border-color: rgba(232,135,58,0.5); }
+.card.pos-exclamation .card-pos-tag { background: linear-gradient(90deg, rgba(232,135,58,0.8), rgba(232,135,58,0.45)); }
+.card.pos-exclamation .card-word { color: var(--orange); }
+.card.pos-exclamation.rarity-uncommon { box-shadow: 0 4px 12px rgba(0,0,0,0.5), 0 0 15px rgba(232,135,58,0.3); }
+.card.pos-exclamation.rarity-rare { box-shadow: 0 4px 12px rgba(0,0,0,0.5), 0 0 20px rgba(232,135,58,0.45); }
+
 /* Cost circle */
 .card-cost {
   position: absolute; top: -1px; left: -1px;
@@ -398,26 +411,46 @@ h1, h2, h3, h4 { font-weight: 700; }
   border: 1px solid rgba(125,223,125,0.2); pointer-events: none;
 }
 
-/* ===== SCORING ANIMATION ===== */
+/* ===== SCORING ANIMATION — Slay the Spire style (no black screen!) ===== */
 #score-overlay {
-  position: fixed; inset: 0; background: rgba(15,10,4,0.9);
+  position: fixed; top: 12%; left: 50%; transform: translateX(-50%);
   z-index: 2000; display: none; flex-direction: column;
-  align-items: center; justify-content: center; text-align: center;
-  backdrop-filter: blur(4px);
+  align-items: center; text-align: center;
+  background: linear-gradient(135deg, rgba(26,18,9,0.92), rgba(42,31,20,0.88));
+  border: 2px solid var(--gold); border-radius: 12px;
+  padding: 14px 28px; min-width: 280px; max-width: 85vw;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.7), 0 0 30px rgba(201,168,76,0.2);
+  backdrop-filter: blur(6px);
+  animation: score-pop-in 0.3s ease-out;
+}
+@keyframes score-pop-in {
+  0% { opacity: 0; transform: translateX(-50%) scale(0.8) translateY(20px); }
+  100% { opacity: 1; transform: translateX(-50%) scale(1) translateY(0); }
 }
 #score-overlay.active { display: flex; }
 #score-sentence {
   font-family: 'Ma Shan Zheng', cursive;
-  font-size: clamp(1.6rem, 5vw, 2.8rem); color: var(--paper);
-  letter-spacing: 0.2em; margin-bottom: 18px;
-  text-shadow: 0 0 30px rgba(245,240,224,0.35);
+  font-size: clamp(1.4rem, 4vw, 2.2rem); color: var(--paper);
+  letter-spacing: 0.15em; margin-bottom: 8px;
+  text-shadow: 0 0 20px rgba(245,240,224,0.3);
 }
-#score-details { font-size: 0.9rem; color: var(--paper-dark); line-height: 2; }
-.score-line { opacity: 0; animation: fadeIn 0.3s forwards; }
+#score-details { font-size: 0.75rem; color: var(--paper-dark); line-height: 1.8; }
+.score-line { opacity: 0; animation: fadeIn 0.25s forwards; }
 @keyframes fadeIn { to { opacity: 1; } }
 .score-effect {
-  font-size: 1.2rem; color: var(--vermillion); margin-top: 12px;
+  font-size: 1rem; color: var(--vermillion); margin-top: 8px;
   font-weight: 700; letter-spacing: 0.1em;
+}
+
+/* Multiplier bounce animation for exclamation */
+.multiplier-bounce {
+  display: inline-block; color: var(--orange); font-weight: 900; font-size: 1.3em;
+  animation: mult-bounce 0.5s ease-out;
+}
+@keyframes mult-bounce {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { transform: scale(1.4); }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 /* ===== DAMAGE NUMBERS ===== */
@@ -626,7 +659,7 @@ h1, h2, h3, h4 { font-weight: 700; }
     <button class="btn" onclick="startGame()">执笔出发</button>
     <button class="btn btn-small btn-secondary" onclick="showMetaScreen()" style="margin-top:12px;">文渊阁</button>
     <div class="ink-display-title" id="title-ink-display"></div>
-    <div class="credit">李清照 · 句子构筑者 · v5</div>
+    <div class="credit">李清照 · 句子构筑者 · v6</div>
   </div>
 
   <!-- MAP -->
@@ -649,7 +682,7 @@ h1, h2, h3, h4 { font-weight: 700; }
     <div id="combat-top">
       <div class="combat-info">
         <span style="color:#e07070">♥ <span id="combat-hp">50/50</span></span>
-        <span id="combat-block-display" style="color:var(--cyan)"></span>
+        <span id="combat-block-display" style="color:var(--cyan);font-weight:900;font-size:1.1em"></span>
       </div>
       <div class="combat-info"><span id="combat-status-effects"></span></div>
       <div class="combat-info">
@@ -875,6 +908,9 @@ const WORD_DEFS = {
   huxian: { word: '狐仙', pos: 'subject', cost: 1, rarity: 'uncommon',
     desc: '主语·格挡+4', flavor: '聊斋来客', powerBonus: 4, bonusType: 'defense' },
 
+  hatsunemiku: { word: '初音未来', pos: 'subject', cost: 0, rarity: 'uncommon',
+    desc: '主语·音波全体伤害+3', flavor: '世界第一公主殿下', powerBonus: 3, bonusType: 'attack', forceAoeSub: true },
+
   // --- Rare ---
   jiangjun: { word: '将军', pos: 'subject', cost: 2, rarity: 'rare', unlockable: true,
     desc: '主语·攻击+5,格挡+3', flavor: '百万雄师过大江', powerBonus: 5, bonusType: 'attack', defenseBonus: 3 },
@@ -904,8 +940,8 @@ const WORD_DEFS = {
     combatType: 'defense', basePower: 3, upgPower: 5, flavor: '三十六计走为上',
     desc: (c) => `格挡 ${c.upgraded?5:3}` },
   moyu: { word: '摸鱼', pos: 'verb', cost: 0, rarity: 'common',
-    combatType: 'buff', basePower: 0, upgPower: 0, draw: 1, flavor: '带薪摸鱼',
-    desc: (c) => `抽${c.upgraded?2:1}牌` },
+    combatType: 'heal', basePower: 5, upgPower: 8, moyuSpecial: true, flavor: '带薪摸鱼',
+    desc: (c) => `自用=回血${c.upgraded?8:5}；对敌=易伤3回合` },
 
   // --- Uncommon ---
   po: { word: '破', pos: 'verb', cost: 1, rarity: 'uncommon',
@@ -1009,6 +1045,8 @@ const WORD_DEFS = {
     desc: '连接·攻击分半给格挡', flavor: '攻守兼备', grammarBonus: 0.05, splitAttackToBlock: true },
   ranhou: { word: '然后', pos: 'connector', cost: 0, rarity: 'common',
     desc: '连接·抽1牌', flavor: '然后呢？', grammarBonus: 0.05, draw: 1 },
+  he: { word: '和', pos: 'connector', cost: 0, rarity: 'common',
+    desc: '连接·多目标攻击', flavor: '一个都别想跑', grammarBonus: 0.05, multiTarget: true },
 
   // ==================== PUNCTUATION (标点·紫色) ====================
   comma: { word: '，', pos: 'punctuation', cost: 0, rarity: 'uncommon', punctType: 'comma',
@@ -1019,6 +1057,16 @@ const WORD_DEFS = {
     desc: '标点·削弱敌人2回合', flavor: '灵魂拷问' },
   exclamation: { word: '！', pos: 'punctuation', cost: 0, rarity: 'rare', punctType: 'exclamation',
     desc: '标点·全效果×1.5', flavor: '大声点！' },
+
+  // ==================== EXCLAMATIONS (感叹词·橙色) ====================
+  wocao: { word: '卧槽', pos: 'exclamation', cost: 0, rarity: 'common',
+    desc: '感叹词·伤害×1.5', flavor: '卧槽！！！', excMult: 1.5, excType: 'attack' },
+  niubi: { word: '牛逼', pos: 'exclamation', cost: 0, rarity: 'uncommon',
+    desc: '感叹词·伤害×1.8', flavor: '太牛逼了！', excMult: 1.8, excType: 'attack' },
+  woqu: { word: '我去', pos: 'exclamation', cost: 0, rarity: 'common',
+    desc: '感叹词·格挡×1.5', flavor: '我去！这也行？', excMult: 1.5, excType: 'defense' },
+  ah: { word: '啊', pos: 'exclamation', cost: 0, rarity: 'common',
+    desc: '感叹词·全效果×1.2', flavor: '啊——', excMult: 1.2, excType: 'all' },
 };
 
 function makeCard(def) {
@@ -1400,16 +1448,18 @@ function detectDuizhang(cards) {
 // ============================================================
 function normalizeSentence(cards) {
   const endPuncts = [];
+  const exclamations = [];
   const rest = [];
   cards.forEach(c => {
     if (c.pos === 'punctuation' && c.punctType !== 'comma') endPuncts.push(c);
+    else if (c.pos === 'exclamation') exclamations.push(c);
     else rest.push(c);
   });
-  return [...rest, ...endPuncts];
+  return [...rest, ...exclamations, ...endPuncts];
 }
 
 function checkWordOrder(cards) {
-  const nonPunct = cards.filter(c => c.pos !== 'punctuation' && !c._isEnemyTarget && !c._isSelfTarget);
+  const nonPunct = cards.filter(c => c.pos !== 'punctuation' && c.pos !== 'exclamation' && !c._isEnemyTarget && !c._isSelfTarget);
   if (nonPunct.length === 0) return { score: 1.0, notes: [] };
 
   const phaseMap = {
@@ -1458,8 +1508,9 @@ function evaluateSentence(rawCards) {
 
   const cards = normalizeSentence(rawCards);
   const punctCards = cards.filter(c => c.pos === 'punctuation');
-  const nonPunctCards = cards.filter(c => c.pos !== 'punctuation');
+  const nonPunctCards = cards.filter(c => c.pos !== 'punctuation' && c.pos !== 'exclamation');
 
+  const exclamationCards = cards.filter(c => c.pos === 'exclamation');
   const subjects = nonPunctCards.filter(c => c.pos === 'subject');
   const verbs = nonPunctCards.filter(c => c.pos === 'verb' || c.pos === 'special');
   const realVerbs = nonPunctCards.filter(c => c.pos === 'verb');
@@ -1475,6 +1526,10 @@ function evaluateSentence(rawCards) {
   const hasEnemyTarget = enemyObjCards.length > 0;
   let targetEnemyIdx = -1;
   if (hasEnemyTarget) targetEnemyIdx = enemyObjCards[0]._enemyIdx;
+
+  // Multi-target via 「和」connector
+  const hasMultiTarget = connectors.some(c => c.multiTarget) && enemyObjCards.length > 1;
+  const multiTargetIndices = hasMultiTarget ? enemyObjCards.map(c => c._enemyIdx) : [];
 
   const handObjects = objects.filter(c => !c._isEnemyTarget && !c._isSelfTarget);
 
@@ -1545,6 +1600,16 @@ function evaluateSentence(rawCards) {
   if (G.poeticAura) { literaryMult += 0.5; literaryNotes.push('诗仙附体！'); }
   if (cards.length >= 5) { literaryMult += 0.2; literaryNotes.push('长句加成 +0.2'); }
 
+  // EXCLAMATION MULTIPLIERS
+  let excAttackMult = 1, excDefenseMult = 1, excHealMult = 1;
+  let excNotes = [];
+  exclamationCards.forEach(exc => {
+    const m = exc.excMult || 1.2;
+    if (exc.excType === 'attack') { excAttackMult *= m; excNotes.push(`🔥「${exc.word}」伤害×${m}`); }
+    else if (exc.excType === 'defense') { excDefenseMult *= m; excNotes.push(`🔥「${exc.word}」格挡×${m}`); }
+    else { excAttackMult *= m; excDefenseMult *= m; excHealMult *= m; excNotes.push(`🔥「${exc.word}」全效×${m}`); }
+  });
+
   // COMBAT EFFECTS
   const effects = {
     damage: 0, block: 0, heal: 0, strengthGain: 0, draw: 0,
@@ -1578,6 +1643,8 @@ function evaluateSentence(rawCards) {
       subjectAttackBonus += roll;
       grammarNotes.push(`🍶 酒仙·攻击+${roll}(随机1-5)`);
     }
+    // 初音未来 AOE
+    if (s.forceAoeSub) effects.aoe = true;
     // 猫
     if (s.randomEffect) {
       const roll = Math.random();
@@ -1651,7 +1718,12 @@ function evaluateSentence(rawCards) {
       }
     }
 
-    if (v.combatType === 'attack') {
+    // 摸鱼 special: vs enemy = apply vuln 3
+    if (v.moyuSpecial && hasEnemyTarget) {
+      effects.applyVuln += (v.upgraded ? 4 : 3);
+      grammarNotes.push(`🐟 摸鱼→敌人易伤${v.upgraded?4:3}回合`);
+      if (v.draw) effects.draw += (v.upgraded && v.draw ? v.draw + 1 : v.draw);
+    } else if (v.combatType === 'attack') {
       let dmg = (power + subjectAttackBonus + objAttackBonus + G.strength) * attackMod;
       if (G.weak > 0 && !hasIgnoreAllLimits) dmg *= 0.75;
       const hits = v.hits || 1;
@@ -1699,18 +1771,25 @@ function evaluateSentence(rawCards) {
 
   const totalMult = grammarMult * literaryMult * punctMult;
 
-  effects.damage = Math.floor(effects.damage * totalMult);
-  effects.block = Math.floor(effects.block * totalMult);
-  effects.heal = Math.floor(effects.heal * totalMult);
+  effects.damage = Math.floor(effects.damage * totalMult * excAttackMult);
+  effects.block = Math.floor(effects.block * totalMult * excDefenseMult);
+  effects.heal = Math.floor(effects.heal * totalMult * excHealMult);
   if (effects.selfHarm) effects.selfHarmDmg = Math.floor(effects.selfHarmDmg * totalMult);
 
   if (realVerbs.some(v => v.combatType === 'attack') && !effects.selfHarm && !hasQuestion && effects.damage < 1) effects.damage = 1;
+
+  // Multi-target
+  if (hasMultiTarget) {
+    effects.multiTargetIndices = multiTargetIndices;
+    grammarNotes.push(`🎯 多目标×${multiTargetIndices.length}`);
+  }
 
   return {
     text: sentenceText,
     grammarMult, grammarNotes,
     literaryMult, literaryNotes,
     punctMult, punctNotes,
+    excNotes, excAttackMult, excDefenseMult, excHealMult,
     totalMult,
     effects,
     cards,
@@ -2070,7 +2149,7 @@ function getSentenceCost() {
 // ============================================================
 function renderCombat() {
   document.getElementById('combat-hp').textContent = `${G.hp}/${G.maxHp}`;
-  document.getElementById('combat-block-display').textContent = G.block > 0 ? `🛡${G.block}` : '';
+  document.getElementById('combat-block-display').innerHTML = G.block > 0 ? `🛡️ <b style="font-size:1.2em">${G.block}</b>` : '';
 
   let st = '';
   if (G.strength>0) st += `<span class="status-icon status-strength">力${G.strength}</span>`;
@@ -2165,7 +2244,12 @@ function renderEnemyTargetBar() {
     if (inSentence) el.classList.add('in-sentence');
     el.onclick = () => {
       if (inSentence) return;
-      G.sentence = G.sentence.filter(c => !c._isEnemyTarget && !c._isSelfTarget);
+      const hasHeConn = G.sentence.some(c => c.multiTarget);
+      if (!hasHeConn) {
+        G.sentence = G.sentence.filter(c => !c._isEnemyTarget && !c._isSelfTarget);
+      } else {
+        G.sentence = G.sentence.filter(c => !c._isSelfTarget);
+      }
       const enemyCard = {
         word: enemy.name, pos: 'object', cost: 0,
         _isEnemyTarget: true, _enemyIdx: idx,
@@ -2274,6 +2358,7 @@ function renderSentenceSlots() {
       if (eval_.effects.heal > 0) parts.push(`♥${eval_.effects.heal}`);
       if (eval_.effects.strengthGain > 0) parts.push(`↑${eval_.effects.strengthGain}力`);
       if (eval_.effects.draw > 0) parts.push(`📜${eval_.effects.draw}牌`);
+      if (eval_.effects.multiTargetIndices && eval_.effects.multiTargetIndices.length > 1) parts.push(`🎯多目标×${eval_.effects.multiTargetIndices.length}`);
       if (eval_.effects.aoe) parts.push('🌊全体');
       if (eval_.effects.ignoreBlock) parts.push('🗡穿透');
       if (eval_.effects.goldGain > 0) parts.push(`💰${eval_.effects.goldGain}`);
@@ -2290,6 +2375,7 @@ function createSentenceWordEl(card, idx) {
   if (card._isEnemyTarget) el.classList.add('enemy-obj');
   else if (card._isSelfTarget) el.classList.add('self-target');
   else if (card.pos === 'punctuation') el.classList.add('punct-end');
+  else if (card.pos === 'exclamation') el.classList.add('exclamation-word');
   else {
     el.style.borderColor = getPosColor(card.pos);
     el.style.color = getPosColor(card.pos);
@@ -2308,6 +2394,7 @@ function getPosColor(pos) {
     case 'connector': return '#8a8275';
     case 'special': return '#b470d4';
     case 'punctuation': return '#9b59b6';
+    case 'exclamation': return '#e8873a';
     default: return '#d4c9a8';
   }
 }
@@ -2334,7 +2421,7 @@ function createCardElement(card, handIndex, opts={}) {
   if (typeof card.desc === 'function') descText = card.desc(card);
   else if (typeof card.desc === 'string') descText = card.desc;
 
-  const posNames = { subject:'主语', verb:'谓语', object:'宾语', modifier:'修饰', connector:'连接', special:'特殊', punctuation:'标点' };
+  const posNames = { subject:'主语', verb:'谓语', object:'宾语', modifier:'修饰', connector:'连接', special:'特殊', punctuation:'标点', exclamation:'感叹' };
 
   div.innerHTML = `
     <div class="card-cost">${cost}</div>
@@ -2355,7 +2442,7 @@ function createCardElement(card, handIndex, opts={}) {
 
 function showTooltip(e, card) {
   const tt = document.getElementById('tooltip');
-  const posNames = { subject:'主语', verb:'谓语', object:'宾语', modifier:'修饰', connector:'连接', special:'特殊', punctuation:'标点' };
+  const posNames = { subject:'主语', verb:'谓语', object:'宾语', modifier:'修饰', connector:'连接', special:'特殊', punctuation:'标点', exclamation:'感叹' };
   const rarityNames = { starter:'初始', common:'普通', uncommon:'非凡', rare:'稀有' };
   tt.querySelector('.tt-name').textContent = card.word + (card.upgraded?'+':'');
   tt.querySelector('.tt-type').textContent = `${posNames[card.pos]} · ${rarityNames[card.rarity]||card.rarity} · 费用${getEffectiveCost(card)}`;
@@ -2520,6 +2607,10 @@ function applyEffects(effects) {
   if (effects.damage > 0) {
     if (effects.aoe) {
       G.enemies.forEach((e, idx) => { if (e.hp > 0) dealDamageToEnemy(idx, effects.damage, effects.ignoreBlock); });
+    } else if (effects.multiTargetIndices && effects.multiTargetIndices.length > 1) {
+      effects.multiTargetIndices.forEach(tIdx => {
+        if (G.enemies[tIdx] && G.enemies[tIdx].hp > 0) dealDamageToEnemy(tIdx, effects.damage, effects.ignoreBlock);
+      });
     } else if (effects.targetEnemyIdx >= 0) {
       const tIdx = effects.targetEnemyIdx;
       if (G.enemies[tIdx] && G.enemies[tIdx].hp > 0) dealDamageToEnemy(tIdx, effects.damage, effects.ignoreBlock);
@@ -2558,6 +2649,13 @@ function showScoreAnimation(result, callback) {
     result.punctNotes.forEach(n => {
       html += `<div class="score-line" style="animation-delay:${delay}ms;color:var(--purple)">✎ ${n}</div>`;
       delay += 150;
+    });
+  }
+
+  if (result.excNotes && result.excNotes.length > 0) {
+    result.excNotes.forEach(n => {
+      html += `<div class="score-line" style="animation-delay:${delay}ms"><span class="multiplier-bounce" style="animation-delay:${delay}ms">${n}</span></div>`;
+      delay += 200;
     });
   }
 
@@ -2706,10 +2804,14 @@ function showRewardScreen() {
   for (let i = 0; i < 3; i++) {
     const roll = Math.random();
     let rarity;
-    if (roll < 0.55) rarity = 'common';
-    else if (roll < 0.88) rarity = 'uncommon';
+    if (roll < 0.50) rarity = 'common';
+    else if (roll < 0.82) rarity = 'uncommon';
     else rarity = 'rare';
-    const card = randomCard(rarity);
+    let card = randomCard(rarity);
+    // Bias toward attack cards (40% chance to reroll non-attack)
+    if (card.pos !== 'verb' && card.combatType !== 'attack' && Math.random() < 0.4) {
+      card = randomCard(rarity);
+    }
 
     const wrapper = document.createElement('div');
     wrapper.className = 'reward-card-wrapper';
