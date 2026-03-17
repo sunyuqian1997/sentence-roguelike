@@ -10,8 +10,8 @@
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
-  --bg: #1a1209;
-  --bg-dark: #0f0a04;
+  --bg: #0a0a0f;
+  --bg-dark: #050508;
   --paper: #f5f0e0;
   --paper-dark: #d4c9a8;
   --ink: #2a2520;
@@ -28,6 +28,7 @@
   --cyan-dark: #4a8a8a;
   --orange: #e8873a;
   --orange-dark: #b5632a;
+  --neon-cyan: #00ffcc;
 }
 html, body {
   width: 100%; height: 100%; overflow: hidden;
@@ -35,9 +36,9 @@ html, body {
   font-family: 'Noto Serif SC', 'SimSun', serif;
   font-size: 21px;
 }
-h1, h2, h3, h4 { font-weight: 700; }
+h1, h2, h3, h4 { font-weight: 900; }
 .brush-font { font-family: 'Ma Shan Zheng', cursive; }
-#game { width: 100%; height: 100%; position: relative; overflow: hidden; }
+#game { width: 100%; height: 100%; position: relative; overflow: hidden; perspective: 1200px; }
 
 .screen {
   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -97,7 +98,7 @@ h1, h2, h3, h4 { font-weight: 700; }
 #mute-btn:hover { border-color: var(--gold); box-shadow: 0 0 12px rgba(201,168,76,0.3); }
 
 /* ===== MAP ===== */
-#map-screen { background: var(--bg); overflow-y: auto; justify-content: flex-start; }
+#map-screen { background: radial-gradient(ellipse at 50% 30%, #10101a, #0a0a0f); overflow-y: auto; justify-content: flex-start; }
 #map-header {
   width: 100%; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center;
   background: linear-gradient(180deg, rgba(15,10,4,0.95), rgba(15,10,4,0.8));
@@ -266,8 +267,9 @@ h1, h2, h3, h4 { font-weight: 700; }
   font-family: 'Ma Shan Zheng', cursive;
 }
 .sentence-word.exclamation-word {
-  border: 2px solid var(--orange) !important; color: var(--orange) !important;
-  background: rgba(232,135,58,0.2) !important; font-weight: 900;
+  border: 2px solid var(--neon-cyan) !important; color: var(--neon-cyan) !important;
+  background: rgba(0,255,204,0.1) !important; font-weight: 900;
+  text-shadow: 0 0 8px rgba(0,255,204,0.4);
 }
 
 /* Sentence preview — calligraphy style */
@@ -355,7 +357,7 @@ h1, h2, h3, h4 { font-weight: 700; }
 /* Exclamation (感叹词) */
 .card.pos-exclamation { background: linear-gradient(150deg, #3a2a10, #2a1a08, #1a1005); border-color: rgba(232,135,58,0.5); }
 .card.pos-exclamation .card-pos-tag { background: linear-gradient(90deg, rgba(232,135,58,0.8), rgba(232,135,58,0.45)); }
-.card.pos-exclamation .card-word { color: var(--orange); }
+.card.pos-exclamation .card-word { color: var(--neon-cyan); text-shadow: 0 0 12px rgba(0,255,204,0.4); }
 .card.pos-exclamation.rarity-uncommon { box-shadow: 0 4px 12px rgba(0,0,0,0.5), 0 0 15px rgba(232,135,58,0.3); }
 .card.pos-exclamation.rarity-rare { box-shadow: 0 4px 12px rgba(0,0,0,0.5), 0 0 20px rgba(232,135,58,0.45); }
 
@@ -700,6 +702,267 @@ h1, h2, h3, h4 { font-weight: 700; }
 @media (max-width: 400px) {
   .card { width: 80px; min-width: 70px; height: 120px; }
   .card-word { font-size: 1.3rem; }
+}
+
+/* ===== V6.2 VISUAL EFFECTS OVERHAUL ===== */
+
+/* --- Card 3D hover --- */
+.card {
+  transform-style: preserve-3d;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.card:hover {
+  transform: translateY(-20px) scale(1.08) rotateX(-3deg) rotateY(2deg);
+  box-shadow: 0 16px 50px rgba(0,0,0,0.8), 0 0 20px rgba(232,200,76,0.15);
+  border-color: rgba(232,200,76,0.6);
+}
+.card.in-sentence {
+  transform: scale(0.9) rotateY(90deg);
+  opacity: 0.15;
+  transition: all 0.4s cubic-bezier(0.23,1,0.32,1);
+}
+
+/* Rare card breathing glow */
+.card.rarity-rare {
+  animation: rare-glow-pulse 2.5s ease-in-out infinite;
+}
+@keyframes rare-glow-pulse {
+  0%, 100% { box-shadow: 0 4px 12px rgba(0,0,0,0.5), 0 0 15px rgba(201,168,76,0.25); }
+  50% { box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 30px rgba(232,200,76,0.5), 0 0 60px rgba(232,200,76,0.15); }
+}
+.card.rarity-uncommon {
+  animation: uncommon-glow-pulse 3s ease-in-out infinite;
+}
+@keyframes uncommon-glow-pulse {
+  0%, 100% { box-shadow: 0 4px 12px rgba(0,0,0,0.5), 0 0 12px rgba(74,158,255,0.2); }
+  50% { box-shadow: 0 4px 16px rgba(0,0,0,0.5), 0 0 24px rgba(74,158,255,0.35); }
+}
+
+/* Exclamation card neon glow */
+.card.pos-exclamation {
+  animation: exc-neon-pulse 2s ease-in-out infinite;
+}
+@keyframes exc-neon-pulse {
+  0%, 100% { box-shadow: 0 4px 12px rgba(0,0,0,0.5), 0 0 12px rgba(0,255,204,0.15); }
+  50% { box-shadow: 0 4px 16px rgba(0,0,0,0.5), 0 0 25px rgba(0,255,204,0.35), 0 0 50px rgba(0,255,204,0.1); }
+}
+
+/* Card deal animation */
+.card-deal-anim {
+  animation: card-deal 0.45s cubic-bezier(0.23,1,0.32,1) both;
+}
+@keyframes card-deal {
+  0% { opacity: 0; transform: translateY(80px) rotateY(180deg) scale(0.5); }
+  60% { opacity: 1; transform: translateY(-8px) rotateY(10deg) scale(1.05); }
+  100% { transform: translateY(0) rotateY(0) scale(1); }
+}
+
+/* Card fly to sentence */
+.card-fly-to-sentence {
+  animation: card-fly 0.35s cubic-bezier(0.23,1,0.32,1) both;
+}
+@keyframes card-fly {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.6) translateY(-40px); opacity: 0.7; }
+  100% { transform: scale(0.9) translateY(0); opacity: 0.15; }
+}
+
+/* --- Screen Shake variants --- */
+@keyframes screen-shake-sm {
+  0%, 100% { transform: translate(0,0); }
+  20% { transform: translate(-3px, 2px); }
+  40% { transform: translate(3px, -2px); }
+  60% { transform: translate(-2px, -1px); }
+  80% { transform: translate(2px, 1px); }
+}
+@keyframes screen-shake-md {
+  0%, 100% { transform: translate(0,0); }
+  15% { transform: translate(-6px, 4px); }
+  30% { transform: translate(5px, -3px); }
+  45% { transform: translate(-4px, -2px); }
+  60% { transform: translate(4px, 3px); }
+  75% { transform: translate(-3px, 1px); }
+}
+@keyframes screen-shake-lg {
+  0%, 100% { transform: translate(0,0); }
+  10% { transform: translate(-10px, 6px); }
+  20% { transform: translate(8px, -5px); }
+  30% { transform: translate(-7px, -4px); }
+  40% { transform: translate(9px, 5px); }
+  50% { transform: translate(-6px, 3px); }
+  60% { transform: translate(7px, -4px); }
+  70% { transform: translate(-5px, 2px); }
+  80% { transform: translate(4px, -3px); }
+}
+.screen-shake-sm { animation: screen-shake-sm 0.3s ease; }
+.screen-shake-md { animation: screen-shake-md 0.4s ease; }
+.screen-shake-lg { animation: screen-shake-lg 0.5s ease; }
+
+/* --- Damage number v2 --- */
+.dmg-num-v2 {
+  position: fixed; pointer-events: none; z-index: 5000;
+  font-family: 'Ma Shan Zheng', cursive;
+  font-weight: 900; text-shadow: 0 3px 10px rgba(0,0,0,0.7), 0 0 20px currentColor;
+  animation: dmg-pop 0.9s cubic-bezier(0.23,1,0.32,1) forwards;
+}
+@keyframes dmg-pop {
+  0% { opacity: 0; transform: translate(-50%,-50%) scale(0.3); }
+  20% { opacity: 1; transform: translate(-50%,-50%) scale(1.6); }
+  40% { transform: translate(-50%,-50%) scale(1.1); }
+  60% { transform: translate(-50%, calc(-50% - 20px)) scale(1.2); }
+  100% { opacity: 0; transform: translate(-50%, calc(-50% - 60px)) scale(1.4); }
+}
+
+/* --- Enemy hit flash --- */
+.enemy-hit-flash {
+  animation: enemy-hit 0.4s ease;
+}
+@keyframes enemy-hit {
+  0% { filter: brightness(1); }
+  15% { filter: brightness(2.5) saturate(0.3); background-color: rgba(255,60,40,0.3); }
+  30% { filter: brightness(0.8); }
+  50% { filter: brightness(1.8); }
+  100% { filter: brightness(1); }
+}
+
+/* Enemy shake on hit */
+.enemy-shake {
+  animation: enemy-shake-anim 0.35s ease;
+}
+@keyframes enemy-shake-anim {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-8px) rotate(-2deg); }
+  30% { transform: translateX(6px) rotate(1deg); }
+  45% { transform: translateX(-5px); }
+  60% { transform: translateX(4px); }
+  75% { transform: translateX(-2px); }
+}
+
+/* Enemy death dissolve */
+.enemy-death {
+  animation: enemy-dissolve 0.8s ease forwards;
+}
+@keyframes enemy-dissolve {
+  0% { opacity: 1; filter: blur(0) brightness(1); transform: scale(1); }
+  30% { filter: blur(0) brightness(2); transform: scale(1.05); }
+  100% { opacity: 0; filter: blur(12px) brightness(0.3); transform: scale(0.7) translateY(20px); }
+}
+
+/* --- Ink particles background --- */
+.ink-particle {
+  position: absolute; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgba(201,168,76,0.08), transparent 70%);
+  filter: blur(40px);
+  animation: ink-drift linear infinite;
+}
+@keyframes ink-drift {
+  0% { transform: translate(0, 0) scale(1); opacity: 0.4; }
+  25% { transform: translate(30px, -50px) scale(1.1); opacity: 0.6; }
+  50% { transform: translate(-20px, -100px) scale(0.9); opacity: 0.3; }
+  75% { transform: translate(40px, -150px) scale(1.05); opacity: 0.5; }
+  100% { transform: translate(0, -200px) scale(1); opacity: 0.4; }
+}
+
+/* --- Ink ripple on chant --- */
+.ink-ripple {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: 10px; height: 10px; border-radius: 50%;
+  border: 2px solid rgba(232,200,76,0.6);
+  pointer-events: none; z-index: 4000;
+  animation: ink-ripple-expand 0.8s ease-out forwards;
+}
+@keyframes ink-ripple-expand {
+  0% { width: 10px; height: 10px; opacity: 1; border-width: 3px; }
+  100% { width: 200vmax; height: 200vmax; opacity: 0; border-width: 1px; }
+}
+
+/* --- Sentence area golden glow when complete --- */
+#sentence-area.sentence-complete {
+  border-color: rgba(232,200,76,0.6);
+  box-shadow: inset 0 0 30px rgba(232,200,76,0.08), 0 0 20px rgba(232,200,76,0.1);
+  transition: all 0.5s;
+}
+
+/* Sentence word ink splash on enter */
+.sentence-word-enter {
+  animation: word-ink-splash 0.4s cubic-bezier(0.23,1,0.32,1);
+}
+@keyframes word-ink-splash {
+  0% { transform: scale(0.3); opacity: 0; filter: blur(4px); }
+  50% { transform: scale(1.15); opacity: 1; filter: blur(0); }
+  100% { transform: scale(1); }
+}
+
+/* --- Exclamation multiplier chain (Balatro style) --- */
+.exc-chain-num {
+  position: fixed; pointer-events: none; z-index: 5500;
+  font-family: 'Ma Shan Zheng', cursive;
+  font-weight: 900; text-shadow: 0 4px 15px rgba(0,0,0,0.8);
+  animation: exc-chain-pop 0.6s cubic-bezier(0.23,1,0.32,1) forwards;
+}
+@keyframes exc-chain-pop {
+  0% { opacity: 0; transform: translate(-50%,-50%) scale(0.2) rotate(-10deg); }
+  30% { opacity: 1; transform: translate(-50%,-50%) scale(2.0) rotate(3deg); }
+  50% { transform: translate(-50%,-50%) scale(1.5) rotate(-1deg); }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(1.8) translateY(-30px) rotate(0deg); }
+}
+
+/* Exclamation flash overlays */
+.exc-flash {
+  position: fixed; inset: 0; pointer-events: none; z-index: 4500;
+  animation: exc-flash-anim 0.35s ease-out forwards;
+}
+@keyframes exc-flash-anim {
+  0% { opacity: 0.6; }
+  100% { opacity: 0; }
+}
+
+/* --- Turn start ink circle --- */
+.turn-start-circle {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: 0; height: 0; border-radius: 50%;
+  background: radial-gradient(circle, rgba(232,200,76,0.12), transparent 70%);
+  pointer-events: none; z-index: 3000;
+  animation: turn-circle-expand 0.7s ease-out forwards;
+}
+@keyframes turn-circle-expand {
+  0% { width: 0; height: 0; opacity: 1; }
+  100% { width: 150vmax; height: 150vmax; opacity: 0; }
+}
+
+/* --- HP rolling text --- */
+.hp-rolling {
+  animation: hp-bump 0.3s ease;
+}
+@keyframes hp-bump {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* --- Title screen enhanced --- */
+#title-screen {
+  background: radial-gradient(ellipse at center, #12101a 0%, #0a0a0f 50%, #050508 100%);
+}
+#title-screen h1 {
+  font-size: clamp(3rem, 10vw, 5.5rem);
+  text-shadow: 0 2px 40px rgba(232,200,76,0.5), 0 0 80px rgba(232,200,76,0.2), 0 0 120px rgba(232,200,76,0.08);
+}
+
+/* --- Combat screen bg --- */
+#combat-screen {
+  background: linear-gradient(180deg, #0a0a0f, #08080c);
+}
+
+/* --- prefers-reduced-motion --- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .ink-particle { display: none; }
+  .screen-shake-sm, .screen-shake-md, .screen-shake-lg { animation: none !important; }
 }
 </style>
 </head>
@@ -2277,8 +2540,17 @@ function startPlayerTurn() {
   dc -= G.drawLessNextTurn;
   if (dc < 1) dc = 1;
   G.drawLessNextTurn = 0;
+  if (G.turn === 1) VFX.spawnInkParticles();
+  VFX.turnCircle();
   drawCards(dc);
   renderCombat();
+  // Animate dealt cards
+  requestAnimationFrame(() => {
+    document.querySelectorAll('#hand-cards .card').forEach((c, i) => {
+      c.style.animationDelay = (i * 0.08) + 's';
+      c.classList.add('card-deal-anim');
+    });
+  });
 }
 
 function drawCards(count) {
@@ -2672,6 +2944,15 @@ function addToSentence(handIndex) {
   G.sentence.push(card);
   playSFX('card');
   renderCombat();
+  // Animate last word entering sentence area
+  requestAnimationFrame(() => {
+    const words = document.querySelectorAll('#sentence-slots-container .sentence-word');
+    if (words.length > 0) words[words.length - 1].classList.add('sentence-word-enter');
+    // Check for sentence completeness glow
+    const hasVerb = G.sentence.some(c => c.pos === 'verb');
+    const hasTarget = G.sentence.some(c => c._isEnemyTarget || c._isSelfTarget);
+    document.getElementById('sentence-area').classList.toggle('sentence-complete', hasVerb && hasTarget);
+  });
 }
 
 function removeSentenceWord(idx) {
@@ -2702,6 +2983,7 @@ function chantSentence() {
   G.energy -= cost;
   G.sentencesChanted++;
   playSFX('chant');
+  VFX.inkRipple();
 
   const result = evaluateSentence(G.sentence);
 
@@ -2761,13 +3043,14 @@ function applyEffects(effects) {
   if (effects.block > 0) {
     G.block += effects.block;
     playSFX('block');
-    showFloatingText(document.querySelector('#combat-top'), `+${effects.block}格挡`, '#6b9fff');
+    VFX.damageNum(document.getElementById('player-status-bar'), `+${effects.block}🛡`, '#6bc8ff', 2.2);
   }
 
   if (effects.heal > 0) {
     G.hp = Math.min(G.maxHp, G.hp + effects.heal);
     playSFX('heal');
-    showFloatingText(document.querySelector('#combat-top'), `+${effects.heal}生命`, '#6bff6b');
+    VFX.damageNum(document.getElementById('player-status-bar'), `+${effects.heal}♥`, '#6bff6b', 2.2);
+    VFX.rollHp(document.getElementById('combat-hp'));
   }
 
   if (effects.strengthGain > 0) {
@@ -2872,9 +3155,22 @@ function showScoreAnimation(result, callback) {
   }
 
   if (result.excNotes && result.excNotes.length > 0) {
-    result.excNotes.forEach(n => {
+    const excCards = result.cards.filter(c => c.pos === 'exclamation');
+    let chainDelay = delay;
+    result.excNotes.forEach((n, i) => {
       html += `<div class="score-line" style="animation-delay:${delay}ms"><span class="multiplier-bounce" style="animation-delay:${delay}ms">${n}</span></div>`;
-      delay += 200;
+      // Balatro chain pop
+      const exc = excCards[Math.min(i, excCards.length-1)];
+      const isNiubi = exc && exc.word === '牛逼';
+      const isWocao = exc && exc.word === '卧槽';
+      const color = isNiubi ? '#e8c84c' : isWocao ? '#e8873a' : '#00ffcc';
+      const mult = exc ? (exc.excMult || 1.2) : 1.2;
+      VFX.excChainPop(`×${mult}`, color, chainDelay, 3 + i * 0.5);
+      VFX.excFlash(color);
+      if (isNiubi) setTimeout(() => VFX.shake('md'), chainDelay);
+      else if (isWocao) setTimeout(() => VFX.shake('sm'), chainDelay);
+      chainDelay += 350;
+      delay += 250;
     });
   }
 
@@ -2917,7 +3213,7 @@ function dealDamageToEnemy(idx, amount, ignoreBlock) {
   if (!ignoreBlock && enemy.block > 0) {
     if (amount <= enemy.block) {
       enemy.block -= amount;
-      if (enemy.element) showFloatingText(enemy.element, `-${amount}`, '#6b9fff');
+      if (enemy.element) { showFloatingText(enemy.element, `-${amount}`, '#6b9fff'); VFX.enemyHit(enemy.element); }
       return;
     }
     amount -= enemy.block;
@@ -2927,7 +3223,13 @@ function dealDamageToEnemy(idx, amount, ignoreBlock) {
   enemy.hp -= amount;
   if (enemy.hp < 0) enemy.hp = 0;
   playSFX('hit');
-  if (enemy.element) showFloatingText(enemy.element, `-${amount}`, '#ff6b6b');
+  if (enemy.element) {
+    VFX.damageNum(enemy.element, `-${amount}`, '#ff6b6b', amount >= 20 ? 3.2 : amount >= 10 ? 2.5 : 2);
+    VFX.enemyHit(enemy.element);
+    if (amount >= 15) VFX.shake('sm');
+    if (amount >= 25) VFX.shake('md');
+    if (enemy.hp <= 0) setTimeout(() => VFX.enemyDeath(enemy.element), 200);
+  }
 }
 
 function dealDamageToPlayer(amount, source) {
@@ -2955,9 +3257,9 @@ function dealDamageToPlayer(amount, source) {
 
   G.hp -= amount;
   if (G.hp < 0) G.hp = 0;
-  showFloatingText(document.querySelector('#combat-top'), `-${amount}`, '#ff6b6b');
-  document.getElementById('game').classList.add('shake');
-  setTimeout(() => document.getElementById('game').classList.remove('shake'), 400);
+  VFX.damageNum(document.getElementById('player-status-bar'), `-${amount}`, '#ff6b6b', amount >= 15 ? 3 : 2.2);
+  VFX.shake(amount >= 15 ? 'md' : 'sm');
+  VFX.rollHp(document.getElementById('combat-hp'));
   if (G.hp <= 0) setTimeout(gameOver, 500);
 }
 
@@ -3326,6 +3628,119 @@ function buyCardMeta(key) {
   if(!info||META.unlockedCards.includes(key)||META.ink<info.cost) return;
   META.ink-=info.cost; META.unlockedCards.push(key); saveMeta(); playSFX('card'); renderMetaScreen();
 }
+
+// ============================================================
+// V6.2 ANIMATION SYSTEM
+// ============================================================
+const VFX = {
+  // Screen shake
+  shake(intensity = 'sm') {
+    const el = document.getElementById('game');
+    el.classList.remove('screen-shake-sm','screen-shake-md','screen-shake-lg');
+    void el.offsetWidth; // force reflow
+    el.classList.add(`screen-shake-${intensity}`);
+    setTimeout(() => el.classList.remove(`screen-shake-${intensity}`), intensity==='lg'?500:intensity==='md'?400:300);
+  },
+
+  // Floating damage number (big, fixed position)
+  damageNum(element, text, color, size = 2.2) {
+    if (!element) return;
+    const rect = element.getBoundingClientRect();
+    const d = document.createElement('div');
+    d.className = 'dmg-num-v2';
+    d.textContent = text;
+    d.style.color = color;
+    d.style.fontSize = size + 'rem';
+    d.style.left = (rect.left + rect.width/2) + 'px';
+    d.style.top = (rect.top + rect.height/2) + 'px';
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 950);
+  },
+
+  // Enemy hit effect
+  enemyHit(enemyEl) {
+    if (!enemyEl) return;
+    enemyEl.classList.remove('enemy-hit-flash','enemy-shake');
+    void enemyEl.offsetWidth;
+    enemyEl.classList.add('enemy-hit-flash','enemy-shake');
+    setTimeout(() => enemyEl.classList.remove('enemy-hit-flash','enemy-shake'), 450);
+  },
+
+  // Enemy death
+  enemyDeath(enemyEl) {
+    if (!enemyEl) return;
+    enemyEl.classList.add('enemy-death');
+  },
+
+  // Ink ripple (chant)
+  inkRipple() {
+    const r = document.createElement('div');
+    r.className = 'ink-ripple';
+    document.body.appendChild(r);
+    setTimeout(() => r.remove(), 850);
+  },
+
+  // Turn start circle
+  turnCircle() {
+    const c = document.createElement('div');
+    c.className = 'turn-start-circle';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 750);
+  },
+
+  // Exclamation flash
+  excFlash(color) {
+    const f = document.createElement('div');
+    f.className = 'exc-flash';
+    f.style.background = `radial-gradient(circle, ${color}40, transparent 70%)`;
+    document.body.appendChild(f);
+    setTimeout(() => f.remove(), 400);
+  },
+
+  // Exclamation chain pop (Balatro style)
+  excChainPop(text, color, delay, size = 3) {
+    setTimeout(() => {
+      const d = document.createElement('div');
+      d.className = 'exc-chain-num';
+      d.textContent = text;
+      d.style.color = color;
+      d.style.fontSize = size + 'rem';
+      d.style.left = '50%';
+      d.style.top = '40%';
+      document.body.appendChild(d);
+      VFX.shake(size > 3 ? 'md' : 'sm');
+      setTimeout(() => d.remove(), 700);
+    }, delay);
+  },
+
+  // HP rolling animation
+  rollHp(element) {
+    if (!element) return;
+    element.classList.remove('hp-rolling');
+    void element.offsetWidth;
+    element.classList.add('hp-rolling');
+    setTimeout(() => element.classList.remove('hp-rolling'), 350);
+  },
+
+  // Spawn ink particles in combat background
+  spawnInkParticles() {
+    const area = document.getElementById('combat-screen');
+    // Remove old particles
+    area.querySelectorAll('.ink-particle').forEach(p => p.remove());
+    for (let i = 0; i < 5; i++) {
+      const p = document.createElement('div');
+      p.className = 'ink-particle';
+      const size = 80 + Math.random() * 160;
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+      p.style.left = (Math.random() * 100) + '%';
+      p.style.top = (20 + Math.random() * 60) + '%';
+      p.style.animationDuration = (15 + Math.random() * 20) + 's';
+      p.style.animationDelay = (-Math.random() * 15) + 's';
+      area.appendChild(p);
+    }
+  },
+};
 
 // Init
 (function() {
