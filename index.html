@@ -2069,6 +2069,62 @@ function checkWordOrder(cards) {
   return { score, notes };
 }
 
+/**
+ * Check exclamation position legality.
+ * Legal positions: sentence-start (excl + comma + body) or sentence-end (body + comma + excl).
+ * Multiple exclamations can stack at start or end, each separated by commas.
+ * Returns { legal: bool, penalty: number (0-1 multiplier), note: string }
+ */
+function checkExclamationPosition(cards) {
+  const exclamations = cards.filter(c => c.pos === 'exclamation');
+  if (exclamations.length === 0) return { legal: true, penalty: 1.0, note: '' };
+
+  // Find indices of exclamation words in the card list
+  const excIndices = cards.map((c, i) => c.pos === 'exclamation' ? i : -1).filter(i => i >= 0);
+  const nonExcNonComma = cards.filter(c => c.pos !== 'exclamation' && !(c.pos === 'punctuation' && c.punctType === 'comma'));
+
+  if (nonExcNonComma.length === 0) {
+    // Only exclamations and commas, no body — still legal but useless
+    return { legal: true, penalty: 1.0, note: '' };
+  }
+
+  // Find the range of "body" (non-exclamation, non-comma-adjacent-to-exclamation)
+  // Strategy: check if all exclamations are at the start or all at the end, with commas separating them from body
+  const firstNonExcIdx = cards.findIndex(c => c.pos !== 'exclamation' && !(c.pos === 'punctuation' && c.punctType === 'comma'));
+  const lastNonExcIdx = (() => { for (let i = cards.length - 1; i >= 0; i--) { if (cards[i].pos !== 'exclamation' && !(cards[i].pos === 'punctuation' && cards[i].punctType === 'comma')) return i; } return -1; })();
+
+  // Check: are all exclamations before firstNonExcIdx or after lastNonExcIdx?
+  let allAtStart = excIndices.every(i => i < firstNonExcIdx);
+  let allAtEnd = excIndices.every(i => i > lastNonExcIdx);
+
+  if (!allAtStart && !allAtEnd) {
+    // Exclamation in the middle — illegal
+    return { legal: false, penalty: 0.5, note: '⚠ 感叹词位置不当（应在句首或句尾）×0.5' };
+  }
+
+  // Check that there's a comma between exclamations and body
+  if (allAtStart) {
+    // The card right before firstNonExcIdx should be a comma
+    const bridgeIdx = firstNonExcIdx - 1;
+    if (bridgeIdx >= 0 && cards[bridgeIdx].pos === 'punctuation' && cards[bridgeIdx].punctType === 'comma') {
+      return { legal: true, penalty: 1.0, note: '' };
+    } else {
+      return { legal: false, penalty: 0.6, note: '⚠ 感叹词与正文间需要逗号 ×0.6' };
+    }
+  }
+  if (allAtEnd) {
+    // The card right after lastNonExcIdx should be a comma
+    const bridgeIdx = lastNonExcIdx + 1;
+    if (bridgeIdx < cards.length && cards[bridgeIdx].pos === 'punctuation' && cards[bridgeIdx].punctType === 'comma') {
+      return { legal: true, penalty: 1.0, note: '' };
+    } else {
+      return { legal: false, penalty: 0.6, note: '⚠ 感叹词与正文间需要逗号 ×0.6' };
+    }
+  }
+
+  return { legal: true, penalty: 1.0, note: '' };
+}
+
 function evaluateSentence(rawCards) {
   if (rawCards.length === 0) return null;
 
@@ -2180,6 +2236,13 @@ function evaluateSentence(rawCards) {
     if (exc.excEnergy) { excExtraEnergy += exc.excEnergy; excNotes.push(`⚡「${exc.word}」下回合+${exc.excEnergy}能量`); }
     if (exc.excWeaken) { effects.applyWeak = Math.max(effects.applyWeak, exc.excWeaken); excNotes.push(`😑「${exc.word}」敌攻击-${exc.excWeaken}`); }
   });
+
+  // EXCLAMATION POSITION CHECK
+  const excPosResult = checkExclamationPosition(cards);
+  let excPosPenalty = excPosResult.penalty;
+  if (excPosResult.note) {
+    excNotes.push(excPosResult.note);
+  }
 
   // COMBAT EFFECTS
   const effects = {
@@ -2435,12 +2498,18 @@ function evaluateSentence(rawCards) {
     grammarNotes.push('「但是」攻守兼备');
   }
 
-  const totalMult = grammarMult * literaryMult * punctMult;
+  const totalMult = grammarMult * literaryMult * punctMult * excPosPenalty;
 
-  effects.damage = Math.floor(effects.damage * totalMult * excAttackMult);
+  // If exclamation position is illegal, nerf exc multipliers
+  const excPosScale = excPosResult.legal ? 1.0 : 0.5;
+  const finalExcAttack = 1 + (excAttackMult - 1) * excPosScale;
+  const finalExcDefense = 1 + (excDefenseMult - 1) * excPosScale;
+  const finalExcHeal = 1 + (excHealMult - 1) * excPosScale;
+
+  effects.damage = Math.floor(effects.damage * totalMult * finalExcAttack);
   if (effects._crit) effects.damage = Math.floor(effects.damage * 1.5);
-  effects.block = Math.floor(effects.block * totalMult * excDefenseMult);
-  effects.heal = Math.floor(effects.heal * totalMult * excHealMult);
+  effects.block = Math.floor(effects.block * totalMult * finalExcDefense);
+  effects.heal = Math.floor(effects.heal * totalMult * finalExcHeal);
   if (effects.selfHarm) effects.selfHarmDmg = Math.floor(effects.selfHarmDmg * totalMult);
   effects.draw += excExtraDraw;
   effects.heal += excExtraHeal;
@@ -2979,55 +3048,15 @@ function renderSentenceSlots() {
   container.innerHTML = '';
 
   const displayCards = normalizeSentence(G.sentence);
-  const commaIdx = displayCards.findIndex(c => c.pos === 'punctuation' && c.punctType === 'comma');
 
-  if (commaIdx >= 0) {
-    const firstHalf = displayCards.slice(0, commaIdx);
-    const secondHalf = displayCards.slice(commaIdx + 1);
-
-    const half1 = document.createElement('div');
-    half1.className = 'sentence-half';
-    firstHalf.forEach((card) => {
-      const origIdx = G.sentence.indexOf(card);
-      half1.appendChild(createSentenceWordEl(card, origIdx));
-    });
-    if (firstHalf.length === 0) {
-      const ph = document.createElement('span');
-      ph.style.cssText = 'color:var(--smoke);opacity:0.3;font-size:0.75rem;font-style:italic;';
-      ph.textContent = '上句...';
-      half1.appendChild(ph);
-    }
-    container.appendChild(half1);
-
-    const divider = document.createElement('div');
-    divider.className = 'sentence-comma-divider';
-    divider.style.cursor = 'pointer';
-    const commaOrigIdx = G.sentence.indexOf(displayCards[commaIdx]);
-    divider.onclick = () => removeSentenceWord(commaOrigIdx);
-    container.appendChild(divider);
-
-    const half2 = document.createElement('div');
-    half2.className = 'sentence-half';
-    secondHalf.forEach((card) => {
-      const origIdx = G.sentence.indexOf(card);
-      half2.appendChild(createSentenceWordEl(card, origIdx));
-    });
-    if (secondHalf.length === 0) {
-      const ph = document.createElement('span');
-      ph.style.cssText = 'color:var(--smoke);opacity:0.3;font-size:0.75rem;font-style:italic;';
-      ph.textContent = '下句...';
-      half2.appendChild(ph);
-    }
-    container.appendChild(half2);
-  } else {
-    const half = document.createElement('div');
-    half.className = 'sentence-half';
-    displayCards.forEach((card) => {
-      const origIdx = G.sentence.indexOf(card);
-      half.appendChild(createSentenceWordEl(card, origIdx));
-    });
-    container.appendChild(half);
-  }
+  // Flat WYSIWYG display — comma is just a word like any other
+  const half = document.createElement('div');
+  half.className = 'sentence-half';
+  displayCards.forEach((card) => {
+    const origIdx = G.sentence.indexOf(card);
+    half.appendChild(createSentenceWordEl(card, origIdx));
+  });
+  container.appendChild(half);
 
   // Preview — calligraphy style
   const preview = document.getElementById('sentence-preview');
@@ -3040,7 +3069,8 @@ function renderSentenceSlots() {
 
   // Duizhang preview
   const dzEl = document.getElementById('duizhang-preview');
-  if (commaIdx >= 0) {
+  const hasCommaInSentence = displayCards.some(c => c.pos === 'punctuation' && c.punctType === 'comma');
+  if (hasCommaInSentence) {
     const dzResult = detectDuizhang(normalizeSentence(G.sentence));
     if (dzResult) {
       dzEl.className = dzResult.matched ? 'duizhang-good' : 'duizhang-bad';
@@ -3079,7 +3109,9 @@ function renderSentenceSlots() {
       if (eval_.effects.aoe) parts.push('🌊全体');
       if (eval_.effects.ignoreBlock) parts.push('🗡穿透');
       if (eval_.effects.goldGain > 0) parts.push(`💰${eval_.effects.goldGain}`);
-      sp.innerHTML = `<span>费${getSentenceCost()}</span> ${parts.join(' ')} <span style="color:var(--gold)">✨×${eval_.totalMult.toFixed(2)}</span>`;
+      const excPos = checkExclamationPosition(normalizeSentence(G.sentence));
+      const excWarn = excPos.note ? ` <span style="color:#e07070">${excPos.note}</span>` : '';
+      sp.innerHTML = `<span>费${getSentenceCost()}</span> ${parts.join(' ')} <span style="color:var(--gold)">✨×${eval_.totalMult.toFixed(2)}</span>${excWarn}`;
     }
     } // close summon else
   } else {
