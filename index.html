@@ -142,12 +142,7 @@ h1, h2, h3, h4 { font-weight: 700; }
   flex: 0 0 auto; display: flex; align-items: center; justify-content: center;
   gap: 28px; padding: 12px; flex-wrap: wrap; min-height: 160px;
 }
-.enemy {
-  display: flex; flex-direction: column; align-items: center;
-  gap: 5px; position: relative; transition: all 0.3s;
-}
-.enemy.targeted { filter: brightness(1.2); }
-.enemy.targeted .enemy-portrait { box-shadow: 0 0 18px rgba(194,59,34,0.6); border-color: var(--vermillion); }
+/* old .enemy base styles moved to ENEMY CARD STYLE section below */
 .enemy-intent {
   font-size: 0.85rem; padding: 4px 10px; border-radius: 12px;
   background: rgba(15,10,4,0.85); border: 1px solid rgba(212,201,168,0.2);
@@ -624,6 +619,60 @@ h1, h2, h3, h4 { font-weight: 700; }
 }
 .self-harm-flash { animation: self-harm-flash 0.6s ease; }
 
+/* ===== PLAYER STATUS BAR ===== */
+#player-status-bar {
+  width: 100%; padding: 8px 14px; display: flex; align-items: center; gap: 14px;
+  background: linear-gradient(180deg, rgba(15,10,4,0.85), rgba(26,18,9,0.95));
+  border-top: 2px solid rgba(201,168,76,0.2);
+  border-bottom: 1px solid rgba(201,168,76,0.15);
+  flex-shrink: 0; flex-wrap: wrap;
+}
+.player-char-card {
+  display: flex; align-items: center; gap: 6px; padding: 4px 12px;
+  border: 2px solid rgba(180,112,212,0.5); border-radius: 8px;
+  background: linear-gradient(135deg, rgba(180,112,212,0.12), rgba(155,89,182,0.05));
+  cursor: pointer; transition: all 0.3s; flex-shrink: 0;
+}
+.player-char-card:hover {
+  border-color: #c98be0; box-shadow: 0 0 15px rgba(180,112,212,0.35);
+  transform: scale(1.05);
+}
+.player-char-card .char-emoji { font-size: 1.4rem; }
+.player-char-card .char-name { font-size: 0.85rem; color: #c98be0; font-weight: 700; }
+.player-hp-display {
+  display: flex; align-items: center; gap: 6px; font-size: 1.3rem; font-weight: 900;
+}
+.player-hp-display .hp-icon { color: #e07070; font-size: 1.5rem; }
+.player-hp-display .hp-value { color: #ff8870; text-shadow: 0 0 10px rgba(224,112,112,0.3); }
+.player-block-display {
+  display: flex; align-items: center; gap: 4px; font-size: 1.1rem; font-weight: 900;
+  color: var(--cyan);
+}
+.player-energy-display {
+  display: flex; align-items: center; gap: 6px; margin-left: auto;
+}
+.player-statuses { display: flex; gap: 4px; font-size: 0.7rem; }
+
+/* ===== ENEMY CARD STYLE ===== */
+.enemy {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 0; position: relative; transition: all 0.3s;
+  border: 2px solid rgba(139,37,0,0.5); border-radius: 10px;
+  background: linear-gradient(150deg, #3a1510, #2a100a, #1a0805);
+  padding: 8px 12px 10px; min-width: 110px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  cursor: pointer;
+}
+.enemy:hover { border-color: var(--vermillion); box-shadow: 0 4px 20px rgba(194,59,34,0.3); }
+.enemy.targeted { border-color: var(--vermillion); box-shadow: 0 0 20px rgba(194,59,34,0.5); }
+.enemy.targetable {
+  animation: enemy-glow 1.5s infinite;
+}
+@keyframes enemy-glow {
+  0%, 100% { box-shadow: 0 4px 15px rgba(0,0,0,0.5), 0 0 8px rgba(194,59,34,0.2); }
+  50% { box-shadow: 0 4px 15px rgba(0,0,0,0.5), 0 0 22px rgba(194,59,34,0.5); border-color: #ff6b4a; }
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 600px) {
   .card { width: 95px; min-width: 80px; height: 140px; }
@@ -640,6 +689,13 @@ h1, h2, h3, h4 { font-weight: 700; }
   .map-row { gap: 28px; }
   #enemy-targets-bar .enemy-target-word { font-size: 0.7rem; padding: 3px 8px; }
   #sentence-preview { font-size: 1.1rem; }
+  #player-status-bar { padding: 6px 10px; gap: 10px; }
+  .player-hp-display { font-size: 1rem; }
+  .player-hp-display .hp-icon { font-size: 1.2rem; }
+  .player-char-card { padding: 3px 8px; }
+  .player-char-card .char-emoji { font-size: 1.1rem; }
+  .player-char-card .char-name { font-size: 0.75rem; }
+  .enemy { min-width: 90px; padding: 6px 8px 8px; }
 }
 @media (max-width: 400px) {
   .card { width: 80px; min-width: 70px; height: 120px; }
@@ -681,18 +737,17 @@ h1, h2, h3, h4 { font-weight: 700; }
   <div id="combat-screen" class="screen">
     <div id="combat-top">
       <div class="combat-info">
-        <span style="color:#e07070">♥ <span id="combat-hp">50/50</span></span>
-        <span id="combat-block-display" style="color:var(--cyan);font-weight:900;font-size:1.1em"></span>
+        <span style="font-size:0.7rem;opacity:0.45">抽: <span id="draw-count">0</span> | 弃: <span id="discard-count">0</span></span>
       </div>
       <div class="combat-info"><span id="combat-status-effects"></span></div>
       <div class="combat-info">
-        <span style="font-size:0.7rem;opacity:0.45">抽: <span id="draw-count">0</span> | 弃: <span id="discard-count">0</span></span>
+        <button class="btn-small btn btn-secondary" onclick="viewDeck()" style="font-size:0.65rem;padding:3px 8px;">词库</button>
       </div>
     </div>
     <div id="enemy-area"></div>
     <div id="sentence-area">
       <div id="sentence-label">
-        <span>【造句区】点击手牌添加词语</span>
+        <span>【造句区】点击手牌或敌人卡牌构建句子</span>
         <div id="enemy-targets-bar"></div>
       </div>
       <div id="sentence-slots-container"></div>
@@ -700,13 +755,25 @@ h1, h2, h3, h4 { font-weight: 700; }
       <div id="duizhang-preview"></div>
       <div id="sentence-score-preview"></div>
     </div>
+    <div id="player-status-bar">
+      <div class="player-char-card" id="player-char-card" onclick="addSelfToSentence()">
+        <span class="char-emoji">📜</span>
+        <span class="char-name">李清照</span>
+      </div>
+      <div class="player-hp-display">
+        <span class="hp-icon">♥</span>
+        <span id="combat-hp" class="hp-value">50/50</span>
+      </div>
+      <div class="player-block-display" id="combat-block-display"></div>
+      <div class="player-energy-display">
+        <div class="energy-orb"><span id="energy-text">3</span></div>
+        <span style="font-size:0.75rem">文力</span>
+      </div>
+      <div class="player-statuses" id="combat-status-effects-bar"></div>
+    </div>
     <div id="hand-area">
       <div id="hand-cards"></div>
       <div id="hand-controls">
-        <div class="energy-display">
-          <div class="energy-orb"><span id="energy-text">3</span></div>
-          <span style="font-size:0.8rem">文力</span>
-        </div>
         <div style="display:flex;gap:10px;">
           <button class="btn btn-vermillion" id="chant-btn" onclick="chantSentence()" style="font-size:0.85rem;padding:0.5em 1.8em;">吟诵</button>
           <button class="btn btn-small btn-secondary" id="end-turn-btn" onclick="endPlayerTurn()" style="font-size:0.75rem;">结束</button>
@@ -916,6 +983,10 @@ const WORD_DEFS = {
     desc: '主语·攻击+5,格挡+3', flavor: '百万雄师过大江', powerBonus: 5, bonusType: 'attack', defenseBonus: 3 },
   shenmi_daoshi: { word: '神秘道士', pos: 'subject', cost: 2, rarity: 'rare', unlockable: true,
     desc: '主语·全+3', flavor: '贫道掐指一算...', powerBonus: 3, bonusType: 'all' },
+  nvxia: { word: '女侠', pos: 'subject', cost: 1, rarity: 'uncommon',
+    desc: '主语·攻击+4', flavor: '巾帼不让须眉', powerBonus: 4, bonusType: 'attack' },
+  sengren: { word: '僧人', pos: 'subject', cost: 1, rarity: 'common',
+    desc: '主语·格挡+3,回血+1', flavor: '阿弥陀佛', powerBonus: 3, bonusType: 'defense', healBonusSub: 1 },
 
   // ==================== VERBS (谓语·金色) ====================
   // --- Starter ---
@@ -967,9 +1038,21 @@ const WORD_DEFS = {
   yinshi_verb: { word: '吟诗', pos: 'verb', cost: 1, rarity: 'rare',
     combatType: 'buff', basePower: 0, upgPower: 0, poeticMultVerb: 2.0, flavor: '举头望明月...',
     desc: () => '诗意加成×2' },
-  bailan: { word: '摆烂', pos: 'verb', cost: 0, rarity: 'rare',
-    combatType: 'defense', basePower: 8, upgPower: 12, drawLessNext: 1, flavor: '躺平了',
-    desc: (c) => `格挡 ${c.upgraded?12:8}，下回合少抽1` },
+  bailan: { word: '摆烂', pos: 'verb', cost: 0, rarity: 'uncommon',
+    combatType: 'defense', basePower: 8, upgPower: 12, drawLessNext: 1, bailanSpecial: true, flavor: '躺平了',
+    desc: (c) => `自用=挡${c.upgraded?12:8}少抽1；对敌=敌跳过攻击` },
+  tangping: { word: '躺平', pos: 'verb', cost: 0, rarity: 'common',
+    combatType: 'defense', basePower: 8, upgPower: 11, drawLessNext: 1, flavor: '不卷了不卷了',
+    desc: (c) => `格挡 ${c.upgraded?11:8}，下回合少抽1` },
+  liule: { word: '溜了', pos: 'verb', cost: 0, rarity: 'uncommon',
+    combatType: 'defense', basePower: 0, upgPower: 0, dodgeNext: true, flavor: '溜了溜了',
+    desc: () => '闪避下次攻击(格挡99)' },
+  chong: { word: '冲', pos: 'verb', cost: 1, rarity: 'uncommon',
+    combatType: 'attack', basePower: 8, upgPower: 12, ignoreBlock: true, flavor: '冲就完事了！',
+    desc: (c) => `攻击 ${c.upgraded?12:8}+穿透` },
+  kua: { word: '夸', pos: 'verb', cost: 1, rarity: 'uncommon',
+    combatType: 'buff', basePower: 2, upgPower: 3, flavor: '夸夸群上线',
+    desc: (c) => `+${c.upgraded?3:2}力量` },
   kejin: { word: '氪金', pos: 'verb', cost: 2, rarity: 'rare', unlockable: true,
     combatType: 'attack', basePower: 20, upgPower: 28, spendGold: 10, flavor: '钞能力！',
     desc: (c) => `花10金+攻击 ${c.upgraded?28:20}` },
@@ -1001,6 +1084,13 @@ const WORD_DEFS = {
   jiangshan: { word: '江山', pos: 'object', cost: 2, rarity: 'uncommon',
     desc: '宾语·AOE+攻击+3', flavor: '江山如此多娇', aoe: true, effectBonus: 3, bonusType: 'attack' },
 
+  cangtian: { word: '苍天', pos: 'object', cost: 1, rarity: 'uncommon',
+    desc: '宾语·全体伤害', flavor: '苍天在上', aoe: true, effectBonus: 0 },
+  zhenxiang: { word: '真相', pos: 'object', cost: 1, rarity: 'uncommon',
+    desc: '宾语·移除敌人增益', flavor: '真相只有一个', effectBonus: 0, removeBuffs: true },
+  yueliang: { word: '月亮', pos: 'object', cost: 0, rarity: 'common',
+    desc: '宾语·回血+3', flavor: '举头望明月', effectBonus: 3, bonusType: 'heal' },
+
   // --- Rare ---
   wanwu: { word: '万物', pos: 'object', cost: 2, rarity: 'rare', unlockable: true,
     desc: '宾语·群体+攻击+5', flavor: '万物皆可斩', aoe: true, effectBonus: 5, bonusType: 'attack' },
@@ -1030,6 +1120,9 @@ const WORD_DEFS = {
   hanlei: { word: '含泪地', pos: 'modifier', cost: 0, rarity: 'uncommon',
     desc: '修饰·回血+5', flavor: '含泪吃下这碗面', multiplier: 1.0, bonusType: 'all', healBonusMod: 5 },
 
+  fengkuang: { word: '疯狂地', pos: 'modifier', cost: 1, rarity: 'uncommon',
+    desc: '修饰·攻击×2,自伤3', flavor: '疯了疯了', multiplier: 2.0, bonusType: 'attack', selfDmgMod: 3 },
+
   // --- Rare ---
   jingtian: { word: '惊天动地地', pos: 'modifier', cost: 2, rarity: 'rare', unlockable: true,
     desc: '修饰·全×2.0', flavor: '天崩地裂', multiplier: 2.0, bonusType: 'all' },
@@ -1047,6 +1140,8 @@ const WORD_DEFS = {
     desc: '连接·抽1牌', flavor: '然后呢？', grammarBonus: 0.05, draw: 1 },
   he: { word: '和', pos: 'connector', cost: 0, rarity: 'common',
     desc: '连接·多目标攻击', flavor: '一个都别想跑', grammarBonus: 0.05, multiTarget: true },
+  huo: { word: '或', pos: 'connector', cost: 0, rarity: 'uncommon',
+    desc: '连接·随机目标伤害×1.5', flavor: '命运的选择', grammarBonus: 0.05, orRandom: true },
 
   // ==================== PUNCTUATION (标点·紫色) ====================
   comma: { word: '，', pos: 'punctuation', cost: 0, rarity: 'uncommon', punctType: 'comma',
@@ -1067,6 +1162,18 @@ const WORD_DEFS = {
     desc: '感叹词·格挡×1.5', flavor: '我去！这也行？', excMult: 1.5, excType: 'defense' },
   ah: { word: '啊', pos: 'exclamation', cost: 0, rarity: 'common',
     desc: '感叹词·全效果×1.2', flavor: '啊——', excMult: 1.2, excType: 'all' },
+  liuliuliu: { word: '666', pos: 'exclamation', cost: 0, rarity: 'common',
+    desc: '感叹词·伤害×1.4', flavor: '六六六！', excMult: 1.4, excType: 'attack' },
+  jue: { word: '绝了', pos: 'exclamation', cost: 0, rarity: 'uncommon',
+    desc: '感叹词·全效果×1.6', flavor: '绝绝子！', excMult: 1.6, excType: 'all' },
+  miaoa: { word: '妙啊', pos: 'exclamation', cost: 0, rarity: 'uncommon',
+    desc: '感叹词·全×1.2+抽1牌', flavor: '妙啊妙啊', excMult: 1.2, excType: 'all', excDraw: 1 },
+  jiuming: { word: '救命', pos: 'exclamation', cost: 0, rarity: 'common',
+    desc: '感叹词·回血3+格挡×1.3', flavor: '救命啊！', excMult: 1.3, excType: 'defense', excHeal: 3 },
+  wuhu: { word: '芜湖', pos: 'exclamation', cost: 0, rarity: 'uncommon',
+    desc: '感叹词·全效果×1.3', flavor: '芜湖起飞！', excMult: 1.3, excType: 'all' },
+  qifei: { word: '起飞', pos: 'exclamation', cost: 0, rarity: 'rare',
+    desc: '感叹词·全×1.3+下回合+1能量', flavor: '起飞了家人们', excMult: 1.3, excType: 'all', excEnergy: 1 },
 };
 
 function makeCard(def) {
@@ -1077,12 +1184,15 @@ function createStarterDeck() {
   const deck = [];
   const add = (key, n) => { for(let i=0;i<n;i++) deck.push(makeCard({...WORD_DEFS[key], key})); };
   add('wo', 2);
-  add('zhan', 2);
-  add('shou', 2);
-  add('diren', 1);
-  add('menglie', 1);
-  add('period', 1);
   add('liqingzhao', 1);
+  add('zhan', 2);
+  add('shou', 1);
+  add('moyu', 1);
+  add('diren', 2);
+  add('wocao', 1);
+  add('ah', 1);
+  add('period', 1);
+  add('comma', 1);
   return deck;
 }
 
@@ -1603,11 +1713,15 @@ function evaluateSentence(rawCards) {
   // EXCLAMATION MULTIPLIERS
   let excAttackMult = 1, excDefenseMult = 1, excHealMult = 1;
   let excNotes = [];
+  let excExtraDraw = 0, excExtraHeal = 0, excExtraEnergy = 0;
   exclamationCards.forEach(exc => {
     const m = exc.excMult || 1.2;
     if (exc.excType === 'attack') { excAttackMult *= m; excNotes.push(`🔥「${exc.word}」伤害×${m}`); }
     else if (exc.excType === 'defense') { excDefenseMult *= m; excNotes.push(`🔥「${exc.word}」格挡×${m}`); }
     else { excAttackMult *= m; excDefenseMult *= m; excHealMult *= m; excNotes.push(`🔥「${exc.word}」全效×${m}`); }
+    if (exc.excDraw) { excExtraDraw += exc.excDraw; excNotes.push(`📜「${exc.word}」抽${exc.excDraw}牌`); }
+    if (exc.excHeal) { excExtraHeal += exc.excHeal; excNotes.push(`♥「${exc.word}」回血${exc.excHeal}`); }
+    if (exc.excEnergy) { excExtraEnergy += exc.excEnergy; excNotes.push(`⚡「${exc.word}」下回合+${exc.excEnergy}能量`); }
   });
 
   // COMBAT EFFECTS
@@ -1674,6 +1788,7 @@ function evaluateSentence(rawCards) {
       else objHealBonus += roll;
       grammarNotes.push(`🎲 命运→${t==='attack'?'攻击':t==='defense'?'格挡':'治疗'}+${roll}`);
     }
+    if (o.removeBuffs) effects._removeBuffs = true;
     if (o.bugEffect) {
       const bugRoll = Math.random();
       if (bugRoll < 0.25) { objAttackBonus += 15; grammarNotes.push('🐛 bug→攻击+15！'); }
@@ -1702,12 +1817,15 @@ function evaluateSentence(rawCards) {
   if (hasStealth) effects.ignoreBlock = true;
 
   let splitAttackToBlock = false;
+  let orRandomMult = false;
   connectors.forEach(c => {
     if (c.draw) effects.draw += c.draw;
     if (c.splitAttackToBlock) splitAttackToBlock = true;
+    if (c.orRandom) orRandomMult = true;
   });
 
-  realVerbs.forEach(v => {
+  for (let vi = 0; vi < realVerbs.length; vi++) {
+    const v = realVerbs[vi];
     let power = v.upgraded ? (v.upgPower || v.basePower) : v.basePower;
     if (v.spendGold) {
       if (G.gold >= v.spendGold) {
@@ -1718,12 +1836,36 @@ function evaluateSentence(rawCards) {
       }
     }
 
-    // 摸鱼 special: vs enemy = apply vuln 3
-    if (v.moyuSpecial && hasEnemyTarget) {
-      effects.applyVuln += (v.upgraded ? 4 : 3);
-      grammarNotes.push(`🐟 摸鱼→敌人易伤${v.upgraded?4:3}回合`);
-      if (v.draw) effects.draw += (v.upgraded && v.draw ? v.draw + 1 : v.draw);
-    } else if (v.combatType === 'attack') {
+    // 摸鱼 special: vs enemy = apply vuln; self = heal
+    if (v.moyuSpecial) {
+      if (hasEnemyTarget) {
+        effects.applyVuln += (v.upgraded ? 4 : 3);
+        grammarNotes.push(`🐟 摸鱼→敌人易伤${v.upgraded?4:3}回合`);
+      } else {
+        effects.heal += Math.floor(((v.upgraded ? v.upgPower : v.basePower) + subjectHealBonus + objHealBonus) * healMod);
+        grammarNotes.push(`🐟 摸鱼→我方回血${v.upgraded ? v.upgPower : v.basePower}`);
+      }
+      continue;
+    }
+    // 摆烂 special: self = block+drawLess; vs enemy = stun
+    if (v.bailanSpecial) {
+      if (hasEnemyTarget) {
+        effects._stunEnemy = true;
+        grammarNotes.push('🦥 摆烂→敌人跳过下次攻击');
+      } else {
+        effects.block += Math.floor(((v.upgraded ? v.upgPower : v.basePower) + subjectDefenseBonus + objDefenseBonus) * defenseMod);
+        effects.drawLessNext += v.drawLessNext || 1;
+        grammarNotes.push(`🦥 摆烂→格挡${v.upgraded ? v.upgPower : v.basePower}，少抽1`);
+      }
+      continue;
+    }
+    // 溜了 special: dodge
+    if (v.dodgeNext) {
+      effects.block += 99;
+      grammarNotes.push('🏃 溜了→闪避(格挡99)');
+      continue;
+    }
+    if (v.combatType === 'attack') {
       let dmg = (power + subjectAttackBonus + objAttackBonus + G.strength) * attackMod;
       if (G.weak > 0 && !hasIgnoreAllLimits) dmg *= 0.75;
       const hits = v.hits || 1;
@@ -1745,7 +1887,7 @@ function evaluateSentence(rawCards) {
     }
     if (v.draw) effects.draw += (v.upgraded && v.draw ? v.draw + 1 : v.draw);
     if (v.exhaust) v._shouldExhaust = true;
-  });
+  }
 
   if (modHealBonus > 0) effects.heal += modHealBonus;
   if (modSelfDmg > 0) { effects.selfHarm = true; effects.selfHarmDmg = modSelfDmg; effects.selfHarmBuff = 0; }
@@ -1775,6 +1917,21 @@ function evaluateSentence(rawCards) {
   effects.block = Math.floor(effects.block * totalMult * excDefenseMult);
   effects.heal = Math.floor(effects.heal * totalMult * excHealMult);
   if (effects.selfHarm) effects.selfHarmDmg = Math.floor(effects.selfHarmDmg * totalMult);
+  effects.draw += excExtraDraw;
+  effects.heal += excExtraHeal;
+  if (excExtraEnergy > 0) effects._bonusEnergy = excExtraEnergy;
+
+  if (orRandomMult && effects.damage > 0) {
+    effects.damage = Math.floor(effects.damage * 1.5);
+    // Pick random single target
+    if (G.enemies.filter(e => e.hp > 0).length > 0) {
+      const alive = G.enemies.map((e,i) => e.hp > 0 ? i : -1).filter(i => i >= 0);
+      effects.targetEnemyIdx = alive[Math.floor(Math.random() * alive.length)];
+      effects.aoe = false;
+      effects.multiTargetIndices = null;
+      grammarNotes.push(`🎲「或」→随机目标×1.5`);
+    }
+  }
 
   if (realVerbs.some(v => v.combatType === 'attack') && !effects.selfHarm && !hasQuestion && effects.damage < 1) effects.damage = 1;
 
@@ -2110,7 +2267,8 @@ function startCombat(enemyDefs) {
 
 function startPlayerTurn() {
   G.turn++;
-  G.block = 0; G.energy = G.maxEnergy;
+  G.block = 0; G.energy = G.maxEnergy + (G._bonusEnergyNext || 0);
+  G._bonusEnergyNext = 0;
   G.allCardsCostZero = false; G.poeticAura = false;
   G.sentence = [];
   if (G.vulnerable > 0) G.vulnerable--;
@@ -2147,15 +2305,33 @@ function getSentenceCost() {
 // ============================================================
 // RENDER
 // ============================================================
+function addSelfToSentence() {
+  const selfInSentence = G.sentence.some(c => c._isSelfTarget);
+  if (selfInSentence) return;
+  G.sentence = G.sentence.filter(c => !c._isEnemyTarget && !c._isSelfTarget);
+  const selfCard = {
+    word: '我', pos: 'object', cost: 0,
+    _isSelfTarget: true,
+    id: 'self_target_' + Math.random().toString(36).substr(2,5),
+  };
+  G.sentence.push(selfCard);
+  playSFX('card');
+  renderCombat();
+}
+
 function renderCombat() {
   document.getElementById('combat-hp').textContent = `${G.hp}/${G.maxHp}`;
-  document.getElementById('combat-block-display').innerHTML = G.block > 0 ? `🛡️ <b style="font-size:1.2em">${G.block}</b>` : '';
+  document.getElementById('combat-block-display').innerHTML = G.block > 0 ? `🛡️ <b style="font-size:1.3em">${G.block}</b>` : '';
 
   let st = '';
   if (G.strength>0) st += `<span class="status-icon status-strength">力${G.strength}</span>`;
   if (G.vulnerable>0) st += `<span class="status-icon status-vulnerable">伤${G.vulnerable}</span>`;
   if (G.weak>0) st += `<span class="status-icon status-weak">弱${G.weak}</span>`;
-  document.getElementById('combat-status-effects').innerHTML = st;
+  const stBar = document.getElementById('combat-status-effects-bar');
+  if (stBar) stBar.innerHTML = st;
+  // Also keep old one for floating text target
+  const stOld = document.getElementById('combat-status-effects');
+  if (stOld) stOld.innerHTML = st;
   document.getElementById('draw-count').textContent = G.drawPile.length;
   document.getElementById('discard-count').textContent = G.discardPile.length;
   document.getElementById('energy-text').textContent = G.energy;
@@ -2188,11 +2364,15 @@ function renderEnemies() {
       else if (ni.type==='special') { ic='special-intent'; it=`${ni.icon} ${ni.label||''}`; }
     }
 
+    // Make enemy clickable to add as target
+    const hasVerb = G.sentence.some(c => c.pos === 'verb');
+    if (hasVerb) div.classList.add('targetable');
+
     div.innerHTML = `
       <div class="enemy-intent ${ic}">${it}</div>
       <div class="enemy-portrait">${enemy.emoji||'👾'}</div>
       ${enemy.block>0?`<div class="enemy-block-indicator">🛡${enemy.block}</div>`:''}
-      <div class="enemy-name">${enemy.name}</div>
+      <div class="enemy-name" style="font-size:1.05rem;margin-top:4px;">${enemy.name}</div>
       <div class="enemy-hp-bar"><div class="enemy-hp-fill" style="width:${(enemy.hp/enemy.maxHp)*100}%"></div></div>
       <div class="enemy-hp-text">${enemy.hp}/${enemy.maxHp}</div>
       <div class="enemy-status-effects">
@@ -2201,6 +2381,25 @@ function renderEnemies() {
         ${(enemy.strength||0)>0?'<span class="status-icon status-strength">力'+enemy.strength+'</span>':''}
       </div>
     `;
+    // Click enemy card = add as target
+    div.onclick = () => {
+      const inSentence = G.sentence.some(c => c._isEnemyTarget && c._enemyIdx === idx);
+      if (inSentence) return;
+      const hasHeConn = G.sentence.some(c => c.multiTarget);
+      if (!hasHeConn) {
+        G.sentence = G.sentence.filter(c => !c._isEnemyTarget && !c._isSelfTarget);
+      } else {
+        G.sentence = G.sentence.filter(c => !c._isSelfTarget);
+      }
+      const enemyCard = {
+        word: enemy.name, pos: 'object', cost: 0,
+        _isEnemyTarget: true, _enemyIdx: idx,
+        id: 'enemy_target_' + idx + '_' + Math.random().toString(36).substr(2,5),
+      };
+      G.sentence.push(enemyCard);
+      playSFX('card');
+      renderCombat();
+    };
     enemy.element = div;
     area.appendChild(div);
   });
@@ -2587,8 +2786,28 @@ function applyEffects(effects) {
 
   if (effects.thorns > 0) G._thorns = (G._thorns || 0) + effects.thorns;
 
+  if (effects._bonusEnergy > 0) {
+    G._bonusEnergyNext = (G._bonusEnergyNext || 0) + effects._bonusEnergy;
+    showFloatingText(document.querySelector('#combat-top'), `下回合+${effects._bonusEnergy}能量`, '#c9a84c');
+  }
+
   if (effects.applyVuln > 0) {
     G.enemies.forEach(e => { if (e.hp > 0) e.vulnerable = (e.vulnerable||0) + effects.applyVuln; });
+  }
+
+  // Stun enemy (摆烂 vs enemy)
+  if (effects._stunEnemy) {
+    const tIdx = effects.targetEnemyIdx >= 0 ? effects.targetEnemyIdx : G.enemies.findIndex(e => e.hp > 0);
+    if (tIdx >= 0 && G.enemies[tIdx] && G.enemies[tIdx].hp > 0) {
+      G.enemies[tIdx].stunned = true;
+      showFloatingText(G.enemies[tIdx].element, '摆烂！跳过', '#d4a870');
+    }
+  }
+
+  // Remove enemy buffs (真相)
+  if (effects._removeBuffs) {
+    G.enemies.forEach(e => { if (e.hp > 0) { e.strength = 0; e.block = 0; } });
+    showFloatingText(document.querySelector('#enemy-area'), '增益清除！', '#7090d4');
   }
 
   if (effects.applyWeak > 0) {
