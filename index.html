@@ -1019,7 +1019,7 @@ h1, h2, h3, h4 { font-weight: 900; }
       <div id="sentence-score-preview"></div>
     </div>
     <div id="player-status-bar">
-      <div class="player-char-card" id="player-char-card" onclick="addSelfToSentence()">
+      <div class="player-char-card" id="player-char-card">
         <span class="char-emoji">📜</span>
         <span class="char-name">李清照</span>
       </div>
@@ -1817,6 +1817,113 @@ function detectDuizhang(cards) {
 }
 
 // ============================================================
+// SUMMON SYSTEM (感叹词 + 逗号 + 人名)
+// ============================================================
+const SUMMON_EFFECTS = {
+  '初音未来': {
+    name: '初音唱歌', emoji: '🎤', desc: '音波伤害全体敌人4点',
+    apply() {
+      G.enemies.forEach((e, i) => {
+        if (e.hp > 0) dealDamageToEnemy(i, 4, false);
+      });
+      showFloatingText(document.querySelector('#enemy-area'), '🎤 音波攻击！', '#00ffcc');
+    }
+  },
+  '李清照': {
+    name: '李清照吟诗', emoji: '📜', desc: '下回合所有句子质量+0.5',
+    apply() {
+      G.poeticAuraNext = true;
+      showFloatingText(document.querySelector('#combat-top'), '📜 诗意加持！下回合+0.5', '#c9a84c');
+    }
+  },
+  '猫': {
+    name: '猫出来了', emoji: '🐱', desc: '50%全体伤害6，50%啥也不干',
+    apply() {
+      if (Math.random() < 0.5) {
+        G.enemies.forEach((e, i) => { if (e.hp > 0) dealDamageToEnemy(i, 6, false); });
+        showFloatingText(document.querySelector('#enemy-area'), '🐱 猫猫发威！全体6伤害', '#e8873a');
+      } else {
+        showFloatingText(document.querySelector('#combat-top'), '🐱 喵？（啥也没干）', '#8a8275');
+      }
+    }
+  },
+  '僧人': {
+    name: '僧人念经', emoji: '🙏', desc: '回血8',
+    apply() {
+      G.hp = Math.min(G.maxHp, G.hp + 8);
+      playSFX('heal');
+      VFX.damageNum(document.getElementById('player-status-bar'), '+8♥', '#6bff6b', 2.5);
+      VFX.rollHp(document.getElementById('combat-hp'));
+    }
+  },
+  '女侠': {
+    name: '女侠出场', emoji: '⚔️', desc: '随机敌人穿透攻击10',
+    apply() {
+      const alive = G.enemies.map((e,i) => e.hp > 0 ? i : -1).filter(i => i >= 0);
+      if (alive.length > 0) {
+        const t = alive[Math.floor(Math.random() * alive.length)];
+        dealDamageToEnemy(t, 10, true);
+        showFloatingText(G.enemies[t].element, '⚔️ 女侠穿透！', '#e07070');
+      }
+    }
+  },
+  '剑客': {
+    name: '剑客砍一刀', emoji: '🗡️', desc: '单体伤害12',
+    apply() {
+      const alive = G.enemies.map((e,i) => e.hp > 0 ? i : -1).filter(i => i >= 0);
+      if (alive.length > 0) {
+        const t = alive[Math.floor(Math.random() * alive.length)];
+        dealDamageToEnemy(t, 12, false);
+        showFloatingText(G.enemies[t].element, '🗡️ 剑客一刀！', '#e8c84c');
+      }
+    }
+  },
+  '酒仙': {
+    name: '酒仙上场', emoji: '🍶', desc: '随机+1~3力量',
+    apply() {
+      const gain = Math.floor(Math.random() * 3) + 1;
+      G.strength += gain;
+      showFloatingText(document.querySelector('#combat-top'), `🍶 酒仙+${gain}力量`, '#70d490');
+    }
+  },
+  '月兔': {
+    name: '月兔祝福', emoji: '🐰', desc: '回血5+下回合+1能量',
+    apply() {
+      G.hp = Math.min(G.maxHp, G.hp + 5);
+      G._bonusEnergyNext = (G._bonusEnergyNext || 0) + 1;
+      playSFX('heal');
+      VFX.damageNum(document.getElementById('player-status-bar'), '+5♥', '#6bff6b', 2.2);
+      showFloatingText(document.querySelector('#combat-top'), '🐰 下回合+1能量', '#c9a84c');
+      VFX.rollHp(document.getElementById('combat-hp'));
+    }
+  },
+};
+
+/**
+ * Detect summon pattern: exclamation + comma + subject(non-我), no verb
+ * Returns { summonName, exclamationCards } or null
+ */
+function detectSummon(cards) {
+  const hasVerb = cards.some(c => c.pos === 'verb');
+  if (hasVerb) return null;
+
+  const hasExclamation = cards.some(c => c.pos === 'exclamation');
+  const hasComma = cards.some(c => c.pos === 'punctuation' && c.punctType === 'comma');
+  const subjects = cards.filter(c => c.pos === 'subject' && c.word !== '我');
+
+  if (!hasExclamation || !hasComma || subjects.length === 0) return null;
+
+  const summonName = subjects[0].word;
+  if (!SUMMON_EFFECTS[summonName]) return null;
+
+  return {
+    summonName,
+    exclamationCards: cards.filter(c => c.pos === 'exclamation'),
+    text: cards.map(c => c.word).join(''),
+  };
+}
+
+// ============================================================
 // SENTENCE EVALUATION SYSTEM
 // ============================================================
 function normalizeSentence(cards) {
@@ -2099,9 +2206,16 @@ function evaluateSentence(rawCards) {
       }
     }
 
-    // 摸鱼 special: vs enemy = apply vuln; self = heal
+    // Determine if subject is "我" or enemy for 摸鱼/摆烂
+    const subjectIsWo = subjects.some(s => s.word === '我') || subjects.length === 0;
+    const subjectIsEnemy = hasEnemyTarget || subjects.some(s => {
+      const w = s.word;
+      return w === '敌人' || G.enemies.some(e => e.name === w);
+    });
+
+    // 摸鱼 special: subject=我 → heal; subject=敌人 → apply vuln
     if (v.moyuSpecial) {
-      if (hasEnemyTarget) {
+      if (subjectIsEnemy) {
         effects.applyVuln += (v.upgraded ? 4 : 3);
         grammarNotes.push(`🐟 摸鱼→敌人易伤${v.upgraded?4:3}回合`);
       } else {
@@ -2110,9 +2224,9 @@ function evaluateSentence(rawCards) {
       }
       continue;
     }
-    // 摆烂 special: self = block+drawLess; vs enemy = stun
+    // 摆烂 special: subject=我 → block+drawLess; subject=敌人 → stun
     if (v.bailanSpecial) {
-      if (hasEnemyTarget) {
+      if (subjectIsEnemy) {
         effects._stunEnemy = true;
         grammarNotes.push('🦥 摆烂→敌人跳过下次攻击');
       } else {
@@ -2518,7 +2632,7 @@ function startCombat(enemyDefs) {
   G.discardPile = []; G.exhaustPile = []; G.hand = [];
   G.energy = G.maxEnergy; G.block = 0;
   G.sentence = []; G.enemyTargets = [];
-  G.allCardsCostZero = false; G.poeticAura = false;
+  G.allCardsCostZero = false; G.poeticAura = false; G.poeticAuraNext = false;
   G.turn = 0; G.vulnerable = 0; G.weak = 0;
   G.drawLessNextTurn = 0;
 
@@ -2532,7 +2646,9 @@ function startPlayerTurn() {
   G.turn++;
   G.block = 0; G.energy = G.maxEnergy + (G._bonusEnergyNext || 0);
   G._bonusEnergyNext = 0;
-  G.allCardsCostZero = false; G.poeticAura = false;
+  G.allCardsCostZero = false;
+  G.poeticAura = G.poeticAuraNext || false;
+  G.poeticAuraNext = false;
   G.sentence = [];
   if (G.vulnerable > 0) G.vulnerable--;
   if (G.weak > 0) G.weak--;
@@ -2577,20 +2693,6 @@ function getSentenceCost() {
 // ============================================================
 // RENDER
 // ============================================================
-function addSelfToSentence() {
-  const selfInSentence = G.sentence.some(c => c._isSelfTarget);
-  if (selfInSentence) return;
-  G.sentence = G.sentence.filter(c => !c._isEnemyTarget && !c._isSelfTarget);
-  const selfCard = {
-    word: '我', pos: 'object', cost: 0,
-    _isSelfTarget: true,
-    id: 'self_target_' + Math.random().toString(36).substr(2,5),
-  };
-  G.sentence.push(selfCard);
-  playSFX('card');
-  renderCombat();
-}
-
 function renderCombat() {
   document.getElementById('combat-hp').textContent = `${G.hp}/${G.maxHp}`;
   document.getElementById('combat-block-display').innerHTML = G.block > 0 ? `🛡️ <b style="font-size:1.3em">${G.block}</b>` : '';
@@ -2686,25 +2788,6 @@ function getTargetedEnemyIdx() {
 function renderEnemyTargetBar() {
   const bar = document.getElementById('enemy-targets-bar');
   bar.innerHTML = '';
-
-  const selfEl = document.createElement('div');
-  selfEl.className = 'enemy-target-word self-target-btn';
-  selfEl.textContent = '⟨我⟩';
-  const selfInSentence = G.sentence.some(c => c._isSelfTarget);
-  if (selfInSentence) selfEl.classList.add('in-sentence');
-  selfEl.onclick = () => {
-    if (selfInSentence) return;
-    G.sentence = G.sentence.filter(c => !c._isEnemyTarget && !c._isSelfTarget);
-    const selfCard = {
-      word: '我', pos: 'object', cost: 0,
-      _isSelfTarget: true,
-      id: 'self_target_' + Math.random().toString(36).substr(2,5),
-    };
-    G.sentence.push(selfCard);
-    playSFX('card');
-    renderCombat();
-  };
-  bar.appendChild(selfEl);
 
   G.enemies.forEach((enemy, idx) => {
     if (enemy.hp <= 0) return;
@@ -2816,6 +2899,12 @@ function renderSentenceSlots() {
   // Score preview with icons
   const sp = document.getElementById('sentence-score-preview');
   if (G.sentence.length > 0) {
+    // Check for summon pattern first
+    const summonCheck = detectSummon(G.sentence);
+    if (summonCheck) {
+      const eff = SUMMON_EFFECTS[summonCheck.summonName];
+      sp.innerHTML = `<span>费${getSentenceCost()}</span> <span style="color:var(--neon-cyan)">${eff.emoji} 召唤·${eff.name}</span> <span style="color:var(--paper-dark)">${eff.desc}</span>`;
+    } else {
     const eval_ = evaluateSentence(G.sentence);
     if (eval_) {
       const parts = [];
@@ -2835,6 +2924,7 @@ function renderSentenceSlots() {
       if (eval_.effects.goldGain > 0) parts.push(`💰${eval_.effects.goldGain}`);
       sp.innerHTML = `<span>费${getSentenceCost()}</span> ${parts.join(' ')} <span style="color:var(--gold)">✨×${eval_.totalMult.toFixed(2)}</span>`;
     }
+    } // close summon else
   } else {
     sp.innerHTML = '';
   }
@@ -2966,9 +3056,10 @@ function updateChantButton() {
   const btn = document.getElementById('chant-btn');
   const cost = getSentenceCost();
   const hasVerb = G.sentence.some(c => c.pos === 'verb' || c.pos === 'special');
-  btn.disabled = G.sentence.length === 0 || cost > G.energy || !hasVerb;
+  const isSummon = detectSummon(G.sentence) !== null;
+  btn.disabled = G.sentence.length === 0 || cost > G.energy || (!hasVerb && !isSummon);
   btn.style.opacity = btn.disabled ? '0.35' : '1';
-  btn.textContent = G.sentence.length > 0 ? `吟诵 (${cost}文力)` : '吟诵';
+  btn.textContent = G.sentence.length > 0 ? (isSummon ? `召唤 (${cost}文力)` : `吟诵 (${cost}文力)`) : '吟诵';
 }
 
 // ============================================================
@@ -2978,16 +3069,20 @@ function chantSentence() {
   if (G.sentence.length === 0) return;
   const cost = getSentenceCost();
   if (cost > G.energy) return;
-  if (!G.sentence.some(c => c.pos === 'verb' || c.pos === 'special')) return;
+
+  const summon = detectSummon(G.sentence);
+  const hasVerb = G.sentence.some(c => c.pos === 'verb' || c.pos === 'special');
+  if (!hasVerb && !summon) return;
 
   G.energy -= cost;
   G.sentencesChanted++;
   playSFX('chant');
   VFX.inkRipple();
 
-  const result = evaluateSentence(G.sentence);
-
-  G.sentence.forEach(card => {
+  // Move cards from hand to discard/exhaust
+  const sentenceCards = [...G.sentence];
+  G.sentence = [];
+  sentenceCards.forEach(card => {
     if (card._isEnemyTarget || card._isSelfTarget) return;
     const idx = G.hand.indexOf(card);
     if (idx >= 0) G.hand.splice(idx, 1);
@@ -2997,13 +3092,44 @@ function chantSentence() {
       G.discardPile.push(card);
     }
   });
-  G.sentence = [];
 
-  showScoreAnimation(result, () => {
-    applyEffects(result.effects);
-    checkEnemies();
-    renderCombat();
-  });
+  if (summon) {
+    // Summon path
+    const effect = SUMMON_EFFECTS[summon.summonName];
+    const sentText = '「' + summon.text + '」';
+
+    // Show summon animation via score overlay
+    const overlay = document.getElementById('score-overlay');
+    const sentEl = document.getElementById('score-sentence');
+    const detailEl = document.getElementById('score-details');
+    sentEl.textContent = sentText;
+    detailEl.innerHTML = `
+      <div class="score-line" style="animation-delay:0ms;color:var(--neon-cyan);font-size:1.2rem;">
+        ${effect.emoji} 召唤·${effect.name}！
+      </div>
+      <div class="score-line" style="animation-delay:200ms;color:var(--paper-dark);">
+        ${effect.desc}
+      </div>
+    `;
+    overlay.classList.add('active');
+    VFX.excFlash('#00ffcc');
+    VFX.shake('sm');
+
+    setTimeout(() => {
+      overlay.classList.remove('active');
+      effect.apply();
+      checkEnemies();
+      renderCombat();
+    }, 1200);
+  } else {
+    // Normal sentence path
+    const result = evaluateSentence(sentenceCards);
+    showScoreAnimation(result, () => {
+      applyEffects(result.effects);
+      checkEnemies();
+      renderCombat();
+    });
+  }
 }
 
 function applyEffects(effects) {
