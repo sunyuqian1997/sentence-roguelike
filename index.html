@@ -1482,6 +1482,93 @@ const WORD_DEFS = {
     desc: '感叹词·攻击×1.6', flavor: '好家伙！', excMult: 1.6, excType: 'attack' },
   wuyu: { word: '无语', pos: 'exclamation', cost: 0, rarity: 'common',
     desc: '感叹词·敌攻击-3', flavor: '无语了真的', excMult: 1.0, excType: 'all', excWeaken: 3 },
+
+  // ==================== FUN VERBS (有趣谓语·金色) ====================
+  huashui: { word: '划水', pos: 'verb', cost: 1, rarity: 'uncommon',
+    combatType: 'heal', basePower: 3, upgPower: 5, huashuiSpecial: true, flavor: '今天也是摸鱼的一天',
+    desc: (c) => `自用=回血${c.upgraded?5:3}；对敌=降攻击2回合` },
+  pengci: { word: '碰瓷', pos: 'verb', cost: 1, rarity: 'uncommon',
+    combatType: 'defense', basePower: 0, upgPower: 0, pengciSpecial: true, flavor: '我的腰！赔钱！',
+    desc: () => '本回合受伤反弹50%' },
+  shuaiguo: { word: '甩锅', pos: 'verb', cost: 1, rarity: 'uncommon',
+    combatType: 'buff', basePower: 0, upgPower: 0, shuaiguoSpecial: true, flavor: '这不是我的问题',
+    desc: () => '把自身debuff转给敌人' },
+  neijuan: { word: '内卷', pos: 'verb', cost: 1, rarity: 'uncommon',
+    combatType: 'attack', basePower: 6, upgPower: 9, selfDmgVerb: 2, flavor: '卷死你也卷死我',
+    desc: (c) => `攻击 ${c.upgraded?9:6}，自伤2` },
+  tangying: { word: '躺赢', pos: 'verb', cost: 0, rarity: 'uncommon',
+    combatType: 'defense', basePower: 4, upgPower: 6, tangyingSpecial: true, flavor: '我啥也没干啊',
+    desc: (c) => `格挡 ${c.upgraded?6:4}+敌死亡+10金币` },
+  baipiao: { word: '白嫖', pos: 'verb', cost: 0, rarity: 'uncommon',
+    combatType: 'buff', basePower: 0, upgPower: 0, draw: 2, flavor: '免费的最贵',
+    desc: () => '抽2张牌' },
+  zhongcao: { word: '种草', pos: 'verb', cost: 1, rarity: 'uncommon',
+    combatType: 'attack', basePower: 3, upgPower: 5, poisonVerb: 3, poisonDuration: 3, flavor: '买它！',
+    desc: (c) => `中毒3回合(每回合${c.upgraded?5:3}伤害)` },
+  pua: { word: 'PUA', pos: 'verb', cost: 1, rarity: 'rare',
+    combatType: 'attack', basePower: 0, upgPower: 0, puaSpecial: true, flavor: '你不行的',
+    desc: () => '降低敌人攻击力3持续2回合' },
+  kaibai: { word: '开摆', pos: 'verb', cost: 2, rarity: 'rare',
+    combatType: 'defense', basePower: 0, upgPower: 0, kaibaiSpecial: true, flavor: '摆了摆了',
+    desc: () => '本回合不受伤害但无法攻击' },
+  lacai: { word: '拉踩', pos: 'verb', cost: 1, rarity: 'uncommon',
+    combatType: 'attack', basePower: 4, upgPower: 6, stealStrength: 2, flavor: '踩一捧一基操',
+    desc: (c) => `攻击 ${c.upgraded?6:4}+偷2力量` },
+  diss: { word: 'diss', pos: 'verb', cost: 1, rarity: 'uncommon',
+    combatType: 'attack', basePower: 5, upgPower: 7, reduceBlockVerb: 5, flavor: '你说你几级？',
+    desc: (c) => `攻击 ${c.upgraded?7:5}+敌人格挡-5` },
+
+  // ==================== FUN MODIFIERS (有趣修饰·绿色) ====================
+  qiaomimi: { word: '悄咪咪地', pos: 'modifier', cost: 1, rarity: 'uncommon',
+    desc: '修饰·穿透格挡30%', flavor: '嘘...', multiplier: 1.0, bonusType: 'all', partialPenetrate: 0.3 },
+  bujianwude_mod: { word: '不讲武德地', pos: 'modifier', cost: 1, rarity: 'rare',
+    desc: '修饰·无视敌人增益buff', flavor: '年轻人不讲武德', multiplier: 1.0, bonusType: 'all', ignoreBuffsMod: true },
+  yizhengyanchi: { word: '义正言辞地', pos: 'modifier', cost: 0, rarity: 'common',
+    desc: '修饰·质量+0.4', flavor: '我说的都对', multiplier: 1.0, bonusType: 'all', poetryBonusMod: 0.4 },
+  hanlei: { word: '含泪地', pos: 'modifier', cost: 0, rarity: 'uncommon',
+    desc: '修饰·效果+30%自伤1', flavor: '哭着也要打完', multiplier: 1.3, bonusType: 'all', selfDmgMod: 1 },
+  mianwubiaoqing: { word: '面无表情地', pos: 'modifier', cost: 1, rarity: 'uncommon',
+    desc: '修饰·不触发敌人反击', flavor: '...', multiplier: 1.0, bonusType: 'all', noCounterMod: true },
+  biankubian: { word: '边哭边', pos: 'modifier', cost: 1, rarity: 'uncommon',
+    desc: '修饰·攻击时回血2', flavor: '呜呜呜', multiplier: 1.0, bonusType: 'attack', healOnAttackMod: 2 },
+  jiazhuangdanding: { word: '假装淡定地', pos: 'modifier', cost: 0, rarity: 'common',
+    desc: '修饰·格挡×1.5', flavor: '没事我不慌', multiplier: 1.5, bonusType: 'defense' },
+  shesi: { word: '社死般地', pos: 'modifier', cost: 1, rarity: 'uncommon',
+    desc: '修饰·全体攻击质量-0.3', flavor: '当场去世', multiplier: 1.0, bonusType: 'all', forceAoeMod: true, poetryBonusMod: -0.3 },
+  toutie: { word: '头铁地', pos: 'modifier', cost: 0, rarity: 'uncommon',
+    desc: '修饰·攻击×1.3无视自伤', flavor: '莽就完了', multiplier: 1.3, bonusType: 'attack', ignoreSelfDmg: true },
+  yinyangguaiqi: { word: '阴阳怪气地', pos: 'modifier', cost: 1, rarity: 'uncommon',
+    desc: '修饰·攻击+5降敌攻击1', flavor: '哦~是吗~', multiplier: 1.0, bonusType: 'attack', flatBonus: 5, weakenMod: 1 },
+
+  // ==================== FUN EXCLAMATIONS (有趣感叹词·霓虹青) ====================
+  xiaosi: { word: '笑死', pos: 'exclamation', cost: 0, rarity: 'uncommon',
+    desc: '感叹词·全×1.2+20%敌跳过', flavor: '笑死我了', excMult: 1.2, excType: 'all', excSkipChance: 0.2 },
+  lipu: { word: '离谱', pos: 'exclamation', cost: 0, rarity: 'uncommon',
+    desc: '感叹词·攻击×1.6', flavor: '离了个大谱', excMult: 1.6, excType: 'attack' },
+  male: { word: '麻了', pos: 'exclamation', cost: 0, rarity: 'common',
+    desc: '感叹词·格挡×1.4', flavor: '麻了麻了', excMult: 1.4, excType: 'defense' },
+  dnadongle: { word: 'DNA动了', pos: 'exclamation', cost: 0, rarity: 'uncommon',
+    desc: '感叹词·下回合抽牌+2', flavor: 'DNA动了！', excMult: 1.0, excType: 'all', excDrawNext: 2 },
+  yeqinghui: { word: '爷青回', pos: 'exclamation', cost: 0, rarity: 'uncommon',
+    desc: '感叹词·回血5', flavor: '爷的青春回来了', excMult: 1.0, excType: 'all', excHeal: 5 },
+  pofangle: { word: '破防了', pos: 'exclamation', cost: 0, rarity: 'uncommon',
+    desc: '感叹词·穿透×1.5', flavor: '破防了破防了', excMult: 1.5, excType: 'attack', excPenetrate: true },
+  shangtou: { word: '上头了', pos: 'exclamation', cost: 0, rarity: 'rare',
+    desc: '感叹词·攻击×2下回合格挡-50%', flavor: '上头了上头了', excMult: 2.0, excType: 'attack', excBlockDebuff: 0.5 },
+  zhenxiang_exc: { word: '真香', pos: 'exclamation', cost: 0, rarity: 'rare',
+    desc: '感叹词·负面变正面', flavor: '真香定律', excMult: 1.0, excType: 'all', excReverseNeg: true },
+  ji: { word: '寄', pos: 'exclamation', cost: 0, rarity: 'uncommon',
+    desc: '感叹词·自伤但敌伤×2', flavor: '寄了寄了', excMult: 2.0, excType: 'attack', excSelfDmg: 3 },
+
+  // ==================== FUN OBJECTS (有趣宾语·蓝色) ====================
+  lian: { word: '脸', pos: 'object', cost: 0, rarity: 'uncommon',
+    desc: '宾语·暴击率+30%', flavor: '打脸！', effectBonus: 0, critChanceBonus: 0.3 },
+  fanwan: { word: '饭碗', pos: 'object', cost: 0, rarity: 'uncommon',
+    desc: '宾语·偷金币8', flavor: '砸人饭碗', effectBonus: 0, goldGain: 8 },
+  jiezou: { word: '节奏', pos: 'object', cost: 0, rarity: 'uncommon',
+    desc: '宾语·施加混乱', flavor: '带节奏', effectBonus: 0, confuseObj: true },
+  xintai: { word: '心态', pos: 'object', cost: 0, rarity: 'uncommon',
+    desc: '宾语·降全属性3回合', flavor: '心态崩了', effectBonus: 0, xintaiDebuff: true },
 };
 
 function makeCard(def) {
@@ -1527,10 +1614,11 @@ function randomCardWeighted(rarity) {
   const pool = getCardPool(rarity);
   if (pool.length === 0) return makeCard({...WORD_DEFS.wo, key:'wo'});
   // Categorize
-  const cats = { attackVerb:[], exclamation:[], modifier:[], object:[], subject:[], punctuation:[], other:[] };
+  const cats = { attackVerb:[], utilVerb:[], exclamation:[], modifier:[], object:[], subject:[], punctuation:[], other:[] };
   pool.forEach(key => {
     const d = WORD_DEFS[key];
     if (d.pos === 'verb' && d.combatType === 'attack') cats.attackVerb.push(key);
+    else if (d.pos === 'verb') cats.utilVerb.push(key);
     else if (d.pos === 'exclamation') cats.exclamation.push(key);
     else if (d.pos === 'modifier') cats.modifier.push(key);
     else if (d.pos === 'object') cats.object.push(key);
@@ -1539,8 +1627,8 @@ function randomCardWeighted(rarity) {
     else cats.other.push(key);
   });
   const weights = [
-    [cats.attackVerb, 0.40], [cats.exclamation, 0.20], [cats.modifier, 0.15],
-    [cats.object, 0.15], [cats.subject, 0.05], [cats.punctuation, 0.03], [cats.other, 0.02],
+    [cats.attackVerb, 0.30], [cats.utilVerb, 0.15], [cats.exclamation, 0.20], [cats.modifier, 0.15],
+    [cats.object, 0.12], [cats.subject, 0.04], [cats.punctuation, 0.02], [cats.other, 0.02],
   ].filter(([arr]) => arr.length > 0);
   const totalW = weights.reduce((s,[,w]) => s+w, 0);
   let r = Math.random() * totalW, chosen = weights[0][0];
@@ -2254,6 +2342,12 @@ function evaluateSentence(rawCards) {
     if (exc.excHeal) { excExtraHeal += exc.excHeal; excNotes.push(`♥「${exc.word}」回血${exc.excHeal}`); }
     if (exc.excEnergy) { excExtraEnergy += exc.excEnergy; excNotes.push(`⚡「${exc.word}」下回合+${exc.excEnergy}能量`); }
     if (exc.excWeaken) { effects.applyWeak = Math.max(effects.applyWeak, exc.excWeaken); excNotes.push(`😑「${exc.word}」敌攻击-${exc.excWeaken}`); }
+    if (exc.excSkipChance) { effects._excSkipChance = (effects._excSkipChance||0) + exc.excSkipChance; excNotes.push(`😂「${exc.word}」${Math.round(exc.excSkipChance*100)}%敌跳过`); }
+    if (exc.excDrawNext) { effects._drawNextTurn = (effects._drawNextTurn||0) + exc.excDrawNext; excNotes.push(`🧬「${exc.word}」下回合抽牌+${exc.excDrawNext}`); }
+    if (exc.excPenetrate) { effects.ignoreBlock = true; excNotes.push(`💥「${exc.word}」穿透格挡`); }
+    if (exc.excBlockDebuff) { effects._blockDebuffNext = exc.excBlockDebuff; excNotes.push(`🔥「${exc.word}」下回合格挡-50%`); }
+    if (exc.excReverseNeg) { effects._reverseNeg = true; excNotes.push(`🔄「${exc.word}」负面变正面`); }
+    if (exc.excSelfDmg) { effects.selfHarm = true; effects.selfHarmDmg = (effects.selfHarmDmg||0) + exc.excSelfDmg; excNotes.push(`💀「${exc.word}」自伤${exc.excSelfDmg}`); }
   });
 
   // EXCLAMATION POSITION CHECK
@@ -2350,6 +2444,11 @@ function evaluateSentence(rawCards) {
       // Treat as self-target for heal verbs
       effects._selfTargetFromObj = true;
     }
+    if (o.critChanceBonus) {
+      if (Math.random() < o.critChanceBonus) { effects._crit = true; grammarNotes.push('👋 打脸→暴击！'); }
+    }
+    if (o.confuseObj) { effects._confuse = true; grammarNotes.push('🌀 节奏→敌人混乱'); }
+    if (o.xintaiDebuff) { effects.applyWeak += 3; effects.applyVuln += 3; grammarNotes.push('💔 心态崩了→敌全属性降'); }
   });
 
   let attackMod = 1, defenseMod = 1, healMod = 1;
@@ -2369,6 +2468,14 @@ function evaluateSentence(rawCards) {
     if (m.drawLessNextMod) effects.drawLessNext += m.drawLessNextMod;
     if (m.fullPenetrateMod) effects.ignoreBlock = true;
     if (m.doubleExecute) effects._doubleExecute = true;
+    if (m.partialPenetrate) effects._partialPenetrate = Math.max(effects._partialPenetrate||0, m.partialPenetrate);
+    if (m.ignoreBuffsMod) effects._ignoreBuffs = true;
+    if (m.noCounterMod) effects._noCounter = true;
+    if (m.healOnAttackMod) effects._healOnAttack = (effects._healOnAttack||0) + m.healOnAttackMod;
+    if (m.forceAoeMod) effects.aoe = true;
+    if (m.ignoreSelfDmg) effects._ignoreSelfDmg = true;
+    if (m.flatBonus) effects._flatAttackBonus = (effects._flatAttackBonus||0) + m.flatBonus;
+    if (m.weakenMod) effects.applyWeak = Math.max(effects.applyWeak, m.weakenMod);
   });
 
   if (hasStealth) effects.ignoreBlock = true;
@@ -2457,6 +2564,66 @@ function evaluateSentence(rawCards) {
       }
       continue;
     }
+    // 划水 special: self=heal, enemy=weaken
+    if (v.huashuiSpecial) {
+      if (subjectIsEnemy) {
+        effects.applyWeak += 2;
+        grammarNotes.push('🏊 划水→敌人降攻击2回合');
+      } else {
+        effects.heal += Math.floor(((v.upgraded ? v.upgPower : v.basePower) + subjectHealBonus + objHealBonus) * healMod);
+        grammarNotes.push(`🏊 划水→回血${v.upgraded ? v.upgPower : v.basePower}`);
+      }
+      continue;
+    }
+    // 碰瓷 special: reflect 50% damage this turn
+    if (v.pengciSpecial) {
+      effects._reflectDmg = 0.5;
+      grammarNotes.push('🤕 碰瓷→本回合反弹50%伤害');
+      continue;
+    }
+    // 甩锅 special: transfer debuffs
+    if (v.shuaiguoSpecial) {
+      effects._transferDebuffs = true;
+      grammarNotes.push('🍳 甩锅→debuff转给敌人');
+      continue;
+    }
+    // 躺赢 special: block + gold on kill
+    if (v.tangyingSpecial) {
+      effects.block += Math.floor(((v.upgraded ? v.upgPower : v.basePower) + subjectDefenseBonus + objDefenseBonus) * defenseMod);
+      effects._goldOnKill = (effects._goldOnKill || 0) + 10;
+      grammarNotes.push(`😴 躺赢→格挡${v.upgraded ? v.upgPower : v.basePower}+击杀+10金币`);
+      continue;
+    }
+    // 开摆 special: invincible but no attack
+    if (v.kaibaiSpecial) {
+      effects.block += 99;
+      effects.damage = 0;
+      effects._noAttack = true;
+      grammarNotes.push('🫠 开摆→无敌但无法攻击');
+      continue;
+    }
+    // PUA special: heavy weaken
+    if (v.puaSpecial) {
+      effects.applyWeak += 3;
+      grammarNotes.push('😈 PUA→敌人攻击-3持续2回合');
+      continue;
+    }
+    // 拉踩 steal strength
+    if (v.stealStrength) {
+      let dmg = (power + subjectAttackBonus + objAttackBonus + G.strength) * attackMod;
+      if (G.weak > 0 && !hasIgnoreAllLimits) dmg *= 0.75;
+      effects.damage += Math.floor(dmg);
+      effects.strengthGain += v.stealStrength;
+      effects._stealStrength = v.stealStrength;
+      grammarNotes.push(`🦶 拉踩→偷${v.stealStrength}力量`);
+      continue;
+    }
+    // 种草 poison
+    if (v.poisonVerb) {
+      effects._poison = { dmg: v.upgraded ? v.upgPower : v.basePower, turns: v.poisonDuration || 3 };
+      grammarNotes.push(`🌱 种草→中毒${v.poisonDuration}回合`);
+      continue;
+    }
     // 躲 special: dodge
     if (v.dodgeNext) {
       effects.block += 99;
@@ -2524,6 +2691,18 @@ function evaluateSentence(rawCards) {
   const finalExcAttack = 1 + (excAttackMult - 1) * excPosScale;
   const finalExcDefense = 1 + (excDefenseMult - 1) * excPosScale;
   const finalExcHeal = 1 + (excHealMult - 1) * excPosScale;
+
+  // Flat attack bonus from modifiers (e.g. 阴阳怪气)
+  if (effects._flatAttackBonus) effects.damage += effects._flatAttackBonus;
+  // Heal on attack from modifiers (e.g. 边哭边)
+  if (effects._healOnAttack && effects.damage > 0) effects.heal += effects._healOnAttack;
+  // Ignore self-damage from modifiers (e.g. 头铁)
+  if (effects._ignoreSelfDmg && effects.selfHarm) { effects.selfHarm = false; effects.selfHarmDmg = 0; }
+  // Reverse negative effects (真香)
+  if (effects._reverseNeg) {
+    if (effects.selfHarm) { effects.heal += effects.selfHarmDmg; effects.selfHarm = false; effects.selfHarmDmg = 0; }
+    if (effects.drawLessNext > 0) { effects.draw += effects.drawLessNext; effects.drawLessNext = 0; }
+  }
 
   effects.damage = Math.floor(effects.damage * totalMult * finalExcAttack);
   if (effects._crit) effects.damage = Math.floor(effects.damage * 1.5);
@@ -2898,8 +3077,13 @@ function startPlayerTurn() {
   if (G.weak > 0) G.weak--;
   let dc = META.perks.includes('extra_scroll') ? 6 : 5;
   dc -= G.drawLessNextTurn;
+  // Bonus draw from DNA动了 etc.
+  dc += (G._bonusDrawNext || 0); G._bonusDrawNext = 0;
   if (dc < 1) dc = 1;
   G.drawLessNextTurn = 0;
+  // Block debuff from 上头了
+  if (G._blockDebuffNext) { G._blockMult = 1 - G._blockDebuffNext; G._blockDebuffNext = 0; }
+  else { G._blockMult = 1; }
   if (G.turn === 1) VFX.spawnInkParticles();
   VFX.turnCircle();
   drawCards(dc);
@@ -3524,6 +3708,71 @@ function applyEffects(effects) {
       if (targetIdx >= 0) dealDamageToEnemy(targetIdx, effects.damage, effects.ignoreBlock);
     }
   }
+
+  // Partial penetrate (悄咪咪): extra damage ignoring block
+  if (effects._partialPenetrate && effects.damage > 0) {
+    const bonusDmg = Math.floor(effects.damage * effects._partialPenetrate);
+    const tIdx = effects.targetEnemyIdx >= 0 ? effects.targetEnemyIdx : G.enemies.findIndex(e => e.hp > 0);
+    if (tIdx >= 0 && G.enemies[tIdx] && G.enemies[tIdx].hp > 0) dealDamageToEnemy(tIdx, bonusDmg, true);
+  }
+
+  // Poison (种草)
+  if (effects._poison) {
+    const tIdx = effects.targetEnemyIdx >= 0 ? effects.targetEnemyIdx : G.enemies.findIndex(e => e.hp > 0);
+    if (tIdx >= 0 && G.enemies[tIdx] && G.enemies[tIdx].hp > 0) {
+      G.enemies[tIdx].poison = { dmg: effects._poison.dmg, turns: effects._poison.turns };
+      showFloatingText(G.enemies[tIdx].element, `🌱中毒${effects._poison.turns}回合`, '#70d490');
+    }
+  }
+
+  // Reflect damage (碰瓷)
+  if (effects._reflectDmg) {
+    G._reflectDmg = effects._reflectDmg;
+  }
+
+  // Transfer debuffs (甩锅)
+  if (effects._transferDebuffs) {
+    const tIdx = effects.targetEnemyIdx >= 0 ? effects.targetEnemyIdx : G.enemies.findIndex(e => e.hp > 0);
+    if (tIdx >= 0 && G.enemies[tIdx] && G.enemies[tIdx].hp > 0) {
+      if (G.weak > 0) { G.enemies[tIdx].weak = (G.enemies[tIdx].weak||0) + G.weak; G.weak = 0; }
+      if (G.vulnerable > 0) { G.enemies[tIdx].vulnerable = (G.enemies[tIdx].vulnerable||0) + G.vulnerable; G.vulnerable = 0; }
+      showFloatingText(G.enemies[tIdx].element, '甩锅成功！', '#d4a870');
+    }
+  }
+
+  // Gold on kill (躺赢)
+  if (effects._goldOnKill) {
+    const killed = G.enemies.filter(e => e.hp <= 0).length;
+    if (killed > 0) {
+      const bonus = killed * effects._goldOnKill;
+      G.gold += bonus;
+      showFloatingText(document.querySelector('#combat-top'), `躺赢+${bonus}金`, '#c9a84c');
+    }
+  }
+
+  // Exclamation skip chance (笑死)
+  if (effects._excSkipChance) {
+    G.enemies.forEach(e => { if (e.hp > 0 && Math.random() < effects._excSkipChance) { e.stunned = true; } });
+  }
+
+  // Draw next turn bonus (DNA动了)
+  if (effects._drawNextTurn) {
+    G._bonusDrawNext = (G._bonusDrawNext || 0) + effects._drawNextTurn;
+  }
+
+  // Block debuff next turn (上头了)
+  if (effects._blockDebuffNext) {
+    G._blockDebuffNext = effects._blockDebuffNext;
+  }
+
+  // Confuse (节奏/忽悠) - make enemy attack random or self
+  if (effects._confuse) {
+    const tIdx = effects.targetEnemyIdx >= 0 ? effects.targetEnemyIdx : G.enemies.findIndex(e => e.hp > 0);
+    if (tIdx >= 0 && G.enemies[tIdx] && G.enemies[tIdx].hp > 0) {
+      G.enemies[tIdx].confused = true;
+      showFloatingText(G.enemies[tIdx].element, '混乱！', '#b470d4');
+    }
+  }
 }
 
 function showScoreAnimation(result, callback) {
@@ -3683,16 +3932,54 @@ function enemyTurn() {
     if (enemy.vulnerable > 0) enemy.vulnerable--;
     if (enemy.weak > 0) enemy.weak--;
 
+    // Poison tick
+    if (enemy.poison && enemy.poison.turns > 0) {
+      enemy.hp -= enemy.poison.dmg;
+      enemy.poison.turns--;
+      if (enemy.element) showFloatingText(enemy.element, `🌱-${enemy.poison.dmg}`, '#70d490');
+      if (enemy.poison.turns <= 0) delete enemy.poison;
+      if (enemy.hp <= 0) { renderCombat(); return; }
+    }
+
+    // Confused enemy hits self or does nothing
+    if (enemy.confused) {
+      enemy.confused = false;
+      setTimeout(() => {
+        if (enemy.hp <= 0) return;
+        const selfDmg = Math.floor((enemy.attackDmg || 5) * 0.5);
+        enemy.hp -= selfDmg;
+        if (enemy.element) showFloatingText(enemy.element, `混乱自伤${selfDmg}`, '#b470d4');
+        enemy.ai(enemy);
+        renderCombat();
+      }, delay);
+      delay += 550;
+      return;
+    }
+
     setTimeout(() => {
       if (enemy.hp <= 0) return;
       if (enemy.stunned) { enemy.stunned = false; showFloatingText(enemy.element,'眩晕！','#d4a870'); }
-      else enemy.act_fn(enemy);
+      else {
+        // Save hp before enemy acts for reflect calc
+        const hpBefore = G.hp;
+        enemy.act_fn(enemy);
+        // Reflect damage (碰瓷)
+        if (G._reflectDmg && G._reflectDmg > 0 && G.hp < hpBefore) {
+          const reflected = Math.floor((hpBefore - G.hp) * G._reflectDmg);
+          if (reflected > 0) {
+            enemy.hp -= reflected;
+            if (enemy.element) showFloatingText(enemy.element, `反弹${reflected}`, '#e8873a');
+          }
+        }
+      }
       enemy.ai(enemy);
       renderCombat();
       if (G.hp <= 0) return;
     }, delay);
     delay += 550;
   });
+  // Clear reflect at end of enemy turn
+  G._reflectDmg = 0;
   setTimeout(() => { if (G.hp > 0) startPlayerTurn(); }, delay + 400);
 }
 
