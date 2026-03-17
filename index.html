@@ -1,0 +1,3016 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>墨韵肉鸽 — 易安词剑录</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #1a1209;
+  --bg-dark: #0f0a04;
+  --paper: #f5f0e0;
+  --paper-dark: #d4c9a8;
+  --ink: #2a2520;
+  --vermillion: #c23b22;
+  --vermillion-dark: #8b2500;
+  --pine: #4a6741;
+  --blue-ink: #3a5a8b;
+  --gold: #c9a84c;
+  --gold-bright: #e8c84c;
+  --smoke: #8a8275;
+  --purple: #9b59b6;
+  --purple-dark: #7d3c98;
+  --cyan: #7ec8c8;
+  --cyan-dark: #4a8a8a;
+}
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  background: var(--bg); color: var(--paper);
+  font-family: 'Noto Serif SC', 'SimSun', serif;
+  font-size: 16px;
+}
+h1, h2, h3, h4 { font-weight: 700; }
+.brush-font { font-family: 'Ma Shan Zheng', cursive; }
+#game { width: 100%; height: 100%; position: relative; overflow: hidden; }
+
+.screen {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  display: none; flex-direction: column; align-items: center; justify-content: center;
+  transition: opacity 0.5s;
+}
+.screen.active { display: flex; }
+
+/* ===== TITLE ===== */
+#title-screen {
+  background: radial-gradient(ellipse at center, #2a1f14 0%, #1a1209 50%, #0f0a04 100%);
+  text-align: center;
+}
+#title-screen h1 {
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: clamp(2.5rem, 8vw, 4.5rem); color: var(--paper);
+  text-shadow: 0 2px 30px rgba(201,168,76,0.4), 0 0 60px rgba(201,168,76,0.15);
+  margin-bottom: 0.3rem; letter-spacing: 0.3em;
+}
+#title-screen .subtitle {
+  font-family: 'Noto Serif SC', serif;
+  font-size: clamp(0.9rem, 2.2vw, 1.2rem); color: var(--smoke);
+  font-style: italic; margin-bottom: 2.5rem; letter-spacing: 0.15em;
+}
+.btn {
+  font-family: 'Noto Serif SC', serif; font-weight: 700;
+  font-size: clamp(0.95rem, 2.5vw, 1.2rem);
+  padding: 0.7em 2.5em; border: 2px solid var(--gold);
+  background: linear-gradient(135deg, rgba(201,168,76,0.15), rgba(201,168,76,0.05));
+  color: var(--paper); cursor: pointer; letter-spacing: 0.15em;
+  transition: all 0.3s; border-radius: 4px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+.btn:hover {
+  background: linear-gradient(135deg, rgba(201,168,76,0.3), rgba(201,168,76,0.1));
+  transform: translateY(-2px);
+  box-shadow: 0 4px 25px rgba(201,168,76,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.btn:active { transform: translateY(0); }
+.btn-small { font-size: 0.85rem; padding: 0.4em 1.4em; }
+.btn-vermillion { border-color: var(--vermillion); color: #ff8870; background: linear-gradient(135deg, rgba(194,59,34,0.15), rgba(194,59,34,0.05)); }
+.btn-vermillion:hover { background: linear-gradient(135deg, rgba(194,59,34,0.3), rgba(194,59,34,0.1)); box-shadow: 0 4px 25px rgba(194,59,34,0.3); }
+.btn-secondary { border-color: var(--smoke); color: var(--smoke); background: rgba(138,130,117,0.08); }
+.btn-secondary:hover { background: rgba(138,130,117,0.18); box-shadow: 0 4px 15px rgba(138,130,117,0.15); }
+.credit { font-size: 0.8rem; opacity: 0.4; margin-top: 1.5rem; }
+.ink-display-title { font-size: 0.85rem; color: var(--gold); opacity: 0.6; margin-top: 8px; }
+
+/* ===== MUTE ===== */
+#mute-btn {
+  position: fixed; top: 10px; right: 10px; z-index: 9999;
+  width: 38px; height: 38px; border-radius: 50%;
+  background: rgba(26,18,9,0.85); border: 1px solid rgba(201,168,76,0.3);
+  color: var(--paper); font-size: 1.1rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.3s;
+}
+#mute-btn:hover { border-color: var(--gold); box-shadow: 0 0 12px rgba(201,168,76,0.3); }
+
+/* ===== MAP ===== */
+#map-screen { background: var(--bg); overflow-y: auto; justify-content: flex-start; }
+#map-header {
+  width: 100%; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center;
+  background: linear-gradient(180deg, rgba(15,10,4,0.95), rgba(15,10,4,0.8));
+  border-bottom: 1px solid rgba(201,168,76,0.2);
+  position: sticky; top: 0; z-index: 10; flex-shrink: 0;
+}
+#map-header .player-stats { display: flex; gap: 18px; align-items: center; font-size: 0.9rem; }
+#map-header .player-stats span { display: flex; align-items: center; gap: 5px; }
+#map-container {
+  flex: 1; width: 100%; max-width: 500px; padding: 20px;
+  display: flex; flex-direction: column-reverse; gap: 0; position: relative;
+}
+.map-row { display: flex; justify-content: center; gap: 44px; padding: 12px 0; position: relative; }
+.map-node {
+  width: 52px; height: 52px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; cursor: default; position: relative;
+  transition: all 0.3s; border: 2px solid rgba(201,168,76,0.2);
+  background: rgba(26,18,9,0.8);
+}
+.map-node.available { cursor: pointer; border-color: var(--gold); animation: pulse-node 2s infinite; }
+.map-node.available:hover { transform: scale(1.2); box-shadow: 0 0 25px rgba(201,168,76,0.4); }
+.map-node.visited { opacity: 0.3; }
+.map-node.current { border-color: var(--vermillion); box-shadow: 0 0 15px rgba(194,59,34,0.5); }
+@keyframes pulse-node {
+  0%, 100% { box-shadow: 0 0 8px rgba(201,168,76,0.2); }
+  50% { box-shadow: 0 0 22px rgba(201,168,76,0.45); }
+}
+.act-label { font-size: 1.1rem; color: var(--paper-dark); text-align: center; padding: 15px 0 5px; letter-spacing: 0.2em; }
+
+/* ===== COMBAT ===== */
+#combat-screen { background: linear-gradient(180deg, #1a1209, #0f0a04); justify-content: space-between; padding: 0; }
+#combat-top {
+  width: 100%; padding: 10px 18px; display: flex; justify-content: space-between;
+  align-items: center; background: linear-gradient(180deg, rgba(15,10,4,0.95), rgba(15,10,4,0.7));
+  border-bottom: 1px solid rgba(201,168,76,0.15); flex-shrink: 0; font-size: 0.85rem;
+}
+#combat-top .combat-info { display: flex; gap: 14px; align-items: center; }
+
+/* ===== ENEMY AREA ===== */
+#enemy-area {
+  flex: 0 0 auto; display: flex; align-items: center; justify-content: center;
+  gap: 28px; padding: 12px; flex-wrap: wrap; min-height: 160px;
+}
+.enemy {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 5px; position: relative; transition: all 0.3s;
+}
+.enemy.targeted { filter: brightness(1.2); }
+.enemy.targeted .enemy-portrait { box-shadow: 0 0 18px rgba(194,59,34,0.6); border-color: var(--vermillion); }
+.enemy-intent {
+  font-size: 0.85rem; padding: 4px 10px; border-radius: 12px;
+  background: rgba(15,10,4,0.85); border: 1px solid rgba(212,201,168,0.2);
+  display: flex; align-items: center; gap: 5px; white-space: nowrap;
+  font-weight: 700;
+}
+.enemy-intent.attack-intent { border-color: var(--vermillion); color: #e07070; }
+.enemy-intent.defend-intent { border-color: var(--cyan-dark); color: var(--cyan); }
+.enemy-intent.buff-intent { border-color: var(--pine); color: #70d490; }
+.enemy-intent.debuff-intent { border-color: #8b6a3a; color: #d4a870; }
+.enemy-intent.special-intent { border-color: #6a3a8b; color: #b470d4; }
+.enemy-portrait {
+  width: 100px; height: 100px; border-radius: 8px; overflow: hidden;
+  border: 2px solid rgba(201,168,76,0.3); background: linear-gradient(135deg, #1a1209, #2a1f14);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3rem; transition: all 0.3s;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+.enemy-name { font-size: 0.95rem; color: var(--paper); font-weight: 700; letter-spacing: 0.05em; }
+.enemy-hp-bar {
+  width: 100px; height: 10px; background: rgba(15,10,4,0.8);
+  border-radius: 5px; overflow: hidden; border: 1px solid rgba(212,201,168,0.2);
+}
+.enemy-hp-fill { height: 100%; background: linear-gradient(90deg, #8b2500, var(--vermillion), #d45050); transition: width 0.5s; border-radius: 5px; }
+.enemy-hp-text { font-size: 0.75rem; opacity: 0.7; }
+.enemy-block-indicator {
+  position: absolute; top: 28px; right: -8px; background: linear-gradient(135deg, var(--cyan-dark), var(--blue-ink));
+  color: white; font-size: 0.7rem; padding: 3px 7px; border-radius: 10px; font-weight: bold;
+  box-shadow: 0 2px 8px rgba(58,90,139,0.4);
+}
+.enemy-status-effects { display: flex; gap: 4px; font-size: 0.65rem; }
+.status-icon { padding: 2px 6px; border-radius: 4px; background: rgba(15,10,4,0.8); font-weight: 700; }
+.status-vulnerable { color: #e07070; border: 1px solid var(--vermillion); }
+.status-weak { color: #d4a870; border: 1px solid #8b6a3a; }
+.status-strength { color: #70d490; border: 1px solid var(--pine); }
+
+/* ===== SENTENCE BUILDING AREA — Water-ink styled ===== */
+#sentence-area {
+  width: 100%; padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(26,18,9,0.9), rgba(42,31,20,0.8));
+  border-top: 2px solid rgba(201,168,76,0.25);
+  border-bottom: 2px solid rgba(201,168,76,0.25);
+  flex-shrink: 0; min-height: 80px;
+  position: relative;
+}
+#sentence-area::before, #sentence-area::after {
+  content: ''; position: absolute; width: 30px; height: 30px;
+  border-color: rgba(201,168,76,0.3); border-style: solid;
+}
+#sentence-area::before { top: 4px; left: 4px; border-width: 2px 0 0 2px; }
+#sentence-area::after { bottom: 4px; right: 4px; border-width: 0 2px 2px 0; }
+
+#sentence-label {
+  font-size: 0.75rem; color: var(--smoke); margin-bottom: 6px; letter-spacing: 0.1em;
+  display: flex; justify-content: space-between; align-items: center;
+}
+#enemy-targets-bar { display: flex; gap: 6px; align-items: center; }
+#enemy-targets-bar .enemy-target-word {
+  padding: 4px 12px; border-radius: 16px; cursor: pointer;
+  font-size: 0.8rem; transition: all 0.3s; font-weight: 700;
+  border: 2px solid var(--vermillion); color: #ff8870;
+  background: rgba(194,59,34,0.1);
+}
+#enemy-targets-bar .enemy-target-word:hover {
+  background: rgba(194,59,34,0.25); transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(194,59,34,0.3);
+}
+#enemy-targets-bar .enemy-target-word.in-sentence { opacity: 0.35; border-style: dashed; }
+#enemy-targets-bar .self-target-btn {
+  border-color: #b470d4; color: #c98be0;
+  background: rgba(180,112,212,0.1);
+}
+#enemy-targets-bar .self-target-btn:hover {
+  background: rgba(180,112,212,0.25);
+  box-shadow: 0 0 12px rgba(180,112,212,0.3);
+}
+
+#sentence-slots-container {
+  display: flex; flex-direction: column; gap: 0;
+  padding: 6px 8px; border: 1px solid rgba(201,168,76,0.15); border-radius: 6px;
+  background: rgba(15,10,4,0.4); min-height: 50px;
+  backdrop-filter: blur(2px);
+}
+#sentence-slots-container:empty::after {
+  content: '点击手牌中的词语，在此构建句子...';
+  color: var(--smoke); opacity: 0.35; font-size: 0.8rem;
+  font-style: italic;
+}
+.sentence-half {
+  display: flex; gap: 5px; flex-wrap: wrap; align-items: center; min-height: 36px; padding: 3px 0;
+}
+.sentence-comma-divider {
+  width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--purple), transparent);
+  margin: 3px 0; position: relative;
+}
+.sentence-comma-divider::after {
+  content: '，'; position: absolute; left: 50%; top: -9px; transform: translateX(-50%);
+  color: var(--purple); font-size: 0.9rem; background: rgba(15,10,4,0.8); padding: 0 8px;
+  font-family: 'Ma Shan Zheng', cursive;
+}
+
+/* Mini cards in sentence area */
+.sentence-word {
+  padding: 4px 10px; border-radius: 4px; cursor: pointer;
+  font-size: 0.9rem; font-weight: 700; transition: all 0.2s;
+  border: 1.5px solid; background: rgba(15,10,4,0.6);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+.sentence-word:hover { opacity: 0.7; transform: scale(0.95); }
+.sentence-word.enemy-obj {
+  border: 2px solid var(--vermillion) !important; color: #ff8870 !important;
+  background: rgba(194,59,34,0.15) !important; text-shadow: 0 0 8px rgba(194,59,34,0.3);
+}
+.sentence-word.self-target {
+  border: 2px solid #b470d4 !important; color: #c98be0 !important;
+  background: rgba(180,112,212,0.15) !important;
+}
+.sentence-word.punct-end {
+  border: 2px solid var(--purple) !important; color: var(--purple) !important;
+  background: rgba(155,89,182,0.2) !important; font-size: 1.2rem;
+  font-family: 'Ma Shan Zheng', cursive;
+}
+
+/* Sentence preview — calligraphy style */
+#sentence-preview {
+  margin-top: 6px; font-family: 'Ma Shan Zheng', cursive;
+  font-size: 1.3rem; color: var(--paper); opacity: 0.9;
+  min-height: 1.4em; letter-spacing: 0.1em;
+  text-shadow: 0 2px 12px rgba(245,240,224,0.2);
+}
+#sentence-score-preview {
+  font-size: 0.75rem; color: var(--gold-bright); opacity: 0.8; margin-top: 3px;
+  display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+}
+#duizhang-preview {
+  font-size: 0.7rem; margin-top: 3px; min-height: 1em;
+}
+.duizhang-good { color: #70d490; }
+.duizhang-bad { color: #d4a870; }
+
+/* ===== HAND AREA ===== */
+#hand-area {
+  width: 100%; padding: 8px 12px 12px;
+  background: linear-gradient(180deg, rgba(15,10,4,0.9), rgba(15,10,4,0.98));
+  border-top: 1px solid rgba(201,168,76,0.2); flex-shrink: 0;
+}
+#hand-cards {
+  display: flex; justify-content: center; gap: 8px;
+  flex-wrap: nowrap; overflow-x: auto; padding: 6px 4px;
+  scrollbar-width: thin; scrollbar-color: rgba(201,168,76,0.3) transparent;
+  align-items: flex-end;
+}
+#hand-controls {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 6px 10px 0; font-size: 0.85rem;
+}
+.energy-display {
+  display: flex; align-items: center; gap: 8px; font-size: 1rem; color: var(--paper);
+}
+.energy-orb {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff, var(--paper-dark), var(--smoke));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 1rem; color: var(--bg-dark);
+  border: 2px solid var(--gold); box-shadow: 0 0 12px rgba(201,168,76,0.3);
+}
+
+/* ===== WORD CARDS — Slay the Spire / Balatro style ===== */
+.card {
+  width: 120px; min-width: 100px; height: 170px;
+  border-radius: 8px; padding: 0; cursor: pointer;
+  position: relative; transition: all 0.25s ease;
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  border: 2px solid rgba(212,201,168,0.3);
+  background: linear-gradient(150deg, #2a2520, #1a1209);
+  flex-shrink: 0; text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+  overflow: hidden;
+}
+.card:hover { transform: translateY(-20px) scale(1.08); z-index: 20; box-shadow: 0 12px 40px rgba(0,0,0,0.7); }
+.card.in-sentence { opacity: 0.25; pointer-events: none; transform: scale(0.95); }
+.card.unplayable { opacity: 0.35; cursor: default; }
+.card.unplayable:hover { transform: none; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+
+/* POS-based card backgrounds */
+.card.pos-subject { background: linear-gradient(150deg, #3a1a18, #2a1210, #1a0a08); border-color: rgba(194,59,34,0.4); }
+.card.pos-verb { background: linear-gradient(150deg, #3a3018, #2a2210, #1a1508); border-color: rgba(201,168,76,0.4); }
+.card.pos-object { background: linear-gradient(150deg, #182a3a, #101a2a, #080f1a); border-color: rgba(112,144,212,0.4); }
+.card.pos-modifier { background: linear-gradient(150deg, #1a3018, #102210, #081508); border-color: rgba(112,212,144,0.4); }
+.card.pos-connector { background: linear-gradient(150deg, #2a2825, #1a1815, #100e0a); border-color: rgba(138,130,117,0.35); }
+.card.pos-punctuation { background: linear-gradient(150deg, #2a1a30, #1a1022, #0f0815); border-color: rgba(155,89,182,0.5); }
+
+/* POS tag at top */
+.card-pos-tag {
+  width: 100%; padding: 3px 0; text-align: center;
+  font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
+  color: white; text-transform: uppercase;
+}
+.card.pos-subject .card-pos-tag { background: linear-gradient(90deg, rgba(194,59,34,0.7), rgba(194,59,34,0.4)); }
+.card.pos-verb .card-pos-tag { background: linear-gradient(90deg, rgba(201,168,76,0.7), rgba(201,168,76,0.4)); }
+.card.pos-object .card-pos-tag { background: linear-gradient(90deg, rgba(58,90,139,0.8), rgba(58,90,139,0.5)); }
+.card.pos-modifier .card-pos-tag { background: linear-gradient(90deg, rgba(74,103,65,0.8), rgba(74,103,65,0.5)); }
+.card.pos-connector .card-pos-tag { background: linear-gradient(90deg, rgba(138,130,117,0.6), rgba(138,130,117,0.3)); }
+.card.pos-punctuation .card-pos-tag { background: linear-gradient(90deg, rgba(155,89,182,0.7), rgba(155,89,182,0.4)); }
+
+/* Cost circle */
+.card-cost {
+  position: absolute; top: -1px; left: -1px;
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 0.8rem; color: white; z-index: 2;
+  background: radial-gradient(circle at 40% 40%, #555, #222);
+  border: 2px solid rgba(201,168,76,0.5);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
+
+/* Big word in center */
+.card-word {
+  font-size: 2rem; font-weight: 900; color: var(--paper);
+  line-height: 1.1; flex: 1; display: flex; align-items: center; justify-content: center;
+  padding: 0 6px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  font-family: 'Ma Shan Zheng', 'Noto Serif SC', cursive;
+}
+
+/* Effect text at bottom */
+.card-effect-bar {
+  width: 100%; padding: 4px 6px; text-align: center;
+  font-size: 0.7rem; color: var(--paper-dark); opacity: 0.85;
+  background: rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.05);
+  line-height: 1.2; min-height: 22px;
+}
+
+/* Rarity glow */
+.card.rarity-uncommon { box-shadow: 0 4px 12px rgba(0,0,0,0.5), 0 0 15px rgba(74,158,255,0.25); }
+.card.rarity-uncommon:hover { box-shadow: 0 12px 40px rgba(0,0,0,0.7), 0 0 30px rgba(74,158,255,0.4); }
+.card.rarity-rare { box-shadow: 0 4px 12px rgba(0,0,0,0.5), 0 0 15px rgba(201,168,76,0.3); }
+.card.rarity-rare:hover { box-shadow: 0 12px 40px rgba(0,0,0,0.7), 0 0 30px rgba(201,168,76,0.5); }
+
+/* Punctuation special */
+.card.pos-punctuation .card-word { color: var(--purple); font-size: 2.5rem; }
+.card.pos-punctuation.rarity-uncommon { box-shadow: 0 4px 12px rgba(0,0,0,0.5), 0 0 15px rgba(155,89,182,0.3); }
+.card.pos-punctuation.rarity-rare { box-shadow: 0 4px 12px rgba(0,0,0,0.5), 0 0 20px rgba(155,89,182,0.45); }
+
+/* Upgraded cards */
+.card.upgraded .card-word { color: #7ddf7d; }
+.card.pos-punctuation.upgraded .card-word { color: #c97ddf; }
+.card.upgraded::after {
+  content: ''; position: absolute; inset: 0; border-radius: 6px;
+  border: 1px solid rgba(125,223,125,0.2); pointer-events: none;
+}
+
+/* ===== SCORING ANIMATION ===== */
+#score-overlay {
+  position: fixed; inset: 0; background: rgba(15,10,4,0.9);
+  z-index: 2000; display: none; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center;
+  backdrop-filter: blur(4px);
+}
+#score-overlay.active { display: flex; }
+#score-sentence {
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: clamp(1.6rem, 5vw, 2.8rem); color: var(--paper);
+  letter-spacing: 0.2em; margin-bottom: 18px;
+  text-shadow: 0 0 30px rgba(245,240,224,0.35);
+}
+#score-details { font-size: 0.9rem; color: var(--paper-dark); line-height: 2; }
+.score-line { opacity: 0; animation: fadeIn 0.3s forwards; }
+@keyframes fadeIn { to { opacity: 1; } }
+.score-effect {
+  font-size: 1.2rem; color: var(--vermillion); margin-top: 12px;
+  font-weight: 700; letter-spacing: 0.1em;
+}
+
+/* ===== DAMAGE NUMBERS ===== */
+.damage-number {
+  position: absolute; font-size: 1.4rem; font-weight: 900; color: #ff6b6b;
+  pointer-events: none; z-index: 100; animation: float-up 1s ease-out forwards;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
+.damage-number.heal { color: #6bff6b; }
+.damage-number.block-dmg { color: #6b9fff; }
+@keyframes float-up {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-55px) scale(1.5); }
+}
+
+/* ===== REWARD ===== */
+#reward-screen { background: rgba(26,18,9,0.95); }
+.reward-content { text-align: center; padding: 20px; max-width: 600px; width: 90%; }
+.reward-content h2 {
+  font-family: 'Ma Shan Zheng', cursive;
+  color: var(--gold-bright); margin-bottom: 12px; font-size: 1.8rem; letter-spacing: 0.2em;
+  text-shadow: 0 0 20px rgba(201,168,76,0.3);
+}
+.reward-cards { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin: 14px 0; }
+.reward-card-wrapper { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.reward-gold { font-size: 1.1rem; color: var(--gold); margin-bottom: 10px; }
+.rarity-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 700; }
+.rarity-starter { color: #888; }
+.rarity-common { color: #aaa; }
+.rarity-uncommon { color: #4a9eff; }
+.rarity-rare { color: var(--gold); }
+
+/* ===== REST ===== */
+#rest-screen { background: rgba(26,18,9,0.95); }
+.rest-content { text-align: center; padding: 20px; max-width: 500px; width: 90%; }
+.rest-content h2 { font-family: 'Ma Shan Zheng', cursive; color: var(--paper); margin-bottom: 8px; letter-spacing: 0.2em; font-size: 1.6rem; }
+.rest-content p { margin-bottom: 18px; font-style: italic; opacity: 0.7; font-size: 0.95rem; }
+.rest-options { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; }
+.rest-option {
+  padding: 22px; border: 1px solid rgba(201,168,76,0.2);
+  border-radius: 8px; cursor: pointer; transition: all 0.3s;
+  background: rgba(26,18,9,0.8); min-width: 140px;
+}
+.rest-option:hover { border-color: var(--gold); background: rgba(201,168,76,0.08); box-shadow: 0 0 20px rgba(201,168,76,0.15); }
+.rest-option .icon { font-size: 2rem; margin-bottom: 8px; }
+.rest-option .label { font-size: 1rem; color: var(--paper); font-weight: 700; }
+.rest-option .desc { font-size: 0.75rem; opacity: 0.6; margin-top: 5px; }
+
+/* ===== EVENT ===== */
+#event-screen { background: rgba(26,18,9,0.95); }
+.event-content { text-align: center; padding: 20px; max-width: 500px; width: 90%; }
+.event-content h2 { font-family: 'Ma Shan Zheng', cursive; color: var(--paper); margin-bottom: 14px; letter-spacing: 0.15em; font-size: 1.5rem; }
+.event-text { font-style: italic; line-height: 1.8; margin-bottom: 22px; font-size: 0.95rem; opacity: 0.85; }
+.event-choices { display: flex; flex-direction: column; gap: 10px; }
+.event-choice {
+  padding: 12px 20px; border: 1px solid rgba(201,168,76,0.2);
+  border-radius: 6px; cursor: pointer; transition: all 0.3s;
+  background: rgba(26,18,9,0.8); text-align: left;
+}
+.event-choice:hover { border-color: var(--gold); background: rgba(201,168,76,0.08); }
+.event-choice .choice-label { color: var(--paper); font-weight: 700; }
+.event-choice .choice-effect { font-size: 0.8rem; opacity: 0.5; margin-top: 4px; }
+
+/* ===== SHOP ===== */
+#shop-screen { background: rgba(26,18,9,0.95); overflow-y: auto; justify-content: flex-start; padding-top: 20px; }
+.shop-content { text-align: center; padding: 20px; max-width: 700px; width: 95%; }
+.shop-content h2 { font-family: 'Ma Shan Zheng', cursive; color: var(--paper); margin-bottom: 6px; letter-spacing: 0.2em; font-size: 1.6rem; }
+.shop-gold { color: var(--gold); margin-bottom: 14px; font-size: 0.95rem; }
+.shop-cards { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-bottom: 18px; }
+.shop-card-slot { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.shop-price { font-size: 0.8rem; color: var(--gold); font-weight: bold; }
+.shop-price.cannot-afford { color: #666; text-decoration: line-through; }
+.shop-remove-section { border-top: 1px solid rgba(201,168,76,0.15); padding-top: 14px; margin-top: 10px; }
+
+/* ===== OVERLAYS ===== */
+.overlay {
+  position: fixed; inset: 0; background: rgba(15,10,4,0.96);
+  z-index: 1000; display: none; flex-direction: column; align-items: center;
+  justify-content: flex-start; padding: 20px; overflow-y: auto;
+}
+.overlay.active { display: flex; }
+.overlay h3 { color: var(--paper); margin-bottom: 14px; letter-spacing: 0.12em; font-size: 1.1rem; }
+.overlay-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; max-width: 700px; }
+
+/* ===== END SCREENS ===== */
+#gameover-screen, #victory-screen { background: rgba(26,18,9,0.95); }
+.end-content { text-align: center; padding: 20px; max-width: 500px; width: 90%; }
+.end-content h2 {
+  font-family: 'Ma Shan Zheng', cursive;
+  color: var(--paper); font-size: 2.2rem; margin-bottom: 14px; letter-spacing: 0.25em;
+  text-shadow: 0 0 20px rgba(245,240,224,0.2);
+}
+.end-stats { text-align: left; margin: 14px auto; max-width: 300px; font-size: 0.9rem; line-height: 1.9; }
+.end-stats span { color: var(--gold); }
+.death-buttons { display: flex; gap: 14px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+
+/* ===== META ===== */
+#meta-overlay { z-index: 1100; }
+#meta-overlay h2 { font-family: 'Ma Shan Zheng', cursive; color: var(--paper); margin-bottom: 5px; font-size: 1.8rem; letter-spacing: 0.2em; }
+.meta-subtitle { font-style: italic; opacity: 0.5; margin-bottom: 18px; font-size: 0.85rem; }
+.meta-stats { display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; margin-bottom: 18px; }
+.meta-stat {
+  text-align: center; padding: 10px 14px; border: 1px solid rgba(201,168,76,0.15);
+  border-radius: 6px; background: rgba(26,18,9,0.6); min-width: 75px;
+}
+.meta-stat .stat-val { font-size: 1.3rem; color: var(--gold); font-weight: 900; }
+.meta-stat .stat-label { font-size: 0.65rem; opacity: 0.5; letter-spacing: 0.05em; }
+.meta-section {
+  width: 100%; max-width: 550px; margin-bottom: 18px;
+  border: 1px solid rgba(201,168,76,0.15); border-radius: 8px;
+  background: rgba(26,18,9,0.5); padding: 14px;
+}
+.meta-section h3 { color: var(--paper); font-size: 1.05rem; margin-bottom: 10px; border-bottom: 1px solid rgba(201,168,76,0.1); padding-bottom: 5px; }
+.meta-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 10px; margin-bottom: 5px; border-radius: 4px;
+  background: rgba(15,10,4,0.4); border: 1px solid rgba(212,201,168,0.08);
+}
+.meta-item .item-info { flex: 1; }
+.meta-item .item-name { color: var(--paper); font-size: 0.95rem; }
+.meta-item .item-desc { font-size: 0.7rem; opacity: 0.5; margin-top: 3px; }
+.meta-item .item-cost { font-size: 0.8rem; color: var(--gold); white-space: nowrap; margin-left: 10px; }
+.meta-item.purchased { opacity: 0.45; }
+.meta-item.purchased .item-name::after { content: ' ✓'; color: #70d490; font-size: 0.75rem; }
+.meta-item .buy-btn {
+  font-family: 'Noto Serif SC', serif; font-size: 0.75rem; padding: 4px 12px;
+  border: 1px solid var(--gold); background: rgba(201,168,76,0.1); color: var(--paper);
+  cursor: pointer; border-radius: 4px; transition: all 0.2s; margin-left: 10px;
+}
+.meta-item .buy-btn:hover { background: rgba(201,168,76,0.25); }
+.meta-item .buy-btn:disabled { opacity: 0.3; cursor: default; }
+
+.ink-reward-breakdown {
+  text-align: left; margin: 10px auto; max-width: 300px; font-size: 0.8rem; line-height: 1.8;
+  border: 1px solid rgba(201,168,76,0.15); border-radius: 6px; padding: 10px 14px;
+  background: rgba(26,18,9,0.5);
+}
+.ink-reward-breakdown .ink-line { display: flex; justify-content: space-between; }
+.ink-reward-breakdown .ink-total {
+  border-top: 1px solid rgba(201,168,76,0.2); padding-top: 5px; margin-top: 5px;
+  color: var(--gold); font-weight: bold; font-size: 0.95rem;
+}
+
+/* ===== TOOLTIP ===== */
+#tooltip {
+  position: fixed; z-index: 9999; background: rgba(15,10,4,0.96);
+  border: 1px solid var(--gold); border-radius: 6px; padding: 10px 14px;
+  max-width: 240px; font-size: 0.8rem; pointer-events: none;
+  display: none; color: var(--paper);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+}
+#tooltip .tt-name { font-weight: 900; color: var(--paper); font-size: 1rem; }
+#tooltip .tt-type { font-size: 0.65rem; opacity: 0.5; margin-top: 2px; }
+#tooltip .tt-desc { margin-top: 6px; line-height: 1.4; }
+#tooltip .tt-flavor { margin-top: 6px; font-style: italic; color: var(--smoke); font-size: 0.7rem; opacity: 0.7; }
+
+/* ===== ANIMATIONS ===== */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10% { transform: translateX(-5px) translateY(2px); }
+  20% { transform: translateX(5px) translateY(-2px); }
+  30% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+}
+.shake { animation: shake 0.4s ease; }
+
+@keyframes self-harm-flash {
+  0% { background: rgba(180,112,212,0); }
+  50% { background: rgba(180,112,212,0.15); }
+  100% { background: rgba(180,112,212,0); }
+}
+.self-harm-flash { animation: self-harm-flash 0.6s ease; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 600px) {
+  .card { width: 95px; min-width: 80px; height: 140px; }
+  .card-word { font-size: 1.5rem; }
+  .card.pos-punctuation .card-word { font-size: 1.8rem; }
+  .card-pos-tag { font-size: 0.55rem; }
+  .card-effect-bar { font-size: 0.6rem; }
+  .card-cost { width: 22px; height: 22px; font-size: 0.7rem; }
+  .enemy-portrait { width: 80px; height: 80px; font-size: 2.4rem; }
+  .enemy-hp-bar { width: 80px; }
+  #hand-cards { gap: 5px; }
+  .sentence-word { font-size: 0.8rem; padding: 3px 8px; }
+  .map-node { width: 44px; height: 44px; font-size: 1.1rem; }
+  .map-row { gap: 28px; }
+  #enemy-targets-bar .enemy-target-word { font-size: 0.7rem; padding: 3px 8px; }
+  #sentence-preview { font-size: 1.1rem; }
+}
+@media (max-width: 400px) {
+  .card { width: 80px; min-width: 70px; height: 120px; }
+  .card-word { font-size: 1.3rem; }
+}
+</style>
+</head>
+<body>
+<div id="game">
+  <button id="mute-btn" onclick="toggleMute()">♪</button>
+  <div id="tooltip"><div class="tt-name"></div><div class="tt-type"></div><div class="tt-desc"></div><div class="tt-flavor"></div></div>
+
+  <!-- TITLE -->
+  <div id="title-screen" class="screen active">
+    <h1>易安词剑录</h1>
+    <div class="subtitle">以词为剑，以句为盾</div>
+    <button class="btn" onclick="startGame()">执笔出发</button>
+    <button class="btn btn-small btn-secondary" onclick="showMetaScreen()" style="margin-top:12px;">文渊阁</button>
+    <div class="ink-display-title" id="title-ink-display"></div>
+    <div class="credit">李清照 · 句子构筑者 · v5</div>
+  </div>
+
+  <!-- MAP -->
+  <div id="map-screen" class="screen">
+    <div id="map-header">
+      <div class="player-stats">
+        <span style="color:#e07070">♥ <span id="map-hp">50/50</span></span>
+        <span style="color:var(--gold)">⬡ <span id="map-gold">0</span></span>
+      </div>
+      <div style="color:var(--paper-dark);font-size:0.9rem"><span id="map-act-label">第一章</span></div>
+      <button class="btn-small btn btn-secondary" onclick="viewDeck()" style="font-size:0.7rem;padding:4px 10px;">词库</button>
+    </div>
+    <div style="flex:1;width:100%;overflow-y:auto;display:flex;flex-direction:column;align-items:center;">
+      <div id="map-container"></div>
+    </div>
+  </div>
+
+  <!-- COMBAT -->
+  <div id="combat-screen" class="screen">
+    <div id="combat-top">
+      <div class="combat-info">
+        <span style="color:#e07070">♥ <span id="combat-hp">50/50</span></span>
+        <span id="combat-block-display" style="color:var(--cyan)"></span>
+      </div>
+      <div class="combat-info"><span id="combat-status-effects"></span></div>
+      <div class="combat-info">
+        <span style="font-size:0.7rem;opacity:0.45">抽: <span id="draw-count">0</span> | 弃: <span id="discard-count">0</span></span>
+      </div>
+    </div>
+    <div id="enemy-area"></div>
+    <div id="sentence-area">
+      <div id="sentence-label">
+        <span>【造句区】点击手牌添加词语</span>
+        <div id="enemy-targets-bar"></div>
+      </div>
+      <div id="sentence-slots-container"></div>
+      <div id="sentence-preview"></div>
+      <div id="duizhang-preview"></div>
+      <div id="sentence-score-preview"></div>
+    </div>
+    <div id="hand-area">
+      <div id="hand-cards"></div>
+      <div id="hand-controls">
+        <div class="energy-display">
+          <div class="energy-orb"><span id="energy-text">3</span></div>
+          <span style="font-size:0.8rem">文力</span>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-vermillion" id="chant-btn" onclick="chantSentence()" style="font-size:0.85rem;padding:0.5em 1.8em;">吟诵</button>
+          <button class="btn btn-small btn-secondary" id="end-turn-btn" onclick="endPlayerTurn()" style="font-size:0.75rem;">结束</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REWARD -->
+  <div id="reward-screen" class="screen">
+    <div class="reward-content">
+      <h2>战胜！</h2>
+      <div class="reward-gold" id="reward-gold-text"></div>
+      <h3 style="color:var(--paper-dark);font-size:0.95rem;margin-bottom:10px;">选择一张新词牌：</h3>
+      <div class="reward-cards" id="reward-cards"></div>
+      <button class="btn btn-small btn-secondary" onclick="skipReward()" style="margin-top:14px;">跳过</button>
+    </div>
+  </div>
+
+  <!-- REST -->
+  <div id="rest-screen" class="screen">
+    <div class="rest-content">
+      <h2 id="rest-title">月下独酌</h2>
+      <p id="rest-flavor">月色如水，庭院寂寂，暂且搁笔小憩...</p>
+      <div class="rest-options">
+        <div class="rest-option" onclick="restHeal()">
+          <div class="icon">🍵</div>
+          <div class="label">品茗</div>
+          <div class="desc" id="rest-heal-desc">恢复30%生命</div>
+        </div>
+        <div class="rest-option" onclick="restUpgrade()">
+          <div class="icon">🖌️</div>
+          <div class="label">研墨</div>
+          <div class="desc">升级一张词牌</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EVENT -->
+  <div id="event-screen" class="screen">
+    <div class="event-content">
+      <h2 id="event-title"></h2>
+      <div class="event-text" id="event-text"></div>
+      <div class="event-choices" id="event-choices"></div>
+    </div>
+  </div>
+
+  <!-- SHOP -->
+  <div id="shop-screen" class="screen">
+    <div class="shop-content">
+      <h2>词坊</h2>
+      <div class="shop-gold">文银：<span id="shop-gold">0</span></div>
+      <div class="shop-cards" id="shop-cards"></div>
+      <div class="shop-remove-section">
+        <button class="btn btn-small" id="shop-remove-btn" onclick="shopRemoveCard()">忘却一张词 (75文银)</button>
+      </div>
+      <button class="btn btn-small btn-secondary" onclick="leaveShop()" style="margin-top:14px;">离去</button>
+    </div>
+  </div>
+
+  <!-- UPGRADE OVERLAY -->
+  <div id="upgrade-overlay" class="overlay">
+    <h3>选择一张词牌升级：</h3>
+    <div id="upgrade-cards-grid" class="overlay-grid"></div>
+    <button class="btn btn-small btn-secondary" onclick="closeUpgrade()" style="margin-top:14px;">取消</button>
+  </div>
+
+  <!-- DECK VIEW -->
+  <div id="deck-overlay" class="overlay">
+    <h3>你的词库（<span id="deck-count">0</span>张）</h3>
+    <div id="deck-cards-grid" class="overlay-grid"></div>
+    <button class="btn btn-small btn-secondary" onclick="closeDeck()" style="margin-top:14px;">关闭</button>
+  </div>
+
+  <!-- REMOVE OVERLAY -->
+  <div id="remove-overlay" class="overlay">
+    <h3>选择一张词牌忘却：</h3>
+    <div id="remove-cards-grid" class="overlay-grid"></div>
+    <button class="btn btn-small btn-secondary" onclick="closeRemove()" style="margin-top:14px;">取消</button>
+  </div>
+
+  <!-- SCORE OVERLAY -->
+  <div id="score-overlay">
+    <div id="score-sentence"></div>
+    <div id="score-details"></div>
+  </div>
+
+  <!-- GAME OVER -->
+  <div id="gameover-screen" class="screen" style="overflow-y:auto;">
+    <div class="end-content">
+      <h2>墨尽笔枯</h2>
+      <p style="font-style:italic;opacity:0.6;margin-bottom:14px;font-size:0.9rem;">物是人非事事休，欲语泪先流...</p>
+      <div class="end-stats" id="gameover-stats"></div>
+      <div id="gameover-ink-breakdown"></div>
+      <div class="death-buttons">
+        <button class="btn" onclick="startGame()">重新执笔</button>
+        <button class="btn btn-small btn-secondary" onclick="showMetaScreen()">文渊阁</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VICTORY -->
+  <div id="victory-screen" class="screen" style="overflow-y:auto;">
+    <div class="end-content">
+      <h2>大作已成</h2>
+      <p style="font-style:italic;opacity:0.6;margin-bottom:14px;font-size:0.9rem;">生当作人杰，死亦为鬼雄...</p>
+      <div class="end-stats" id="victory-stats"></div>
+      <div id="victory-ink-breakdown"></div>
+      <div class="death-buttons">
+        <button class="btn" onclick="startGame()">再谱新篇</button>
+        <button class="btn btn-small btn-secondary" onclick="showMetaScreen()">文渊阁</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- META -->
+  <div id="meta-overlay" class="overlay">
+    <h2>文渊阁</h2>
+    <div class="meta-subtitle">每一次败北，都是下一篇传奇的序章</div>
+    <div class="meta-stats" id="meta-stats"></div>
+    <div class="meta-section" id="meta-perks-section"></div>
+    <div class="meta-section" id="meta-cards-section"></div>
+    <button class="btn btn-small btn-secondary" onclick="closeMetaScreen()" style="margin-top:14px;">关闭</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// META PROGRESSION
+// ============================================================
+const META_DEFAULT = {
+  ink: 0, totalInk: 0, runs: 0, bestAct: 1, bestFloor: 0,
+  unlockedCards: [], perks: [],
+};
+let META = loadMeta();
+function loadMeta() {
+  try {
+    const s = localStorage.getItem('sentence_rogue_meta');
+    if (s) return { ...META_DEFAULT, ...JSON.parse(s) };
+  } catch(e) {}
+  return { ...META_DEFAULT };
+}
+function saveMeta() {
+  try { localStorage.setItem('sentence_rogue_meta', JSON.stringify(META)); } catch(e) {}
+}
+
+const LEGACY_PERKS = {
+  thick_paper: { name: '厚宣纸', desc: '每次冒险开始+5最大生命', cost: 30 },
+  ink_pot: { name: '墨池', desc: '每次冒险开始+15文银', cost: 20 },
+  sharp_brush: { name: '利笔', desc: '每次冒险开始+1力量', cost: 40 },
+  extra_scroll: { name: '展卷', desc: '每回合抽6张而非5张', cost: 50 },
+};
+
+const UNLOCKABLE_CARDS_META = {
+  jiangjun: { cost: 35, name: '将军' },
+  shenmi_daoshi: { cost: 30, name: '神秘道士' },
+  qinshi: { cost: 40, name: '琴师' },
+  zhu: { cost: 40, name: '诛' },
+  kejin: { cost: 45, name: '氪金' },
+  wanwu: { cost: 40, name: '万物' },
+  bug_obj: { cost: 35, name: 'bug' },
+  jingtian: { cost: 45, name: '惊天动地地' },
+  bujianwude: { cost: 50, name: '以不讲武德的方式' },
+};
+
+// ============================================================
+// WORD CARD DEFINITIONS (v5 — 词牌清理)
+// ============================================================
+const WORD_DEFS = {
+  // ==================== SUBJECTS (主语·红色) ====================
+  // --- Starter ---
+  wo: { word: '我', pos: 'subject', cost: 0, rarity: 'starter',
+    desc: '主语·0费', flavor: '区区在下', powerBonus: 0 },
+  liqingzhao: { word: '李清照', pos: 'subject', cost: 0, rarity: 'starter',
+    desc: '主语·诗意+0.3', flavor: '千古第一才女', powerBonus: 0, poetryBonus: 0.3 },
+
+  // --- Common ---
+  jianke: { word: '剑客', pos: 'subject', cost: 1, rarity: 'common',
+    desc: '主语·攻击+3', flavor: '仗剑走天涯，欠债不还钱', powerBonus: 3, bonusType: 'attack' },
+  shusheng: { word: '书生', pos: 'subject', cost: 1, rarity: 'common',
+    desc: '主语·抽1牌', flavor: '手无缚鸡之力，嘴有毒舌之功', powerBonus: 0, draw: 1 },
+  mao: { word: '猫', pos: 'subject', cost: 0, rarity: 'common',
+    desc: '主语·随机效果', flavor: '喵？', powerBonus: 0, randomEffect: true },
+  yuetu: { word: '月兔', pos: 'subject', cost: 0, rarity: 'common',
+    desc: '主语·回血+2', flavor: '广寒宫的加班兔', powerBonus: 2, bonusType: 'heal' },
+
+  // --- Uncommon ---
+  shiren: { word: '诗人', pos: 'subject', cost: 1, rarity: 'uncommon',
+    desc: '主语·诗意+0.3', flavor: '人生得意须尽欢', powerBonus: 0, poetryBonus: 0.3 },
+  tuixiu_jiansheng: { word: '退休剑圣', pos: 'subject', cost: 2, rarity: 'uncommon',
+    desc: '主语·攻击+5,格挡-2', flavor: '老了，砍不动了...才怪', powerBonus: 5, bonusType: 'attack', defenseBonus: -2 },
+  shekong_shutong: { word: '社恐书童', pos: 'subject', cost: 0, rarity: 'uncommon',
+    desc: '主语·格挡+3', flavor: '别、别看我...', powerBonus: 3, bonusType: 'defense' },
+  qinshi: { word: '琴师', pos: 'subject', cost: 1, rarity: 'uncommon', unlockable: true,
+    desc: '主语·攻击+2/回血+2', flavor: '高山流水觅知音', powerBonus: 2, bonusType: 'attack', healBonusSub: 2 },
+  jiuxian: { word: '酒仙', pos: 'subject', cost: 1, rarity: 'uncommon',
+    desc: '主语·攻击+3(随机)', flavor: '醉里挑灯看剑', powerBonus: 0, drunkRandom: true },
+  huxian: { word: '狐仙', pos: 'subject', cost: 1, rarity: 'uncommon',
+    desc: '主语·格挡+4', flavor: '聊斋来客', powerBonus: 4, bonusType: 'defense' },
+
+  // --- Rare ---
+  jiangjun: { word: '将军', pos: 'subject', cost: 2, rarity: 'rare', unlockable: true,
+    desc: '主语·攻击+5,格挡+3', flavor: '百万雄师过大江', powerBonus: 5, bonusType: 'attack', defenseBonus: 3 },
+  shenmi_daoshi: { word: '神秘道士', pos: 'subject', cost: 2, rarity: 'rare', unlockable: true,
+    desc: '主语·全+3', flavor: '贫道掐指一算...', powerBonus: 3, bonusType: 'all' },
+
+  // ==================== VERBS (谓语·金色) ====================
+  // --- Starter ---
+  zhan: { word: '斩', pos: 'verb', cost: 1, rarity: 'starter',
+    combatType: 'attack', basePower: 6, upgPower: 9, flavor: '刀起刀落',
+    desc: (c) => `攻击 ${c.upgraded?9:6}` },
+  shou: { word: '守', pos: 'verb', cost: 1, rarity: 'starter',
+    combatType: 'defense', basePower: 5, upgPower: 8, flavor: '固若金汤',
+    desc: (c) => `格挡 ${c.upgraded?8:5}` },
+
+  // --- Common ---
+  ji: { word: '击', pos: 'verb', cost: 1, rarity: 'common',
+    combatType: 'attack', basePower: 7, upgPower: 10, flavor: '重拳出击',
+    desc: (c) => `攻击 ${c.upgraded?10:7}` },
+  dang: { word: '挡', pos: 'verb', cost: 1, rarity: 'common',
+    combatType: 'defense', basePower: 6, upgPower: 9, flavor: '挡住了！大概',
+    desc: (c) => `格挡 ${c.upgraded?9:6}` },
+  dui: { word: '怼', pos: 'verb', cost: 1, rarity: 'common',
+    combatType: 'attack', basePower: 5, upgPower: 7, applyWeakVerb: 1, flavor: '你说什么？再说一遍？',
+    desc: (c) => `攻击 ${c.upgraded?7:5}+削弱1` },
+  pao: { word: '跑', pos: 'verb', cost: 0, rarity: 'common',
+    combatType: 'defense', basePower: 3, upgPower: 5, flavor: '三十六计走为上',
+    desc: (c) => `格挡 ${c.upgraded?5:3}` },
+  moyu: { word: '摸鱼', pos: 'verb', cost: 0, rarity: 'common',
+    combatType: 'buff', basePower: 0, upgPower: 0, draw: 1, flavor: '带薪摸鱼',
+    desc: (c) => `抽${c.upgraded?2:1}牌` },
+
+  // --- Uncommon ---
+  po: { word: '破', pos: 'verb', cost: 1, rarity: 'uncommon',
+    combatType: 'attack', basePower: 8, upgPower: 12, ignoreBlock: true, flavor: '力破万法',
+    desc: (c) => `攻击 ${c.upgraded?12:8}+穿透` },
+  mie: { word: '灭', pos: 'verb', cost: 2, rarity: 'uncommon',
+    combatType: 'attack', basePower: 12, upgPower: 17, flavor: '灰飞烟灭',
+    desc: (c) => `攻击 ${c.upgraded?17:12}` },
+  chang: { word: '唱', pos: 'verb', cost: 1, rarity: 'uncommon',
+    combatType: 'heal', basePower: 3, upgPower: 5, blockAlso: 4, flavor: '以歌疗伤',
+    desc: (c) => `挡${c.upgraded?6:4}+治${c.upgraded?5:3}` },
+  nian: { word: '念', pos: 'verb', cost: 1, rarity: 'uncommon',
+    combatType: 'heal', basePower: 5, upgPower: 8, flavor: '阿弥陀佛',
+    desc: (c) => `治疗 ${c.upgraded?8:5}` },
+  nuhou: { word: '怒吼', pos: 'verb', cost: 1, rarity: 'uncommon',
+    combatType: 'attack', basePower: 4, upgPower: 6, forceAoe: true, flavor: '啊啊啊啊啊！',
+    desc: (c) => `攻击 ${c.upgraded?6:4}(全体)` },
+
+  // --- Rare ---
+  zhu: { word: '诛', pos: 'verb', cost: 2, rarity: 'rare', unlockable: true,
+    combatType: 'attack', basePower: 15, upgPower: 22, exhaust: true, flavor: '诛邪！',
+    desc: (c) => `攻击 ${c.upgraded?22:15}，消耗` },
+  yinshi_verb: { word: '吟诗', pos: 'verb', cost: 1, rarity: 'rare',
+    combatType: 'buff', basePower: 0, upgPower: 0, poeticMultVerb: 2.0, flavor: '举头望明月...',
+    desc: () => '诗意加成×2' },
+  bailan: { word: '摆烂', pos: 'verb', cost: 0, rarity: 'rare',
+    combatType: 'defense', basePower: 8, upgPower: 12, drawLessNext: 1, flavor: '躺平了',
+    desc: (c) => `格挡 ${c.upgraded?12:8}，下回合少抽1` },
+  kejin: { word: '氪金', pos: 'verb', cost: 2, rarity: 'rare', unlockable: true,
+    combatType: 'attack', basePower: 20, upgPower: 28, spendGold: 10, flavor: '钞能力！',
+    desc: (c) => `花10金+攻击 ${c.upgraded?28:20}` },
+
+  // ==================== OBJECTS (宾语·蓝色) ====================
+  // --- Starter ---
+  diren: { word: '敌人', pos: 'object', cost: 0, rarity: 'starter',
+    desc: '宾语·指向敌人', flavor: '那边那个', effectBonus: 0 },
+
+  // --- Common ---
+  cangqiong: { word: '苍穹', pos: 'object', cost: 0, rarity: 'common',
+    desc: '宾语·格挡+2', flavor: '天高地远', effectBonus: 2, bonusType: 'defense' },
+  xingchen: { word: '星辰', pos: 'object', cost: 1, rarity: 'common',
+    desc: '宾语·攻击+3', flavor: '星垂平野阔', effectBonus: 3, bonusType: 'attack' },
+  chunfeng: { word: '春风', pos: 'object', cost: 0, rarity: 'common',
+    desc: '宾语·回血+2', flavor: '春风又绿江南岸', effectBonus: 2, bonusType: 'heal' },
+  mingyue: { word: '明月', pos: 'object', cost: 0, rarity: 'common',
+    desc: '宾语·格挡+2', flavor: '明月几时有', effectBonus: 2, bonusType: 'defense' },
+
+  // --- Uncommon ---
+  mingyun: { word: '命运', pos: 'object', cost: 1, rarity: 'uncommon',
+    desc: '宾语·随机加成', flavor: '命运的齿轮开始转动', effectBonus: 0, randomObjBonus: true },
+  qianbao: { word: '钱包', pos: 'object', cost: 0, rarity: 'uncommon',
+    desc: '宾语·获得5金', flavor: '来点实际的', effectBonus: 0, goldGain: 5 },
+  mianzi: { word: '面子', pos: 'object', cost: 1, rarity: 'uncommon',
+    desc: '宾语·格挡+5', flavor: '面子工程', effectBonus: 5, bonusType: 'defense' },
+  quanshijie: { word: '全世界', pos: 'object', cost: 2, rarity: 'uncommon',
+    desc: '宾语·群体攻击', flavor: '全世界都是你的敌人', aoe: true, effectBonus: 0 },
+  jiangshan: { word: '江山', pos: 'object', cost: 2, rarity: 'uncommon',
+    desc: '宾语·AOE+攻击+3', flavor: '江山如此多娇', aoe: true, effectBonus: 3, bonusType: 'attack' },
+
+  // --- Rare ---
+  wanwu: { word: '万物', pos: 'object', cost: 2, rarity: 'rare', unlockable: true,
+    desc: '宾语·群体+攻击+5', flavor: '万物皆可斩', aoe: true, effectBonus: 5, bonusType: 'attack' },
+  bug_obj: { word: 'bug', pos: 'object', cost: 1, rarity: 'rare', unlockable: true,
+    desc: '宾语·随机超强效果', flavor: '这不是feature吗？', effectBonus: 0, bugEffect: true },
+
+  // ==================== MODIFIERS (修饰·绿色) ====================
+  // --- Starter ---
+  menglie: { word: '猛烈地', pos: 'modifier', cost: 1, rarity: 'starter',
+    desc: '修饰·攻击×1.5', flavor: '力大砖飞', multiplier: 1.5, bonusType: 'attack' },
+
+  // --- Common ---
+  qingqing: { word: '轻轻地', pos: 'modifier', cost: 0, rarity: 'common',
+    desc: '修饰·格挡×1.3', flavor: '轻拿轻放', multiplier: 1.3, bonusType: 'defense' },
+  toutou: { word: '偷偷地', pos: 'modifier', cost: 0, rarity: 'common',
+    desc: '修饰·无视格挡', flavor: '悄咪咪', multiplier: 1.0, bonusType: 'all', stealthMod: true },
+  yongli: { word: '用力地', pos: 'modifier', cost: 1, rarity: 'common',
+    desc: '修饰·攻击×1.3', flavor: '用力过猛', multiplier: 1.3, bonusType: 'attack' },
+  suibian: { word: '随便地', pos: 'modifier', cost: 0, rarity: 'common',
+    desc: '修饰·效果×0.8', flavor: '差不多得了', multiplier: 0.8, bonusType: 'all' },
+
+  // --- Uncommon ---
+  youya: { word: '优雅地', pos: 'modifier', cost: 1, rarity: 'uncommon',
+    desc: '修饰·全×1.3+诗意', flavor: '优雅永不过时', multiplier: 1.3, bonusType: 'all', poetryBonusMod: 0.2 },
+  fennu: { word: '愤怒地', pos: 'modifier', cost: 1, rarity: 'uncommon',
+    desc: '修饰·攻击×1.8,自伤2', flavor: '怒发冲冠', multiplier: 1.8, bonusType: 'attack', selfDmgMod: 2 },
+  hanlei: { word: '含泪地', pos: 'modifier', cost: 0, rarity: 'uncommon',
+    desc: '修饰·回血+5', flavor: '含泪吃下这碗面', multiplier: 1.0, bonusType: 'all', healBonusMod: 5 },
+
+  // --- Rare ---
+  jingtian: { word: '惊天动地地', pos: 'modifier', cost: 2, rarity: 'rare', unlockable: true,
+    desc: '修饰·全×2.0', flavor: '天崩地裂', multiplier: 2.0, bonusType: 'all' },
+  bujianwude: { word: '以不讲武德的方式', pos: 'modifier', cost: 2, rarity: 'rare', unlockable: true,
+    desc: '修饰·全×1.5+无视限制', flavor: '年轻人不讲武德', multiplier: 1.5, bonusType: 'all', ignoreAllLimits: true },
+
+  // ==================== CONNECTORS (连接·灰色) ====================
+  yi: { word: '以', pos: 'connector', cost: 0, rarity: 'common',
+    desc: '连接·语法+5%', flavor: '以…', grammarBonus: 0.05 },
+  er: { word: '而', pos: 'connector', cost: 0, rarity: 'common',
+    desc: '连接·语法+5%', flavor: '而…', grammarBonus: 0.05 },
+  danshi: { word: '但是', pos: 'connector', cost: 0, rarity: 'common',
+    desc: '连接·攻击分半给格挡', flavor: '攻守兼备', grammarBonus: 0.05, splitAttackToBlock: true },
+  ranhou: { word: '然后', pos: 'connector', cost: 0, rarity: 'common',
+    desc: '连接·抽1牌', flavor: '然后呢？', grammarBonus: 0.05, draw: 1 },
+
+  // ==================== PUNCTUATION (标点·紫色) ====================
+  comma: { word: '，', pos: 'punctuation', cost: 0, rarity: 'uncommon', punctType: 'comma',
+    desc: '标点·分句+对仗', flavor: '上下句之间' },
+  period: { word: '。', pos: 'punctuation', cost: 0, rarity: 'common', punctType: 'period',
+    desc: '标点·完句×1.15', flavor: '句号即圆满' },
+  question: { word: '？', pos: 'punctuation', cost: 0, rarity: 'uncommon', punctType: 'question',
+    desc: '标点·削弱敌人2回合', flavor: '灵魂拷问' },
+  exclamation: { word: '！', pos: 'punctuation', cost: 0, rarity: 'rare', punctType: 'exclamation',
+    desc: '标点·全效果×1.5', flavor: '大声点！' },
+};
+
+function makeCard(def) {
+  return { ...def, upgraded: false, id: Math.random().toString(36).substr(2, 9) };
+}
+
+function createStarterDeck() {
+  const deck = [];
+  const add = (key, n) => { for(let i=0;i<n;i++) deck.push(makeCard({...WORD_DEFS[key], key})); };
+  add('wo', 2);
+  add('zhan', 2);
+  add('shou', 2);
+  add('diren', 1);
+  add('menglie', 1);
+  add('period', 1);
+  add('liqingzhao', 1);
+  return deck;
+}
+
+function getCardPool(rarity) {
+  const pool = [];
+  for (const [key, def] of Object.entries(WORD_DEFS)) {
+    if (def.rarity === rarity) {
+      if (def.unlockable && !META.unlockedCards.includes(key)) continue;
+      pool.push(key);
+    }
+  }
+  return pool;
+}
+
+function randomCard(rarity) {
+  const pool = getCardPool(rarity);
+  if (pool.length === 0) return makeCard({...WORD_DEFS.wo, key:'wo'});
+  const key = pool[Math.floor(Math.random() * pool.length)];
+  return makeCard({...WORD_DEFS[key], key});
+}
+
+// ============================================================
+// ENEMY DEFINITIONS
+// ============================================================
+const ENEMY_DEFS = {
+  moyao: {
+    name: '墨妖', hp: 20, act: 1, type: 'normal', emoji: '🖤',
+    ai(e) { e.nextIntent = { type:'attack', value: 6+Math.floor(Math.random()*3), icon:'⚔' }; },
+    act_fn(e) { dealDamageToPlayer(e.nextIntent.value, e); }
+  },
+  zhigui: {
+    name: '纸鬼', hp: 24, act: 1, type: 'normal', emoji: '📜',
+    ai(e) {
+      if(!e.tc) e.tc=0; e.tc++;
+      if(e.tc%2===1) e.nextIntent={type:'attack',value:3,hits:3,icon:'⚔'};
+      else e.nextIntent={type:'defend',value:6,icon:'🛡',label:'挡6'};
+    },
+    act_fn(e) {
+      if(e.nextIntent.type==='attack') { for(let i=0;i<3;i++){if(e.hp<=0)break;dealDamageToPlayer(3,e);} }
+      else { e.block+=6; }
+    }
+  },
+  canju: {
+    name: '残句怪', hp: 16, act: 1, type: 'normal', emoji: '❓',
+    ai(e) { e.nextIntent={type:'attack',value:9,icon:'⚔'}; },
+    act_fn(e) { dealDamageToPlayer(9,e); }
+  },
+  wenqu: {
+    name: '文曲星', hp: 48, act: 1, type: 'elite', emoji: '⭐',
+    ai(e) {
+      if(!e.tc)e.tc=0; e.tc++;
+      if(e.tc%3===0) e.nextIntent={type:'special',value:0,icon:'✂',label:'消耗'};
+      else e.nextIntent={type:'attack',value:11,icon:'⚔'};
+    },
+    act_fn(e) {
+      if(e.nextIntent.type==='attack') dealDamageToPlayer(11,e);
+      else {
+        if(G.hand.length>0) {
+          const idx=Math.floor(Math.random()*G.hand.length);
+          G.exhaustPile.push(G.hand.splice(idx,1)[0]);
+          showFloatingText(document.querySelector('#combat-top'),'词牌消耗！','#d4a870');
+        }
+      }
+    }
+  },
+  bijing: {
+    name: '笔精', hp: 55, act: 2, type: 'elite', emoji: '🖊️',
+    ai(e) {
+      if(!e.tc)e.tc=0; e.tc++;
+      if(e.tc%3===0) e.nextIntent={type:'debuff',value:0,icon:'↓',label:'易伤2'};
+      else e.nextIntent={type:'attack',value:10,icon:'⚔'};
+    },
+    act_fn(e) {
+      if(e.nextIntent.type==='attack') dealDamageToPlayer(10,e);
+      else { G.vulnerable+=2; showFloatingText(document.querySelector('#combat-top'),'易伤！','#d47070'); }
+    }
+  },
+  cangjie: {
+    name: '仓颉之影', hp: 95, act: 1, type: 'boss', emoji: '👁️',
+    ai(e) {
+      if(!e.tc)e.tc=0; e.tc++;
+      if(!e.phase2&&e.hp<=47){e.phase2=true;e.tc=1;}
+      if(!e.phase2) {
+        if(e.tc%3===0) e.nextIntent={type:'buff',value:2,icon:'↑',label:'+2力'};
+        else e.nextIntent={type:'attack',value:12,icon:'⚔'};
+      } else e.nextIntent={type:'attack',value:9,hits:2,icon:'⚔'};
+    },
+    act_fn(e) {
+      if(e.nextIntent.type==='attack') {
+        const h=e.nextIntent.hits||1;
+        for(let i=0;i<h;i++){if(e.hp<=0)break;dealDamageToPlayer(e.nextIntent.value,e);}
+      } else if(e.nextIntent.type==='buff') {
+        e.strength=(e.strength||0)+2;
+        showFloatingText(e.element,'+2力','#70d490');
+      }
+    }
+  },
+  mohun: {
+    name: '墨魂', hp: 28, act: 2, type: 'normal', emoji: '💀',
+    ai(e) {
+      if(!e.tc)e.tc=0; e.tc++;
+      if(e.tc%2===1) e.nextIntent={type:'attack',value:8,icon:'⚔'};
+      else e.nextIntent={type:'buff',value:4,icon:'♥',label:'回4血'};
+    },
+    act_fn(e) {
+      if(e.nextIntent.type==='attack') dealDamageToPlayer(8,e);
+      else { e.hp=Math.min(e.maxHp,e.hp+4); showFloatingText(e.element,'+4','#6bff6b'); }
+    }
+  },
+  luoren: {
+    name: '落人', hp: 36, act: 2, type: 'normal', emoji: '👤',
+    ai(e) { e.nextIntent={type:'attack',value:14+Math.floor(Math.random()*4),icon:'⚔'}; },
+    act_fn(e) { dealDamageToPlayer(e.nextIntent.value,e); }
+  },
+  jingmo: {
+    name: '镜墨', hp: 32, act: 2, type: 'normal', emoji: '🪞',
+    ai(e) {
+      if(!e.tc)e.tc=0; e.tc++;
+      if(e.tc%2===1) e.nextIntent={type:'attack',value:7,icon:'⚔'};
+      else { e.nextIntent={type:'defend',value:7,icon:'🛡',label:'反射'}; e.reflecting=true; }
+    },
+    act_fn(e) {
+      e.reflecting=false;
+      if(e.nextIntent.type==='attack') dealDamageToPlayer(7,e);
+      else { e.block+=7; e.reflecting=true; }
+    }
+  },
+  shisheng: {
+    name: '诗圣残魂', hp: 115, act: 2, type: 'boss', emoji: '📖',
+    ai(e) {
+      if(!e.tc)e.tc=0; e.tc++;
+      const p=[
+        {type:'attack',value:11,icon:'⚔'},
+        {type:'attack',value:7,hits:2,icon:'⚔'},
+        {type:'defend',value:12,icon:'🛡',label:'挡12'},
+        {type:'attack',value:15,icon:'⚔'},
+      ];
+      e.nextIntent={...p[(e.tc-1)%p.length]};
+    },
+    act_fn(e) {
+      if(e.nextIntent.type==='attack') {
+        const h=e.nextIntent.hits||1;
+        for(let i=0;i<h;i++){if(e.hp<=0)break;dealDamageToPlayer(e.nextIntent.value,e);}
+      } else e.block+=12;
+    }
+  },
+  xuwen: {
+    name: '虚文', hp: 34, act: 3, type: 'normal', emoji: '🌀',
+    ai(e) {
+      if(!e.tc)e.tc=0; e.tc++;
+      e.nextIntent={type:'attack',value:6+(e.strength||0),icon:'⚔'};
+    },
+    act_fn(e) {
+      dealDamageToPlayer(e.nextIntent.value,e);
+      e.strength=(e.strength||0)+1;
+      showFloatingText(e.element,'+1力','#70d490');
+    }
+  },
+  mojie: {
+    name: '墨劫', hp: 65, act: 3, type: 'elite', emoji: '🌑',
+    ai(e) {
+      if(!e.tc)e.tc=0; e.tc++;
+      if(e.tc%3===1) e.nextIntent={type:'debuff',value:0,icon:'↓',label:'虚弱+易伤'};
+      else e.nextIntent={type:'attack',value:12,icon:'⚔'};
+    },
+    act_fn(e) {
+      if(e.nextIntent.type==='attack') dealDamageToPlayer(12,e);
+      else { G.vulnerable+=2; G.weak+=2; showFloatingText(document.querySelector('#combat-top'),'虚弱+易伤！','#d47070'); }
+    }
+  },
+  cidi: {
+    name: '词帝幽灵', hp: 135, act: 3, type: 'boss', emoji: '👑',
+    ai(e) {
+      if(!e.tc)e.tc=0; e.tc++;
+      if(!e.phase)e.phase=1;
+      if(e.phase===1&&e.hp<=95){e.phase=2;showFloatingText(e.element,'第二阶段！','#b470d4');}
+      if(e.phase===2&&e.hp<=50){e.phase=3;showFloatingText(e.element,'最终阶段！','#ff6b6b');}
+      if(e.phase===1) {
+        if(e.tc%2===1) e.nextIntent={type:'attack',value:11,icon:'⚔'};
+        else e.nextIntent={type:'buff',value:2,icon:'↑',label:'+2力'};
+      } else if(e.phase===2) {
+        if(e.tc%3===0) e.nextIntent={type:'debuff',value:0,icon:'↓',label:'虚弱+易伤'};
+        else e.nextIntent={type:'attack',value:14,icon:'⚔'};
+      } else e.nextIntent={type:'attack',value:8,hits:3,icon:'⚔'};
+    },
+    act_fn(e) {
+      if(e.nextIntent.type==='attack') {
+        const h=e.nextIntent.hits||1;
+        for(let i=0;i<h;i++){if(e.hp<=0)break;dealDamageToPlayer(e.nextIntent.value,e);}
+      } else if(e.nextIntent.type==='buff') {
+        e.strength=(e.strength||0)+2;
+        showFloatingText(e.element,'+2力','#70d490');
+      } else {
+        G.vulnerable+=2; G.weak+=2;
+        showFloatingText(document.querySelector('#combat-top'),'虚弱+易伤！','#d47070');
+      }
+    }
+  },
+};
+
+// ============================================================
+// EVENTS
+// ============================================================
+const EVENTS_BY_ACT = {
+  1: [
+    {
+      title: '溪亭日暮',
+      text: '「常记溪亭日暮，沉醉不知归路。」你在溪边拾到一枚残玉，隐隐有灵光...',
+      choices: [
+        { label: '把玩残玉', effect: '+8最大生命', fn:()=>{G.maxHp+=8;G.hp+=8;} },
+        { label: '将灵气吸入笔端', effect: '获得随机非凡词牌', fn:()=>{G.deck.push(randomCard('uncommon'));} },
+        { label: '置于溪水中', effect: '+25文银', fn:()=>{G.gold+=25;} },
+      ]
+    },
+    {
+      title: '昨夜雨疏风骤',
+      text: '「昨夜雨疏风骤，浓睡不消残酒。试问卷帘人，却道海棠依旧。」一阵风雨后，庭中花瓣散落...',
+      choices: [
+        { label: '拾花入墨', effect: '随机升级一张词牌', fn:()=>{upgradeRandomCard();} },
+        { label: '踏花归去', effect: '+6最大生命', fn:()=>{G.maxHp+=6;G.hp+=6;} },
+      ]
+    },
+    {
+      title: '赌书泼茶',
+      text: '「赌书消得泼茶香。」书房中，一卷古籍翻到某页，字迹竟活了过来...',
+      choices: [
+        { label: '与字中人对赌', effect: '获得稀有词牌，失去10生命', fn:()=>{G.deck.push(randomCard('rare'));G.hp=Math.max(1,G.hp-10);} },
+        { label: '合上书卷', effect: '+15文银', fn:()=>{G.gold+=15;} },
+        { label: '沏茶静读', effect: '恢复全部生命', fn:()=>{G.hp=G.maxHp;} },
+      ]
+    },
+  ],
+  2: [
+    {
+      title: '南渡孤舟',
+      text: '「风住尘香花已尽，日晚倦梳头。物是人非事事休，欲语泪先流。」渡船上，一位老翁递来包裹...',
+      choices: [
+        { label: '打开包裹', effect: '获得随机非凡词牌', fn:()=>{G.deck.push(randomCard('uncommon'));} },
+        { label: '接过干粮', effect: '恢复全部生命', fn:()=>{G.hp=G.maxHp;} },
+        { label: '婉拒好意', effect: '+30文银', fn:()=>{G.gold+=30;} },
+      ]
+    },
+    {
+      title: '寻寻觅觅',
+      text: '「寻寻觅觅，冷冷清清，凄凄惨惨戚戚。」废墟中，你发现一方古砚...',
+      choices: [
+        { label: '以血研墨', effect: '+2力量，失去8生命', fn:()=>{G.hp=Math.max(1,G.hp-8);G.strength+=2;} },
+        { label: '收入囊中', effect: '随机升级一张词牌', fn:()=>{upgradeRandomCard();} },
+        { label: '弃之不顾', effect: '+25文银', fn:()=>{G.gold+=25;} },
+      ]
+    },
+    {
+      title: '金石录残篇',
+      text: '「乍暖还寒时候，最难将息。」流离途中，你在废宅中发现散落的金石录残页...',
+      choices: [
+        { label: '仔细收集残页', effect: '移除一张基础词牌', fn:()=>{removeRandomStarter();} },
+        { label: '将残页入梦', effect: '获得稀有词牌，失去8生命', fn:()=>{G.deck.push(randomCard('rare'));G.hp=Math.max(1,G.hp-8);} },
+      ]
+    },
+  ],
+  3: [
+    {
+      title: '人杰鬼雄',
+      text: '「生当作人杰，死亦为鬼雄。至今思项羽，不肯过江东。」一股浩然正气充盈四周...',
+      choices: [
+        { label: '吸收正气', effect: '+3力量', fn:()=>{G.strength+=3;} },
+        { label: '以正气铸词', effect: '获得稀有词牌', fn:()=>{G.deck.push(randomCard('rare'));} },
+        { label: '任其消散', effect: '+10最大生命，恢复15', fn:()=>{G.maxHp+=10;G.hp=Math.min(G.maxHp,G.hp+15);} },
+      ]
+    },
+    {
+      title: '镜中年华',
+      text: '「莫道不销魂，帘卷西风，人比黄花瘦。」铜镜中映出年少时的自己...',
+      choices: [
+        { label: '与镜中人对话', effect: '将随机基础牌替换为非凡牌', fn:()=>{transformRandomCard();} },
+        { label: '静坐回忆', effect: '恢复15生命', fn:()=>{G.hp=Math.min(G.maxHp,G.hp+15);} },
+        { label: '击碎铜镜', effect: '+40文银', fn:()=>{G.gold+=40;} },
+      ]
+    },
+  ],
+};
+
+const EVENTS_FALLBACK = [
+  {
+    title: '断句之谜',
+    text: '石壁上刻着一段没有标点的文字。你凝神细看，发现每一种断句方式都通向不同的命运...',
+    choices: [
+      { label: '按古法断句', effect: '移除一张基础词牌', fn:()=>{removeRandomStarter();} },
+      { label: '不敢妄断', effect: '+6最大生命', fn:()=>{G.maxHp+=6;G.hp+=6;} },
+    ]
+  },
+];
+
+function upgradeRandomCard() {
+  const u = G.deck.filter(c => !c.upgraded);
+  if (u.length > 0) { const c = u[Math.floor(Math.random()*u.length)]; c.upgraded = true; }
+}
+function removeRandomStarter() {
+  const idx = G.deck.findIndex(c => c.rarity === 'starter');
+  if (idx >= 0) G.deck.splice(idx, 1);
+}
+function transformRandomCard() {
+  const idx = G.deck.findIndex(c => c.rarity==='starter'||c.rarity==='common');
+  if (idx >= 0) { G.deck.splice(idx, 1); G.deck.push(randomCard('uncommon')); }
+}
+
+// ============================================================
+// DUIZHANG (对仗) SYSTEM
+// ============================================================
+function detectDuizhang(cards) {
+  const commaIdx = cards.findIndex(c => c.pos === 'punctuation' && c.punctType === 'comma');
+  if (commaIdx < 0) return null;
+
+  const firstHalf = cards.slice(0, commaIdx).filter(c => c.pos !== 'punctuation');
+  const secondHalf = cards.slice(commaIdx + 1).filter(c => c.pos !== 'punctuation' && !c._isEnemyTarget && !c._isSelfTarget);
+
+  if (firstHalf.length === 0 || secondHalf.length === 0) return null;
+
+  const text1 = firstHalf.map(c => c.word).join('');
+  const text2 = secondHalf.map(c => c.word).join('');
+  const len1 = text1.length;
+  const len2 = text2.length;
+
+  const struct1 = firstHalf.map(c => c.pos).join('+');
+  const struct2 = secondHalf.map(c => c.pos).join('+');
+
+  const sameLength = len1 === len2;
+  const sameStructure = struct1 === struct2;
+
+  let result = { text1, text2, len1, len2, matched: false, type: 'none', multiplier: 1.1 };
+
+  if (!sameLength) {
+    result.label = '✗ 对仗不全（字数不齐）';
+    result.multiplier = 1.1;
+    return result;
+  }
+
+  result.matched = true;
+
+  if (len1 === 5 && len2 === 5) {
+    result.type = 'lushi'; result.multiplier = 2.5;
+    result.label = '✓ 律诗对仗！五言工整 ×2.5';
+    return result;
+  }
+  if (len1 === 7 && len2 === 7) {
+    result.type = 'jueju'; result.multiplier = 3.0;
+    result.label = '✓ 绝句对仗！七言工整 ×3.0';
+    return result;
+  }
+  if (sameStructure) {
+    result.type = 'perfect'; result.multiplier = 2.0;
+    result.label = '✓ 完美对仗！结构对称 ×2.0';
+    return result;
+  }
+
+  result.type = 'basic'; result.multiplier = 1.5;
+  result.label = '✓ 对仗工整（字数相同）×1.5';
+  return result;
+}
+
+// ============================================================
+// SENTENCE EVALUATION SYSTEM
+// ============================================================
+function normalizeSentence(cards) {
+  const endPuncts = [];
+  const rest = [];
+  cards.forEach(c => {
+    if (c.pos === 'punctuation' && c.punctType !== 'comma') endPuncts.push(c);
+    else rest.push(c);
+  });
+  return [...rest, ...endPuncts];
+}
+
+function checkWordOrder(cards) {
+  const nonPunct = cards.filter(c => c.pos !== 'punctuation' && !c._isEnemyTarget && !c._isSelfTarget);
+  if (nonPunct.length === 0) return { score: 1.0, notes: [] };
+
+  const phaseMap = {
+    'modifier': [0, 2, 4],
+    'subject': [1],
+    'connector': [2],
+    'verb': [3],
+    'object': [5],
+    'special': [3],
+  };
+
+  let currentPhase = 0;
+  let violations = 0;
+  const notes = [];
+
+  for (const card of nonPunct) {
+    const allowedPhases = phaseMap[card.pos] || [currentPhase];
+    const minAllowed = Math.min(...allowedPhases);
+    if (minAllowed >= currentPhase) currentPhase = minAllowed;
+    else violations++;
+  }
+
+  const posCounts = {};
+  nonPunct.forEach(c => { posCounts[c.pos] = (posCounts[c.pos] || 0) + 1; });
+  let dupPenalty = 0;
+  if ((posCounts['subject'] || 0) > 1) {
+    dupPenalty += (posCounts['subject'] - 1) * 0.05;
+    notes.push(`重复主语 -${((posCounts['subject']-1)*5)}%`);
+  }
+  if ((posCounts['verb'] || 0) > 2) {
+    dupPenalty += (posCounts['verb'] - 2) * 0.05;
+    notes.push(`过多谓语 -${((posCounts['verb']-2)*5)}%`);
+  }
+
+  let score;
+  if (violations === 0) { score = 1.0; if (notes.length === 0) notes.push('语序正确'); }
+  else if (violations === 1) { score = 0.8; notes.push('语序小错 ×0.8'); }
+  else { score = 0.6; notes.push('语序混乱 ×0.6'); }
+
+  score = Math.max(0.4, score - dupPenalty);
+  return { score, notes };
+}
+
+function evaluateSentence(rawCards) {
+  if (rawCards.length === 0) return null;
+
+  const cards = normalizeSentence(rawCards);
+  const punctCards = cards.filter(c => c.pos === 'punctuation');
+  const nonPunctCards = cards.filter(c => c.pos !== 'punctuation');
+
+  const subjects = nonPunctCards.filter(c => c.pos === 'subject');
+  const verbs = nonPunctCards.filter(c => c.pos === 'verb' || c.pos === 'special');
+  const realVerbs = nonPunctCards.filter(c => c.pos === 'verb');
+  const objects = nonPunctCards.filter(c => c.pos === 'object');
+  const modifiers = nonPunctCards.filter(c => c.pos === 'modifier');
+  const connectors = nonPunctCards.filter(c => c.pos === 'connector');
+
+  const sentenceText = cards.map(c => c.word).join('');
+  const totalChars = nonPunctCards.map(c => c.word).join('').length;
+
+  const hasSelfTarget = cards.some(c => c._isSelfTarget);
+  const enemyObjCards = cards.filter(c => c._isEnemyTarget);
+  const hasEnemyTarget = enemyObjCards.length > 0;
+  let targetEnemyIdx = -1;
+  if (hasEnemyTarget) targetEnemyIdx = enemyObjCards[0]._enemyIdx;
+
+  const handObjects = objects.filter(c => !c._isEnemyTarget && !c._isSelfTarget);
+
+  const hasPeriod = punctCards.some(c => c.punctType === 'period');
+  const hasQuestion = punctCards.some(c => c.punctType === 'question');
+  const hasExclamation = punctCards.some(c => c.punctType === 'exclamation');
+  const hasComma = punctCards.some(c => c.punctType === 'comma');
+
+  const hasVerb = realVerbs.length > 0 || verbs.length > 0;
+  let baseMult = hasVerb ? 1.0 : 0.3;
+  let grammarNotes = [];
+  if (!hasVerb) grammarNotes.push('⚠ 没有谓语！废句 ×0.3');
+  else grammarNotes.push('✓ 有谓语');
+
+  let structMult = 0.7;
+  const hasSubject = subjects.length > 0;
+  const hasObject = handObjects.length > 0 || hasEnemyTarget || hasSelfTarget;
+  const hasModifier = modifiers.length > 0;
+
+  if (hasVerb) {
+    if (hasSubject && hasObject && hasModifier) { structMult = 1.25; grammarNotes.push('修+主+谓+宾 ×1.25'); }
+    else if (hasSubject && hasObject) { structMult = 1.0; grammarNotes.push('主+谓+宾 ×1.0'); }
+    else if (hasSubject) { structMult = 0.85; grammarNotes.push('主+谓 ×0.85'); }
+    else { structMult = 0.7; grammarNotes.push('仅谓语 ×0.7'); }
+  }
+
+  const orderResult = checkWordOrder(cards);
+  const orderMult = orderResult.score;
+  orderResult.notes.forEach(n => grammarNotes.push(n));
+
+  let connBonus = 0;
+  connectors.forEach(c => { connBonus += (c.grammarBonus || 0.05); });
+  if (connectors.length > 0) grammarNotes.push(`连词 +${(connBonus*100).toFixed(0)}%`);
+
+  let grammarMult = baseMult * structMult * orderMult + connBonus;
+
+  let punctMult = 1.0;
+  let punctNotes = [];
+  if (hasPeriod) { punctMult *= 1.15; punctNotes.push('句号「。」完句 ×1.15'); }
+  if (hasExclamation) { punctMult *= 1.5; punctNotes.push('感叹号「！」强调 ×1.5'); }
+  if (hasQuestion) { punctNotes.push('问号「？」→ 削弱敌人2回合'); }
+
+  let duizhangResult = null;
+  if (hasComma) {
+    duizhangResult = detectDuizhang(cards);
+    if (duizhangResult) { punctMult *= duizhangResult.multiplier; punctNotes.push(duizhangResult.label); }
+    else { punctMult *= 1.1; punctNotes.push('逗号「，」复句 ×1.1'); }
+  }
+
+  let literaryMult = 1.0;
+  let literaryNotes = [];
+  if (totalChars === 5) { literaryMult *= 1.3; literaryNotes.push('五言诗意 ×1.3！'); }
+  else if (totalChars === 7) { literaryMult *= 1.5; literaryNotes.push('七言诗意 ×1.5！'); }
+
+  subjects.forEach(s => {
+    if (s.poetryBonus) { literaryMult += s.poetryBonus; literaryNotes.push(`${s.word}诗意 +${s.poetryBonus}`); }
+  });
+  modifiers.forEach(m => {
+    if (m.poetryBonusMod) { literaryMult += m.poetryBonusMod; literaryNotes.push(`${m.word}诗意 +${m.poetryBonusMod}`); }
+  });
+
+  let verbPoetryMult = 1.0;
+  realVerbs.forEach(v => {
+    if (v.poeticMultVerb) { verbPoetryMult *= v.poeticMultVerb; literaryNotes.push(`${v.word} 诗意×${v.poeticMultVerb}`); }
+  });
+  literaryMult *= verbPoetryMult;
+
+  if (G.poeticAura) { literaryMult += 0.5; literaryNotes.push('诗仙附体！'); }
+  if (cards.length >= 5) { literaryMult += 0.2; literaryNotes.push('长句加成 +0.2'); }
+
+  // COMBAT EFFECTS
+  const effects = {
+    damage: 0, block: 0, heal: 0, strengthGain: 0, draw: 0,
+    aoe: false, applyVuln: 0, zeroCost: false,
+    selfHarm: false, selfHarmDmg: 0, selfHarmBuff: 0,
+    targetEnemyIdx: targetEnemyIdx,
+    applyWeak: 0, isQuestion: hasQuestion, ignoreBlock: false,
+    goldGain: 0, thorns: 0, drawLessNext: 0,
+  };
+
+  if (hasQuestion) { effects.applyWeak = 2; }
+
+  let subjectAttackBonus = 0, subjectDefenseBonus = 0, subjectHealBonus = 0;
+  subjects.forEach(s => {
+    const b = s.powerBonus || 0;
+    const ub = s.upgraded ? Math.ceil(b * 1.5) : b;
+    if (s.bonusType === 'attack') subjectAttackBonus += ub;
+    else if (s.bonusType === 'defense') subjectDefenseBonus += ub;
+    else if (s.bonusType === 'heal') subjectHealBonus += ub;
+    else if (s.bonusType === 'all') { subjectAttackBonus += ub; subjectDefenseBonus += ub; subjectHealBonus += ub; }
+    if (s.defenseBonus) subjectDefenseBonus += (s.upgraded ? Math.ceil(s.defenseBonus*1.5) : s.defenseBonus);
+    if (s.draw) effects.draw += (s.upgraded ? s.draw+1 : s.draw);
+    if (s.thorns) effects.thorns += s.thorns;
+    if (s.doubleStrength) effects.strengthGain += G.strength;
+    if (s.discardRandom && G.hand.length > 0) effects._discardRandom = s.discardRandom;
+    // 琴师 heal bonus
+    if (s.healBonusSub) subjectHealBonus += (s.upgraded ? Math.ceil(s.healBonusSub*1.5) : s.healBonusSub);
+    // 酒仙 random
+    if (s.drunkRandom) {
+      const roll = Math.floor(Math.random() * 5) + 1;
+      subjectAttackBonus += roll;
+      grammarNotes.push(`🍶 酒仙·攻击+${roll}(随机1-5)`);
+    }
+    // 猫
+    if (s.randomEffect) {
+      const roll = Math.random();
+      if (roll < 0.33) { subjectAttackBonus += 4; grammarNotes.push('🐱 猫·攻击+4'); }
+      else if (roll < 0.66) { subjectDefenseBonus += 4; grammarNotes.push('🐱 猫·格挡+4'); }
+      else { effects.draw += 1; grammarNotes.push('🐱 猫·摸鱼+1牌'); }
+    }
+  });
+
+  let objAttackBonus = 0, objDefenseBonus = 0, objHealBonus = 0;
+  handObjects.forEach(o => {
+    const b = o.effectBonus || 0;
+    if (o.bonusType === 'attack') objAttackBonus += b;
+    else if (o.bonusType === 'defense') objDefenseBonus += b;
+    else if (o.bonusType === 'heal') objHealBonus += b;
+    else if (o.bonusType === 'all') { objAttackBonus += b; objDefenseBonus += b; objHealBonus += b; }
+    if (o.aoe) effects.aoe = true;
+    if (o.draw) effects.draw += o.draw;
+    if (o.applyVuln) effects.applyVuln += o.applyVuln;
+    if (o.goldGain) effects.goldGain += o.goldGain;
+    if (o.randomObjBonus) {
+      const roll = Math.floor(Math.random() * 6) + 2;
+      const types = ['attack','defense','heal'];
+      const t = types[Math.floor(Math.random()*3)];
+      if (t === 'attack') objAttackBonus += roll;
+      else if (t === 'defense') objDefenseBonus += roll;
+      else objHealBonus += roll;
+      grammarNotes.push(`🎲 命运→${t==='attack'?'攻击':t==='defense'?'格挡':'治疗'}+${roll}`);
+    }
+    if (o.bugEffect) {
+      const bugRoll = Math.random();
+      if (bugRoll < 0.25) { objAttackBonus += 15; grammarNotes.push('🐛 bug→攻击+15！'); }
+      else if (bugRoll < 0.5) { objDefenseBonus += 15; grammarNotes.push('🐛 bug→格挡+15！'); }
+      else if (bugRoll < 0.75) { objHealBonus += 10; grammarNotes.push('🐛 bug→治疗+10！'); }
+      else { effects.draw += 3; grammarNotes.push('🐛 bug→抽3牌！'); }
+    }
+  });
+
+  let attackMod = 1, defenseMod = 1, healMod = 1;
+  let modSelfDmg = 0, modHealBonus = 0;
+  let hasStealth = false, hasIgnoreAllLimits = false;
+  modifiers.forEach(m => {
+    const mult = m.multiplier || 1;
+    if (m.bonusType === 'attack') attackMod *= mult;
+    else if (m.bonusType === 'defense') defenseMod *= mult;
+    else if (m.bonusType === 'heal') healMod *= mult;
+    else if (m.bonusType === 'all') { attackMod *= mult; defenseMod *= mult; healMod *= mult; }
+    if (m.draw) effects.draw += m.draw;
+    if (m.selfDmgMod) modSelfDmg += m.selfDmgMod;
+    if (m.healBonusMod) modHealBonus += m.healBonusMod;
+    if (m.stealthMod) hasStealth = true;
+    if (m.ignoreAllLimits) hasIgnoreAllLimits = true;
+  });
+
+  if (hasStealth) effects.ignoreBlock = true;
+
+  let splitAttackToBlock = false;
+  connectors.forEach(c => {
+    if (c.draw) effects.draw += c.draw;
+    if (c.splitAttackToBlock) splitAttackToBlock = true;
+  });
+
+  realVerbs.forEach(v => {
+    let power = v.upgraded ? (v.upgPower || v.basePower) : v.basePower;
+    if (v.spendGold) {
+      if (G.gold >= v.spendGold) {
+        effects._spendGold = (effects._spendGold || 0) + v.spendGold;
+      } else {
+        power = Math.floor(power * 0.3);
+        grammarNotes.push('💸 金币不足，氪金减弱');
+      }
+    }
+
+    if (v.combatType === 'attack') {
+      let dmg = (power + subjectAttackBonus + objAttackBonus + G.strength) * attackMod;
+      if (G.weak > 0 && !hasIgnoreAllLimits) dmg *= 0.75;
+      const hits = v.hits || 1;
+      effects.damage += Math.floor(dmg) * hits;
+      if (v.forceAoe) effects.aoe = true;
+      if (v.ignoreBlock) effects.ignoreBlock = true;
+      if (v.applyWeakVerb) effects.applyWeak = Math.max(effects.applyWeak, v.applyWeakVerb);
+    } else if (v.combatType === 'defense') {
+      effects.block += Math.floor((power + subjectDefenseBonus + objDefenseBonus) * defenseMod);
+      if (v.drawLessNext) effects.drawLessNext += v.drawLessNext;
+    } else if (v.combatType === 'heal') {
+      effects.heal += Math.floor((power + subjectHealBonus + objHealBonus) * healMod);
+      if (v.blockAlso) effects.block += Math.floor((v.upgraded ? Math.ceil(v.blockAlso*1.5) : v.blockAlso) * defenseMod);
+    } else if (v.combatType === 'buff') {
+      effects.strengthGain += v.upgraded ? (v.upgPower||v.basePower) : v.basePower;
+      if (v.blockAlso) effects.block += Math.floor((v.upgraded ? Math.ceil(v.blockAlso*1.5) : v.blockAlso) * defenseMod);
+    } else if (v.combatType === 'special') {
+      if (v.special === 'zeroCost') effects.zeroCost = true;
+    }
+    if (v.draw) effects.draw += (v.upgraded && v.draw ? v.draw + 1 : v.draw);
+    if (v.exhaust) v._shouldExhaust = true;
+  });
+
+  if (modHealBonus > 0) effects.heal += modHealBonus;
+  if (modSelfDmg > 0) { effects.selfHarm = true; effects.selfHarmDmg = modSelfDmg; effects.selfHarmBuff = 0; }
+
+  if (hasSelfTarget && effects.damage > 0) {
+    effects.selfHarm = true;
+    effects.selfHarmDmg = (effects.selfHarmDmg || 0) + effects.damage;
+    effects.selfHarmBuff = 2;
+    effects.damage = 0;
+    grammarNotes.push('自伤：伤害自身，+2力量');
+  }
+
+  if (hasQuestion && effects.damage > 0 && !effects.selfHarm) {
+    effects.damage = 0;
+  }
+
+  if (splitAttackToBlock && effects.damage > 0) {
+    const half = Math.floor(effects.damage / 2);
+    effects.damage -= half;
+    effects.block += half;
+    grammarNotes.push('「但是」攻守兼备');
+  }
+
+  const totalMult = grammarMult * literaryMult * punctMult;
+
+  effects.damage = Math.floor(effects.damage * totalMult);
+  effects.block = Math.floor(effects.block * totalMult);
+  effects.heal = Math.floor(effects.heal * totalMult);
+  if (effects.selfHarm) effects.selfHarmDmg = Math.floor(effects.selfHarmDmg * totalMult);
+
+  if (realVerbs.some(v => v.combatType === 'attack') && !effects.selfHarm && !hasQuestion && effects.damage < 1) effects.damage = 1;
+
+  return {
+    text: sentenceText,
+    grammarMult, grammarNotes,
+    literaryMult, literaryNotes,
+    punctMult, punctNotes,
+    totalMult,
+    effects,
+    cards,
+    duizhangResult,
+  };
+}
+
+// ============================================================
+// AUDIO
+// ============================================================
+let audioCtx = null, masterGain = null, musicInterval = null;
+
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.12;
+  masterGain.connect(audioCtx.destination);
+}
+
+function toggleMute() {
+  G.muted = !G.muted;
+  document.getElementById('mute-btn').textContent = G.muted ? '🔇' : '♪';
+  if (masterGain) masterGain.gain.value = G.muted ? 0 : 0.12;
+}
+
+function playNote(freq, dur, type, t, gain) {
+  if (!audioCtx) return;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = type || 'sine'; o.frequency.value = freq;
+  g.gain.setValueAtTime(gain || 0.2, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(masterGain);
+  o.start(t); o.stop(t + dur);
+}
+
+function stopMusic() { if (musicInterval) { clearInterval(musicInterval); musicInterval = null; } }
+
+function playAmbientMusic() {
+  stopMusic(); if (!audioCtx) return;
+  const notes = [261.6, 293.7, 329.6, 392.0, 440.0];
+  let i = 0;
+  function tick() {
+    if (!audioCtx || G.muted) return;
+    const t = audioCtx.currentTime;
+    playNote(notes[i % notes.length], 3, 'sine', t, 0.06);
+    playNote(notes[i % notes.length] * 0.5, 3, 'triangle', t, 0.03);
+    i++;
+  }
+  tick(); musicInterval = setInterval(tick, 3500);
+}
+
+function playCombatMusic() {
+  stopMusic(); if (!audioCtx) return;
+  const notes = [196.0, 220.0, 261.6, 220.0, 196.0, 164.8, 196.0, 261.6];
+  let i = 0;
+  function tick() {
+    if (!audioCtx || G.muted) return;
+    const t = audioCtx.currentTime;
+    playNote(notes[i % notes.length], 0.25, 'triangle', t, 0.1);
+    playNote(98, 0.15, 'sine', t, 0.08);
+    i++;
+  }
+  tick(); musicInterval = setInterval(tick, 550);
+}
+
+function playBossMusic() {
+  stopMusic(); if (!audioCtx) return;
+  const notes = [164.8, 196.0, 220.0, 261.6, 220.0, 196.0, 164.8, 146.8];
+  let i = 0;
+  function tick() {
+    if (!audioCtx || G.muted) return;
+    const t = audioCtx.currentTime;
+    playNote(notes[i % notes.length], 0.2, 'sawtooth', t, 0.06);
+    playNote(82.4, 0.12, 'triangle', t, 0.1);
+    i++;
+  }
+  tick(); musicInterval = setInterval(tick, 380);
+}
+
+function playSFX(type) {
+  if (!audioCtx || G.muted) return;
+  const t = audioCtx.currentTime;
+  switch(type) {
+    case 'hit':
+      playNote(150,0.1,'square',t,0.15); playNote(100,0.12,'square',t+0.05,0.1); break;
+    case 'block':
+      playNote(400,0.08,'sine',t,0.1); playNote(500,0.06,'sine',t+0.04,0.08); break;
+    case 'card':
+      playNote(600,0.04,'sine',t,0.08); playNote(800,0.04,'sine',t+0.03,0.06); break;
+    case 'heal':
+      playNote(400,0.15,'sine',t,0.08); playNote(500,0.15,'sine',t+0.08,0.08); playNote(600,0.2,'sine',t+0.16,0.08); break;
+    case 'death':
+      playNote(200,0.3,'sawtooth',t,0.08); playNote(150,0.3,'sawtooth',t+0.15,0.06); break;
+    case 'chant':
+      playNote(523.3,0.2,'sine',t,0.1); playNote(659.3,0.2,'sine',t+0.1,0.1); playNote(784,0.3,'sine',t+0.2,0.12); break;
+    case 'selfharm':
+      playNote(220,0.2,'sawtooth',t,0.1); playNote(180,0.15,'sawtooth',t+0.1,0.08); playNote(440,0.3,'sine',t+0.2,0.12); break;
+  }
+}
+
+// ============================================================
+// SCREEN
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ============================================================
+// GAME STATE
+// ============================================================
+const G = {
+  hp: 50, maxHp: 50, gold: 0, act: 1,
+  deck: [], drawPile: [], discardPile: [], exhaustPile: [], hand: [],
+  energy: 3, maxEnergy: 3, block: 0,
+  strength: 0, vulnerable: 0, weak: 0,
+  map: null, currentRow: -1, currentNodeIndex: -1,
+  enemies: [], turn: 0, combatRewards: null,
+  floorsCleared: 0, elitesKilled: 0, bossesKilled: 0, sentencesChanted: 0,
+  sentence: [],
+  enemyTargets: [],
+  allCardsCostZero: false, poeticAura: false,
+  musicStarted: false, muted: false,
+  actNames: ['', '第一章·昨夜雨疏风骤', '第二章·南渡风烟', '第三章·人杰鬼雄'],
+  shopInventory: null,
+  drawLessNextTurn: 0,
+};
+
+// ============================================================
+// GAME START
+// ============================================================
+function startGame() {
+  initAudio(); closeMetaScreen();
+  G.hp = 50; G.maxHp = 50; G.gold = 0; G.act = 1;
+  G.deck = createStarterDeck();
+  G.block = 0; G.strength = 0; G.vulnerable = 0; G.weak = 0;
+  G.floorsCleared = 0; G.elitesKilled = 0; G.bossesKilled = 0; G.sentencesChanted = 0;
+  G.currentRow = -1; G.currentNodeIndex = -1;
+  G.sentence = []; G.enemyTargets = [];
+  G.allCardsCostZero = false; G.poeticAura = false;
+  G.shopInventory = null; G.drawLessNextTurn = 0;
+
+  if (META.perks.includes('thick_paper')) { G.maxHp += 5; G.hp += 5; }
+  if (META.perks.includes('ink_pot')) { G.gold += 15; }
+  if (META.perks.includes('sharp_brush')) { G.strength += 1; }
+
+  META.runs++; saveMeta();
+  G.map = generateMap(1);
+  showScreen('map-screen');
+  renderMap();
+  playAmbientMusic();
+}
+
+// ============================================================
+// MAP
+// ============================================================
+function generateMap(act) {
+  const rows = [];
+  rows.push([{ type:'fight', connections:[], visited:false, available:true, col:0 }]);
+  const slots = [1,2,3,4,5]; shuffleArray(slots);
+  const [eliteR, restR, eventR, shopR] = slots;
+
+  for (let r=1; r<=5; r++) {
+    const nc = 2 + Math.floor(Math.random()*2);
+    const rn = [];
+    for (let i=0; i<nc; i++) {
+      let type = 'fight';
+      if (r===eliteR && i===0) type='elite';
+      else if (r===restR && i===Math.floor(nc/2)) type='rest';
+      else if (r===eventR && i===0) type='event';
+      else if (r===shopR && i===nc-1) type='shop';
+      rn.push({ type, connections:[], visited:false, available:false, col:i });
+    }
+    rows.push(rn);
+  }
+  rows.push([{ type:'boss', connections:[], visited:false, available:false, col:0 }]);
+
+  for (let r=0; r<rows.length-1; r++) {
+    const cur = rows[r], nxt = rows[r+1];
+    cur.forEach((node, ni) => {
+      if (nxt.length === 1) { node.connections.push(0); }
+      else {
+        const ratio = ni / Math.max(1, cur.length-1);
+        const ti = Math.round(ratio * (nxt.length-1));
+        node.connections.push(ti);
+        if (Math.random()<0.5) {
+          const alt = ti + (Math.random()<0.5?1:-1);
+          if (alt>=0 && alt<nxt.length && !node.connections.includes(alt)) node.connections.push(alt);
+        }
+      }
+    });
+    nxt.forEach((_, ni) => {
+      if (!cur.some(n => n.connections.includes(ni))) {
+        cur[Math.floor(Math.random()*cur.length)].connections.push(ni);
+      }
+    });
+  }
+  return rows;
+}
+
+function renderMap() {
+  const c = document.getElementById('map-container');
+  c.innerHTML = ''; c.style.position = 'relative';
+  document.getElementById('map-hp').textContent = `${G.hp}/${G.maxHp}`;
+  document.getElementById('map-gold').textContent = G.gold;
+  document.getElementById('map-act-label').textContent = G.actNames[G.act];
+
+  const icons = { fight:'⚔️', elite:'💀', rest:'🌙', event:'❓', shop:'🏮', boss:'👑' };
+  const nodePositions = [];
+
+  G.map.forEach((row, ri) => {
+    const rowDiv = document.createElement('div');
+    rowDiv.className = 'map-row';
+    const rowPos = [];
+    row.forEach((node, ni) => {
+      const nd = document.createElement('div');
+      nd.className = 'map-node';
+      nd.textContent = icons[node.type] || '?';
+      if (node.visited) nd.classList.add('visited');
+      if (node.available) nd.classList.add('available');
+      if (ri===G.currentRow && ni===G.currentNodeIndex) nd.classList.add('current');
+      if (node.available && !node.visited) nd.onclick = () => visitNode(ri, ni);
+      rowDiv.appendChild(nd);
+      rowPos.push({ node:nd, connections: node.connections });
+    });
+    nodePositions.push(rowPos);
+    c.appendChild(rowDiv);
+  });
+
+  requestAnimationFrame(() => {
+    const old = c.querySelector('svg.map-lines');
+    if (old) old.remove();
+    const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.classList.add('map-lines');
+    Object.assign(svg.style, { position:'absolute', top:'0', left:'0', width:'100%', height:'100%', pointerEvents:'none', zIndex:'0' });
+    const cr = c.getBoundingClientRect();
+    nodePositions.forEach((row, ri) => {
+      if (ri >= G.map.length-1) return;
+      row.forEach(({node:fn, connections}) => {
+        const fr = fn.getBoundingClientRect();
+        const fx = fr.left+fr.width/2-cr.left, fy = fr.top+fr.height/2-cr.top;
+        connections.forEach(ci => {
+          if (ri+1<nodePositions.length && ci<nodePositions[ri+1].length) {
+            const tn = nodePositions[ri+1][ci].node;
+            const tr = tn.getBoundingClientRect();
+            const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+            line.setAttribute('x1',fx); line.setAttribute('y1',fy);
+            line.setAttribute('x2',tr.left+tr.width/2-cr.left); line.setAttribute('y2',tr.top+tr.height/2-cr.top);
+            line.setAttribute('stroke','rgba(201,168,76,0.15)'); line.setAttribute('stroke-width','1.5');
+            svg.appendChild(line);
+          }
+        });
+      });
+    });
+    c.appendChild(svg);
+  });
+}
+
+function visitNode(row, ni) {
+  const node = G.map[row][ni];
+  if (!node.available || node.visited) return;
+  node.visited = true;
+  G.currentRow = row; G.currentNodeIndex = ni;
+  G.map.forEach(r => r.forEach(n => n.available = false));
+  if (row < G.map.length-1) node.connections.forEach(ci => { if(ci<G.map[row+1].length) G.map[row+1][ci].available = true; });
+  G.floorsCleared++;
+  switch(node.type) {
+    case 'fight': startCombat(getRandomEnemies(G.act,'normal')); break;
+    case 'elite': startCombat(getRandomEnemies(G.act,'elite')); break;
+    case 'boss': startCombat(getRandomEnemies(G.act,'boss')); break;
+    case 'rest': showRestScreen(); break;
+    case 'event': showEventScreen(); break;
+    case 'shop': showShopScreen(); break;
+  }
+}
+
+function getRandomEnemies(act, type) {
+  const pool = [];
+  for (const [key, def] of Object.entries(ENEMY_DEFS)) {
+    if (def.act === act && def.type === type) pool.push({...def, enemyKey:key});
+  }
+  if (type === 'normal') {
+    const count = Math.random()<0.4 ? 2 : 1;
+    const avail = [...pool]; const res = [];
+    for (let i=0; i<count && avail.length>0; i++) {
+      const idx = Math.floor(Math.random()*avail.length);
+      res.push({...avail[idx]}); avail.splice(idx,1);
+    }
+    return res;
+  }
+  return [{ ...pool[Math.floor(Math.random()*pool.length)] }];
+}
+
+// ============================================================
+// COMBAT
+// ============================================================
+function startCombat(enemyDefs) {
+  const isBoss = enemyDefs.some(e => e.type === 'boss');
+  G.enemies = enemyDefs.map(def => ({
+    ...def, maxHp: def.hp, block:0, strength:0, vulnerable:0, weak:0,
+    stunned:false, reflecting:false, nextIntent:null, element:null, tc:0,
+  }));
+  G.drawPile = shuffleArray([...G.deck]);
+  G.discardPile = []; G.exhaustPile = []; G.hand = [];
+  G.energy = G.maxEnergy; G.block = 0;
+  G.sentence = []; G.enemyTargets = [];
+  G.allCardsCostZero = false; G.poeticAura = false;
+  G.turn = 0; G.vulnerable = 0; G.weak = 0;
+  G.drawLessNextTurn = 0;
+
+  showScreen('combat-screen');
+  if (isBoss) playBossMusic(); else playCombatMusic();
+  G.enemies.forEach(e => e.ai(e));
+  startPlayerTurn();
+}
+
+function startPlayerTurn() {
+  G.turn++;
+  G.block = 0; G.energy = G.maxEnergy;
+  G.allCardsCostZero = false; G.poeticAura = false;
+  G.sentence = [];
+  if (G.vulnerable > 0) G.vulnerable--;
+  if (G.weak > 0) G.weak--;
+  let dc = META.perks.includes('extra_scroll') ? 6 : 5;
+  dc -= G.drawLessNextTurn;
+  if (dc < 1) dc = 1;
+  G.drawLessNextTurn = 0;
+  drawCards(dc);
+  renderCombat();
+}
+
+function drawCards(count) {
+  for (let i=0; i<count; i++) {
+    if (G.drawPile.length === 0) {
+      if (G.discardPile.length === 0) return;
+      G.drawPile = shuffleArray([...G.discardPile]);
+      G.discardPile = [];
+    }
+    if (G.drawPile.length > 0) G.hand.push(G.drawPile.pop());
+  }
+}
+
+function getEffectiveCost(card) {
+  if (card._isEnemyTarget || card._isSelfTarget) return 0;
+  if (G.allCardsCostZero) return 0;
+  return card.cost;
+}
+
+function getSentenceCost() {
+  return G.sentence.reduce((sum, c) => sum + getEffectiveCost(c), 0);
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function renderCombat() {
+  document.getElementById('combat-hp').textContent = `${G.hp}/${G.maxHp}`;
+  document.getElementById('combat-block-display').textContent = G.block > 0 ? `🛡${G.block}` : '';
+
+  let st = '';
+  if (G.strength>0) st += `<span class="status-icon status-strength">力${G.strength}</span>`;
+  if (G.vulnerable>0) st += `<span class="status-icon status-vulnerable">伤${G.vulnerable}</span>`;
+  if (G.weak>0) st += `<span class="status-icon status-weak">弱${G.weak}</span>`;
+  document.getElementById('combat-status-effects').innerHTML = st;
+  document.getElementById('draw-count').textContent = G.drawPile.length;
+  document.getElementById('discard-count').textContent = G.discardPile.length;
+  document.getElementById('energy-text').textContent = G.energy;
+
+  renderEnemies();
+  renderEnemyTargetBar();
+  renderSentenceSlots();
+  renderHand();
+  updateChantButton();
+}
+
+function renderEnemies() {
+  const area = document.getElementById('enemy-area');
+  area.innerHTML = '';
+  const targetedIdx = getTargetedEnemyIdx();
+
+  G.enemies.forEach((enemy, idx) => {
+    if (enemy.hp <= 0) return;
+    const div = document.createElement('div');
+    div.className = 'enemy';
+    if (idx === targetedIdx) div.classList.add('targeted');
+
+    let ic = 'attack-intent', it = '';
+    if (enemy.nextIntent) {
+      const ni = enemy.nextIntent;
+      if (ni.type==='attack') { ic='attack-intent'; it=`${ni.icon} ${ni.value}${ni.hits>1?'×'+ni.hits:''}`; }
+      else if (ni.type==='defend') { ic='defend-intent'; it=`${ni.icon} ${ni.label||ni.value}`; }
+      else if (ni.type==='buff') { ic='buff-intent'; it=`${ni.icon} ${ni.label||''}`; }
+      else if (ni.type==='debuff') { ic='debuff-intent'; it=`${ni.icon} ${ni.label||''}`; }
+      else if (ni.type==='special') { ic='special-intent'; it=`${ni.icon} ${ni.label||''}`; }
+    }
+
+    div.innerHTML = `
+      <div class="enemy-intent ${ic}">${it}</div>
+      <div class="enemy-portrait">${enemy.emoji||'👾'}</div>
+      ${enemy.block>0?`<div class="enemy-block-indicator">🛡${enemy.block}</div>`:''}
+      <div class="enemy-name">${enemy.name}</div>
+      <div class="enemy-hp-bar"><div class="enemy-hp-fill" style="width:${(enemy.hp/enemy.maxHp)*100}%"></div></div>
+      <div class="enemy-hp-text">${enemy.hp}/${enemy.maxHp}</div>
+      <div class="enemy-status-effects">
+        ${enemy.vulnerable>0?'<span class="status-icon status-vulnerable">伤'+enemy.vulnerable+'</span>':''}
+        ${enemy.weak>0?'<span class="status-icon status-weak">弱'+enemy.weak+'</span>':''}
+        ${(enemy.strength||0)>0?'<span class="status-icon status-strength">力'+enemy.strength+'</span>':''}
+      </div>
+    `;
+    enemy.element = div;
+    area.appendChild(div);
+  });
+}
+
+function getTargetedEnemyIdx() {
+  const enemyObj = G.sentence.find(c => c._isEnemyTarget);
+  if (enemyObj) return enemyObj._enemyIdx;
+  return -1;
+}
+
+function renderEnemyTargetBar() {
+  const bar = document.getElementById('enemy-targets-bar');
+  bar.innerHTML = '';
+
+  const selfEl = document.createElement('div');
+  selfEl.className = 'enemy-target-word self-target-btn';
+  selfEl.textContent = '⟨我⟩';
+  const selfInSentence = G.sentence.some(c => c._isSelfTarget);
+  if (selfInSentence) selfEl.classList.add('in-sentence');
+  selfEl.onclick = () => {
+    if (selfInSentence) return;
+    G.sentence = G.sentence.filter(c => !c._isEnemyTarget && !c._isSelfTarget);
+    const selfCard = {
+      word: '我', pos: 'object', cost: 0,
+      _isSelfTarget: true,
+      id: 'self_target_' + Math.random().toString(36).substr(2,5),
+    };
+    G.sentence.push(selfCard);
+    playSFX('card');
+    renderCombat();
+  };
+  bar.appendChild(selfEl);
+
+  G.enemies.forEach((enemy, idx) => {
+    if (enemy.hp <= 0) return;
+    const el = document.createElement('div');
+    el.className = 'enemy-target-word';
+    el.textContent = `⟨${enemy.name}⟩`;
+    const inSentence = G.sentence.some(c => c._isEnemyTarget && c._enemyIdx === idx);
+    if (inSentence) el.classList.add('in-sentence');
+    el.onclick = () => {
+      if (inSentence) return;
+      G.sentence = G.sentence.filter(c => !c._isEnemyTarget && !c._isSelfTarget);
+      const enemyCard = {
+        word: enemy.name, pos: 'object', cost: 0,
+        _isEnemyTarget: true, _enemyIdx: idx,
+        id: 'enemy_target_' + idx + '_' + Math.random().toString(36).substr(2,5),
+      };
+      G.sentence.push(enemyCard);
+      playSFX('card');
+      renderCombat();
+    };
+    bar.appendChild(el);
+  });
+}
+
+function renderSentenceSlots() {
+  const container = document.getElementById('sentence-slots-container');
+  container.innerHTML = '';
+
+  const displayCards = normalizeSentence(G.sentence);
+  const commaIdx = displayCards.findIndex(c => c.pos === 'punctuation' && c.punctType === 'comma');
+
+  if (commaIdx >= 0) {
+    const firstHalf = displayCards.slice(0, commaIdx);
+    const secondHalf = displayCards.slice(commaIdx + 1);
+
+    const half1 = document.createElement('div');
+    half1.className = 'sentence-half';
+    firstHalf.forEach((card) => {
+      const origIdx = G.sentence.indexOf(card);
+      half1.appendChild(createSentenceWordEl(card, origIdx));
+    });
+    if (firstHalf.length === 0) {
+      const ph = document.createElement('span');
+      ph.style.cssText = 'color:var(--smoke);opacity:0.3;font-size:0.75rem;font-style:italic;';
+      ph.textContent = '上句...';
+      half1.appendChild(ph);
+    }
+    container.appendChild(half1);
+
+    const divider = document.createElement('div');
+    divider.className = 'sentence-comma-divider';
+    divider.style.cursor = 'pointer';
+    const commaOrigIdx = G.sentence.indexOf(displayCards[commaIdx]);
+    divider.onclick = () => removeSentenceWord(commaOrigIdx);
+    container.appendChild(divider);
+
+    const half2 = document.createElement('div');
+    half2.className = 'sentence-half';
+    secondHalf.forEach((card) => {
+      const origIdx = G.sentence.indexOf(card);
+      half2.appendChild(createSentenceWordEl(card, origIdx));
+    });
+    if (secondHalf.length === 0) {
+      const ph = document.createElement('span');
+      ph.style.cssText = 'color:var(--smoke);opacity:0.3;font-size:0.75rem;font-style:italic;';
+      ph.textContent = '下句...';
+      half2.appendChild(ph);
+    }
+    container.appendChild(half2);
+  } else {
+    const half = document.createElement('div');
+    half.className = 'sentence-half';
+    displayCards.forEach((card) => {
+      const origIdx = G.sentence.indexOf(card);
+      half.appendChild(createSentenceWordEl(card, origIdx));
+    });
+    container.appendChild(half);
+  }
+
+  // Preview — calligraphy style
+  const preview = document.getElementById('sentence-preview');
+  if (G.sentence.length > 0) {
+    const normalized = normalizeSentence(G.sentence);
+    preview.textContent = '「' + normalized.map(c => c._isEnemyTarget ? c.word : (c._isSelfTarget ? '我' : c.word)).join('') + '」';
+  } else {
+    preview.textContent = '';
+  }
+
+  // Duizhang preview
+  const dzEl = document.getElementById('duizhang-preview');
+  if (commaIdx >= 0) {
+    const dzResult = detectDuizhang(normalizeSentence(G.sentence));
+    if (dzResult) {
+      dzEl.className = dzResult.matched ? 'duizhang-good' : 'duizhang-bad';
+      dzEl.textContent = dzResult.label;
+    } else {
+      dzEl.className = 'duizhang-bad';
+      dzEl.textContent = '逗号两侧需要词语才能判定对仗';
+    }
+  } else {
+    dzEl.textContent = '';
+  }
+
+  // Score preview with icons
+  const sp = document.getElementById('sentence-score-preview');
+  if (G.sentence.length > 0) {
+    const eval_ = evaluateSentence(G.sentence);
+    if (eval_) {
+      const parts = [];
+      if (eval_.effects.selfHarm) {
+        parts.push(`💔自伤${eval_.effects.selfHarmDmg}`);
+        if (eval_.effects.selfHarmBuff) parts.push(`+${eval_.effects.selfHarmBuff}力量`);
+      }
+      if (eval_.effects.damage > 0) parts.push(`⚔️${eval_.effects.damage}`);
+      if (eval_.effects.isQuestion) parts.push(`❓削弱${eval_.effects.applyWeak}`);
+      if (eval_.effects.block > 0) parts.push(`🛡${eval_.effects.block}`);
+      if (eval_.effects.heal > 0) parts.push(`♥${eval_.effects.heal}`);
+      if (eval_.effects.strengthGain > 0) parts.push(`↑${eval_.effects.strengthGain}力`);
+      if (eval_.effects.draw > 0) parts.push(`📜${eval_.effects.draw}牌`);
+      if (eval_.effects.aoe) parts.push('🌊全体');
+      if (eval_.effects.ignoreBlock) parts.push('🗡穿透');
+      if (eval_.effects.goldGain > 0) parts.push(`💰${eval_.effects.goldGain}`);
+      sp.innerHTML = `<span>费${getSentenceCost()}</span> ${parts.join(' ')} <span style="color:var(--gold)">✨×${eval_.totalMult.toFixed(2)}</span>`;
+    }
+  } else {
+    sp.innerHTML = '';
+  }
+}
+
+function createSentenceWordEl(card, idx) {
+  const el = document.createElement('div');
+  el.className = 'sentence-word';
+  if (card._isEnemyTarget) el.classList.add('enemy-obj');
+  else if (card._isSelfTarget) el.classList.add('self-target');
+  else if (card.pos === 'punctuation') el.classList.add('punct-end');
+  else {
+    el.style.borderColor = getPosColor(card.pos);
+    el.style.color = getPosColor(card.pos);
+  }
+  el.textContent = card._isEnemyTarget ? `⟨${card.word}⟩` : (card._isSelfTarget ? '⟨我⟩' : card.word);
+  el.onclick = () => removeSentenceWord(idx);
+  return el;
+}
+
+function getPosColor(pos) {
+  switch(pos) {
+    case 'subject': return '#e07070';
+    case 'verb': return '#e8c84c';
+    case 'object': return '#7090d4';
+    case 'modifier': return '#70d490';
+    case 'connector': return '#8a8275';
+    case 'special': return '#b470d4';
+    case 'punctuation': return '#9b59b6';
+    default: return '#d4c9a8';
+  }
+}
+
+function renderHand() {
+  const handEl = document.getElementById('hand-cards');
+  handEl.innerHTML = '';
+  G.hand.forEach((card, idx) => {
+    const el = createCardElement(card, idx);
+    if (G.sentence.includes(card)) el.classList.add('in-sentence');
+    handEl.appendChild(el);
+  });
+}
+
+function createCardElement(card, handIndex, opts={}) {
+  const div = document.createElement('div');
+  div.className = `card pos-${card.pos}`;
+  if (card.upgraded) div.classList.add('upgraded');
+  if (card.rarity === 'uncommon') div.classList.add('rarity-uncommon');
+  if (card.rarity === 'rare') div.classList.add('rarity-rare');
+
+  const cost = getEffectiveCost(card);
+  let descText = '';
+  if (typeof card.desc === 'function') descText = card.desc(card);
+  else if (typeof card.desc === 'string') descText = card.desc;
+
+  const posNames = { subject:'主语', verb:'谓语', object:'宾语', modifier:'修饰', connector:'连接', special:'特殊', punctuation:'标点' };
+
+  div.innerHTML = `
+    <div class="card-cost">${cost}</div>
+    <div class="card-pos-tag">${posNames[card.pos]||card.pos}</div>
+    <div class="card-word">${card.word}${card.upgraded?'+':''}</div>
+    <div class="card-effect-bar">${descText}</div>
+  `;
+
+  if (handIndex !== undefined && handIndex !== null && !opts.noClick) {
+    div.onclick = (e) => { e.stopPropagation(); addToSentence(handIndex); };
+  }
+
+  div.onmouseenter = (e) => showTooltip(e, card);
+  div.onmouseleave = hideTooltip;
+
+  return div;
+}
+
+function showTooltip(e, card) {
+  const tt = document.getElementById('tooltip');
+  const posNames = { subject:'主语', verb:'谓语', object:'宾语', modifier:'修饰', connector:'连接', special:'特殊', punctuation:'标点' };
+  const rarityNames = { starter:'初始', common:'普通', uncommon:'非凡', rare:'稀有' };
+  tt.querySelector('.tt-name').textContent = card.word + (card.upgraded?'+':'');
+  tt.querySelector('.tt-type').textContent = `${posNames[card.pos]} · ${rarityNames[card.rarity]||card.rarity} · 费用${getEffectiveCost(card)}`;
+  let d = typeof card.desc === 'function' ? card.desc(card) : (card.desc||'');
+  tt.querySelector('.tt-desc').textContent = d;
+  tt.querySelector('.tt-flavor').textContent = card.flavor ? `"${card.flavor}"` : '';
+  tt.style.display = 'block';
+  const r = e.target.getBoundingClientRect();
+  let left = r.right+10, top = r.top;
+  if (left+240>window.innerWidth) left=r.left-250;
+  if (top+120>window.innerHeight) top=window.innerHeight-130;
+  tt.style.left = Math.max(5,left)+'px';
+  tt.style.top = Math.max(5,top)+'px';
+}
+function hideTooltip() { document.getElementById('tooltip').style.display='none'; }
+
+// ============================================================
+// SENTENCE BUILDING
+// ============================================================
+function addToSentence(handIndex) {
+  const card = G.hand[handIndex];
+  if (G.sentence.includes(card)) return;
+
+  if (card.pos === 'punctuation' && card.punctType === 'comma') {
+    if (G.sentence.some(c => c.pos === 'punctuation' && c.punctType === 'comma')) return;
+  }
+
+  G.sentence.push(card);
+  playSFX('card');
+  renderCombat();
+}
+
+function removeSentenceWord(idx) {
+  if (idx >= 0 && idx < G.sentence.length) {
+    G.sentence.splice(idx, 1);
+  }
+  renderCombat();
+}
+
+function updateChantButton() {
+  const btn = document.getElementById('chant-btn');
+  const cost = getSentenceCost();
+  const hasVerb = G.sentence.some(c => c.pos === 'verb' || c.pos === 'special');
+  btn.disabled = G.sentence.length === 0 || cost > G.energy || !hasVerb;
+  btn.style.opacity = btn.disabled ? '0.35' : '1';
+  btn.textContent = G.sentence.length > 0 ? `吟诵 (${cost}文力)` : '吟诵';
+}
+
+// ============================================================
+// CHANT
+// ============================================================
+function chantSentence() {
+  if (G.sentence.length === 0) return;
+  const cost = getSentenceCost();
+  if (cost > G.energy) return;
+  if (!G.sentence.some(c => c.pos === 'verb' || c.pos === 'special')) return;
+
+  G.energy -= cost;
+  G.sentencesChanted++;
+  playSFX('chant');
+
+  const result = evaluateSentence(G.sentence);
+
+  G.sentence.forEach(card => {
+    if (card._isEnemyTarget || card._isSelfTarget) return;
+    const idx = G.hand.indexOf(card);
+    if (idx >= 0) G.hand.splice(idx, 1);
+    if (card.exhaust || (card.pos === 'verb' && card._shouldExhaust)) {
+      G.exhaustPile.push(card);
+    } else {
+      G.discardPile.push(card);
+    }
+  });
+  G.sentence = [];
+
+  showScoreAnimation(result, () => {
+    applyEffects(result.effects);
+    checkEnemies();
+    renderCombat();
+  });
+}
+
+function applyEffects(effects) {
+  if (effects.zeroCost) {
+    G.allCardsCostZero = true;
+    showFloatingText(document.querySelector('#combat-top'), '所有词牌费用为0！', '#c9a84c');
+  }
+
+  if (effects._spendGold) {
+    G.gold -= effects._spendGold;
+    if (G.gold < 0) G.gold = 0;
+    showFloatingText(document.querySelector('#combat-top'), `-${effects._spendGold}金`, '#c9a84c');
+  }
+
+  if (effects._discardRandom && G.hand.length > 0) {
+    for (let i = 0; i < effects._discardRandom && G.hand.length > 0; i++) {
+      const ridx = Math.floor(Math.random() * G.hand.length);
+      G.discardPile.push(G.hand.splice(ridx, 1)[0]);
+    }
+    showFloatingText(document.querySelector('#combat-top'), '删牌！', '#d4a870');
+  }
+
+  if (effects.selfHarm) {
+    playSFX('selfharm');
+    const dmg = effects.selfHarmDmg;
+    G.hp -= dmg;
+    if (G.hp < 1) G.hp = 1;
+    showFloatingText(document.querySelector('#combat-top'), `-${dmg}自伤`, '#b470d4');
+    if (effects.selfHarmBuff) {
+      G.strength += effects.selfHarmBuff;
+      showFloatingText(document.querySelector('#combat-top'), `+${effects.selfHarmBuff}力量`, '#70d490');
+    }
+    document.getElementById('game').classList.add('self-harm-flash');
+    setTimeout(() => document.getElementById('game').classList.remove('self-harm-flash'), 600);
+  }
+
+  if (effects.block > 0) {
+    G.block += effects.block;
+    playSFX('block');
+    showFloatingText(document.querySelector('#combat-top'), `+${effects.block}格挡`, '#6b9fff');
+  }
+
+  if (effects.heal > 0) {
+    G.hp = Math.min(G.maxHp, G.hp + effects.heal);
+    playSFX('heal');
+    showFloatingText(document.querySelector('#combat-top'), `+${effects.heal}生命`, '#6bff6b');
+  }
+
+  if (effects.strengthGain > 0) {
+    G.strength += effects.strengthGain;
+    showFloatingText(document.querySelector('#combat-top'), `+${effects.strengthGain}力量`, '#70d490');
+  }
+
+  if (effects.draw > 0) drawCards(effects.draw);
+
+  if (effects.goldGain > 0) {
+    G.gold += effects.goldGain;
+    showFloatingText(document.querySelector('#combat-top'), `+${effects.goldGain}金`, '#c9a84c');
+  }
+
+  if (effects.drawLessNext > 0) G.drawLessNextTurn += effects.drawLessNext;
+
+  if (effects.thorns > 0) G._thorns = (G._thorns || 0) + effects.thorns;
+
+  if (effects.applyVuln > 0) {
+    G.enemies.forEach(e => { if (e.hp > 0) e.vulnerable = (e.vulnerable||0) + effects.applyVuln; });
+  }
+
+  if (effects.applyWeak > 0) {
+    if (effects.aoe) {
+      G.enemies.forEach(e => { if (e.hp > 0) { e.weak = (e.weak||0) + effects.applyWeak; } });
+      showFloatingText(document.querySelector('#enemy-area'), `全体削弱${effects.applyWeak}`, '#d4a870');
+    } else if (effects.targetEnemyIdx >= 0) {
+      const tgt = G.enemies[effects.targetEnemyIdx];
+      if (tgt && tgt.hp > 0) { tgt.weak = (tgt.weak||0) + effects.applyWeak; showFloatingText(tgt.element, `弱${effects.applyWeak}`, '#d4a870'); }
+    } else {
+      const tIdx = G.enemies.findIndex(e => e.hp > 0);
+      if (tIdx >= 0) { G.enemies[tIdx].weak = (G.enemies[tIdx].weak||0) + effects.applyWeak; showFloatingText(G.enemies[tIdx].element, `弱${effects.applyWeak}`, '#d4a870'); }
+    }
+  }
+
+  if (effects.damage > 0) {
+    if (effects.aoe) {
+      G.enemies.forEach((e, idx) => { if (e.hp > 0) dealDamageToEnemy(idx, effects.damage, effects.ignoreBlock); });
+    } else if (effects.targetEnemyIdx >= 0) {
+      const tIdx = effects.targetEnemyIdx;
+      if (G.enemies[tIdx] && G.enemies[tIdx].hp > 0) dealDamageToEnemy(tIdx, effects.damage, effects.ignoreBlock);
+      else {
+        const fallback = G.enemies.findIndex(e => e.hp > 0);
+        if (fallback >= 0) dealDamageToEnemy(fallback, effects.damage, effects.ignoreBlock);
+      }
+    } else {
+      const targetIdx = G.enemies.findIndex(e => e.hp > 0);
+      if (targetIdx >= 0) dealDamageToEnemy(targetIdx, effects.damage, effects.ignoreBlock);
+    }
+  }
+}
+
+function showScoreAnimation(result, callback) {
+  const overlay = document.getElementById('score-overlay');
+  const sentEl = document.getElementById('score-sentence');
+  const detailEl = document.getElementById('score-details');
+
+  sentEl.textContent = '「' + result.text + '」';
+
+  let html = '';
+  let delay = 0;
+
+  result.grammarNotes.forEach(n => {
+    html += `<div class="score-line" style="animation-delay:${delay}ms">📜 ${n}</div>`;
+    delay += 150;
+  });
+
+  result.literaryNotes.forEach(n => {
+    html += `<div class="score-line" style="animation-delay:${delay}ms;color:var(--gold)">✨ ${n}</div>`;
+    delay += 150;
+  });
+
+  if (result.punctNotes && result.punctNotes.length > 0) {
+    result.punctNotes.forEach(n => {
+      html += `<div class="score-line" style="animation-delay:${delay}ms;color:var(--purple)">✎ ${n}</div>`;
+      delay += 150;
+    });
+  }
+
+  html += `<div class="score-line" style="animation-delay:${delay}ms;color:var(--paper);font-weight:700">总倍率: ×${result.totalMult.toFixed(2)}</div>`;
+  delay += 200;
+
+  const parts = [];
+  if (result.effects.selfHarm) parts.push(`💔 自伤${result.effects.selfHarmDmg}${result.effects.selfHarmBuff ? ' +'+result.effects.selfHarmBuff+'力量' : ''}`);
+  if (result.effects.damage > 0) parts.push(`⚔ ${result.effects.damage}伤害${result.effects.aoe?' (群体)':''}${result.effects.ignoreBlock?' (穿透)':''}`);
+  if (result.effects.isQuestion) parts.push(`❓ 削弱${result.effects.applyWeak}回合`);
+  if (result.effects.block > 0) parts.push(`🛡 ${result.effects.block}格挡`);
+  if (result.effects.heal > 0) parts.push(`♥ ${result.effects.heal}治疗`);
+  if (result.effects.strengthGain > 0) parts.push(`↑ +${result.effects.strengthGain}力量`);
+  if (result.effects.draw > 0) parts.push(`📜 抽${result.effects.draw}牌`);
+  if (result.effects.goldGain > 0) parts.push(`💰 +${result.effects.goldGain}金`);
+
+  if (parts.length > 0) {
+    html += `<div class="score-effect score-line" style="animation-delay:${delay}ms">${parts.join(' | ')}</div>`;
+  }
+
+  detailEl.innerHTML = html;
+  overlay.classList.add('active');
+
+  const totalDelay = delay + 600;
+  setTimeout(() => {
+    overlay.classList.remove('active');
+    callback();
+  }, Math.min(totalDelay, 2000));
+}
+
+// ============================================================
+// DAMAGE
+// ============================================================
+function dealDamageToEnemy(idx, amount, ignoreBlock) {
+  const enemy = G.enemies[idx];
+  if (!enemy || enemy.hp <= 0) return;
+  if (enemy.vulnerable > 0) amount = Math.floor(amount * 1.5);
+  if (enemy.reflecting) dealDamageToPlayer(Math.floor(amount * 0.5), enemy);
+
+  if (!ignoreBlock && enemy.block > 0) {
+    if (amount <= enemy.block) {
+      enemy.block -= amount;
+      if (enemy.element) showFloatingText(enemy.element, `-${amount}`, '#6b9fff');
+      return;
+    }
+    amount -= enemy.block;
+    if (enemy.element) showFloatingText(enemy.element, `-${enemy.block}挡`, '#6b9fff');
+    enemy.block = 0;
+  }
+  enemy.hp -= amount;
+  if (enemy.hp < 0) enemy.hp = 0;
+  playSFX('hit');
+  if (enemy.element) showFloatingText(enemy.element, `-${amount}`, '#ff6b6b');
+}
+
+function dealDamageToPlayer(amount, source) {
+  if (source && source.strength) amount += source.strength;
+  if (source && source.weak > 0) amount = Math.floor(amount * 0.75);
+  if (G.vulnerable > 0) amount = Math.floor(amount * 1.5);
+
+  if (G._thorns && G._thorns > 0 && source && source.hp > 0) {
+    const thornsDmg = G._thorns;
+    source.hp -= thornsDmg;
+    if (source.hp < 0) source.hp = 0;
+    if (source.element) showFloatingText(source.element, `-${thornsDmg}反伤`, '#d4a870');
+  }
+
+  if (G.block > 0) {
+    if (amount <= G.block) {
+      G.block -= amount;
+      showFloatingText(document.querySelector('#combat-top'), `挡住${amount}`, '#6b9fff');
+      playSFX('block');
+      return;
+    }
+    const blocked = G.block; amount -= G.block; G.block = 0;
+    showFloatingText(document.querySelector('#combat-top'), `挡住${blocked}`, '#6b9fff');
+  }
+
+  G.hp -= amount;
+  if (G.hp < 0) G.hp = 0;
+  showFloatingText(document.querySelector('#combat-top'), `-${amount}`, '#ff6b6b');
+  document.getElementById('game').classList.add('shake');
+  setTimeout(() => document.getElementById('game').classList.remove('shake'), 400);
+  if (G.hp <= 0) setTimeout(gameOver, 500);
+}
+
+function checkEnemies() {
+  if (G.enemies.every(e => e.hp <= 0)) setTimeout(combatVictory, 600);
+}
+
+// ============================================================
+// END TURN / ENEMY TURN
+// ============================================================
+function endPlayerTurn() {
+  G.sentence = [];
+  while (G.hand.length > 0) G.discardPile.push(G.hand.pop());
+  setTimeout(enemyTurn, 300);
+}
+
+function enemyTurn() {
+  let delay = 0;
+  G.enemies.forEach((enemy) => {
+    if (enemy.hp <= 0) return;
+    enemy.block = 0;
+    if (enemy.vulnerable > 0) enemy.vulnerable--;
+    if (enemy.weak > 0) enemy.weak--;
+
+    setTimeout(() => {
+      if (enemy.hp <= 0) return;
+      if (enemy.stunned) { enemy.stunned = false; showFloatingText(enemy.element,'眩晕！','#d4a870'); }
+      else enemy.act_fn(enemy);
+      enemy.ai(enemy);
+      renderCombat();
+      if (G.hp <= 0) return;
+    }, delay);
+    delay += 550;
+  });
+  setTimeout(() => { if (G.hp > 0) startPlayerTurn(); }, delay + 400);
+}
+
+// ============================================================
+// COMBAT VICTORY
+// ============================================================
+function combatVictory() {
+  playSFX('heal');
+  G._thorns = 0;
+  const node = G.map[G.currentRow][G.currentNodeIndex];
+  let gold = 0;
+  if (node.type==='fight') gold = 10+Math.floor(Math.random()*11);
+  else if (node.type==='elite') { gold = 25+Math.floor(Math.random()*26); G.elitesKilled++; }
+  else if (node.type==='boss') { gold = 50+Math.floor(Math.random()*51); G.bossesKilled++; }
+  G.gold += gold;
+  G.combatRewards = { gold };
+
+  if (node.type === 'boss' && G.act >= 3) { setTimeout(showVictoryScreen, 500); return; }
+  showRewardScreen();
+}
+
+function showRewardScreen() {
+  showScreen('reward-screen');
+  playAmbientMusic();
+  document.getElementById('reward-gold-text').textContent = `+${G.combatRewards.gold} 文银`;
+  const container = document.getElementById('reward-cards');
+  container.innerHTML = '';
+
+  for (let i = 0; i < 3; i++) {
+    const roll = Math.random();
+    let rarity;
+    if (roll < 0.55) rarity = 'common';
+    else if (roll < 0.88) rarity = 'uncommon';
+    else rarity = 'rare';
+    const card = randomCard(rarity);
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'reward-card-wrapper';
+    const cardEl = createCardElement(card, null, { noClick: true });
+    cardEl.style.cursor = 'pointer';
+    cardEl.onclick = () => { G.deck.push(card); afterReward(); };
+    const rl = document.createElement('div');
+    rl.className = `rarity-label rarity-${card.rarity}`;
+    rl.textContent = card.rarity === 'common' ? '普通' : card.rarity === 'uncommon' ? '非凡' : '稀有';
+    wrapper.appendChild(cardEl);
+    wrapper.appendChild(rl);
+    container.appendChild(wrapper);
+  }
+}
+
+function skipReward() { afterReward(); }
+
+function afterReward() {
+  const node = G.map[G.currentRow][G.currentNodeIndex];
+  if (node.type === 'boss') {
+    G.act++; G.currentRow = -1; G.currentNodeIndex = -1;
+    G.map = generateMap(G.act); G.strength = 0;
+  }
+  showScreen('map-screen'); renderMap();
+}
+
+// ============================================================
+// REST
+// ============================================================
+function showRestScreen() {
+  showScreen('rest-screen');
+  const restThemes = [
+    { title: '月下独酌', flavor: '明月松间照，清泉石上流。暂且搁笔，品一盏清茶...' },
+    { title: '庭院小憩', flavor: '「兴尽晚回舟，误入藕花深处。」花香入梦，暂且歇息...' },
+    { title: '雨窗听竹', flavor: '「梧桐更兼细雨，到黄昏、点点滴滴。」雨声如诗，且待天明...' },
+  ];
+  const theme = restThemes[Math.floor(Math.random() * restThemes.length)];
+  document.getElementById('rest-title').textContent = theme.title;
+  document.getElementById('rest-flavor').textContent = theme.flavor;
+  const h = Math.floor(G.maxHp * 0.3);
+  document.getElementById('rest-heal-desc').textContent = `恢复${h}生命 (${G.hp}/${G.maxHp})`;
+}
+function restHeal() {
+  G.hp = Math.min(G.maxHp, G.hp + Math.floor(G.maxHp * 0.3));
+  playSFX('heal'); showScreen('map-screen'); renderMap();
+}
+function restUpgrade() {
+  const grid = document.getElementById('upgrade-cards-grid');
+  grid.innerHTML = '';
+  G.deck.forEach((card) => {
+    if (card.upgraded) return;
+    const preview = { ...card, upgraded: true };
+    const el = createCardElement(preview, null, { noClick: true });
+    el.style.cursor = 'pointer';
+    el.onclick = () => {
+      card.upgraded = true;
+      playSFX('card'); closeUpgrade();
+      showScreen('map-screen'); renderMap();
+    };
+    grid.appendChild(el);
+  });
+  document.getElementById('upgrade-overlay').classList.add('active');
+}
+function closeUpgrade() { document.getElementById('upgrade-overlay').classList.remove('active'); }
+
+// ============================================================
+// EVENT
+// ============================================================
+function showEventScreen() {
+  const actEvents = EVENTS_BY_ACT[G.act] || EVENTS_FALLBACK;
+  const ev = actEvents[Math.floor(Math.random() * actEvents.length)];
+  document.getElementById('event-title').textContent = ev.title;
+  document.getElementById('event-text').textContent = ev.text;
+  const el = document.getElementById('event-choices');
+  el.innerHTML = '';
+  ev.choices.forEach(ch => {
+    const d = document.createElement('div');
+    d.className = 'event-choice';
+    d.innerHTML = `<div class="choice-label">${ch.label}</div><div class="choice-effect">${ch.effect}</div>`;
+    d.onclick = () => { ch.fn(); showScreen('map-screen'); renderMap(); };
+    el.appendChild(d);
+  });
+  showScreen('event-screen');
+}
+
+// ============================================================
+// SHOP
+// ============================================================
+function showShopScreen() { showScreen('shop-screen'); renderShop(); }
+function renderShop() {
+  document.getElementById('shop-gold').textContent = G.gold;
+  const c = document.getElementById('shop-cards');
+  c.innerHTML = '';
+  if (!G.shopInventory) {
+    G.shopInventory = [];
+    for (let i=0; i<5; i++) {
+      const roll = Math.random();
+      let rarity, price;
+      if (roll<0.4) { rarity='common'; price=45+Math.floor(Math.random()*25); }
+      else if (roll<0.8) { rarity='uncommon'; price=75+Math.floor(Math.random()*35); }
+      else { rarity='rare'; price=110+Math.floor(Math.random()*30); }
+      G.shopInventory.push({ card: randomCard(rarity), price, sold: false });
+    }
+  }
+  G.shopInventory.forEach((item, idx) => {
+    if (item.sold) return;
+    const w = document.createElement('div');
+    w.className = 'shop-card-slot';
+    const el = createCardElement(item.card, null, { noClick: true });
+    el.style.cursor = 'pointer';
+    el.onclick = () => {
+      if (G.gold >= item.price && !item.sold) {
+        G.gold -= item.price; G.deck.push(item.card); item.sold = true;
+        playSFX('card'); renderShop();
+      }
+    };
+    const p = document.createElement('div');
+    p.className = `shop-price ${G.gold<item.price?'cannot-afford':''}`;
+    p.textContent = `${item.price}文银`;
+    w.appendChild(el); w.appendChild(p); c.appendChild(w);
+  });
+  document.getElementById('shop-remove-btn').style.opacity = G.gold >= 75 ? '1' : '0.4';
+}
+function shopRemoveCard() {
+  if (G.gold < 75) return;
+  const grid = document.getElementById('remove-cards-grid');
+  grid.innerHTML = '';
+  G.deck.forEach((card, idx) => {
+    const el = createCardElement(card, null, { noClick: true });
+    el.style.cursor = 'pointer';
+    el.onclick = () => { G.deck.splice(idx,1); G.gold-=75; playSFX('card'); closeRemove(); renderShop(); };
+    grid.appendChild(el);
+  });
+  document.getElementById('remove-overlay').classList.add('active');
+}
+function closeRemove() { document.getElementById('remove-overlay').classList.remove('active'); }
+function leaveShop() { G.shopInventory=null; showScreen('map-screen'); renderMap(); }
+
+// ============================================================
+// DECK VIEW
+// ============================================================
+function viewDeck() {
+  const grid = document.getElementById('deck-cards-grid');
+  grid.innerHTML = '';
+  document.getElementById('deck-count').textContent = G.deck.length;
+  G.deck.forEach(card => grid.appendChild(createCardElement(card, null, { noClick: true })));
+  document.getElementById('deck-overlay').classList.add('active');
+}
+function closeDeck() { document.getElementById('deck-overlay').classList.remove('active'); }
+
+// ============================================================
+// GAME OVER / VICTORY
+// ============================================================
+function calculateInkReward(isVictory) {
+  const b = []; let total = 0;
+  const add = (l,v) => { if(v>0){b.push({label:l,value:v});total+=v;} };
+  add(`行过${G.floorsCleared}层`, G.floorsCleared*2);
+  add(`斩精英${G.elitesKilled}`, G.elitesKilled*5);
+  add(`败Boss${G.bossesKilled}`, G.bossesKilled*15);
+  add(`吟诵${G.sentencesChanted}句`, Math.floor(G.sentencesChanted/3));
+  if(G.act>=2) add('至第二章', 5);
+  if(G.act>=3) add('至第三章', 10);
+  if(isVictory) add('大作已成！', 20);
+  if(total<3) { add('最低奖励', 3-total); total=3; }
+  return { breakdown:b, total };
+}
+
+function updateMetaAfterRun(isV) {
+  const r = calculateInkReward(isV);
+  META.ink += r.total; META.totalInk += r.total;
+  if(G.act>META.bestAct) META.bestAct=G.act;
+  if(G.floorsCleared>META.bestFloor) META.bestFloor=G.floorsCleared;
+  saveMeta();
+  return { reward: r };
+}
+
+function renderInkBreakdown(id, reward) {
+  const el = document.getElementById(id);
+  let h = '<div class="ink-reward-breakdown">';
+  reward.breakdown.forEach(i => { h+=`<div class="ink-line"><span>${i.label}</span><span style="color:var(--gold)">+${i.value}文气</span></div>`; });
+  h += `<div class="ink-line ink-total"><span>总计</span><span>+${reward.total}文气</span></div></div>`;
+  el.innerHTML = h;
+}
+
+function gameOver() {
+  stopMusic(); playSFX('death');
+  const r = updateMetaAfterRun(false);
+  showScreen('gameover-screen');
+  document.getElementById('gameover-stats').innerHTML = `
+    <div>章节：<span>${G.actNames[G.act]}</span></div>
+    <div>行过：<span>${G.floorsCleared}层</span></div>
+    <div>精英：<span>${G.elitesKilled}</span></div>
+    <div>Boss：<span>${G.bossesKilled}</span></div>
+    <div>吟诵：<span>${G.sentencesChanted}句</span></div>
+    <div>文银：<span>${G.gold}</span></div>
+  `;
+  renderInkBreakdown('gameover-ink-breakdown', r.reward);
+}
+
+function showVictoryScreen() {
+  stopMusic();
+  if(audioCtx) {
+    const t=audioCtx.currentTime;
+    [261.6,329.6,392.0,523.3].forEach((f,i)=>{
+      playNote(f,1.5,'sine',t+i*0.4,0.12);
+    });
+  }
+  const r = updateMetaAfterRun(true);
+  showScreen('victory-screen');
+  document.getElementById('victory-stats').innerHTML = `
+    <div>三章完结！</div>
+    <div>行过：<span>${G.floorsCleared}层</span></div>
+    <div>精英：<span>${G.elitesKilled}</span></div>
+    <div>Boss：<span>${G.bossesKilled}</span></div>
+    <div>吟诵：<span>${G.sentencesChanted}句</span></div>
+    <div>词库：<span>${G.deck.length}张</span></div>
+  `;
+  renderInkBreakdown('victory-ink-breakdown', r.reward);
+}
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function shuffleArray(arr) {
+  for (let i=arr.length-1; i>0; i--) {
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function showFloatingText(element, text, color) {
+  if (!element) return;
+  const d = document.createElement('div');
+  d.className = 'damage-number';
+  if (color==='#6bff6b') d.classList.add('heal');
+  if (color==='#6b9fff') d.classList.add('block-dmg');
+  d.textContent = text; d.style.color = color;
+  d.style.left = '50%'; d.style.top = '50%';
+  d.style.transform = 'translate(-50%,-50%)';
+  element.style.position = 'relative';
+  element.appendChild(d);
+  setTimeout(() => d.remove(), 1000);
+}
+
+// ============================================================
+// META SCREEN
+// ============================================================
+function showMetaScreen() {
+  document.getElementById('meta-overlay').classList.add('active');
+  renderMetaScreen();
+}
+function closeMetaScreen() { document.getElementById('meta-overlay').classList.remove('active'); }
+
+function renderMetaScreen() {
+  document.getElementById('meta-stats').innerHTML = `
+    <div class="meta-stat"><div class="stat-val">${META.ink}</div><div class="stat-label">文气</div></div>
+    <div class="meta-stat"><div class="stat-val">${META.totalInk}</div><div class="stat-label">累计</div></div>
+    <div class="meta-stat"><div class="stat-val">${META.runs}</div><div class="stat-label">冒险</div></div>
+    <div class="meta-stat"><div class="stat-val">${META.bestFloor}</div><div class="stat-label">最深</div></div>
+  `;
+
+  let ph = '<h3>文房四宝（永久加成）</h3>';
+  for (const [key, perk] of Object.entries(LEGACY_PERKS)) {
+    const owned = META.perks.includes(key);
+    ph += `<div class="meta-item${owned?' purchased':''}">
+      <div class="item-info"><div class="item-name">${perk.name}</div><div class="item-desc">${perk.desc}</div></div>
+      <div class="item-cost">${perk.cost}文气</div>
+      ${owned?'':`<button class="buy-btn" onclick="buyPerk('${key}')" ${META.ink>=perk.cost?'':'disabled'}>购买</button>`}
+    </div>`;
+  }
+  document.getElementById('meta-perks-section').innerHTML = ph;
+
+  let ch = '<h3>解锁新词牌</h3>';
+  for (const [key, info] of Object.entries(UNLOCKABLE_CARDS_META)) {
+    const owned = META.unlockedCards.includes(key);
+    ch += `<div class="meta-item${owned?' purchased':''}">
+      <div class="item-info"><div class="item-name">${info.name}</div></div>
+      <div class="item-cost">${info.cost}文气</div>
+      ${owned?'':`<button class="buy-btn" onclick="buyCardMeta('${key}')" ${META.ink>=info.cost?'':'disabled'}>解锁</button>`}
+    </div>`;
+  }
+  document.getElementById('meta-cards-section').innerHTML = ch;
+}
+
+function buyPerk(key) {
+  const p = LEGACY_PERKS[key];
+  if(!p||META.perks.includes(key)||META.ink<p.cost) return;
+  META.ink-=p.cost; META.perks.push(key); saveMeta(); playSFX('card'); renderMetaScreen();
+}
+function buyCardMeta(key) {
+  const info = UNLOCKABLE_CARDS_META[key];
+  if(!info||META.unlockedCards.includes(key)||META.ink<info.cost) return;
+  META.ink-=info.cost; META.unlockedCards.push(key); saveMeta(); playSFX('card'); renderMetaScreen();
+}
+
+// Init
+(function() {
+  const el = document.getElementById('title-ink-display');
+  if (el && META.totalInk > 0) el.textContent = `文气: ${META.ink} | 冒险: ${META.runs}`;
+})();
+</script>
+</body>
+</html>

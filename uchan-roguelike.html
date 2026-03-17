@@ -1,0 +1,2963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>The Storyweaver's Descent</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #1a1209;
+  --parchment: #f5e6c8;
+  --attack: #8b3a3a;
+  --defense: #3a5a8b;
+  --skill: #3a7a4a;
+  --gold: #c9a84c;
+  --bg-dark: #0f0b06;
+  --parchment-dark: #d4c4a0;
+  --text-dark: #2a1f0e;
+}
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  background: var(--bg); color: var(--parchment);
+  font-family: Georgia, 'Times New Roman', serif;
+}
+h1, h2, h3, h4 { font-family: 'Cormorant Garamond', serif; font-weight: 700; }
+#game { width: 100%; height: 100%; position: relative; overflow: hidden; }
+
+/* ===== SCREENS ===== */
+.screen {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  display: none; flex-direction: column; align-items: center; justify-content: center;
+  transition: opacity 0.5s;
+}
+.screen.active { display: flex; }
+
+/* ===== TITLE SCREEN ===== */
+#title-screen {
+  background: url('https://cdn.midjourney.com/5c4d2862-dcc3-482a-86c1-3bf2973a4f81/0_0_1024_N.webp') center/cover no-repeat;
+  text-align: center;
+}
+#title-screen::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(to bottom, rgba(26,18,9,0.3) 0%, rgba(26,18,9,0.7) 60%, rgba(26,18,9,0.95) 100%);
+}
+#title-screen > * { position: relative; z-index: 1; }
+#title-screen h1 {
+  font-size: clamp(2rem, 6vw, 4rem); color: var(--gold);
+  text-shadow: 0 2px 20px rgba(201,168,76,0.5), 0 0 60px rgba(201,168,76,0.2);
+  margin-bottom: 0.5rem; letter-spacing: 0.1em;
+}
+#title-screen .subtitle {
+  font-family: 'Cormorant Garamond', serif; font-style: italic;
+  font-size: clamp(0.9rem, 2vw, 1.3rem); color: var(--parchment); opacity: 0.8;
+  margin-bottom: 2rem;
+}
+#title-screen .credit {
+  font-size: 0.75rem; opacity: 0.5; margin-top: 1.5rem;
+  font-style: italic;
+}
+.btn {
+  font-family: 'Cormorant Garamond', serif; font-weight: 700;
+  font-size: clamp(1rem, 2.5vw, 1.3rem);
+  padding: 0.8em 2.5em; border: 2px solid var(--gold);
+  background: rgba(201,168,76,0.15); color: var(--gold);
+  cursor: pointer; letter-spacing: 0.1em; text-transform: uppercase;
+  transition: all 0.3s; border-radius: 4px;
+}
+.btn:hover { background: rgba(201,168,76,0.3); transform: translateY(-2px); box-shadow: 0 4px 20px rgba(201,168,76,0.3); }
+.btn:active { transform: translateY(0); }
+.btn-small { font-size: 0.85rem; padding: 0.5em 1.5em; }
+
+/* ===== MUTE BUTTON ===== */
+#mute-btn {
+  position: fixed; top: 10px; right: 10px; z-index: 9999;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(26,18,9,0.8); border: 1px solid var(--gold);
+  color: var(--gold); font-size: 1.2rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.3s;
+}
+#mute-btn:hover { background: rgba(201,168,76,0.3); }
+
+/* ===== MAP SCREEN ===== */
+#map-screen { background: var(--bg); overflow-y: auto; justify-content: flex-start; }
+#map-header {
+  width: 100%; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center;
+  background: rgba(15,11,6,0.9); border-bottom: 1px solid rgba(201,168,76,0.3);
+  position: sticky; top: 0; z-index: 10; flex-shrink: 0;
+}
+#map-header .player-stats { display: flex; gap: 15px; align-items: center; font-size: 0.9rem; }
+#map-header .player-stats span { display: flex; align-items: center; gap: 4px; }
+#map-container {
+  flex: 1; width: 100%; max-width: 500px; padding: 20px;
+  display: flex; flex-direction: column-reverse; gap: 0; position: relative;
+  min-height: 0;
+}
+.map-row {
+  display: flex; justify-content: center; gap: 40px; padding: 10px 0;
+  position: relative;
+}
+.map-node {
+  width: 50px; height: 50px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; cursor: default; position: relative;
+  transition: all 0.3s; border: 2px solid rgba(201,168,76,0.3);
+  background: rgba(26,18,9,0.8);
+}
+.map-node.available {
+  cursor: pointer; border-color: var(--gold);
+  animation: pulse-node 2s infinite;
+}
+.map-node.available:hover { transform: scale(1.2); box-shadow: 0 0 20px rgba(201,168,76,0.5); }
+.map-node.visited { opacity: 0.4; border-color: rgba(201,168,76,0.15); }
+.map-node.current { border-color: var(--gold); box-shadow: 0 0 15px rgba(201,168,76,0.5); }
+@keyframes pulse-node {
+  0%, 100% { box-shadow: 0 0 5px rgba(201,168,76,0.3); }
+  50% { box-shadow: 0 0 20px rgba(201,168,76,0.6); }
+}
+.map-line {
+  position: absolute; pointer-events: none; z-index: -1;
+}
+#map-canvas {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none;
+}
+.act-label {
+  font-family: 'Cormorant Garamond', serif; font-size: 1.2rem;
+  color: var(--gold); text-align: center; padding: 15px 0 5px;
+  letter-spacing: 0.15em; text-transform: uppercase; flex-shrink: 0;
+}
+
+/* ===== COMBAT SCREEN ===== */
+#combat-screen {
+  background: var(--bg); justify-content: space-between; padding: 0;
+}
+#combat-top {
+  width: 100%; padding: 10px 15px; display: flex; justify-content: space-between;
+  align-items: center; background: rgba(15,11,6,0.9);
+  border-bottom: 1px solid rgba(201,168,76,0.2); flex-shrink: 0;
+}
+#combat-top .combat-info { display: flex; gap: 15px; align-items: center; font-size: 0.85rem; }
+#enemy-area {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  gap: 20px; padding: 10px; flex-wrap: wrap; min-height: 0;
+  overflow-y: auto;
+}
+.enemy {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 5px; position: relative; transition: all 0.3s;
+}
+.enemy.targetable { cursor: pointer; }
+.enemy.targetable:hover { transform: scale(1.05); }
+.enemy.targetable:hover .enemy-portrait { box-shadow: 0 0 20px rgba(139,58,58,0.6); }
+.enemy-intent {
+  font-size: 0.8rem; padding: 3px 8px; border-radius: 10px;
+  background: rgba(15,11,6,0.8); border: 1px solid rgba(201,168,76,0.3);
+  display: flex; align-items: center; gap: 4px; white-space: nowrap;
+}
+.enemy-intent.attack-intent { border-color: var(--attack); color: #d47070; }
+.enemy-intent.defend-intent { border-color: var(--defense); color: #7090d4; }
+.enemy-intent.buff-intent { border-color: var(--skill); color: #70d490; }
+.enemy-intent.debuff-intent { border-color: #8b6a3a; color: #d4a870; }
+.enemy-intent.special-intent { border-color: #6a3a8b; color: #b470d4; }
+.enemy-portrait {
+  width: 80px; height: 80px; border-radius: 8px; overflow: hidden;
+  border: 2px solid rgba(201,168,76,0.4); background: var(--bg-dark);
+}
+.enemy-portrait img { width: 100%; height: 100%; object-fit: cover; }
+.enemy-name { font-family: 'Cormorant Garamond', serif; font-size: 0.75rem; color: var(--parchment); opacity: 0.8; }
+.enemy-hp-bar {
+  width: 80px; height: 8px; background: rgba(15,11,6,0.8);
+  border-radius: 4px; overflow: hidden; border: 1px solid rgba(201,168,76,0.2);
+}
+.enemy-hp-fill {
+  height: 100%; background: linear-gradient(90deg, var(--attack), #c45050);
+  transition: width 0.5s ease;
+}
+.enemy-hp-text { font-size: 0.65rem; color: var(--parchment); opacity: 0.7; }
+.enemy-block-indicator {
+  position: absolute; top: 25px; right: -5px; background: var(--defense);
+  color: white; font-size: 0.6rem; padding: 2px 5px; border-radius: 8px;
+  font-weight: bold;
+}
+.enemy-status-effects {
+  display: flex; gap: 3px; font-size: 0.6rem;
+}
+.status-icon { padding: 1px 4px; border-radius: 3px; background: rgba(15,11,6,0.8); }
+.status-vulnerable { color: #d47070; border: 1px solid var(--attack); }
+.status-weak { color: #d4a870; border: 1px solid #8b6a3a; }
+.status-strength { color: #70d490; border: 1px solid var(--skill); }
+
+.damage-number {
+  position: absolute; font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem; font-weight: 700; color: #ff6b6b;
+  pointer-events: none; z-index: 100;
+  animation: float-up 1s ease-out forwards;
+}
+.damage-number.heal { color: #6bff6b; }
+.damage-number.block-dmg { color: #6b9fff; }
+@keyframes float-up {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-60px) scale(1.5); }
+}
+
+#hand-area {
+  width: 100%; padding: 8px 10px 12px; background: rgba(15,11,6,0.95);
+  border-top: 1px solid rgba(201,168,76,0.3); flex-shrink: 0;
+}
+#hand-cards {
+  display: flex; justify-content: center; gap: 6px;
+  flex-wrap: nowrap; overflow-x: auto; padding: 5px 0;
+  scrollbar-width: thin; scrollbar-color: var(--gold) transparent;
+}
+#hand-controls {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 5px 10px 0; font-size: 0.8rem;
+}
+.energy-display {
+  display: flex; align-items: center; gap: 5px;
+  font-family: 'Cormorant Garamond', serif; font-size: 1.1rem;
+  color: var(--gold);
+}
+.energy-orb {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, var(--gold), #8b6a1c);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 1rem; color: var(--bg-dark);
+  border: 2px solid var(--gold); box-shadow: 0 0 10px rgba(201,168,76,0.4);
+}
+
+/* ===== CARDS ===== */
+.card {
+  width: 95px; min-width: 95px; height: 135px;
+  border-radius: 6px; padding: 6px; cursor: pointer;
+  position: relative; transition: all 0.2s;
+  display: flex; flex-direction: column;
+  border: 2px solid rgba(201,168,76,0.4);
+  background: linear-gradient(135deg, #2a1f0e, #1a1209);
+  flex-shrink: 0;
+}
+.card:hover { transform: translateY(-15px); z-index: 10; }
+.card.selected {
+  transform: translateY(-25px); z-index: 20;
+  box-shadow: 0 0 25px rgba(201,168,76,0.6);
+  border-color: var(--gold);
+}
+.card.card-attack { border-color: rgba(139,58,58,0.6); background: linear-gradient(135deg, #2a1510, #1a1209); }
+.card.card-attack .card-cost { background: var(--attack); }
+.card.card-skill { border-color: rgba(58,90,139,0.6); background: linear-gradient(135deg, #10152a, #1a1209); }
+.card.card-skill .card-cost { background: var(--defense); }
+.card.card-power { border-color: rgba(58,122,74,0.6); background: linear-gradient(135deg, #102a15, #1a1209); }
+.card.card-power .card-cost { background: var(--skill); }
+.card.unplayable { opacity: 0.5; cursor: default; }
+.card.unplayable:hover { transform: none; }
+.card-cost {
+  position: absolute; top: -5px; left: -5px;
+  width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cormorant Garamond', serif; font-weight: 700;
+  font-size: 0.8rem; color: white; z-index: 2;
+}
+.card-name {
+  font-family: 'Cormorant Garamond', serif; font-weight: 700;
+  font-size: 0.65rem; text-align: center; color: var(--gold);
+  margin-top: 2px; line-height: 1.1;
+}
+.card-type {
+  font-size: 0.5rem; text-align: center; color: var(--parchment);
+  opacity: 0.6; text-transform: uppercase; letter-spacing: 0.05em;
+}
+.card-art {
+  flex: 1; margin: 3px 0; border-radius: 3px; overflow: hidden;
+  background: var(--bg-dark); display: flex; align-items: center; justify-content: center;
+}
+.card-art img { width: 100%; height: 100%; object-fit: cover; }
+.card-desc {
+  font-size: 0.5rem; text-align: center; color: var(--parchment);
+  line-height: 1.2; padding: 2px; min-height: 24px;
+  display: flex; align-items: center; justify-content: center;
+}
+.card.upgraded .card-name { color: #7ddf7d; }
+.card.exhausts .card-desc::after { content: ' Exhaust.'; font-style: italic; color: #d4a870; }
+
+/* ===== REWARD SCREEN ===== */
+#reward-screen {
+  background: rgba(26,18,9,0.95);
+}
+.reward-content { text-align: center; padding: 20px; max-width: 500px; width: 90%; }
+.reward-content h2 { color: var(--gold); margin-bottom: 15px; font-size: 1.5rem; }
+.reward-cards {
+  display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;
+  margin: 15px 0;
+}
+.reward-card-wrapper {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+}
+.reward-gold { font-size: 1.1rem; color: var(--gold); margin-bottom: 10px; }
+.rarity-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; }
+.rarity-common { color: #aaa; }
+.rarity-uncommon { color: #4a9eff; }
+.rarity-rare { color: var(--gold); }
+
+/* ===== REST SCREEN ===== */
+#rest-screen { background: rgba(26,18,9,0.95); }
+.rest-content { text-align: center; padding: 20px; max-width: 500px; width: 90%; }
+.rest-content h2 { color: var(--gold); margin-bottom: 10px; }
+.rest-content p { margin-bottom: 20px; font-style: italic; opacity: 0.8; }
+.rest-options { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+.rest-option {
+  padding: 20px; border: 1px solid rgba(201,168,76,0.3);
+  border-radius: 8px; cursor: pointer; transition: all 0.3s;
+  background: rgba(26,18,9,0.8); min-width: 140px;
+}
+.rest-option:hover { border-color: var(--gold); background: rgba(201,168,76,0.1); }
+.rest-option .icon { font-size: 2rem; margin-bottom: 8px; }
+.rest-option .label { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--gold); }
+.rest-option .desc { font-size: 0.75rem; opacity: 0.7; margin-top: 5px; }
+
+/* ===== UPGRADE OVERLAY ===== */
+#upgrade-overlay {
+  position: fixed; inset: 0; background: rgba(15,11,6,0.95);
+  z-index: 1000; display: none; flex-direction: column; align-items: center;
+  justify-content: flex-start; padding: 20px; overflow-y: auto;
+}
+#upgrade-overlay.active { display: flex; }
+#upgrade-overlay h3 { color: var(--gold); margin-bottom: 15px; font-size: 1.2rem; }
+#upgrade-cards-grid {
+  display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; max-width: 600px;
+}
+.upgrade-card-slot { position: relative; }
+
+/* ===== EVENT SCREEN ===== */
+#event-screen { background: rgba(26,18,9,0.95); }
+.event-content {
+  text-align: center; padding: 20px; max-width: 500px; width: 90%;
+}
+.event-content h2 { color: var(--gold); margin-bottom: 15px; }
+.event-text {
+  font-style: italic; line-height: 1.6; margin-bottom: 25px;
+  font-size: 0.95rem; opacity: 0.9;
+}
+.event-choices { display: flex; flex-direction: column; gap: 10px; }
+.event-choice {
+  padding: 12px 20px; border: 1px solid rgba(201,168,76,0.3);
+  border-radius: 6px; cursor: pointer; transition: all 0.3s;
+  background: rgba(26,18,9,0.8); text-align: left;
+}
+.event-choice:hover { border-color: var(--gold); background: rgba(201,168,76,0.1); }
+.event-choice .choice-label { color: var(--gold); font-family: 'Cormorant Garamond', serif; }
+.event-choice .choice-effect { font-size: 0.8rem; opacity: 0.6; margin-top: 3px; }
+
+/* ===== SHOP SCREEN ===== */
+#shop-screen { background: rgba(26,18,9,0.95); overflow-y: auto; justify-content: flex-start; padding-top: 20px; }
+.shop-content { text-align: center; padding: 20px; max-width: 600px; width: 90%; }
+.shop-content h2 { color: var(--gold); margin-bottom: 5px; }
+.shop-gold { color: var(--gold); margin-bottom: 15px; }
+.shop-cards {
+  display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px;
+}
+.shop-card-slot {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+}
+.shop-price {
+  font-size: 0.75rem; color: var(--gold); font-weight: bold;
+}
+.shop-price.cannot-afford { color: #666; text-decoration: line-through; }
+.shop-remove-section {
+  border-top: 1px solid rgba(201,168,76,0.2); padding-top: 15px; margin-top: 10px;
+}
+
+/* ===== GAME OVER / VICTORY ===== */
+#gameover-screen, #victory-screen { background: rgba(26,18,9,0.95); }
+.end-content { text-align: center; padding: 20px; max-width: 500px; width: 90%; }
+.end-content h2 { color: var(--gold); font-size: 2rem; margin-bottom: 15px; }
+.end-stats { text-align: left; margin: 15px auto; max-width: 300px; font-size: 0.9rem; line-height: 1.8; }
+.end-stats span { color: var(--gold); }
+
+/* ===== SCREEN SHAKE ===== */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10% { transform: translateX(-5px) translateY(2px); }
+  20% { transform: translateX(5px) translateY(-2px); }
+  30% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  50% { transform: translateX(-2px); }
+}
+.shake { animation: shake 0.4s ease; }
+
+/* ===== CARD FLY ANIMATION ===== */
+.card-flying {
+  position: fixed !important; z-index: 10000; pointer-events: none;
+  transition: all 0.4s ease-in-out;
+}
+
+/* ===== TOOLTIP ===== */
+#tooltip {
+  position: fixed; z-index: 9999; background: rgba(15,11,6,0.95);
+  border: 1px solid var(--gold); border-radius: 6px; padding: 10px 14px;
+  max-width: 220px; font-size: 0.8rem; pointer-events: none;
+  display: none; color: var(--parchment);
+}
+#tooltip .tt-name { font-family: 'Cormorant Garamond', serif; font-weight: 700; color: var(--gold); font-size: 1rem; }
+#tooltip .tt-type { font-size: 0.65rem; text-transform: uppercase; opacity: 0.6; }
+#tooltip .tt-desc { margin-top: 5px; line-height: 1.4; }
+
+/* ===== META PROGRESSION OVERLAY ===== */
+#meta-overlay {
+  position: fixed; inset: 0; background: rgba(15,11,6,0.97);
+  z-index: 1100; display: none; flex-direction: column; align-items: center;
+  justify-content: flex-start; padding: 20px; overflow-y: auto;
+}
+#meta-overlay.active { display: flex; }
+#meta-overlay h2 { color: var(--gold); font-family: 'Cormorant Garamond', serif; margin-bottom: 5px; font-size: 1.6rem; }
+#meta-overlay .meta-subtitle { font-style: italic; opacity: 0.6; margin-bottom: 20px; font-size: 0.85rem; }
+.meta-stats {
+  display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px;
+}
+.meta-stat {
+  text-align: center; padding: 10px 15px; border: 1px solid rgba(201,168,76,0.2);
+  border-radius: 6px; background: rgba(26,18,9,0.8); min-width: 80px;
+}
+.meta-stat .stat-val { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--gold); font-weight: 700; }
+.meta-stat .stat-label { font-size: 0.65rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.05em; }
+.meta-section {
+  width: 100%; max-width: 600px; margin-bottom: 20px;
+  border: 1px solid rgba(201,168,76,0.2); border-radius: 8px;
+  background: rgba(26,18,9,0.6); padding: 15px;
+}
+.meta-section h3 {
+  font-family: 'Cormorant Garamond', serif; color: var(--gold); font-size: 1.1rem;
+  margin-bottom: 10px; border-bottom: 1px solid rgba(201,168,76,0.15); padding-bottom: 5px;
+}
+.meta-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 10px; margin-bottom: 5px; border-radius: 4px;
+  background: rgba(15,11,6,0.5); border: 1px solid rgba(201,168,76,0.1);
+  transition: all 0.2s;
+}
+.meta-item:hover { border-color: rgba(201,168,76,0.3); }
+.meta-item .item-info { flex: 1; }
+.meta-item .item-name { color: var(--parchment); font-family: 'Cormorant Garamond', serif; font-size: 0.95rem; }
+.meta-item .item-desc { font-size: 0.7rem; opacity: 0.6; margin-top: 2px; }
+.meta-item .item-cost { font-size: 0.8rem; color: var(--gold); white-space: nowrap; margin-left: 10px; }
+.meta-item.purchased { opacity: 0.5; border-color: rgba(58,122,74,0.3); }
+.meta-item.purchased .item-name::after { content: ' (Owned)'; color: #70d490; font-size: 0.75rem; }
+.meta-item .buy-btn {
+  font-family: 'Cormorant Garamond', serif; font-size: 0.75rem; padding: 4px 12px;
+  border: 1px solid var(--gold); background: rgba(201,168,76,0.15); color: var(--gold);
+  cursor: pointer; border-radius: 3px; transition: all 0.2s; margin-left: 10px;
+}
+.meta-item .buy-btn:hover { background: rgba(201,168,76,0.3); }
+.meta-item .buy-btn:disabled { opacity: 0.4; cursor: default; }
+.meta-item .buy-btn:disabled:hover { background: rgba(201,168,76,0.15); }
+
+/* Bestiary */
+.bestiary-entry {
+  padding: 8px 10px; margin-bottom: 5px; border-radius: 4px;
+  background: rgba(15,11,6,0.5); border: 1px solid rgba(201,168,76,0.1);
+}
+.bestiary-entry.unseen { opacity: 0.35; }
+.bestiary-entry .be-name {
+  font-family: 'Cormorant Garamond', serif; color: var(--gold); font-size: 0.9rem;
+}
+.bestiary-entry .be-tip { font-size: 0.72rem; opacity: 0.8; margin-top: 3px; line-height: 1.4; }
+.bestiary-entry.unseen .be-name { color: #666; }
+.bestiary-entry.unseen .be-tip { display: none; }
+
+/* Enhanced death screen */
+.ink-reward-breakdown {
+  text-align: left; margin: 10px auto; max-width: 320px; font-size: 0.8rem; line-height: 1.7;
+  border: 1px solid rgba(201,168,76,0.2); border-radius: 6px; padding: 10px 15px;
+  background: rgba(26,18,9,0.6);
+}
+.ink-reward-breakdown .ink-line { display: flex; justify-content: space-between; }
+.ink-reward-breakdown .ink-total {
+  border-top: 1px solid rgba(201,168,76,0.3); padding-top: 5px; margin-top: 5px;
+  color: var(--gold); font-weight: bold; font-family: 'Cormorant Garamond', serif; font-size: 1rem;
+}
+.lessons-section {
+  text-align: left; margin: 15px auto; max-width: 400px;
+}
+.lessons-section h4 {
+  font-family: 'Cormorant Garamond', serif; color: var(--gold); font-size: 1rem; margin-bottom: 8px;
+}
+.lesson-entry {
+  padding: 6px 10px; margin-bottom: 5px; border-radius: 4px;
+  background: rgba(15,11,6,0.5); border: 1px solid rgba(201,168,76,0.1);
+  font-size: 0.72rem; line-height: 1.4;
+}
+.lesson-entry .lesson-name {
+  font-family: 'Cormorant Garamond', serif; color: var(--parchment); font-size: 0.85rem;
+}
+.lesson-entry .lesson-tip { opacity: 0.8; margin-top: 2px; }
+.lesson-new-badge {
+  display: inline-block; background: var(--gold); color: var(--bg-dark); font-size: 0.55rem;
+  padding: 1px 5px; border-radius: 3px; margin-left: 6px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em; vertical-align: middle;
+}
+.next-unlock-hint {
+  text-align: center; margin: 10px auto; font-size: 0.8rem; opacity: 0.7;
+  font-style: italic; max-width: 350px;
+}
+.death-buttons { display: flex; gap: 15px; justify-content: center; margin-top: 15px; flex-wrap: wrap; }
+
+/* Title screen library button */
+.btn-library {
+  margin-top: 12px; font-size: clamp(0.8rem, 1.8vw, 1rem) !important;
+  padding: 0.6em 2em !important; border-color: rgba(201,168,76,0.5) !important;
+  background: rgba(201,168,76,0.08) !important;
+}
+.ink-display-title {
+  font-size: 0.85rem; color: var(--gold); opacity: 0.7; margin-top: 8px;
+  font-family: 'Cormorant Garamond', serif;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 480px) {
+  .card { width: 80px; min-width: 80px; height: 115px; padding: 4px; }
+  .card-name { font-size: 0.55rem; }
+  .card-desc { font-size: 0.45rem; }
+  .card-cost { width: 18px; height: 18px; font-size: 0.7rem; }
+  .enemy-portrait { width: 60px; height: 60px; }
+  #hand-cards { gap: 4px; }
+  .map-node { width: 40px; height: 40px; font-size: 1.1rem; }
+  .map-row { gap: 25px; }
+  .reward-cards .card, .shop-cards .card { width: 85px; min-width: 85px; height: 120px; }
+}
+</style>
+</head>
+<body>
+<div id="game">
+  <!-- MUTE BUTTON -->
+  <button id="mute-btn" onclick="toggleMute()">&#9834;</button>
+
+  <!-- TOOLTIP -->
+  <div id="tooltip">
+    <div class="tt-name"></div>
+    <div class="tt-type"></div>
+    <div class="tt-desc"></div>
+  </div>
+
+  <!-- TITLE SCREEN -->
+  <div id="title-screen" class="screen active">
+    <h1>The Storyweaver's Descent</h1>
+    <div class="subtitle">A tale of ink and imagination</div>
+    <button class="btn" onclick="startGame()">New Game</button>
+    <button class="btn btn-library" onclick="showMetaScreen()">Library of Past Lives</button>
+    <div class="ink-display-title" id="title-ink-display"></div>
+    <div class="credit">Crafted for Uchan Sun (cheese_talk) &mdash; wacl1jj</div>
+  </div>
+
+  <!-- MAP SCREEN -->
+  <div id="map-screen" class="screen">
+    <div id="map-header">
+      <div class="player-stats">
+        <span>&#10084; <span id="map-hp">50/50</span></span>
+        <span style="color:var(--gold)">&#9733; <span id="map-gold">0</span></span>
+      </div>
+      <div style="font-family:'Cormorant Garamond',serif;color:var(--gold)">
+        <span id="map-act-label">Act I</span>
+      </div>
+      <button class="btn-small btn" onclick="viewDeck()" style="font-size:0.7rem;padding:4px 10px;">Deck</button>
+    </div>
+    <div id="map-scroll-area" style="flex:1;width:100%;overflow-y:auto;display:flex;flex-direction:column;align-items:center;">
+      <div id="map-container"></div>
+    </div>
+  </div>
+
+  <!-- COMBAT SCREEN -->
+  <div id="combat-screen" class="screen">
+    <div id="combat-top">
+      <div class="combat-info">
+        <span>&#10084; <span id="combat-hp">50/50</span></span>
+        <span id="combat-block-display" style="color:var(--defense)"></span>
+      </div>
+      <div class="combat-info">
+        <span id="combat-status-effects"></span>
+      </div>
+      <div class="combat-info">
+        <span style="font-size:0.7rem;opacity:0.5">Draw: <span id="draw-count">0</span> | Disc: <span id="discard-count">0</span></span>
+      </div>
+    </div>
+    <div id="enemy-area"></div>
+    <div id="hand-area">
+      <div id="hand-cards"></div>
+      <div id="hand-controls">
+        <div class="energy-display">
+          <div class="energy-orb"><span id="energy-text">3</span></div>
+          <span>Energy</span>
+        </div>
+        <button class="btn btn-small" id="end-turn-btn" onclick="endPlayerTurn()">End Turn</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REWARD SCREEN -->
+  <div id="reward-screen" class="screen">
+    <div class="reward-content">
+      <h2>Victory!</h2>
+      <div class="reward-gold" id="reward-gold-text"></div>
+      <h3 style="color:var(--parchment);opacity:0.7;margin-bottom:10px;font-size:1rem;">Choose a card to add:</h3>
+      <div class="reward-cards" id="reward-cards"></div>
+      <button class="btn btn-small" onclick="skipReward()" style="margin-top:15px;">Skip</button>
+    </div>
+  </div>
+
+  <!-- REST SCREEN -->
+  <div id="rest-screen" class="screen">
+    <div class="rest-content">
+      <h2>A Moment of Respite</h2>
+      <p>The fire crackles softly as you rest your weary pen...</p>
+      <div class="rest-options">
+        <div class="rest-option" onclick="restHeal()">
+          <div class="icon">&#128150;</div>
+          <div class="label">Rest</div>
+          <div class="desc" id="rest-heal-desc">Heal 30% of max HP</div>
+        </div>
+        <div class="rest-option" onclick="restUpgrade()">
+          <div class="icon">&#9881;</div>
+          <div class="label">Smith</div>
+          <div class="desc">Upgrade a card</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- UPGRADE OVERLAY -->
+  <div id="upgrade-overlay">
+    <h3>Choose a card to upgrade:</h3>
+    <div id="upgrade-cards-grid"></div>
+    <button class="btn btn-small" onclick="closeUpgrade()" style="margin-top:15px;">Cancel</button>
+  </div>
+
+  <!-- EVENT SCREEN -->
+  <div id="event-screen" class="screen">
+    <div class="event-content">
+      <h2 id="event-title">A Strange Encounter</h2>
+      <div class="event-text" id="event-text"></div>
+      <div class="event-choices" id="event-choices"></div>
+    </div>
+  </div>
+
+  <!-- SHOP SCREEN -->
+  <div id="shop-screen" class="screen">
+    <div class="shop-content">
+      <h2>The Wandering Bookshop</h2>
+      <div class="shop-gold">Gold: <span id="shop-gold">0</span></div>
+      <h3 style="color:var(--parchment);font-size:1rem;margin-bottom:10px;">Cards for Sale</h3>
+      <div class="shop-cards" id="shop-cards"></div>
+      <div class="shop-remove-section">
+        <button class="btn btn-small" id="shop-remove-btn" onclick="shopRemoveCard()">Remove a Card (75 gold)</button>
+      </div>
+      <button class="btn btn-small" onclick="leaveShop()" style="margin-top:15px;">Leave</button>
+    </div>
+  </div>
+
+  <!-- DECK VIEW OVERLAY -->
+  <div id="deck-overlay" style="position:fixed;inset:0;background:rgba(15,11,6,0.95);z-index:1000;display:none;flex-direction:column;align-items:center;justify-content:flex-start;padding:20px;overflow-y:auto;">
+    <h3 style="color:var(--gold);margin-bottom:15px;font-family:'Cormorant Garamond',serif;">Your Deck (<span id="deck-count">0</span> cards)</h3>
+    <div id="deck-cards-grid" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:600px;"></div>
+    <button class="btn btn-small" onclick="closeDeck()" style="margin-top:15px;">Close</button>
+  </div>
+
+  <!-- REMOVE CARD OVERLAY -->
+  <div id="remove-overlay" style="position:fixed;inset:0;background:rgba(15,11,6,0.95);z-index:1000;display:none;flex-direction:column;align-items:center;justify-content:flex-start;padding:20px;overflow-y:auto;">
+    <h3 style="color:var(--gold);margin-bottom:15px;font-family:'Cormorant Garamond',serif;">Choose a card to remove:</h3>
+    <div id="remove-cards-grid" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:600px;"></div>
+    <button class="btn btn-small" onclick="closeRemove()" style="margin-top:15px;">Cancel</button>
+  </div>
+
+  <!-- GAME OVER SCREEN -->
+  <div id="gameover-screen" class="screen" style="overflow-y:auto;">
+    <div class="end-content" style="max-width:500px;">
+      <h2>The Story Ends...</h2>
+      <p style="font-style:italic;opacity:0.7;margin-bottom:15px;">Your tale fades into silence, but the pages remain. The ink you've spilled becomes fuel for the next story.</p>
+      <div class="end-stats" id="gameover-stats"></div>
+      <div id="gameover-ink-breakdown"></div>
+      <div id="gameover-lessons"></div>
+      <div id="gameover-next-unlock"></div>
+      <div class="death-buttons">
+        <button class="btn" onclick="startGame()">Write Again</button>
+        <button class="btn btn-library" onclick="showMetaScreen()">Library</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VICTORY SCREEN -->
+  <div id="victory-screen" class="screen" style="overflow-y:auto;">
+    <div class="end-content" style="max-width:500px;">
+      <h2>The Story is Complete!</h2>
+      <p style="font-style:italic;opacity:0.7;margin-bottom:15px;">You have woven a tale that will echo through eternity. Your ink overflows with triumph.</p>
+      <div class="end-stats" id="victory-stats"></div>
+      <div id="victory-ink-breakdown"></div>
+      <div id="victory-lessons"></div>
+      <div class="death-buttons">
+        <button class="btn" onclick="startGame()">New Story</button>
+        <button class="btn btn-library" onclick="showMetaScreen()">Library</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- META PROGRESSION OVERLAY -->
+  <div id="meta-overlay">
+    <h2>Library of Past Lives</h2>
+    <div class="meta-subtitle">Every failure writes the next chapter of your legend.</div>
+    <div class="meta-stats" id="meta-stats"></div>
+    <div class="meta-section" id="meta-perks-section"></div>
+    <div class="meta-section" id="meta-cards-section"></div>
+    <div class="meta-section" id="meta-bestiary-section"></div>
+    <button class="btn btn-small" onclick="closeMetaScreen()" style="margin-top:15px;">Close</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// META-PROGRESSION STATE (persists across runs via localStorage)
+// ============================================================
+const META_DEFAULT = {
+  ink: 0,
+  totalInk: 0,
+  runs: 0,
+  bestAct: 1,
+  bestFloor: 0,
+  enemiesSeen: [],
+  unlockedCards: [],
+  perks: [],
+};
+
+let META = loadMeta();
+
+function loadMeta() {
+  try {
+    const saved = localStorage.getItem('storyweaver_meta');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Merge with defaults for forward compat
+      return { ...META_DEFAULT, ...parsed };
+    }
+  } catch (e) { console.warn('Failed to load meta:', e); }
+  return { ...META_DEFAULT };
+}
+
+function saveMeta() {
+  try {
+    localStorage.setItem('storyweaver_meta', JSON.stringify(META));
+  } catch (e) { console.warn('Failed to save meta:', e); }
+}
+
+// ============================================================
+// BESTIARY - tactical tips for each enemy
+// ============================================================
+const BESTIARY = {
+  ink_blot: { name: 'Ink Blot', tip: "Ink Blots deal random damage (6-8). They have no pattern - pure aggression. Prioritize block." },
+  paper_cut: { name: 'Paper Cut', tip: "Paper Cuts always hit 3 times for 3 each. Multi-hit bypasses your block if it's too low. Kill them fast." },
+  torn_page: { name: 'Torn Page', tip: "Torn Pages alternate: attack on odd turns, block on even. Time your big attacks for their attack turns." },
+  the_editor: { name: 'The Editor', tip: "The Editor exhausts a random card every 3rd turn. Play your key cards early before they're lost forever." },
+  the_censor: { name: 'The Censor', tip: "The Censor buffs +2 Strength every 3rd turn, then Phase 2 at half HP with double hits. Rush the phase transition." },
+  plot_hole: { name: 'Plot Hole', tip: "Plot Holes heal 4 HP every other turn. Burst them down or they outlast you." },
+  fallen_hero: { name: 'Fallen Hero', tip: "Fallen Heroes hit HARD (15-18). Nothing fancy, just raw damage. Stack block or kill fast." },
+  broken_mirror: { name: 'Broken Mirror', tip: "Broken Mirrors reflect 50% damage back when defending. Don't attack on their defend turns." },
+  the_critic: { name: 'The Critic', tip: "The Critic applies Vulnerable every 3rd turn. Save your block for the turns after getting Vulnerable." },
+  the_plagiarist: { name: 'The Plagiarist', tip: "The Plagiarist copies your last played card's damage. Play a weak card before their copy turn." },
+  void_scribe: { name: 'Void Scribe', tip: "Void Scribes exhaust cards every 3rd turn, like The Editor. Same counter: play important cards immediately." },
+  unfinished_sentence: { name: 'Unfinished Sentence', tip: "Unfinished Sentences gain +1 Strength each turn. They snowball. Kill them before turn 5." },
+  writers_despair: { name: "Writer's Despair", tip: "Writer's Despair applies BOTH Vulnerable and Weak. The deadliest debuff combo. Save Narrator's Voice for recovery." },
+  the_unwritten: { name: 'The Unwritten', tip: "The Unwritten has 3 phases (full/90HP/45HP). Phase 3 does 8x3 every turn. Save burst for the final push." },
+};
+
+// ============================================================
+// LEGACY PERKS
+// ============================================================
+const LEGACY_PERKS = {
+  thick_pages: { name: 'Thick Pages', desc: '+5 max HP at the start of each run.', cost: 30 },
+  inkwell: { name: 'Inkwell', desc: 'Start each run with 15 gold.', cost: 20 },
+  sharp_quill: { name: 'Sharp Quill', desc: '+1 Strength at the start of each run.', cost: 40 },
+  expanded_vocabulary: { name: 'Expanded Vocabulary', desc: 'Draw 6 cards per turn instead of 5.', cost: 50 },
+};
+
+// ============================================================
+// UNLOCKABLE CARD DEFS (keys + costs)
+// ============================================================
+const UNLOCKABLE_CARDS = {
+  second_draft: { cost: 20, name: 'Second Draft' },
+  writers_block: { cost: 25, name: "Writer's Block" },
+  ghostwriter: { cost: 40, name: 'Ghostwriter' },
+  epilogue: { cost: 15, name: 'Epilogue' },
+  unreliable_narrator: { cost: 35, name: 'Unreliable Narrator' },
+  palimpsest: { cost: 50, name: 'Palimpsest' },
+};
+
+// ============================================================
+// GAME STATE
+// ============================================================
+const G = {
+  hp: 50, maxHp: 50, gold: 0, act: 1,
+  deck: [], drawPile: [], discardPile: [], exhaustPile: [], hand: [],
+  energy: 3, maxEnergy: 3, block: 0,
+  strength: 0, vulnerable: 0, weak: 0,
+  map: null, currentRow: -1, currentNodeIndex: -1,
+  enemies: [], selectedCard: null,
+  turn: 0, combatRewards: null,
+  floorsCleared: 0, elitesKilled: 0, bossesKilled: 0, cardsPlayed: 0,
+  enemiesEncounteredThisRun: new Set(),
+  cardsPlayedThisCombat: 0, lastCardPlayedThisTurn: null, cardsPlayedThisTurn: 0,
+  allCardsCostZero: false,
+  musicStarted: false, muted: false,
+  actNames: ['', 'Act I: The First Draft', 'Act II: The Revision', 'Act III: The Final Chapter'],
+};
+
+// ============================================================
+// IMAGE URLS
+// ============================================================
+const IMG = {
+  cardBack: 'https://cdn.midjourney.com/2936e230-2a99-45f6-a189-b6e4645ec969/0_0_1024_N.webp',
+  enemies1: [
+    'https://cdn.midjourney.com/363c6121-2a58-48d2-92c6-e8bfd0b2dd88/0_0_1024_N.webp',
+    'https://cdn.midjourney.com/363c6121-2a58-48d2-92c6-e8bfd0b2dd88/0_1_1024_N.webp',
+    'https://cdn.midjourney.com/363c6121-2a58-48d2-92c6-e8bfd0b2dd88/0_2_1024_N.webp',
+    'https://cdn.midjourney.com/363c6121-2a58-48d2-92c6-e8bfd0b2dd88/0_3_1024_N.webp',
+  ],
+  bosses: [
+    'https://cdn.midjourney.com/9c269e4f-830d-4fc3-90dd-68be88e5e5a4/0_0_1024_N.webp',
+    'https://cdn.midjourney.com/9c269e4f-830d-4fc3-90dd-68be88e5e5a4/0_1_1024_N.webp',
+    'https://cdn.midjourney.com/9c269e4f-830d-4fc3-90dd-68be88e5e5a4/0_2_1024_N.webp',
+    'https://cdn.midjourney.com/9c269e4f-830d-4fc3-90dd-68be88e5e5a4/0_3_1024_N.webp',
+  ],
+  enemies2: [
+    'https://cdn.midjourney.com/3289050d-a38c-4ebf-a3fc-c37cd7556af5/0_0_1024_N.webp',
+    'https://cdn.midjourney.com/3289050d-a38c-4ebf-a3fc-c37cd7556af5/0_1_1024_N.webp',
+    'https://cdn.midjourney.com/3289050d-a38c-4ebf-a3fc-c37cd7556af5/0_2_1024_N.webp',
+    'https://cdn.midjourney.com/3289050d-a38c-4ebf-a3fc-c37cd7556af5/0_3_1024_N.webp',
+  ],
+};
+
+// ============================================================
+// CARD DEFINITIONS
+// ============================================================
+function makeCard(def) {
+  return { ...def, upgraded: false, id: Math.random().toString(36).substr(2, 9) };
+}
+
+const CARD_DEFS = {
+  strike: { name: 'Strike', type: 'attack', cost: 1, rarity: 'starter',
+    damage: 6, upgDamage: 9, target: 'single',
+    desc: (c) => `Deal ${c.upgraded ? 9 : 6} damage.` },
+  defend: { name: 'Defend', type: 'skill', cost: 1, rarity: 'starter',
+    block: 5, upgBlock: 8, target: 'self',
+    desc: (c) => `Gain ${c.upgraded ? 8 : 5} Block.` },
+  insight: { name: 'Insight', type: 'attack', cost: 1, rarity: 'starter',
+    damage: 4, upgDamage: 7, draw: 1, upgDraw: 1, target: 'single',
+    desc: (c) => `Deal ${c.upgraded ? 7 : 4} damage. Draw ${c.upgraded ? 2 : 1} card${c.upgraded ? 's' : ''}.` },
+  quick_slash: { name: 'Quick Slash', type: 'attack', cost: 1, rarity: 'common',
+    damage: 8, upgDamage: 12, target: 'single',
+    desc: (c) => `Deal ${c.upgraded ? 12 : 8} damage.` },
+  heavy_blow: { name: 'Heavy Blow', type: 'attack', cost: 2, rarity: 'common',
+    damage: 14, upgDamage: 19, target: 'single',
+    desc: (c) => `Deal ${c.upgraded ? 19 : 14} damage.` },
+  flurry: { name: 'Flurry', type: 'attack', cost: 1, rarity: 'common',
+    damage: 3, upgDamage: 4, hits: 3, target: 'single',
+    desc: (c) => `Deal ${c.upgraded ? 4 : 3} damage 3 times.` },
+  fortify: { name: 'Fortify', type: 'skill', cost: 1, rarity: 'common',
+    block: 10, upgBlock: 14, target: 'self',
+    desc: (c) => `Gain ${c.upgraded ? 14 : 10} Block.` },
+  prepare: { name: 'Prepare', type: 'skill', cost: 0, rarity: 'common',
+    draw: 3, upgDraw: 4, target: 'self',
+    desc: (c) => `Draw ${c.upgraded ? 4 : 3} cards.` },
+  heal_card: { name: 'Heal', type: 'skill', cost: 1, rarity: 'common',
+    healAmt: 8, upgHeal: 12, target: 'self', exhaust: true,
+    desc: (c) => `Heal ${c.upgraded ? 12 : 8} HP. Exhaust.` },
+  plot_twist: { name: 'Plot Twist', type: 'attack', cost: 1, rarity: 'uncommon',
+    damage: 8, upgDamage: 11, bonusDamage: 16, upgBonusDamage: 22, target: 'single',
+    desc: (c) => `Deal ${c.upgraded ? 11 : 8} damage. ${c.upgraded ? 22 : 16} if enemy intends to attack.` },
+  cliffhanger: { name: 'Cliffhanger', type: 'attack', cost: 2, rarity: 'uncommon',
+    damage: 10, upgDamage: 14, draw: 1, upgDraw: 2, target: 'single',
+    desc: (c) => `Deal ${c.upgraded ? 14 : 10} damage. Draw ${c.upgraded ? 2 : 1} card${c.upgraded ? 's' : ''}.` },
+  foreshadowing: { name: 'Foreshadowing', type: 'skill', cost: 1, rarity: 'uncommon',
+    strengthGain: 2, upgStrength: 3, target: 'self', exhaust: true,
+    desc: (c) => `Gain ${c.upgraded ? 3 : 2} Strength. Exhaust.` },
+  red_herring: { name: 'Red Herring', type: 'skill', cost: 2, rarity: 'uncommon',
+    target: 'single', exhaust: true,
+    desc: (c) => `Enemy loses next action.${c.upgraded ? ' Apply 1 Weak.' : ''} Exhaust.` },
+  narrative_shield: { name: 'Narrative Shield', type: 'skill', cost: 1, rarity: 'uncommon',
+    block: 12, upgBlock: 16, target: 'self',
+    desc: (c) => `Gain ${c.upgraded ? 16 : 12} Block.` },
+  deus_ex_machina: { name: 'Deus Ex Machina', type: 'attack', cost: 3, rarity: 'rare',
+    damage: 30, upgDamage: 40, target: 'single', exhaust: true,
+    desc: (c) => `Deal ${c.upgraded ? 40 : 30} damage. Exhaust.` },
+  the_climax: { name: 'The Climax', type: 'attack', cost: 2, rarity: 'rare',
+    damage: 20, upgDamage: 28, target: 'all', exhaust: true,
+    desc: (c) => `Deal ${c.upgraded ? 28 : 20} damage to ALL enemies. Exhaust.` },
+  narrators_voice: { name: "Narrator's Voice", type: 'skill', cost: 1, rarity: 'rare',
+    target: 'self', exhaust: true,
+    desc: (c) => `All cards cost 0 this turn. Exhaust.` },
+  muses_blessing: { name: "Muse's Blessing", type: 'skill', cost: 0, rarity: 'rare',
+    energyGain: 2, upgEnergy: 3, draw: 3, upgDraw: 4, target: 'self', exhaust: true,
+    desc: (c) => `Gain ${c.upgraded ? 3 : 2} energy. Draw ${c.upgraded ? 4 : 3} cards. Exhaust.` },
+  // ---- Unlockable cards (gated behind META.unlockedCards) ----
+  second_draft: { name: 'Second Draft', type: 'attack', cost: 1, rarity: 'uncommon',
+    damage: 7, upgDamage: 10, target: 'single', unlockable: true,
+    desc: (c) => `Deal ${c.upgraded ? 10 : 7} damage. If this kills, draw ${c.upgraded ? 3 : 2} cards.` },
+  writers_block: { name: "Writer's Block", type: 'skill', cost: 2, rarity: 'uncommon',
+    block: 15, upgBlock: 20, target: 'self', unlockable: true,
+    desc: (c) => `Gain ${c.upgraded ? 20 : 15} Block. Exhaust a random card from draw pile.` },
+  ghostwriter: { name: 'Ghostwriter', type: 'attack', cost: 1, rarity: 'rare',
+    damage: 0, target: 'single', unlockable: true,
+    desc: (c) => `Deal damage equal to cards played this combat${c.upgraded ? ' +5' : ''}.` },
+  epilogue: { name: 'Epilogue', type: 'skill', cost: 0, rarity: 'rare',
+    target: 'self', exhaust: true, unlockable: true,
+    desc: (c) => `Heal ${c.upgraded ? 5 : 3} HP. Draw 1 card. Exhaust.` },
+  unreliable_narrator: { name: 'Unreliable Narrator', type: 'attack', cost: 2, rarity: 'uncommon',
+    damage: 5, upgDamage: 7, target: 'all', unlockable: true,
+    desc: (c) => `Deal ${c.upgraded ? 7 : 5} damage to ALL enemies 3 times.` },
+  palimpsest: { name: 'Palimpsest', type: 'skill', cost: 1, rarity: 'rare',
+    target: 'self', exhaust: true, unlockable: true,
+    desc: (c) => `Copy the last card you played this turn${c.upgraded ? ' (it costs 0)' : ''}. Exhaust.` },
+};
+
+function createStarterDeck() {
+  const deck = [];
+  for (let i = 0; i < 5; i++) deck.push(makeCard({ ...CARD_DEFS.strike, key: 'strike' }));
+  for (let i = 0; i < 4; i++) deck.push(makeCard({ ...CARD_DEFS.defend, key: 'defend' }));
+  deck.push(makeCard({ ...CARD_DEFS.insight, key: 'insight' }));
+  return deck;
+}
+
+function getCardPool(rarity) {
+  const pool = [];
+  for (const [key, def] of Object.entries(CARD_DEFS)) {
+    if (def.rarity === rarity) {
+      // Skip unlockable cards that haven't been unlocked
+      if (def.unlockable && !META.unlockedCards.includes(key)) continue;
+      pool.push(key);
+    }
+  }
+  return pool;
+}
+
+function randomCard(rarity) {
+  const pool = getCardPool(rarity);
+  const key = pool[Math.floor(Math.random() * pool.length)];
+  return makeCard({ ...CARD_DEFS[key], key });
+}
+
+function getEffectiveCost(card) {
+  if (G.allCardsCostZero) return 0;
+  return card.cost;
+}
+
+// ============================================================
+// ENEMY DEFINITIONS
+// ============================================================
+const ENEMY_DEFS = {
+  ink_blot: {
+    name: 'Ink Blot', hp: 18, act: 1, type: 'normal', img: () => IMG.enemies1[0],
+    ai: function(e) {
+      const dmg = 6 + Math.floor(Math.random() * 3);
+      e.nextIntent = { type: 'attack', value: dmg, icon: '&#9876;' };
+    },
+    act_fn: function(e) {
+      dealDamageToPlayer(e.nextIntent.value, e);
+    }
+  },
+  paper_cut: {
+    name: 'Paper Cut', hp: 22, act: 1, type: 'normal', img: () => IMG.enemies1[1],
+    ai: function(e) {
+      e.nextIntent = { type: 'attack', value: 3, hits: 3, icon: '&#9876;' };
+    },
+    act_fn: function(e) {
+      for (let i = 0; i < 3; i++) {
+        if (e.hp <= 0) break;
+        dealDamageToPlayer(3, e);
+      }
+    }
+  },
+  torn_page: {
+    name: 'Torn Page', hp: 28, act: 1, type: 'normal', img: () => IMG.enemies1[2],
+    ai: function(e) {
+      if (!e.turnCount) e.turnCount = 0;
+      e.turnCount++;
+      if (e.turnCount % 2 === 1) {
+        e.nextIntent = { type: 'attack', value: 7, icon: '&#9876;' };
+      } else {
+        e.nextIntent = { type: 'defend', value: 8, icon: '&#128737;' };
+      }
+    },
+    act_fn: function(e) {
+      if (e.nextIntent.type === 'attack') {
+        dealDamageToPlayer(e.nextIntent.value, e);
+      } else {
+        e.block += 8;
+      }
+    }
+  },
+  the_editor: {
+    name: 'The Editor', hp: 45, act: 1, type: 'elite', img: () => IMG.enemies1[3],
+    ai: function(e) {
+      if (!e.turnCount) e.turnCount = 0;
+      e.turnCount++;
+      if (e.turnCount % 3 === 0) {
+        e.nextIntent = { type: 'special', value: 0, icon: '&#9988;', label: 'Exhaust' };
+      } else {
+        e.nextIntent = { type: 'attack', value: 10, icon: '&#9876;' };
+      }
+    },
+    act_fn: function(e) {
+      if (e.nextIntent.type === 'attack') {
+        dealDamageToPlayer(10, e);
+      } else {
+        if (G.hand.length > 0) {
+          const idx = Math.floor(Math.random() * G.hand.length);
+          const card = G.hand.splice(idx, 1)[0];
+          G.exhaustPile.push(card);
+          showFloatingText(document.querySelector('#combat-top'), 'Card Exhausted!', '#d4a870');
+        }
+      }
+    }
+  },
+  the_censor: {
+    name: 'The Censor', hp: 90, act: 1, type: 'boss', img: () => IMG.bosses[0],
+    ai: function(e) {
+      if (!e.turnCount) e.turnCount = 0;
+      e.turnCount++;
+      if (!e.phase2 && e.hp <= 45) {
+        e.phase2 = true;
+        e.turnCount = 1;
+      }
+      if (!e.phase2) {
+        if (e.turnCount % 3 === 0) {
+          e.nextIntent = { type: 'buff', value: 2, icon: '&#8593;', label: '+2 Str' };
+        } else {
+          e.nextIntent = { type: 'attack', value: 12, icon: '&#9876;' };
+        }
+      } else {
+        e.nextIntent = { type: 'attack', value: 8, hits: 2, icon: '&#9876;' };
+      }
+    },
+    act_fn: function(e) {
+      if (e.nextIntent.type === 'attack') {
+        const hits = e.nextIntent.hits || 1;
+        for (let i = 0; i < hits; i++) {
+          if (e.hp <= 0) break;
+          dealDamageToPlayer(e.nextIntent.value, e);
+        }
+      } else if (e.nextIntent.type === 'buff') {
+        e.strength = (e.strength || 0) + 2;
+        showFloatingText(e.element, '+2 Str', '#70d490');
+      }
+    }
+  },
+  plot_hole: {
+    name: 'Plot Hole', hp: 25, act: 2, type: 'normal', img: () => IMG.enemies2[0],
+    ai: function(e) {
+      if (!e.turnCount) e.turnCount = 0;
+      e.turnCount++;
+      if (e.turnCount % 2 === 1) {
+        e.nextIntent = { type: 'attack', value: 7, icon: '&#9876;' };
+      } else {
+        e.nextIntent = { type: 'buff', value: 4, icon: '&#10084;', label: 'Heal 4' };
+      }
+    },
+    act_fn: function(e) {
+      if (e.nextIntent.type === 'attack') {
+        dealDamageToPlayer(7, e);
+      } else {
+        e.hp = Math.min(e.maxHp, e.hp + 4);
+        showFloatingText(e.element, '+4 HP', '#6bff6b');
+      }
+    }
+  },
+  fallen_hero: {
+    name: 'Fallen Hero', hp: 35, act: 2, type: 'normal', img: () => IMG.enemies2[1],
+    ai: function(e) {
+      const dmg = 15 + Math.floor(Math.random() * 4);
+      e.nextIntent = { type: 'attack', value: dmg, icon: '&#9876;' };
+    },
+    act_fn: function(e) {
+      dealDamageToPlayer(e.nextIntent.value, e);
+    }
+  },
+  broken_mirror: {
+    name: 'Broken Mirror', hp: 30, act: 2, type: 'normal', img: () => IMG.enemies2[2],
+    ai: function(e) {
+      if (!e.turnCount) e.turnCount = 0;
+      e.turnCount++;
+      if (e.turnCount % 2 === 1) {
+        e.nextIntent = { type: 'attack', value: 6, icon: '&#9876;' };
+      } else {
+        e.nextIntent = { type: 'defend', value: 6, icon: '&#128737;', label: 'Reflect' };
+        e.reflecting = true;
+      }
+    },
+    act_fn: function(e) {
+      e.reflecting = false;
+      if (e.nextIntent.type === 'attack') {
+        dealDamageToPlayer(6, e);
+      } else {
+        e.block += 6;
+        e.reflecting = true;
+      }
+    }
+  },
+  the_critic: {
+    name: 'The Critic', hp: 55, act: 2, type: 'elite', img: () => IMG.enemies2[3],
+    ai: function(e) {
+      if (!e.turnCount) e.turnCount = 0;
+      e.turnCount++;
+      if (e.turnCount % 3 === 0) {
+        e.nextIntent = { type: 'debuff', value: 0, icon: '&#8595;', label: 'Vuln 2' };
+      } else {
+        e.nextIntent = { type: 'attack', value: 9, icon: '&#9876;' };
+      }
+    },
+    act_fn: function(e) {
+      if (e.nextIntent.type === 'attack') {
+        dealDamageToPlayer(9, e);
+      } else {
+        G.vulnerable += 2;
+        showFloatingText(document.querySelector('#combat-top'), 'Vulnerable!', '#d47070');
+      }
+    }
+  },
+  the_plagiarist: {
+    name: 'The Plagiarist', hp: 110, act: 2, type: 'boss', img: () => IMG.bosses[1],
+    ai: function(e) {
+      if (!e.turnCount) e.turnCount = 0;
+      e.turnCount++;
+      const patterns = [
+        { type: 'attack', value: 10, icon: '&#9876;' },
+        { type: 'attack', value: 7, hits: 2, icon: '&#9876;' },
+        { type: 'defend', value: 10, icon: '&#128737;', label: 'Block 10 + copy' },
+        { type: 'attack', value: 14, icon: '&#9876;' },
+      ];
+      e.nextIntent = { ...patterns[(e.turnCount - 1) % patterns.length] };
+    },
+    act_fn: function(e) {
+      if (e.nextIntent.type === 'attack') {
+        const hits = e.nextIntent.hits || 1;
+        for (let i = 0; i < hits; i++) {
+          if (e.hp <= 0) break;
+          dealDamageToPlayer(e.nextIntent.value, e);
+        }
+      } else {
+        e.block += 10;
+        if (G.discardPile.length > 0) {
+          const last = G.discardPile[G.discardPile.length - 1];
+          if (last && last.damage) {
+            dealDamageToPlayer(last.damage, e);
+            showFloatingText(e.element, 'Copied!', '#b470d4');
+          }
+        }
+      }
+    }
+  },
+  void_scribe: {
+    name: 'Void Scribe', hp: 32, act: 3, type: 'normal', img: () => IMG.enemies1[0],
+    ai: function(e) {
+      if (!e.turnCount) e.turnCount = 0;
+      e.turnCount++;
+      if (e.turnCount % 3 === 0) {
+        e.nextIntent = { type: 'special', value: 0, icon: '&#9988;', label: 'Exhaust' };
+      } else {
+        e.nextIntent = { type: 'attack', value: 8, icon: '&#9876;' };
+      }
+    },
+    act_fn: function(e) {
+      if (e.nextIntent.type === 'attack') {
+        dealDamageToPlayer(8, e);
+      } else {
+        if (G.hand.length > 0) {
+          const idx = Math.floor(Math.random() * G.hand.length);
+          const card = G.hand.splice(idx, 1)[0];
+          G.exhaustPile.push(card);
+          showFloatingText(document.querySelector('#combat-top'), 'Card Exhausted!', '#d4a870');
+        }
+      }
+    }
+  },
+  unfinished_sentence: {
+    name: 'Unfinished Sentence', hp: 38, act: 3, type: 'normal', img: () => IMG.enemies1[1],
+    ai: function(e) {
+      if (!e.turnCount) e.turnCount = 0;
+      e.turnCount++;
+      e.nextIntent = { type: 'attack', value: 5 + (e.strength || 0), icon: '&#9876;' };
+    },
+    act_fn: function(e) {
+      dealDamageToPlayer(e.nextIntent.value, e);
+      e.strength = (e.strength || 0) + 1;
+      showFloatingText(e.element, '+1 Str', '#70d490');
+    }
+  },
+  writers_despair: {
+    name: "Writer's Despair", hp: 65, act: 3, type: 'elite', img: () => IMG.enemies1[2],
+    ai: function(e) {
+      if (!e.turnCount) e.turnCount = 0;
+      e.turnCount++;
+      if (e.turnCount % 3 === 1) {
+        e.nextIntent = { type: 'debuff', value: 0, icon: '&#8595;', label: 'Vuln+Weak' };
+      } else {
+        e.nextIntent = { type: 'attack', value: 11, icon: '&#9876;' };
+      }
+    },
+    act_fn: function(e) {
+      if (e.nextIntent.type === 'attack') {
+        dealDamageToPlayer(11, e);
+      } else {
+        G.vulnerable += 2;
+        G.weak += 2;
+        showFloatingText(document.querySelector('#combat-top'), 'Vuln + Weak!', '#d47070');
+      }
+    }
+  },
+  the_unwritten: {
+    name: 'The Unwritten', hp: 130, act: 3, type: 'boss', img: () => IMG.bosses[2],
+    ai: function(e) {
+      if (!e.turnCount) e.turnCount = 0;
+      e.turnCount++;
+      if (!e.phase) e.phase = 1;
+      if (e.phase === 1 && e.hp <= 90) { e.phase = 2; showFloatingText(e.element, 'Phase 2!', '#b470d4'); }
+      if (e.phase === 2 && e.hp <= 45) { e.phase = 3; showFloatingText(e.element, 'Final Phase!', '#ff6b6b'); }
+      if (e.phase === 1) {
+        if (e.turnCount % 2 === 1) {
+          e.nextIntent = { type: 'attack', value: 10, icon: '&#9876;' };
+        } else {
+          e.nextIntent = { type: 'buff', value: 2, icon: '&#8593;', label: '+2 Str' };
+        }
+      } else if (e.phase === 2) {
+        if (e.turnCount % 3 === 0) {
+          e.nextIntent = { type: 'debuff', value: 0, icon: '&#8595;', label: 'Vuln+Weak' };
+        } else {
+          e.nextIntent = { type: 'attack', value: 13, icon: '&#9876;' };
+        }
+      } else {
+        e.nextIntent = { type: 'attack', value: 8, hits: 3, icon: '&#9876;' };
+      }
+    },
+    act_fn: function(e) {
+      if (e.nextIntent.type === 'attack') {
+        const hits = e.nextIntent.hits || 1;
+        for (let i = 0; i < hits; i++) {
+          if (e.hp <= 0) break;
+          dealDamageToPlayer(e.nextIntent.value, e);
+        }
+      } else if (e.nextIntent.type === 'buff') {
+        e.strength = (e.strength || 0) + 2;
+        showFloatingText(e.element, '+2 Str', '#70d490');
+      } else if (e.nextIntent.type === 'debuff') {
+        G.vulnerable += 2;
+        G.weak += 2;
+        showFloatingText(document.querySelector('#combat-top'), 'Vuln + Weak!', '#d47070');
+      }
+    }
+  },
+};
+
+// ============================================================
+// EVENTS
+// ============================================================
+const EVENTS = [
+  {
+    title: 'The Forgotten Manuscript',
+    text: 'You discover a crumbling manuscript wedged between loose stones. The pages glow faintly with forgotten words, stories that were never finished. Something stirs within the text...',
+    choices: [
+      { label: 'Read the manuscript carefully', effect: 'Gain 8 max HP', fn: () => { G.maxHp += 8; G.hp += 8; } },
+      { label: 'Absorb its power quickly', effect: 'Gain a random uncommon card', fn: () => { G.deck.push(randomCard('uncommon')); } },
+      { label: 'Leave it undisturbed', effect: 'Gain 25 gold', fn: () => { G.gold += 25; } },
+    ]
+  },
+  {
+    title: 'The Whispering Inkwell',
+    text: 'An ancient inkwell sits upon a pedestal, its contents swirling with living darkness. Whispers emanate from within, promising power to those brave enough to drink...',
+    choices: [
+      { label: 'Drink from the inkwell', effect: 'Gain 2 Strength for next combat, lose 8 HP', fn: () => { G.hp = Math.max(1, G.hp - 8); G.strength += 2; } },
+      { label: 'Dip your pen in it', effect: 'Upgrade a random card', fn: () => { upgradeRandomCard(); } },
+      { label: 'Smash the inkwell', effect: 'Gain 30 gold', fn: () => { G.gold += 30; } },
+    ]
+  },
+  {
+    title: 'A Character Appears',
+    text: 'A figure steps out from between the lines of a nearby story. They look at you with knowing eyes. "I can help you," they say, "but every story demands a price."',
+    choices: [
+      { label: '"Heal my wounds"', effect: 'Heal to full HP', fn: () => { G.hp = G.maxHp; } },
+      { label: '"Teach me something new"', effect: 'Gain a random rare card, lose 10 HP', fn: () => { G.deck.push(randomCard('rare')); G.hp = Math.max(1, G.hp - 10); } },
+      { label: '"I need no help"', effect: 'Gain 15 gold', fn: () => { G.gold += 15; } },
+    ]
+  },
+  {
+    title: 'The Binding Thread',
+    text: 'A golden thread stretches across your path. It hums with narrative energy, connecting plot points and character arcs. Pulling it might unravel something... or weave something new.',
+    choices: [
+      { label: 'Pull the thread gently', effect: 'Remove a random starter card from your deck', fn: () => { removeRandomStarter(); } },
+      { label: 'Weave it into your story', effect: 'Gain 6 max HP', fn: () => { G.maxHp += 6; G.hp += 6; } },
+    ]
+  },
+  {
+    title: 'The Mirror Library',
+    text: 'You enter a library where every book contains a reflection of your journey. In one volume, you see yourself choosing a different path...',
+    choices: [
+      { label: 'Read about your other self', effect: 'Transform a random card into a random uncommon', fn: () => { transformRandomCard(); } },
+      { label: 'Close the book', effect: 'Heal 15 HP', fn: () => { G.hp = Math.min(G.maxHp, G.hp + 15); } },
+      { label: 'Burn the library', effect: 'Gain 40 gold', fn: () => { G.gold += 40; } },
+    ]
+  },
+];
+
+function upgradeRandomCard() {
+  const upgradeable = G.deck.filter(c => !c.upgraded);
+  if (upgradeable.length > 0) {
+    const card = upgradeable[Math.floor(Math.random() * upgradeable.length)];
+    card.upgraded = true;
+    card.name = card.name + '+';
+  }
+}
+
+function removeRandomStarter() {
+  const idx = G.deck.findIndex(c => c.rarity === 'starter');
+  if (idx >= 0) G.deck.splice(idx, 1);
+}
+
+function transformRandomCard() {
+  const idx = G.deck.findIndex(c => c.rarity === 'starter' || c.rarity === 'common');
+  if (idx >= 0) {
+    G.deck.splice(idx, 1);
+    G.deck.push(randomCard('uncommon'));
+  }
+}
+
+// ============================================================
+// AUDIO SYSTEM
+// ============================================================
+let audioCtx = null;
+let masterGain = null;
+let currentMusic = null;
+let musicInterval = null;
+
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.15;
+  masterGain.connect(audioCtx.destination);
+  G.musicStarted = true;
+}
+
+function toggleMute() {
+  G.muted = !G.muted;
+  document.getElementById('mute-btn').textContent = G.muted ? '🔇' : '♪';
+  if (masterGain) masterGain.gain.value = G.muted ? 0 : 0.15;
+}
+
+function playNote(freq, duration, type, startTime, gainVal) {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type || 'sine';
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(gainVal || 0.3, startTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+  osc.connect(gain);
+  gain.connect(masterGain);
+  osc.start(startTime);
+  osc.stop(startTime + duration);
+}
+
+function stopMusic() {
+  if (musicInterval) { clearInterval(musicInterval); musicInterval = null; }
+}
+
+function playAmbientMusic() {
+  stopMusic();
+  if (!audioCtx) return;
+  const chords = [
+    [261.6, 329.6, 392.0],
+    [293.7, 370.0, 440.0],
+    [261.6, 311.1, 392.0],
+    [246.9, 311.1, 370.0],
+  ];
+  let ci = 0;
+  function playChord() {
+    if (!audioCtx || G.muted) return;
+    const t = audioCtx.currentTime;
+    const chord = chords[ci % chords.length];
+    chord.forEach(f => playNote(f, 4, 'sine', t, 0.08));
+    ci++;
+  }
+  playChord();
+  musicInterval = setInterval(playChord, 4000);
+}
+
+function playCombatMusic() {
+  stopMusic();
+  if (!audioCtx) return;
+  const notes = [196.0, 220.0, 246.9, 220.0, 196.0, 164.8, 196.0, 220.0];
+  let ni = 0;
+  function playBeat() {
+    if (!audioCtx || G.muted) return;
+    const t = audioCtx.currentTime;
+    playNote(notes[ni % notes.length], 0.3, 'triangle', t, 0.15);
+    playNote(98.0, 0.2, 'sine', t, 0.1);
+    ni++;
+  }
+  playBeat();
+  musicInterval = setInterval(playBeat, 600);
+}
+
+function playBossMusic() {
+  stopMusic();
+  if (!audioCtx) return;
+  const notes = [164.8, 196.0, 220.0, 261.6, 220.0, 196.0, 164.8, 146.8];
+  let ni = 0;
+  function playBeat() {
+    if (!audioCtx || G.muted) return;
+    const t = audioCtx.currentTime;
+    playNote(notes[ni % notes.length], 0.25, 'sawtooth', t, 0.08);
+    playNote(82.4, 0.15, 'triangle', t, 0.12);
+    if (ni % 2 === 0) playNote(notes[(ni + 4) % notes.length] * 0.5, 0.4, 'sine', t, 0.06);
+    ni++;
+  }
+  playBeat();
+  musicInterval = setInterval(playBeat, 400);
+}
+
+function playVictoryMusic() {
+  stopMusic();
+  if (!audioCtx) return;
+  const t = audioCtx.currentTime;
+  const melody = [261.6, 329.6, 392.0, 523.3];
+  melody.forEach((f, i) => {
+    playNote(f, 1.5, 'sine', t + i * 0.4, 0.15);
+    playNote(f * 0.5, 1.5, 'triangle', t + i * 0.4, 0.08);
+  });
+}
+
+function playSFX(type) {
+  if (!audioCtx || G.muted) return;
+  const t = audioCtx.currentTime;
+  switch (type) {
+    case 'hit':
+      playNote(150, 0.1, 'square', t, 0.2);
+      playNote(100, 0.15, 'square', t + 0.05, 0.15);
+      break;
+    case 'block':
+      playNote(400, 0.08, 'sine', t, 0.15);
+      playNote(500, 0.08, 'sine', t + 0.05, 0.1);
+      break;
+    case 'card':
+      playNote(600, 0.05, 'sine', t, 0.1);
+      playNote(800, 0.05, 'sine', t + 0.03, 0.08);
+      break;
+    case 'heal':
+      playNote(400, 0.2, 'sine', t, 0.1);
+      playNote(500, 0.2, 'sine', t + 0.1, 0.1);
+      playNote(600, 0.3, 'sine', t + 0.2, 0.1);
+      break;
+    case 'death':
+      playNote(200, 0.3, 'sawtooth', t, 0.1);
+      playNote(150, 0.3, 'sawtooth', t + 0.15, 0.08);
+      playNote(100, 0.5, 'sawtooth', t + 0.3, 0.06);
+      break;
+  }
+}
+
+// ============================================================
+// SCREEN MANAGEMENT
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ============================================================
+// GAME START
+// ============================================================
+function startGame() {
+  initAudio();
+  // Close meta overlay if open
+  closeMetaScreen();
+
+  G.hp = 50; G.maxHp = 50; G.gold = 0; G.act = 1;
+  G.deck = createStarterDeck();
+  G.block = 0; G.strength = 0; G.vulnerable = 0; G.weak = 0;
+  G.floorsCleared = 0; G.elitesKilled = 0; G.bossesKilled = 0; G.cardsPlayed = 0;
+  G.enemiesEncounteredThisRun = new Set();
+  G.cardsPlayedThisCombat = 0; G.lastCardPlayedThisTurn = null; G.cardsPlayedThisTurn = 0;
+  G.currentRow = -1; G.currentNodeIndex = -1;
+
+  // Apply legacy perks from META
+  if (META.perks.includes('thick_pages')) {
+    G.maxHp += 5;
+    G.hp += 5;
+  }
+  if (META.perks.includes('inkwell')) {
+    G.gold += 15;
+  }
+  if (META.perks.includes('sharp_quill')) {
+    G.strength += 1;
+  }
+  // expanded_vocabulary is applied in startPlayerTurn
+
+  // Increment run counter
+  META.runs++;
+  saveMeta();
+
+  G.map = generateMap(1);
+  showScreen('map-screen');
+  renderMap();
+  playAmbientMusic();
+}
+
+// ============================================================
+// MAP GENERATION
+// ============================================================
+function generateMap(act) {
+  const rows = [];
+  // Row 0: start fight
+  rows.push([{ type: 'fight', connections: [], visited: false, available: true, col: 0 }]);
+
+  // Determine special node placements for rows 1-5
+  const specialSlots = [1, 2, 3, 4, 5];
+  shuffleArray(specialSlots);
+  const eliteRow = specialSlots[0];
+  const restRow = specialSlots[1];
+  const eventRow = specialSlots[2];
+  const shopRow = specialSlots[3];
+  // remaining row is fight
+
+  for (let r = 1; r <= 5; r++) {
+    const nodeCount = 2 + Math.floor(Math.random() * 2); // 2 or 3
+    const rowNodes = [];
+    for (let i = 0; i < nodeCount; i++) {
+      let type = 'fight';
+      if (r === eliteRow && i === 0) type = 'elite';
+      else if (r === restRow && i === Math.floor(nodeCount / 2)) type = 'rest';
+      else if (r === eventRow && i === 0) type = 'event';
+      else if (r === shopRow && i === nodeCount - 1) type = 'shop';
+      rowNodes.push({ type, connections: [], visited: false, available: false, col: i });
+    }
+    rows.push(rowNodes);
+  }
+
+  // Row 6: boss
+  rows.push([{ type: 'boss', connections: [], visited: false, available: false, col: 0 }]);
+
+  // Create connections
+  for (let r = 0; r < rows.length - 1; r++) {
+    const currentRow = rows[r];
+    const nextRow = rows[r + 1];
+    currentRow.forEach((node, ni) => {
+      // Connect to at least 1 node in next row
+      if (nextRow.length === 1) {
+        node.connections.push(0);
+      } else {
+        // Map proportionally and add some randomness
+        const ratio = ni / Math.max(1, currentRow.length - 1);
+        const targetIdx = Math.round(ratio * (nextRow.length - 1));
+        node.connections.push(targetIdx);
+        // Maybe connect to an adjacent node too
+        if (Math.random() < 0.5) {
+          const alt = targetIdx + (Math.random() < 0.5 ? 1 : -1);
+          if (alt >= 0 && alt < nextRow.length && !node.connections.includes(alt)) {
+            node.connections.push(alt);
+          }
+        }
+      }
+    });
+    // Ensure every next-row node has at least one incoming connection
+    nextRow.forEach((_, ni) => {
+      const hasIncoming = currentRow.some(n => n.connections.includes(ni));
+      if (!hasIncoming) {
+        const randomParent = Math.floor(Math.random() * currentRow.length);
+        currentRow[randomParent].connections.push(ni);
+      }
+    });
+  }
+
+  // Mark row 0 as available
+  rows[0][0].available = true;
+
+  return rows;
+}
+
+function renderMap() {
+  const container = document.getElementById('map-container');
+  container.innerHTML = '';
+  container.style.position = 'relative';
+
+  document.getElementById('map-hp').textContent = `${G.hp}/${G.maxHp}`;
+  document.getElementById('map-gold').textContent = G.gold;
+  document.getElementById('map-act-label').textContent = G.actNames[G.act];
+
+  const nodeTypeIcons = { fight: '⚔️', elite: '💀', rest: '🏕️', event: '❓', shop: '🏪', boss: '👑' };
+
+  // Calculate positions for lines
+  const nodePositions = [];
+
+  G.map.forEach((row, ri) => {
+    const rowDiv = document.createElement('div');
+    rowDiv.className = 'map-row';
+    rowDiv.dataset.row = ri;
+
+    const rowPositions = [];
+
+    row.forEach((node, ni) => {
+      const nodeDiv = document.createElement('div');
+      nodeDiv.className = 'map-node';
+      nodeDiv.textContent = nodeTypeIcons[node.type] || '?';
+
+      if (node.visited) nodeDiv.classList.add('visited');
+      if (node.available) nodeDiv.classList.add('available');
+      if (ri === G.currentRow && ni === G.currentNodeIndex) nodeDiv.classList.add('current');
+
+      if (node.available && !node.visited) {
+        nodeDiv.onclick = () => visitNode(ri, ni);
+      }
+
+      rowDiv.appendChild(nodeDiv);
+      rowPositions.push({ node: nodeDiv, ri, ni, connections: node.connections });
+    });
+
+    nodePositions.push(rowPositions);
+    container.appendChild(rowDiv);
+  });
+
+  // Draw connection lines using SVG
+  requestAnimationFrame(() => {
+    const existingSvg = container.querySelector('svg.map-lines');
+    if (existingSvg) existingSvg.remove();
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.classList.add('map-lines');
+    svg.style.position = 'absolute';
+    svg.style.top = '0';
+    svg.style.left = '0';
+    svg.style.width = '100%';
+    svg.style.height = '100%';
+    svg.style.pointerEvents = 'none';
+    svg.style.zIndex = '0';
+
+    const containerRect = container.getBoundingClientRect();
+
+    nodePositions.forEach((row, ri) => {
+      if (ri >= G.map.length - 1) return;
+      row.forEach(({ node: fromNode, connections }) => {
+        const fromRect = fromNode.getBoundingClientRect();
+        const fromX = fromRect.left + fromRect.width / 2 - containerRect.left;
+        const fromY = fromRect.top + fromRect.height / 2 - containerRect.top;
+
+        connections.forEach(ci => {
+          if (ri + 1 < nodePositions.length && ci < nodePositions[ri + 1].length) {
+            const toNode = nodePositions[ri + 1][ci].node;
+            const toRect = toNode.getBoundingClientRect();
+            const toX = toRect.left + toRect.width / 2 - containerRect.left;
+            const toY = toRect.top + toRect.height / 2 - containerRect.top;
+
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', fromX);
+            line.setAttribute('y1', fromY);
+            line.setAttribute('x2', toX);
+            line.setAttribute('y2', toY);
+            line.setAttribute('stroke', 'rgba(201,168,76,0.2)');
+            line.setAttribute('stroke-width', '2');
+            svg.appendChild(line);
+          }
+        });
+      });
+    });
+
+    container.appendChild(svg);
+  });
+}
+
+// ============================================================
+// NODE VISIT
+// ============================================================
+function visitNode(row, nodeIndex) {
+  const node = G.map[row][nodeIndex];
+  if (!node.available || node.visited) return;
+
+  // Mark current as visited
+  node.visited = true;
+  G.currentRow = row;
+  G.currentNodeIndex = nodeIndex;
+
+  // Clear all available flags
+  G.map.forEach(r => r.forEach(n => n.available = false));
+
+  // Set next row available based on connections
+  if (row < G.map.length - 1) {
+    node.connections.forEach(ci => {
+      if (ci < G.map[row + 1].length) {
+        G.map[row + 1][ci].available = true;
+      }
+    });
+  }
+
+  G.floorsCleared++;
+
+  switch (node.type) {
+    case 'fight': startCombat(getRandomEnemies(G.act, 'normal')); break;
+    case 'elite': startCombat(getRandomEnemies(G.act, 'elite')); break;
+    case 'boss': startCombat(getRandomEnemies(G.act, 'boss')); break;
+    case 'rest': showRestScreen(); break;
+    case 'event': showEventScreen(); break;
+    case 'shop': showShopScreen(); break;
+  }
+}
+
+function getRandomEnemies(act, type) {
+  // Build pool with keys
+  const pool = [];
+  for (const [key, def] of Object.entries(ENEMY_DEFS)) {
+    if (def.act === act && def.type === (type === 'normal' ? 'normal' : type)) {
+      pool.push({ ...def, enemyKey: key });
+    }
+  }
+
+  if (type === 'normal') {
+    // Pick 1-2 random enemies
+    const count = Math.random() < 0.4 ? 2 : 1;
+    const enemies = [];
+    const available = [...pool];
+    for (let i = 0; i < count && available.length > 0; i++) {
+      const idx = Math.floor(Math.random() * available.length);
+      enemies.push({ ...available[idx] });
+      available.splice(idx, 1);
+    }
+    return enemies;
+  } else {
+    // Elite or boss: pick 1
+    return [{ ...pool[Math.floor(Math.random() * pool.length)] }];
+  }
+}
+
+// ============================================================
+// COMBAT
+// ============================================================
+function startCombat(enemyDefs) {
+  const isBoss = enemyDefs.some(e => e.type === 'boss');
+
+  G.enemies = enemyDefs.map(def => ({
+    ...def,
+    maxHp: def.hp,
+    block: 0,
+    strength: 0,
+    vulnerable: 0,
+    weak: 0,
+    stunned: false,
+    reflecting: false,
+    nextIntent: null,
+    element: null,
+    turnCount: 0,
+  }));
+
+  // Track encountered enemies for meta-progression
+  G.enemies.forEach(e => {
+    if (e.enemyKey) G.enemiesEncounteredThisRun.add(e.enemyKey);
+  });
+
+  G.drawPile = shuffleArray([...G.deck]);
+  G.discardPile = [];
+  G.exhaustPile = [];
+  G.hand = [];
+  G.energy = G.maxEnergy;
+  G.block = 0;
+  G.selectedCard = null;
+  G.turn = 0;
+  G.allCardsCostZero = false;
+  G.cardsPlayedThisCombat = 0;
+  G.lastCardPlayedThisTurn = null;
+  G.cardsPlayedThisTurn = 0;
+  // Don't reset strength between combats if gained from event
+  // But reset vulnerable and weak
+  G.vulnerable = 0;
+  G.weak = 0;
+
+  showScreen('combat-screen');
+
+  if (isBoss) playBossMusic();
+  else playCombatMusic();
+
+  // Enemies choose first intent
+  G.enemies.forEach(e => e.ai(e));
+
+  startPlayerTurn();
+}
+
+function startPlayerTurn() {
+  G.turn++;
+  G.block = 0;
+  G.energy = G.maxEnergy;
+  G.allCardsCostZero = false;
+  G.lastCardPlayedThisTurn = null;
+  G.cardsPlayedThisTurn = 0;
+
+  // Decrement status effects
+  if (G.vulnerable > 0) G.vulnerable--;
+  if (G.weak > 0) G.weak--;
+
+  const drawCount = META.perks.includes('expanded_vocabulary') ? 6 : 5;
+  drawCards(drawCount);
+  renderCombat();
+}
+
+function drawCards(count) {
+  for (let i = 0; i < count; i++) {
+    if (G.drawPile.length === 0) {
+      if (G.discardPile.length === 0) return;
+      G.drawPile = shuffleArray([...G.discardPile]);
+      G.discardPile = [];
+    }
+    if (G.drawPile.length > 0) {
+      G.hand.push(G.drawPile.pop());
+    }
+  }
+}
+
+function renderCombat() {
+  // HP display
+  document.getElementById('combat-hp').textContent = `${G.hp}/${G.maxHp}`;
+  const blockDisplay = document.getElementById('combat-block-display');
+  blockDisplay.textContent = G.block > 0 ? `🛡 ${G.block}` : '';
+
+  // Player status effects
+  const statusEl = document.getElementById('combat-status-effects');
+  let statusHTML = '';
+  if (G.strength > 0) statusHTML += `<span class="status-icon status-strength">Str ${G.strength}</span>`;
+  if (G.vulnerable > 0) statusHTML += `<span class="status-icon status-vulnerable">Vuln ${G.vulnerable}</span>`;
+  if (G.weak > 0) statusHTML += `<span class="status-icon status-weak">Weak ${G.weak}</span>`;
+  statusEl.innerHTML = statusHTML;
+
+  // Draw/discard counts
+  document.getElementById('draw-count').textContent = G.drawPile.length;
+  document.getElementById('discard-count').textContent = G.discardPile.length;
+
+  // Energy
+  document.getElementById('energy-text').textContent = G.energy;
+
+  // Render enemies
+  renderEnemies();
+
+  // Render hand
+  renderHand();
+}
+
+function renderEnemies() {
+  const area = document.getElementById('enemy-area');
+  area.innerHTML = '';
+
+  G.enemies.forEach((enemy, idx) => {
+    if (enemy.hp <= 0) return;
+
+    const div = document.createElement('div');
+    div.className = 'enemy';
+    if (G.selectedCard && G.selectedCard.target === 'single') {
+      div.classList.add('targetable');
+    }
+
+    // Intent
+    let intentClass = 'attack-intent';
+    let intentText = '';
+    if (enemy.nextIntent) {
+      const ni = enemy.nextIntent;
+      if (ni.type === 'attack') {
+        intentClass = 'attack-intent';
+        const hits = ni.hits || 1;
+        intentText = `${ni.icon} ${ni.value}${hits > 1 ? ' x' + hits : ''}`;
+      } else if (ni.type === 'defend') {
+        intentClass = 'defend-intent';
+        intentText = `${ni.icon} ${ni.label || ni.value}`;
+      } else if (ni.type === 'buff') {
+        intentClass = 'buff-intent';
+        intentText = `${ni.icon} ${ni.label || ''}`;
+      } else if (ni.type === 'debuff') {
+        intentClass = 'debuff-intent';
+        intentText = `${ni.icon} ${ni.label || ''}`;
+      } else if (ni.type === 'special') {
+        intentClass = 'special-intent';
+        intentText = `${ni.icon} ${ni.label || ''}`;
+      }
+    }
+
+    div.innerHTML = `
+      <div class="enemy-intent ${intentClass}">${intentText}</div>
+      <div class="enemy-portrait"><img src="${enemy.img()}" alt="${enemy.name}" loading="lazy"></div>
+      ${enemy.block > 0 ? `<div class="enemy-block-indicator">🛡 ${enemy.block}</div>` : ''}
+      <div class="enemy-name">${enemy.name}</div>
+      <div class="enemy-hp-bar"><div class="enemy-hp-fill" style="width:${(enemy.hp / enemy.maxHp) * 100}%"></div></div>
+      <div class="enemy-hp-text">${enemy.hp}/${enemy.maxHp}</div>
+      <div class="enemy-status-effects">
+        ${enemy.vulnerable > 0 ? '<span class="status-icon status-vulnerable">Vuln ' + enemy.vulnerable + '</span>' : ''}
+        ${enemy.weak > 0 ? '<span class="status-icon status-weak">Weak ' + enemy.weak + '</span>' : ''}
+        ${(enemy.strength || 0) > 0 ? '<span class="status-icon status-strength">Str ' + enemy.strength + '</span>' : ''}
+        ${enemy.stunned ? '<span class="status-icon" style="color:#d4a870;border:1px solid #8b6a3a">Stun</span>' : ''}
+      </div>
+    `;
+
+    div.onclick = () => targetEnemy(idx);
+    enemy.element = div;
+    area.appendChild(div);
+  });
+}
+
+function renderHand() {
+  const handEl = document.getElementById('hand-cards');
+  handEl.innerHTML = '';
+
+  G.hand.forEach((card, idx) => {
+    const cardEl = createCardElement(card, idx);
+    const cost = getEffectiveCost(card);
+    if (cost > G.energy) cardEl.classList.add('unplayable');
+    handEl.appendChild(cardEl);
+  });
+}
+
+function createCardElement(card, handIndex, options = {}) {
+  const div = document.createElement('div');
+  div.className = `card card-${card.type}`;
+  if (card.upgraded) div.classList.add('upgraded');
+  if (card.exhaust) div.classList.add('exhausts');
+
+  const cost = getEffectiveCost(card);
+  const descText = card.desc ? card.desc(card) : '';
+
+  div.innerHTML = `
+    <div class="card-cost">${cost}</div>
+    <div class="card-name">${card.name}${card.upgraded && !card.name.includes('+') ? '+' : ''}</div>
+    <div class="card-type">${card.rarity} ${card.type}</div>
+    <div class="card-art"><img src="${IMG.cardBack}" alt="card art" loading="lazy"></div>
+    <div class="card-desc">${descText}</div>
+  `;
+
+  if (handIndex !== undefined && handIndex !== null && !options.noClick) {
+    div.onclick = (e) => { e.stopPropagation(); selectCard(handIndex); };
+  }
+
+  // Tooltip on hover
+  div.onmouseenter = (e) => showTooltip(e, card);
+  div.onmouseleave = hideTooltip;
+
+  if (G.selectedCard && G.hand[handIndex] === G.selectedCard) {
+    div.classList.add('selected');
+  }
+
+  return div;
+}
+
+function showTooltip(e, card) {
+  const tt = document.getElementById('tooltip');
+  const cost = getEffectiveCost(card);
+  tt.querySelector('.tt-name').textContent = card.name + (card.upgraded && !card.name.includes('+') ? '+' : '');
+  tt.querySelector('.tt-type').textContent = `${card.rarity} ${card.type} | Cost: ${cost}`;
+  tt.querySelector('.tt-desc').textContent = card.desc ? card.desc(card) : '';
+  tt.style.display = 'block';
+
+  const rect = e.target.getBoundingClientRect();
+  let left = rect.right + 10;
+  let top = rect.top;
+  if (left + 220 > window.innerWidth) left = rect.left - 230;
+  if (top + 120 > window.innerHeight) top = window.innerHeight - 130;
+  tt.style.left = Math.max(5, left) + 'px';
+  tt.style.top = Math.max(5, top) + 'px';
+}
+
+function hideTooltip() {
+  document.getElementById('tooltip').style.display = 'none';
+}
+
+// ============================================================
+// CARD SELECTION & PLAYING
+// ============================================================
+function selectCard(handIndex) {
+  const card = G.hand[handIndex];
+  const cost = getEffectiveCost(card);
+  if (cost > G.energy) return;
+
+  if (G.selectedCard === card) {
+    // Deselect
+    G.selectedCard = null;
+    renderCombat();
+    return;
+  }
+
+  G.selectedCard = card;
+  G.selectedCardIndex = handIndex;
+
+  if (card.target === 'self' || card.target === 'all') {
+    playCard(card, handIndex, null);
+  } else {
+    // Need to select enemy target
+    renderCombat();
+  }
+}
+
+function targetEnemy(enemyIdx) {
+  if (!G.selectedCard) return;
+  if (G.selectedCard.target !== 'single') return;
+
+  playCard(G.selectedCard, G.selectedCardIndex, enemyIdx);
+}
+
+function playCard(card, handIndex, targetIdx) {
+  const cost = getEffectiveCost(card);
+  if (cost > G.energy) return;
+
+  G.energy -= cost;
+  G.cardsPlayed++;
+  G.cardsPlayedThisCombat++;
+  G.cardsPlayedThisTurn++;
+  playSFX('card');
+
+  // Remove from hand
+  G.hand.splice(handIndex, 1);
+  G.selectedCard = null;
+  G.selectedCardIndex = null;
+
+  // Apply card effects
+  applyCardEffects(card, targetIdx);
+
+  // Track last card played this turn (for Palimpsest)
+  G.lastCardPlayedThisTurn = card;
+
+  // Move to discard or exhaust
+  if (card.exhaust) {
+    G.exhaustPile.push(card);
+  } else {
+    G.discardPile.push(card);
+  }
+
+  // Check for dead enemies
+  checkEnemies();
+
+  renderCombat();
+}
+
+function applyCardEffects(card, targetIdx) {
+  // Calculate damage
+  let dmg = card.upgraded ? (card.upgDamage || card.damage) : card.damage;
+  if (dmg) {
+    dmg += G.strength;
+    if (G.weak > 0) dmg = Math.floor(dmg * 0.75);
+  }
+
+  // Block
+  let blk = card.upgraded ? (card.upgBlock || card.block) : card.block;
+
+  // Draw
+  const drawCount = card.upgraded ? (card.upgDraw || card.draw || 0) : (card.draw || 0);
+
+  // Handle specific cards
+  const key = card.key;
+
+  switch (key) {
+    case 'strike':
+    case 'quick_slash':
+    case 'heavy_blow':
+    case 'deus_ex_machina':
+      dealDamageToEnemy(targetIdx, dmg);
+      break;
+    case 'insight':
+    case 'cliffhanger':
+      dealDamageToEnemy(targetIdx, dmg);
+      if (drawCount > 0) drawCards(drawCount);
+      break;
+    case 'flurry': {
+      const hitDmg = card.upgraded ? 4 : 3;
+      const totalDmg = hitDmg + G.strength;
+      const finalDmg = G.weak > 0 ? Math.floor(totalDmg * 0.75) : totalDmg;
+      for (let i = 0; i < 3; i++) {
+        const target = G.enemies[targetIdx];
+        if (!target || target.hp <= 0) break;
+        dealDamageToEnemy(targetIdx, finalDmg);
+      }
+      break;
+    }
+    case 'defend':
+    case 'fortify':
+    case 'narrative_shield':
+      G.block += blk;
+      playSFX('block');
+      break;
+    case 'prepare':
+      if (drawCount > 0) drawCards(drawCount);
+      break;
+    case 'heal_card': {
+      const healAmt = card.upgraded ? 12 : 8;
+      G.hp = Math.min(G.maxHp, G.hp + healAmt);
+      playSFX('heal');
+      showFloatingText(document.querySelector('#combat-top'), `+${healAmt} HP`, '#6bff6b');
+      break;
+    }
+    case 'plot_twist': {
+      const enemy = G.enemies[targetIdx];
+      let plotDmg;
+      if (enemy && enemy.nextIntent && enemy.nextIntent.type === 'attack') {
+        plotDmg = card.upgraded ? 22 : 16;
+      } else {
+        plotDmg = card.upgraded ? 11 : 8;
+      }
+      plotDmg += G.strength;
+      if (G.weak > 0) plotDmg = Math.floor(plotDmg * 0.75);
+      dealDamageToEnemy(targetIdx, plotDmg);
+      break;
+    }
+    case 'foreshadowing': {
+      const strGain = card.upgraded ? 3 : 2;
+      G.strength += strGain;
+      showFloatingText(document.querySelector('#combat-top'), `+${strGain} Strength`, '#70d490');
+      break;
+    }
+    case 'red_herring': {
+      const enemy = G.enemies[targetIdx];
+      if (enemy) {
+        enemy.stunned = true;
+        if (card.upgraded) {
+          enemy.weak = (enemy.weak || 0) + 1;
+        }
+        showFloatingText(enemy.element, 'Stunned!', '#d4a870');
+      }
+      break;
+    }
+    case 'the_climax':
+      G.enemies.forEach((enemy, idx) => {
+        if (enemy.hp > 0) dealDamageToEnemy(idx, dmg);
+      });
+      break;
+    case 'narrators_voice':
+      G.allCardsCostZero = true;
+      showFloatingText(document.querySelector('#combat-top'), 'All cards cost 0!', '#c9a84c');
+      break;
+    case 'muses_blessing': {
+      const eGain = card.upgraded ? 3 : 2;
+      const dCount = card.upgraded ? 4 : 3;
+      G.energy += eGain;
+      drawCards(dCount);
+      showFloatingText(document.querySelector('#combat-top'), `+${eGain} Energy`, '#c9a84c');
+      break;
+    }
+    // ---- Unlockable card effects ----
+    case 'second_draft': {
+      const sdDmg = (card.upgraded ? 10 : 7) + G.strength;
+      const sdFinal = G.weak > 0 ? Math.floor(sdDmg * 0.75) : sdDmg;
+      const enemy = G.enemies[targetIdx];
+      const hpBefore = enemy ? enemy.hp : 0;
+      dealDamageToEnemy(targetIdx, sdFinal);
+      if (enemy && enemy.hp <= 0 && hpBefore > 0) {
+        drawCards(card.upgraded ? 3 : 2);
+        showFloatingText(document.querySelector('#combat-top'), `Kill! +${card.upgraded ? 3 : 2} cards`, '#c9a84c');
+      }
+      break;
+    }
+    case 'writers_block': {
+      const wbBlock = card.upgraded ? 20 : 15;
+      G.block += wbBlock;
+      playSFX('block');
+      // Exhaust a random card from draw pile
+      if (G.drawPile.length > 0) {
+        const ridx = Math.floor(Math.random() * G.drawPile.length);
+        const removed = G.drawPile.splice(ridx, 1)[0];
+        G.exhaustPile.push(removed);
+        showFloatingText(document.querySelector('#combat-top'), `Exhausted: ${removed.name}`, '#d4a870');
+      }
+      break;
+    }
+    case 'ghostwriter': {
+      let gwDmg = G.cardsPlayedThisCombat + (card.upgraded ? 5 : 0);
+      gwDmg += G.strength;
+      if (G.weak > 0) gwDmg = Math.floor(gwDmg * 0.75);
+      dealDamageToEnemy(targetIdx, gwDmg);
+      showFloatingText(document.querySelector('#combat-top'), `${G.cardsPlayedThisCombat} cards played!`, '#b470d4');
+      break;
+    }
+    case 'epilogue': {
+      const epHeal = card.upgraded ? 5 : 3;
+      G.hp = Math.min(G.maxHp, G.hp + epHeal);
+      playSFX('heal');
+      showFloatingText(document.querySelector('#combat-top'), `+${epHeal} HP`, '#6bff6b');
+      drawCards(1);
+      break;
+    }
+    case 'unreliable_narrator': {
+      const unDmg = (card.upgraded ? 7 : 5) + G.strength;
+      const unFinal = G.weak > 0 ? Math.floor(unDmg * 0.75) : unDmg;
+      for (let hit = 0; hit < 3; hit++) {
+        G.enemies.forEach((enemy, idx) => {
+          if (enemy.hp > 0) dealDamageToEnemy(idx, unFinal);
+        });
+      }
+      break;
+    }
+    case 'palimpsest': {
+      if (G.lastCardPlayedThisTurn) {
+        const copied = makeCard({ ...CARD_DEFS[G.lastCardPlayedThisTurn.key], key: G.lastCardPlayedThisTurn.key });
+        if (card.upgraded) copied.cost = 0;
+        G.hand.push(copied);
+        showFloatingText(document.querySelector('#combat-top'), `Copied: ${copied.name}`, '#b470d4');
+      } else {
+        showFloatingText(document.querySelector('#combat-top'), 'Nothing to copy!', '#d4a870');
+      }
+      break;
+    }
+    default:
+      // Generic handling
+      if (dmg && targetIdx !== null && targetIdx !== undefined) {
+        if (card.target === 'all') {
+          G.enemies.forEach((enemy, idx) => { if (enemy.hp > 0) dealDamageToEnemy(idx, dmg); });
+        } else {
+          dealDamageToEnemy(targetIdx, dmg);
+        }
+      }
+      if (blk) { G.block += blk; playSFX('block'); }
+      if (drawCount > 0) drawCards(drawCount);
+      break;
+  }
+}
+
+function dealDamageToEnemy(idx, amount) {
+  const enemy = G.enemies[idx];
+  if (!enemy || enemy.hp <= 0) return;
+
+  // Check vulnerable
+  if (enemy.vulnerable > 0) {
+    amount = Math.floor(amount * 1.5);
+  }
+
+  // Reflecting enemy
+  if (enemy.reflecting) {
+    dealDamageToPlayer(Math.floor(amount * 0.5), enemy);
+  }
+
+  // Apply to block first
+  if (enemy.block > 0) {
+    if (amount <= enemy.block) {
+      enemy.block -= amount;
+      if (enemy.element) showFloatingText(enemy.element, `-${amount}`, '#6b9fff');
+      return;
+    } else {
+      amount -= enemy.block;
+      if (enemy.element) showFloatingText(enemy.element, `-${enemy.block} Block`, '#6b9fff');
+      enemy.block = 0;
+    }
+  }
+
+  enemy.hp -= amount;
+  if (enemy.hp < 0) enemy.hp = 0;
+
+  playSFX('hit');
+  if (enemy.element) showFloatingText(enemy.element, `-${amount}`, '#ff6b6b');
+}
+
+function dealDamageToPlayer(amount, source) {
+  // Apply enemy strength
+  if (source && source.strength) {
+    amount += source.strength;
+  }
+
+  // Apply weak to enemy
+  if (source && source.weak > 0) {
+    amount = Math.floor(amount * 0.75);
+  }
+
+  // Apply vulnerable to player
+  if (G.vulnerable > 0) {
+    amount = Math.floor(amount * 1.5);
+  }
+
+  // Apply to block first
+  if (G.block > 0) {
+    if (amount <= G.block) {
+      G.block -= amount;
+      showFloatingText(document.querySelector('#combat-top'), `Blocked ${amount}`, '#6b9fff');
+      playSFX('block');
+      return;
+    } else {
+      const blocked = G.block;
+      amount -= G.block;
+      G.block = 0;
+      showFloatingText(document.querySelector('#combat-top'), `Blocked ${blocked}`, '#6b9fff');
+    }
+  }
+
+  G.hp -= amount;
+  if (G.hp < 0) G.hp = 0;
+
+  showFloatingText(document.querySelector('#combat-top'), `-${amount}`, '#ff6b6b');
+
+  // Screen shake
+  document.getElementById('game').classList.add('shake');
+  setTimeout(() => document.getElementById('game').classList.remove('shake'), 400);
+
+  if (G.hp <= 0) {
+    setTimeout(gameOver, 500);
+  }
+}
+
+function checkEnemies() {
+  const allDead = G.enemies.every(e => e.hp <= 0);
+  if (allDead) {
+    setTimeout(combatVictory, 600);
+  }
+}
+
+// ============================================================
+// END TURN / ENEMY TURN
+// ============================================================
+function endPlayerTurn() {
+  G.selectedCard = null;
+
+  // Discard hand
+  while (G.hand.length > 0) {
+    G.discardPile.push(G.hand.pop());
+  }
+
+  // Enemy turn
+  setTimeout(enemyTurn, 300);
+}
+
+function enemyTurn() {
+  let delay = 0;
+
+  G.enemies.forEach((enemy, idx) => {
+    if (enemy.hp <= 0) return;
+
+    // Reset enemy block
+    enemy.block = 0;
+
+    // Decrement enemy statuses
+    if (enemy.vulnerable > 0) enemy.vulnerable--;
+    if (enemy.weak > 0) enemy.weak--;
+
+    setTimeout(() => {
+      if (enemy.hp <= 0) return;
+
+      if (enemy.stunned) {
+        enemy.stunned = false;
+        showFloatingText(enemy.element, 'Stunned!', '#d4a870');
+      } else {
+        enemy.act_fn(enemy);
+      }
+
+      // Choose next intent
+      enemy.ai(enemy);
+
+      renderCombat();
+
+      if (G.hp <= 0) return;
+    }, delay);
+
+    delay += 600;
+  });
+
+  setTimeout(() => {
+    if (G.hp > 0) {
+      startPlayerTurn();
+    }
+  }, delay + 400);
+}
+
+// ============================================================
+// COMBAT VICTORY
+// ============================================================
+function combatVictory() {
+  playSFX('heal');
+
+  const node = G.map[G.currentRow][G.currentNodeIndex];
+  let goldReward = 0;
+
+  if (node.type === 'fight') {
+    goldReward = 10 + Math.floor(Math.random() * 11);
+  } else if (node.type === 'elite') {
+    goldReward = 25 + Math.floor(Math.random() * 26);
+    G.elitesKilled++;
+  } else if (node.type === 'boss') {
+    goldReward = 50 + Math.floor(Math.random() * 51);
+    G.bossesKilled++;
+  }
+
+  G.gold += goldReward;
+  G.combatRewards = { gold: goldReward };
+
+  // Check if boss defeated -> advance act
+  if (node.type === 'boss') {
+    if (G.act >= 3) {
+      setTimeout(showVictoryScreen, 500);
+      return;
+    }
+  }
+
+  showRewardScreen();
+}
+
+// ============================================================
+// REWARD SCREEN
+// ============================================================
+function showRewardScreen() {
+  showScreen('reward-screen');
+  playAmbientMusic();
+
+  document.getElementById('reward-gold-text').textContent = `+${G.combatRewards.gold} Gold`;
+
+  const container = document.getElementById('reward-cards');
+  container.innerHTML = '';
+
+  // Generate 3 reward cards
+  const rewardCards = [];
+  for (let i = 0; i < 3; i++) {
+    const roll = Math.random();
+    let rarity;
+    if (roll < 0.55) rarity = 'common';
+    else if (roll < 0.88) rarity = 'uncommon';
+    else rarity = 'rare';
+    rewardCards.push(randomCard(rarity));
+  }
+
+  rewardCards.forEach((card, idx) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'reward-card-wrapper';
+
+    const cardEl = createCardElement(card, null, { noClick: true });
+    cardEl.onclick = () => pickRewardCard(card);
+    cardEl.style.cursor = 'pointer';
+
+    const rarityLabel = document.createElement('div');
+    rarityLabel.className = `rarity-label rarity-${card.rarity}`;
+    rarityLabel.textContent = card.rarity;
+
+    wrapper.appendChild(cardEl);
+    wrapper.appendChild(rarityLabel);
+    container.appendChild(wrapper);
+  });
+}
+
+function pickRewardCard(card) {
+  G.deck.push(card);
+  afterReward();
+}
+
+function skipReward() {
+  afterReward();
+}
+
+function afterReward() {
+  const node = G.map[G.currentRow][G.currentNodeIndex];
+  if (node.type === 'boss') {
+    // Advance to next act
+    G.act++;
+    G.currentRow = -1;
+    G.currentNodeIndex = -1;
+    G.map = generateMap(G.act);
+    // Reset combat strength from events
+    G.strength = 0;
+  }
+  showScreen('map-screen');
+  renderMap();
+}
+
+// ============================================================
+// REST SCREEN
+// ============================================================
+function showRestScreen() {
+  showScreen('rest-screen');
+  const healAmt = Math.floor(G.maxHp * 0.3);
+  document.getElementById('rest-heal-desc').textContent = `Heal ${healAmt} HP (${G.hp}/${G.maxHp})`;
+}
+
+function restHeal() {
+  const healAmt = Math.floor(G.maxHp * 0.3);
+  G.hp = Math.min(G.maxHp, G.hp + healAmt);
+  playSFX('heal');
+  showScreen('map-screen');
+  renderMap();
+}
+
+function restUpgrade() {
+  const overlay = document.getElementById('upgrade-overlay');
+  const grid = document.getElementById('upgrade-cards-grid');
+  grid.innerHTML = '';
+
+  G.deck.forEach((card, idx) => {
+    if (card.upgraded) return;
+    const wrapper = document.createElement('div');
+    wrapper.className = 'upgrade-card-slot';
+
+    // Show upgraded preview
+    const previewCard = { ...card, upgraded: true, name: card.name + '+' };
+    const cardEl = createCardElement(previewCard, null, { noClick: true });
+    cardEl.style.cursor = 'pointer';
+    cardEl.onclick = () => {
+      card.upgraded = true;
+      card.name = card.name.includes('+') ? card.name : card.name + '+';
+      playSFX('card');
+      closeUpgrade();
+      showScreen('map-screen');
+      renderMap();
+    };
+
+    wrapper.appendChild(cardEl);
+    grid.appendChild(wrapper);
+  });
+
+  overlay.classList.add('active');
+}
+
+function closeUpgrade() {
+  document.getElementById('upgrade-overlay').classList.remove('active');
+}
+
+// ============================================================
+// EVENT SCREEN
+// ============================================================
+function showEventScreen() {
+  const event = EVENTS[Math.floor(Math.random() * EVENTS.length)];
+
+  document.getElementById('event-title').textContent = event.title;
+  document.getElementById('event-text').textContent = event.text;
+
+  const choicesEl = document.getElementById('event-choices');
+  choicesEl.innerHTML = '';
+
+  event.choices.forEach(choice => {
+    const div = document.createElement('div');
+    div.className = 'event-choice';
+    div.innerHTML = `
+      <div class="choice-label">${choice.label}</div>
+      <div class="choice-effect">${choice.effect}</div>
+    `;
+    div.onclick = () => {
+      choice.fn();
+      showScreen('map-screen');
+      renderMap();
+    };
+    choicesEl.appendChild(div);
+  });
+
+  showScreen('event-screen');
+}
+
+// ============================================================
+// SHOP SCREEN
+// ============================================================
+function showShopScreen() {
+  showScreen('shop-screen');
+  renderShop();
+}
+
+function renderShop() {
+  document.getElementById('shop-gold').textContent = G.gold;
+
+  const container = document.getElementById('shop-cards');
+  container.innerHTML = '';
+
+  // Generate shop inventory if not already done
+  if (!G.shopInventory) {
+    G.shopInventory = [];
+    for (let i = 0; i < 5; i++) {
+      const roll = Math.random();
+      let rarity, price;
+      if (roll < 0.4) { rarity = 'common'; price = 50 + Math.floor(Math.random() * 30); }
+      else if (roll < 0.8) { rarity = 'uncommon'; price = 80 + Math.floor(Math.random() * 40); }
+      else { rarity = 'rare'; price = 120 + Math.floor(Math.random() * 31); }
+      G.shopInventory.push({ card: randomCard(rarity), price, sold: false });
+    }
+  }
+
+  G.shopInventory.forEach((item, idx) => {
+    if (item.sold) return;
+    const wrapper = document.createElement('div');
+    wrapper.className = 'shop-card-slot';
+
+    const cardEl = createCardElement(item.card, null, { noClick: true });
+    cardEl.style.cursor = 'pointer';
+    cardEl.onclick = () => buyCard(idx);
+
+    const priceEl = document.createElement('div');
+    priceEl.className = `shop-price ${G.gold < item.price ? 'cannot-afford' : ''}`;
+    priceEl.textContent = `${item.price} gold`;
+
+    wrapper.appendChild(cardEl);
+    wrapper.appendChild(priceEl);
+    container.appendChild(wrapper);
+  });
+
+  // Update remove button
+  const removeBtn = document.getElementById('shop-remove-btn');
+  removeBtn.textContent = `Remove a Card (75 gold)`;
+  removeBtn.style.opacity = G.gold >= 75 ? '1' : '0.5';
+}
+
+function buyCard(idx) {
+  const item = G.shopInventory[idx];
+  if (G.gold < item.price || item.sold) return;
+
+  G.gold -= item.price;
+  G.deck.push(item.card);
+  item.sold = true;
+  playSFX('card');
+  renderShop();
+}
+
+function shopRemoveCard() {
+  if (G.gold < 75) return;
+
+  const overlay = document.getElementById('remove-overlay');
+  const grid = document.getElementById('remove-cards-grid');
+  grid.innerHTML = '';
+
+  G.deck.forEach((card, idx) => {
+    const cardEl = createCardElement(card, null, { noClick: true });
+    cardEl.style.cursor = 'pointer';
+    cardEl.onclick = () => {
+      G.deck.splice(idx, 1);
+      G.gold -= 75;
+      playSFX('card');
+      closeRemove();
+      renderShop();
+    };
+    grid.appendChild(cardEl);
+  });
+
+  overlay.style.display = 'flex';
+}
+
+function closeRemove() {
+  document.getElementById('remove-overlay').style.display = 'none';
+}
+
+function leaveShop() {
+  G.shopInventory = null;
+  showScreen('map-screen');
+  renderMap();
+}
+
+// ============================================================
+// DECK VIEW
+// ============================================================
+function viewDeck() {
+  const overlay = document.getElementById('deck-overlay');
+  const grid = document.getElementById('deck-cards-grid');
+  grid.innerHTML = '';
+  document.getElementById('deck-count').textContent = G.deck.length;
+
+  G.deck.forEach(card => {
+    const cardEl = createCardElement(card, null, { noClick: true });
+    grid.appendChild(cardEl);
+  });
+
+  overlay.style.display = 'flex';
+}
+
+function closeDeck() {
+  document.getElementById('deck-overlay').style.display = 'none';
+}
+
+// ============================================================
+// GAME OVER
+// ============================================================
+function calculateInkReward(isVictory) {
+  const breakdown = [];
+  let total = 0;
+
+  // 2 ink per floor cleared
+  const floorInk = G.floorsCleared * 2;
+  if (floorInk > 0) { breakdown.push({ label: `Floors cleared (${G.floorsCleared})`, value: floorInk }); total += floorInk; }
+
+  // 5 ink per elite killed
+  const eliteInk = G.elitesKilled * 5;
+  if (eliteInk > 0) { breakdown.push({ label: `Elites slain (${G.elitesKilled})`, value: eliteInk }); total += eliteInk; }
+
+  // 15 ink per boss killed
+  const bossInk = G.bossesKilled * 15;
+  if (bossInk > 0) { breakdown.push({ label: `Bosses defeated (${G.bossesKilled})`, value: bossInk }); total += bossInk; }
+
+  // 3 ink per 100 gold earned
+  const goldInk = Math.floor(G.gold / 100) * 3;
+  if (goldInk > 0) { breakdown.push({ label: `Gold earned (${G.gold})`, value: goldInk }); total += goldInk; }
+
+  // Act bonuses
+  if (G.act >= 2) { breakdown.push({ label: 'Reached Act II', value: 5 }); total += 5; }
+  if (G.act >= 3) { breakdown.push({ label: 'Reached Act III', value: 10 }); total += 10; }
+
+  // Victory bonus
+  if (isVictory) { breakdown.push({ label: 'Story completed!', value: 20 }); total += 20; }
+
+  // Minimum 3 ink
+  if (total < 3) {
+    total = 3;
+    breakdown.push({ label: 'Minimum ink reward', value: 3 - breakdown.reduce((s, b) => s + b.value, 0) });
+  }
+
+  return { breakdown, total };
+}
+
+function updateMetaAfterRun(isVictory) {
+  const reward = calculateInkReward(isVictory);
+
+  META.ink += reward.total;
+  META.totalInk += reward.total;
+
+  // Update best records
+  if (G.act > META.bestAct) META.bestAct = G.act;
+  if (G.floorsCleared > META.bestFloor) META.bestFloor = G.floorsCleared;
+
+  // Add encountered enemies to META
+  const newEnemies = [];
+  G.enemiesEncounteredThisRun.forEach(key => {
+    if (!META.enemiesSeen.includes(key)) {
+      META.enemiesSeen.push(key);
+      newEnemies.push(key);
+    }
+  });
+
+  saveMeta();
+  return { reward, newEnemies };
+}
+
+function renderInkBreakdown(containerId, reward) {
+  const container = document.getElementById(containerId);
+  let html = '<div class="ink-reward-breakdown">';
+  reward.breakdown.forEach(item => {
+    html += `<div class="ink-line"><span>${item.label}</span><span style="color:var(--gold)">+${item.value} ink</span></div>`;
+  });
+  html += `<div class="ink-line ink-total"><span>Total Ink Earned</span><span>+${reward.total} ink</span></div>`;
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
+function renderLessons(containerId, newEnemies) {
+  const container = document.getElementById(containerId);
+  const encountered = Array.from(G.enemiesEncounteredThisRun);
+  if (encountered.length === 0) { container.innerHTML = ''; return; }
+
+  let html = '<div class="lessons-section"><h4>Lessons Learned</h4>';
+  encountered.forEach(key => {
+    const entry = BESTIARY[key];
+    if (!entry) return;
+    const isNew = newEnemies.includes(key);
+    html += `<div class="lesson-entry">
+      <div class="lesson-name">${entry.name}${isNew ? '<span class="lesson-new-badge">NEW</span>' : ''}</div>
+      <div class="lesson-tip">${entry.tip}</div>
+    </div>`;
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function renderNextUnlockHint(containerId) {
+  const container = document.getElementById(containerId);
+  // Find the cheapest unowned unlock
+  let cheapest = null;
+  let cheapestCost = Infinity;
+
+  for (const [key, info] of Object.entries(UNLOCKABLE_CARDS)) {
+    if (!META.unlockedCards.includes(key) && info.cost < cheapestCost) {
+      cheapest = { name: info.name, cost: info.cost, type: 'card' };
+      cheapestCost = info.cost;
+    }
+  }
+  for (const [key, info] of Object.entries(LEGACY_PERKS)) {
+    if (!META.perks.includes(key) && info.cost < cheapestCost) {
+      cheapest = { name: info.name, cost: info.cost, type: 'perk' };
+      cheapestCost = info.cost;
+    }
+  }
+
+  if (cheapest && META.ink < cheapest.cost) {
+    container.innerHTML = `<div class="next-unlock-hint">Next unlock: <span style="color:var(--gold)">${cheapest.name}</span> (${cheapest.cost} ink, you have ${META.ink})</div>`;
+  } else if (cheapest) {
+    container.innerHTML = `<div class="next-unlock-hint">You can afford <span style="color:var(--gold)">${cheapest.name}</span>! Visit the Library.</div>`;
+  } else {
+    container.innerHTML = `<div class="next-unlock-hint" style="color:var(--gold)">All unlocks acquired! You are a true Storyweaver.</div>`;
+  }
+}
+
+function gameOver() {
+  stopMusic();
+  playSFX('death');
+
+  const result = updateMetaAfterRun(false);
+
+  showScreen('gameover-screen');
+
+  document.getElementById('gameover-stats').innerHTML = `
+    <div>Act reached: <span>${G.actNames[G.act]}</span></div>
+    <div>Floors cleared: <span>${G.floorsCleared}</span></div>
+    <div>Elites slain: <span>${G.elitesKilled}</span></div>
+    <div>Bosses defeated: <span>${G.bossesKilled}</span></div>
+    <div>Cards played: <span>${G.cardsPlayed}</span></div>
+    <div>Gold earned: <span>${G.gold}</span></div>
+  `;
+
+  renderInkBreakdown('gameover-ink-breakdown', result.reward);
+  renderLessons('gameover-lessons', result.newEnemies);
+  renderNextUnlockHint('gameover-next-unlock');
+}
+
+// ============================================================
+// VICTORY
+// ============================================================
+function showVictoryScreen() {
+  stopMusic();
+  playVictoryMusic();
+
+  const result = updateMetaAfterRun(true);
+
+  showScreen('victory-screen');
+
+  document.getElementById('victory-stats').innerHTML = `
+    <div>Story completed in <span>3 acts</span></div>
+    <div>Floors cleared: <span>${G.floorsCleared}</span></div>
+    <div>Elites slain: <span>${G.elitesKilled}</span></div>
+    <div>Bosses defeated: <span>${G.bossesKilled}</span></div>
+    <div>Cards played: <span>${G.cardsPlayed}</span></div>
+    <div>Final deck size: <span>${G.deck.length}</span></div>
+    <div>Gold earned: <span>${G.gold}</span></div>
+  `;
+
+  renderInkBreakdown('victory-ink-breakdown', result.reward);
+  renderLessons('victory-lessons', result.newEnemies);
+}
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function showFloatingText(element, text, color) {
+  if (!element) return;
+  const div = document.createElement('div');
+  div.className = 'damage-number';
+  if (color === '#6bff6b') div.classList.add('heal');
+  if (color === '#6b9fff') div.classList.add('block-dmg');
+  div.textContent = text;
+  div.style.color = color;
+  div.style.left = '50%';
+  div.style.top = '50%';
+  div.style.transform = 'translate(-50%, -50%)';
+  element.style.position = 'relative';
+  element.appendChild(div);
+  setTimeout(() => div.remove(), 1000);
+}
+
+// Click outside to deselect card
+document.addEventListener('click', (e) => {
+  if (G.selectedCard && !e.target.closest('.card') && !e.target.closest('.enemy')) {
+    G.selectedCard = null;
+    G.selectedCardIndex = null;
+    if (document.getElementById('combat-screen').classList.contains('active')) {
+      renderCombat();
+    }
+  }
+});
+
+// ============================================================
+// META-PROGRESSION SCREEN
+// ============================================================
+function showMetaScreen() {
+  const overlay = document.getElementById('meta-overlay');
+  overlay.classList.add('active');
+  renderMetaScreen();
+}
+
+function closeMetaScreen() {
+  document.getElementById('meta-overlay').classList.remove('active');
+}
+
+function renderMetaScreen() {
+  // Stats
+  const statsEl = document.getElementById('meta-stats');
+  statsEl.innerHTML = `
+    <div class="meta-stat"><div class="stat-val">${META.ink}</div><div class="stat-label">Ink</div></div>
+    <div class="meta-stat"><div class="stat-val">${META.totalInk}</div><div class="stat-label">Lifetime Ink</div></div>
+    <div class="meta-stat"><div class="stat-val">${META.runs}</div><div class="stat-label">Runs</div></div>
+    <div class="meta-stat"><div class="stat-val">${META.bestFloor}</div><div class="stat-label">Best Floor</div></div>
+    <div class="meta-stat"><div class="stat-val">${G.actNames ? G.actNames[META.bestAct] || 'Act ' + META.bestAct : 'Act ' + META.bestAct}</div><div class="stat-label">Best Act</div></div>
+  `;
+
+  // Perks section
+  const perksSection = document.getElementById('meta-perks-section');
+  let perksHTML = '<h3>Legacy Perks</h3>';
+  for (const [key, perk] of Object.entries(LEGACY_PERKS)) {
+    const owned = META.perks.includes(key);
+    const canAfford = META.ink >= perk.cost;
+    perksHTML += `<div class="meta-item${owned ? ' purchased' : ''}">
+      <div class="item-info">
+        <div class="item-name">${perk.name}</div>
+        <div class="item-desc">${perk.desc}</div>
+      </div>
+      <div class="item-cost">${perk.cost} ink</div>
+      ${owned ? '' : `<button class="buy-btn" onclick="buyPerk('${key}')" ${canAfford ? '' : 'disabled'}>Buy</button>`}
+    </div>`;
+  }
+  perksSection.innerHTML = perksHTML;
+
+  // Card unlocks section
+  const cardsSection = document.getElementById('meta-cards-section');
+  let cardsHTML = '<h3>Unlockable Cards</h3>';
+  for (const [key, info] of Object.entries(UNLOCKABLE_CARDS)) {
+    const owned = META.unlockedCards.includes(key);
+    const canAfford = META.ink >= info.cost;
+    const def = CARD_DEFS[key];
+    const descText = def && def.desc ? def.desc({ upgraded: false }) : '';
+    cardsHTML += `<div class="meta-item${owned ? ' purchased' : ''}">
+      <div class="item-info">
+        <div class="item-name">${info.name}</div>
+        <div class="item-desc">${def ? def.rarity + ' ' + def.type : ''} | ${descText}</div>
+      </div>
+      <div class="item-cost">${info.cost} ink</div>
+      ${owned ? '' : `<button class="buy-btn" onclick="buyCard_meta('${key}')" ${canAfford ? '' : 'disabled'}>Unlock</button>`}
+    </div>`;
+  }
+  cardsSection.innerHTML = cardsHTML;
+
+  // Bestiary section
+  const bestiarySection = document.getElementById('meta-bestiary-section');
+  let bestiaryHTML = '<h3>Bestiary</h3>';
+  for (const [key, entry] of Object.entries(BESTIARY)) {
+    const seen = META.enemiesSeen.includes(key);
+    bestiaryHTML += `<div class="bestiary-entry${seen ? '' : ' unseen'}">
+      <div class="be-name">${seen ? entry.name : '???'}</div>
+      <div class="be-tip">${entry.tip}</div>
+    </div>`;
+  }
+  bestiarySection.innerHTML = bestiaryHTML;
+}
+
+function buyPerk(key) {
+  const perk = LEGACY_PERKS[key];
+  if (!perk || META.perks.includes(key) || META.ink < perk.cost) return;
+  META.ink -= perk.cost;
+  META.perks.push(key);
+  saveMeta();
+  playSFX('card');
+  renderMetaScreen();
+}
+
+function buyCard_meta(key) {
+  const info = UNLOCKABLE_CARDS[key];
+  if (!info || META.unlockedCards.includes(key) || META.ink < info.cost) return;
+  META.ink -= info.cost;
+  META.unlockedCards.push(key);
+  saveMeta();
+  playSFX('card');
+  renderMetaScreen();
+}
+
+// Update title screen ink display on load
+function updateTitleInkDisplay() {
+  const el = document.getElementById('title-ink-display');
+  if (el && META.totalInk > 0) {
+    el.textContent = `Ink: ${META.ink} | Runs: ${META.runs}`;
+  }
+}
+
+// Initialize on page load
+updateTitleInkDisplay();
+</script>
+</body>
+</html>
