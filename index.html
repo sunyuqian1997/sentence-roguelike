@@ -2071,53 +2071,72 @@ function checkWordOrder(cards) {
 
 /**
  * Check exclamation position legality.
- * Legal positions: sentence-start (excl + comma + body) or sentence-end (body + comma + excl).
- * Multiple exclamations can stack at start or end, each separated by commas.
+ * Legal positions:
+ *   - Sentence start: excl(s) + comma + body  (e.g. 啊，我揍敌人)
+ *   - Sentence end: body + comma + excl(s)  (e.g. 我揍敌人，啊)
+ *   - Multiple exclamations with commas between them are fine (卧槽，牛逼，我斩敌人)
+ *   - End punctuation (。！？) after exclamations at the end is fine
+ * Only penalize exclamations wedged into the middle without comma separation.
  * Returns { legal: bool, penalty: number (0-1 multiplier), note: string }
  */
 function checkExclamationPosition(cards) {
   const exclamations = cards.filter(c => c.pos === 'exclamation');
   if (exclamations.length === 0) return { legal: true, penalty: 1.0, note: '' };
 
-  // Find indices of exclamation words in the card list
-  const excIndices = cards.map((c, i) => c.pos === 'exclamation' ? i : -1).filter(i => i >= 0);
-  const nonExcNonComma = cards.filter(c => c.pos !== 'exclamation' && !(c.pos === 'punctuation' && c.punctType === 'comma'));
+  // "body" = cards that are not exclamation, not comma, not end-punctuation
+  const isBodyCard = c => c.pos !== 'exclamation' && !(c.pos === 'punctuation');
+  const bodyIndices = cards.map((c, i) => isBodyCard(c) ? i : -1).filter(i => i >= 0);
 
-  if (nonExcNonComma.length === 0) {
-    // Only exclamations and commas, no body — still legal but useless
+  if (bodyIndices.length === 0) {
+    // Only exclamations and punctuation, no real body — legal
     return { legal: true, penalty: 1.0, note: '' };
   }
 
-  // Find the range of "body" (non-exclamation, non-comma-adjacent-to-exclamation)
-  // Strategy: check if all exclamations are at the start or all at the end, with commas separating them from body
-  const firstNonExcIdx = cards.findIndex(c => c.pos !== 'exclamation' && !(c.pos === 'punctuation' && c.punctType === 'comma'));
-  const lastNonExcIdx = (() => { for (let i = cards.length - 1; i >= 0; i--) { if (cards[i].pos !== 'exclamation' && !(cards[i].pos === 'punctuation' && cards[i].punctType === 'comma')) return i; } return -1; })();
+  const firstBodyIdx = bodyIndices[0];
+  const lastBodyIdx = bodyIndices[bodyIndices.length - 1];
 
-  // Check: are all exclamations before firstNonExcIdx or after lastNonExcIdx?
-  let allAtStart = excIndices.every(i => i < firstNonExcIdx);
-  let allAtEnd = excIndices.every(i => i > lastNonExcIdx);
+  const excIndices = cards.map((c, i) => c.pos === 'exclamation' ? i : -1).filter(i => i >= 0);
 
-  if (!allAtStart && !allAtEnd) {
-    // Exclamation in the middle — illegal
-    return { legal: false, penalty: 0.5, note: '⚠ 感叹词位置不当（应在句首或句尾）×0.5' };
+  // Check each exclamation: is it before all body cards or after all body cards?
+  for (const ei of excIndices) {
+    const atStart = ei < firstBodyIdx;
+    const atEnd = ei > lastBodyIdx;
+
+    if (!atStart && !atEnd) {
+      // Exclamation is in the middle of body cards — check if it has comma separation
+      // Look for comma immediately before or after
+      const hasCommaBefore = ei > 0 && cards[ei - 1].pos === 'punctuation' && cards[ei - 1].punctType === 'comma';
+      const hasCommaAfter = ei < cards.length - 1 && cards[ei + 1].pos === 'punctuation' && cards[ei + 1].punctType === 'comma';
+      if (!hasCommaBefore && !hasCommaAfter) {
+        return { legal: false, penalty: 0.5, note: '⚠ 感叹词位置不当（应在句首或句尾，或用逗号分隔）×0.5' };
+      }
+    }
   }
 
-  // Check that there's a comma between exclamations and body
-  if (allAtStart) {
-    // The card right before firstNonExcIdx should be a comma
-    const bridgeIdx = firstNonExcIdx - 1;
-    if (bridgeIdx >= 0 && cards[bridgeIdx].pos === 'punctuation' && cards[bridgeIdx].punctType === 'comma') {
-      return { legal: true, penalty: 1.0, note: '' };
-    } else {
+  // Check that exclamations at start/end have comma bridge to body
+  const startExcls = excIndices.filter(i => i < firstBodyIdx);
+  const endExcls = excIndices.filter(i => i > lastBodyIdx);
+
+  if (startExcls.length > 0) {
+    // There should be a comma between the last start-exclamation and the first body card
+    const lastStartExcl = Math.max(...startExcls);
+    let hasComma = false;
+    for (let i = lastStartExcl + 1; i < firstBodyIdx; i++) {
+      if (cards[i].pos === 'punctuation' && cards[i].punctType === 'comma') { hasComma = true; break; }
+    }
+    if (!hasComma) {
       return { legal: false, penalty: 0.6, note: '⚠ 感叹词与正文间需要逗号 ×0.6' };
     }
   }
-  if (allAtEnd) {
-    // The card right after lastNonExcIdx should be a comma
-    const bridgeIdx = lastNonExcIdx + 1;
-    if (bridgeIdx < cards.length && cards[bridgeIdx].pos === 'punctuation' && cards[bridgeIdx].punctType === 'comma') {
-      return { legal: true, penalty: 1.0, note: '' };
-    } else {
+
+  if (endExcls.length > 0) {
+    // There should be a comma between the last body card and the first end-exclamation
+    const firstEndExcl = Math.min(...endExcls);
+    let hasComma = false;
+    for (let i = lastBodyIdx + 1; i < firstEndExcl; i++) {
+      if (cards[i].pos === 'punctuation' && cards[i].punctType === 'comma') { hasComma = true; break; }
+    }
+    if (!hasComma) {
       return { legal: false, penalty: 0.6, note: '⚠ 感叹词与正文间需要逗号 ×0.6' };
     }
   }
@@ -2238,7 +2257,7 @@ function evaluateSentence(rawCards) {
   });
 
   // EXCLAMATION POSITION CHECK
-  const excPosResult = checkExclamationPosition(cards);
+  const excPosResult = checkExclamationPosition(rawCards);
   let excPosPenalty = excPosResult.penalty;
   if (excPosResult.note) {
     excNotes.push(excPosResult.note);
@@ -3047,22 +3066,20 @@ function renderSentenceSlots() {
   const container = document.getElementById('sentence-slots-container');
   container.innerHTML = '';
 
-  const displayCards = normalizeSentence(G.sentence);
+  const displayCards = G.sentence;
 
-  // Flat WYSIWYG display — comma is just a word like any other
+  // Flat WYSIWYG display — strict player click order, no reordering
   const half = document.createElement('div');
   half.className = 'sentence-half';
-  displayCards.forEach((card) => {
-    const origIdx = G.sentence.indexOf(card);
-    half.appendChild(createSentenceWordEl(card, origIdx));
+  displayCards.forEach((card, idx) => {
+    half.appendChild(createSentenceWordEl(card, idx));
   });
   container.appendChild(half);
 
-  // Preview — calligraphy style
+  // Preview — calligraphy style, strict player click order
   const preview = document.getElementById('sentence-preview');
   if (G.sentence.length > 0) {
-    const normalized = normalizeSentence(G.sentence);
-    preview.textContent = '「' + normalized.map(c => c._isEnemyTarget ? c.word : (c._isSelfTarget ? '我' : c.word)).join('') + '」';
+    preview.textContent = '「' + G.sentence.map(c => c._isEnemyTarget ? c.word : (c._isSelfTarget ? '我' : c.word)).join('') + '」';
   } else {
     preview.textContent = '';
   }
@@ -3071,7 +3088,7 @@ function renderSentenceSlots() {
   const dzEl = document.getElementById('duizhang-preview');
   const hasCommaInSentence = displayCards.some(c => c.pos === 'punctuation' && c.punctType === 'comma');
   if (hasCommaInSentence) {
-    const dzResult = detectDuizhang(normalizeSentence(G.sentence));
+    const dzResult = detectDuizhang(G.sentence);
     if (dzResult) {
       dzEl.className = dzResult.matched ? 'duizhang-good' : 'duizhang-bad';
       dzEl.textContent = dzResult.label;
@@ -3109,7 +3126,7 @@ function renderSentenceSlots() {
       if (eval_.effects.aoe) parts.push('🌊全体');
       if (eval_.effects.ignoreBlock) parts.push('🗡穿透');
       if (eval_.effects.goldGain > 0) parts.push(`💰${eval_.effects.goldGain}`);
-      const excPos = checkExclamationPosition(normalizeSentence(G.sentence));
+      const excPos = checkExclamationPosition(G.sentence);
       const excWarn = excPos.note ? ` <span style="color:#e07070">${excPos.note}</span>` : '';
       sp.innerHTML = `<span>费${getSentenceCost()}</span> ${parts.join(' ')} <span style="color:var(--gold)">✨×${eval_.totalMult.toFixed(2)}</span>${excWarn}`;
     }
