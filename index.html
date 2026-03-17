@@ -1215,110 +1215,140 @@ const WORD_DEFS = {
     desc: '主语·诗意+0.3', flavor: '千古第一才女', powerBonus: 0, poetryBonus: 0.3 },
 
   // --- Common ---
-  jianke: { word: '剑客', pos: 'subject', cost: 1, rarity: 'common',
-    desc: '主语·攻击+3', flavor: '仗剑走天涯，欠债不还钱', powerBonus: 3, bonusType: 'attack' },
-  shusheng: { word: '书生', pos: 'subject', cost: 1, rarity: 'common',
-    desc: '主语·抽1牌', flavor: '手无缚鸡之力，嘴有毒舌之功', powerBonus: 0, draw: 1 },
+  jianke: { word: '剑客', pos: 'subject', cost: 0, rarity: 'common',
+    desc: '主语·攻击+2', flavor: '仗剑走天涯', powerBonus: 2, bonusType: 'attack' },
+  shusheng: { word: '书生', pos: 'subject', cost: 0, rarity: 'common',
+    desc: '主语·质量+0.3', flavor: '手无缚鸡之力', powerBonus: 0, poetryBonus: 0.3 },
   mao: { word: '猫', pos: 'subject', cost: 0, rarity: 'common',
     desc: '主语·随机效果', flavor: '喵？', powerBonus: 0, randomEffect: true },
   yuetu: { word: '月兔', pos: 'subject', cost: 0, rarity: 'common',
     desc: '主语·回血+2', flavor: '广寒宫的加班兔', powerBonus: 2, bonusType: 'heal' },
+  sengren: { word: '僧人', pos: 'subject', cost: 0, rarity: 'common',
+    desc: '主语·回血+2', flavor: '阿弥陀佛', powerBonus: 2, bonusType: 'heal' },
 
   // --- Uncommon ---
-  shiren: { word: '诗人', pos: 'subject', cost: 1, rarity: 'uncommon',
-    desc: '主语·诗意+0.3', flavor: '人生得意须尽欢', powerBonus: 0, poetryBonus: 0.3 },
-  tuixiu_jiansheng: { word: '退休剑圣', pos: 'subject', cost: 2, rarity: 'uncommon',
-    desc: '主语·攻击+5,格挡-2', flavor: '老了，砍不动了...才怪', powerBonus: 5, bonusType: 'attack', defenseBonus: -2 },
-  shekong_shutong: { word: '社恐书童', pos: 'subject', cost: 0, rarity: 'uncommon',
-    desc: '主语·格挡+3', flavor: '别、别看我...', powerBonus: 3, bonusType: 'defense' },
-  qinshi: { word: '琴师', pos: 'subject', cost: 1, rarity: 'uncommon', unlockable: true,
-    desc: '主语·攻击+2/回血+2', flavor: '高山流水觅知音', powerBonus: 2, bonusType: 'attack', healBonusSub: 2 },
-  jiuxian: { word: '酒仙', pos: 'subject', cost: 1, rarity: 'uncommon',
-    desc: '主语·攻击+3(随机)', flavor: '醉里挑灯看剑', powerBonus: 0, drunkRandom: true },
-  huxian: { word: '狐仙', pos: 'subject', cost: 1, rarity: 'uncommon',
-    desc: '主语·格挡+4', flavor: '聊斋来客', powerBonus: 4, bonusType: 'defense' },
-
   hatsunemiku: { word: '初音未来', pos: 'subject', cost: 0, rarity: 'uncommon',
-    desc: '主语·音波全体伤害+3', flavor: '世界第一公主殿下', powerBonus: 3, bonusType: 'attack', forceAoeSub: true },
+    desc: '主语·音波全体+3', flavor: '世界第一公主殿下', powerBonus: 3, bonusType: 'attack', forceAoeSub: true },
+  nvxia: { word: '女侠', pos: 'subject', cost: 0, rarity: 'uncommon',
+    desc: '主语·穿透格挡', flavor: '巾帼不让须眉', powerBonus: 0, bonusType: 'attack', stealthSub: true },
+  jiuxian: { word: '酒仙', pos: 'subject', cost: 0, rarity: 'uncommon',
+    desc: '主语·随机攻击+1~3', flavor: '醉里挑灯看剑', powerBonus: 0, drunkRandom: true },
+  huxian: { word: '狐仙', pos: 'subject', cost: 0, rarity: 'uncommon',
+    desc: '主语·穿透格挡50%', flavor: '聊斋来客', powerBonus: 0, bonusType: 'attack', halfPenetrate: true },
+  qinshi: { word: '琴师', pos: 'subject', cost: 0, rarity: 'uncommon', unlockable: true,
+    desc: '主语·攻击+2/回血+2', flavor: '高山流水觅知音', powerBonus: 2, bonusType: 'attack', healBonusSub: 2 },
 
   // --- Rare ---
-  jiangjun: { word: '将军', pos: 'subject', cost: 2, rarity: 'rare', unlockable: true,
+  jiangjun: { word: '将军', pos: 'subject', cost: 0, rarity: 'rare', unlockable: true,
     desc: '主语·攻击+5,格挡+3', flavor: '百万雄师过大江', powerBonus: 5, bonusType: 'attack', defenseBonus: 3 },
-  shenmi_daoshi: { word: '神秘道士', pos: 'subject', cost: 2, rarity: 'rare', unlockable: true,
+  shenmi_daoshi: { word: '神秘道士', pos: 'subject', cost: 0, rarity: 'rare', unlockable: true,
     desc: '主语·全+3', flavor: '贫道掐指一算...', powerBonus: 3, bonusType: 'all' },
-  nvxia: { word: '女侠', pos: 'subject', cost: 1, rarity: 'uncommon',
-    desc: '主语·攻击+4', flavor: '巾帼不让须眉', powerBonus: 4, bonusType: 'attack' },
-  sengren: { word: '僧人', pos: 'subject', cost: 1, rarity: 'common',
-    desc: '主语·格挡+3,回血+1', flavor: '阿弥陀佛', powerBonus: 3, bonusType: 'defense', healBonusSub: 1 },
 
-  // ==================== VERBS (谓语·金色) ====================
+  // ==================== ATTACK VERBS (攻击谓语·金色) ====================
   // --- Starter ---
   zhan: { word: '斩', pos: 'verb', cost: 1, rarity: 'starter',
     combatType: 'attack', basePower: 6, upgPower: 9, flavor: '刀起刀落',
     desc: (c) => `攻击 ${c.upgraded?9:6}` },
-  shou: { word: '守', pos: 'verb', cost: 1, rarity: 'starter',
-    combatType: 'defense', basePower: 5, upgPower: 8, flavor: '固若金汤',
-    desc: (c) => `格挡 ${c.upgraded?8:5}` },
-
   // --- Common ---
-  ji: { word: '击', pos: 'verb', cost: 1, rarity: 'common',
-    combatType: 'attack', basePower: 7, upgPower: 10, flavor: '重拳出击',
-    desc: (c) => `攻击 ${c.upgraded?10:7}` },
-  dang: { word: '挡', pos: 'verb', cost: 1, rarity: 'common',
-    combatType: 'defense', basePower: 6, upgPower: 9, flavor: '挡住了！大概',
-    desc: (c) => `格挡 ${c.upgraded?9:6}` },
+  zou: { word: '揍', pos: 'verb', cost: 1, rarity: 'common',
+    combatType: 'attack', basePower: 8, upgPower: 12, flavor: '直球就是揍！',
+    desc: (c) => `攻击 ${c.upgraded?12:8}` },
   dui: { word: '怼', pos: 'verb', cost: 1, rarity: 'common',
-    combatType: 'attack', basePower: 5, upgPower: 7, applyWeakVerb: 1, flavor: '你说什么？再说一遍？',
-    desc: (c) => `攻击 ${c.upgraded?7:5}+削弱1` },
-  pao: { word: '跑', pos: 'verb', cost: 0, rarity: 'common',
-    combatType: 'defense', basePower: 3, upgPower: 5, flavor: '三十六计走为上',
-    desc: (c) => `格挡 ${c.upgraded?5:3}` },
-  moyu: { word: '摸鱼', pos: 'verb', cost: 0, rarity: 'common',
-    combatType: 'heal', basePower: 5, upgPower: 8, moyuSpecial: true, flavor: '带薪摸鱼',
-    desc: (c) => `自用=回血${c.upgraded?8:5}；对敌=易伤3回合` },
+    combatType: 'attack', basePower: 5, upgPower: 7, applyWeakVerb: 2, flavor: '你说什么？再说一遍？',
+    desc: (c) => `攻击 ${c.upgraded?7:5}+削弱2回合` },
+  chuai: { word: '踹', pos: 'verb', cost: 1, rarity: 'common',
+    combatType: 'attack', basePower: 4, upgPower: 6, kickbackVerb: true, flavor: '一脚踹飞',
+    desc: (c) => `攻击 ${c.upgraded?6:4}+击退(50%跳过攻击)` },
+  kan: { word: '砍', pos: 'verb', cost: 1, rarity: 'common',
+    combatType: 'attack', basePower: 7, upgPower: 10, flavor: '手起刀落',
+    desc: (c) => `攻击 ${c.upgraded?10:7}` },
+  cu: { word: '戳', pos: 'verb', cost: 0, rarity: 'common',
+    combatType: 'attack', basePower: 3, upgPower: 5, flavor: '戳一下试试',
+    desc: (c) => `攻击 ${c.upgraded?5:3}` },
+  chou: { word: '抽', pos: 'verb', cost: 1, rarity: 'common',
+    combatType: 'attack', basePower: 5, upgPower: 7, draw: 1, flavor: '抽你还抽牌',
+    desc: (c) => `攻击 ${c.upgraded?7:5}+抽1牌` },
+  pen: { word: '喷', pos: 'verb', cost: 1, rarity: 'common',
+    combatType: 'attack', basePower: 6, upgPower: 9, reduceBlockVerb: 3, flavor: '口水攻击！',
+    desc: (c) => `攻击 ${c.upgraded?9:6}+敌人格挡-3` },
 
   // --- Uncommon ---
-  po: { word: '破', pos: 'verb', cost: 1, rarity: 'uncommon',
-    combatType: 'attack', basePower: 8, upgPower: 12, ignoreBlock: true, flavor: '力破万法',
+  chong: { word: '冲', pos: 'verb', cost: 2, rarity: 'uncommon',
+    combatType: 'attack', basePower: 8, upgPower: 12, ignoreBlock: true, flavor: '冲就完事了！',
     desc: (c) => `攻击 ${c.upgraded?12:8}+穿透` },
-  mie: { word: '灭', pos: 'verb', cost: 2, rarity: 'uncommon',
-    combatType: 'attack', basePower: 12, upgPower: 17, flavor: '灰飞烟灭',
-    desc: (c) => `攻击 ${c.upgraded?17:12}` },
-  chang: { word: '唱', pos: 'verb', cost: 1, rarity: 'uncommon',
-    combatType: 'heal', basePower: 3, upgPower: 5, blockAlso: 4, flavor: '以歌疗伤',
-    desc: (c) => `挡${c.upgraded?6:4}+治${c.upgraded?5:3}` },
-  nian: { word: '念', pos: 'verb', cost: 1, rarity: 'uncommon',
-    combatType: 'heal', basePower: 5, upgPower: 8, flavor: '阿弥陀佛',
-    desc: (c) => `治疗 ${c.upgraded?8:5}` },
-  nuhou: { word: '怒吼', pos: 'verb', cost: 1, rarity: 'uncommon',
+  chui: { word: '锤', pos: 'verb', cost: 2, rarity: 'uncommon',
+    combatType: 'attack', basePower: 10, upgPower: 15, flavor: '一锤定音',
+    desc: (c) => `攻击 ${c.upgraded?15:10}` },
+  nuhou: { word: '怒吼', pos: 'verb', cost: 2, rarity: 'uncommon',
     combatType: 'attack', basePower: 4, upgPower: 6, forceAoe: true, flavor: '啊啊啊啊啊！',
     desc: (c) => `攻击 ${c.upgraded?6:4}(全体)` },
+  tan: { word: '弹', pos: 'verb', cost: 1, rarity: 'uncommon',
+    combatType: 'attack', basePower: 5, upgPower: 7, bounceVerb: true, flavor: '跳弹！',
+    desc: (c) => `攻击 ${c.upgraded?7:5}跳弹(逐个-1)` },
+  chaofen: { word: '嘲讽', pos: 'verb', cost: 0, rarity: 'uncommon',
+    combatType: 'attack', basePower: 3, upgPower: 5, tauntVerb: true, flavor: '来打我啊！',
+    desc: (c) => `攻击 ${c.upgraded?5:3}+嘲讽` },
+  huyou: { word: '忽悠', pos: 'verb', cost: 1, rarity: 'uncommon',
+    combatType: 'attack', basePower: 0, upgPower: 0, confuseVerb: true, flavor: '忽悠，接着忽悠',
+    desc: () => '敌人攻击队友/单敌自伤' },
 
   // --- Rare ---
+  bao: { word: '爆', pos: 'verb', cost: 2, rarity: 'rare',
+    combatType: 'attack', basePower: 12, upgPower: 18, selfDmgVerb: 3, flavor: '同归于尽！',
+    desc: (c) => `攻击 ${c.upgraded?18:12}，自伤3` },
   zhu: { word: '诛', pos: 'verb', cost: 2, rarity: 'rare', unlockable: true,
     combatType: 'attack', basePower: 15, upgPower: 22, exhaust: true, flavor: '诛邪！',
     desc: (c) => `攻击 ${c.upgraded?22:15}，消耗` },
-  yinshi_verb: { word: '吟诗', pos: 'verb', cost: 1, rarity: 'rare',
-    combatType: 'buff', basePower: 0, upgPower: 0, poeticMultVerb: 2.0, flavor: '举头望明月...',
-    desc: () => '诗意加成×2' },
-  bailan: { word: '摆烂', pos: 'verb', cost: 0, rarity: 'uncommon',
+  kejin: { word: '氪金', pos: 'verb', cost: 0, rarity: 'rare', unlockable: true,
+    combatType: 'attack', basePower: 20, upgPower: 28, spendGold: 10, flavor: '钞能力！',
+    desc: (c) => `花10金+攻击 ${c.upgraded?28:20}` },
+
+  // ==================== DEFENSE VERBS (防御谓语·金色) ====================
+  // --- Starter ---
+  shou: { word: '守', pos: 'verb', cost: 1, rarity: 'starter',
+    combatType: 'defense', basePower: 5, upgPower: 8, flavor: '固若金汤',
+    desc: (c) => `格挡 ${c.upgraded?8:5}` },
+  // --- Common ---
+  dang: { word: '挡', pos: 'verb', cost: 0, rarity: 'common',
+    combatType: 'defense', basePower: 4, upgPower: 6, flavor: '挡住了！大概',
+    desc: (c) => `格挡 ${c.upgraded?6:4}` },
+  tangping: { word: '躺平', pos: 'verb', cost: 1, rarity: 'common',
+    combatType: 'defense', basePower: 6, upgPower: 9, healAlsoVerb: 2, flavor: '不卷了不卷了',
+    desc: (c) => `格挡 ${c.upgraded?9:6}+回血2` },
+  dun: { word: '蹲', pos: 'verb', cost: 1, rarity: 'common',
+    combatType: 'defense', basePower: 3, upgPower: 5, draw: 1, flavor: '蹲一会儿',
+    desc: (c) => `格挡 ${c.upgraded?5:3}+抽1牌` },
+
+  // --- Uncommon ---
+  bailan: { word: '摆烂', pos: 'verb', cost: 1, rarity: 'uncommon',
     combatType: 'defense', basePower: 8, upgPower: 12, drawLessNext: 1, bailanSpecial: true, flavor: '躺平了',
     desc: (c) => `自用=挡${c.upgraded?12:8}少抽1；对敌=敌跳过攻击` },
-  tangping: { word: '躺平', pos: 'verb', cost: 0, rarity: 'common',
-    combatType: 'defense', basePower: 8, upgPower: 11, drawLessNext: 1, flavor: '不卷了不卷了',
-    desc: (c) => `格挡 ${c.upgraded?11:8}，下回合少抽1` },
-  liule: { word: '溜了', pos: 'verb', cost: 0, rarity: 'uncommon',
-    combatType: 'defense', basePower: 0, upgPower: 0, dodgeNext: true, flavor: '溜了溜了',
+  duo: { word: '躲', pos: 'verb', cost: 2, rarity: 'uncommon',
+    combatType: 'defense', basePower: 0, upgPower: 0, dodgeNext: true, flavor: '躲起来！',
     desc: () => '闪避下次攻击(格挡99)' },
-  chong: { word: '冲', pos: 'verb', cost: 1, rarity: 'uncommon',
-    combatType: 'attack', basePower: 8, upgPower: 12, ignoreBlock: true, flavor: '冲就完事了！',
-    desc: (c) => `攻击 ${c.upgraded?12:8}+穿透` },
+  yingkang: { word: '硬扛', pos: 'verb', cost: 2, rarity: 'uncommon',
+    combatType: 'defense', basePower: 10, upgPower: 15, vulnSelfNext: true, flavor: '扛住！',
+    desc: (c) => `格挡 ${c.upgraded?15:10}，下回合受伤+50%` },
+  liule: { word: '溜了', pos: 'verb', cost: 1, rarity: 'uncommon',
+    combatType: 'defense', basePower: 7, upgPower: 10, liuleSpecial: true, flavor: '溜了溜了',
+    desc: (c) => `自用=挡${c.upgraded?10:7}；对敌=降攻击` },
+
+  // ==================== HEAL/BUFF VERBS (辅助谓语·金色) ====================
+  moyu: { word: '摸鱼', pos: 'verb', cost: 1, rarity: 'common',
+    combatType: 'heal', basePower: 5, upgPower: 8, moyuSpecial: true, flavor: '带薪摸鱼',
+    desc: (c) => `自用=回血${c.upgraded?8:5}；对敌=易伤3回合` },
   kua: { word: '夸', pos: 'verb', cost: 1, rarity: 'uncommon',
     combatType: 'buff', basePower: 2, upgPower: 3, flavor: '夸夸群上线',
     desc: (c) => `+${c.upgraded?3:2}力量` },
-  kejin: { word: '氪金', pos: 'verb', cost: 2, rarity: 'rare', unlockable: true,
-    combatType: 'attack', basePower: 20, upgPower: 28, spendGold: 10, flavor: '钞能力！',
-    desc: (c) => `花10金+攻击 ${c.upgraded?28:20}` },
+  xiu: { word: '修', pos: 'verb', cost: 2, rarity: 'uncommon',
+    combatType: 'heal', basePower: 8, upgPower: 12, flavor: '修复一下',
+    desc: (c) => `治疗 ${c.upgraded?12:8}` },
+  bu: { word: '补', pos: 'verb', cost: 1, rarity: 'common',
+    combatType: 'heal', basePower: 4, upgPower: 6, blockAlso: 2, flavor: '补补补',
+    desc: (c) => `回血${c.upgraded?6:4}+格挡2` },
+  yinshi_verb: { word: '吟诗', pos: 'verb', cost: 1, rarity: 'rare',
+    combatType: 'buff', basePower: 0, upgPower: 0, poeticMultVerb: 2.0, flavor: '举头望明月...',
+    desc: () => '诗意加成×2' },
 
   // ==================== OBJECTS (宾语·蓝色) ====================
   // --- Starter ---
@@ -1326,117 +1356,107 @@ const WORD_DEFS = {
     desc: '宾语·指向敌人', flavor: '那边那个', effectBonus: 0 },
 
   // --- Common ---
-  cangqiong: { word: '苍穹', pos: 'object', cost: 0, rarity: 'common',
-    desc: '宾语·格挡+2', flavor: '天高地远', effectBonus: 2, bonusType: 'defense' },
-  xingchen: { word: '星辰', pos: 'object', cost: 1, rarity: 'common',
-    desc: '宾语·攻击+3', flavor: '星垂平野阔', effectBonus: 3, bonusType: 'attack' },
-  chunfeng: { word: '春风', pos: 'object', cost: 0, rarity: 'common',
-    desc: '宾语·回血+2', flavor: '春风又绿江南岸', effectBonus: 2, bonusType: 'heal' },
-  mingyue: { word: '明月', pos: 'object', cost: 0, rarity: 'common',
-    desc: '宾语·格挡+2', flavor: '明月几时有', effectBonus: 2, bonusType: 'defense' },
-
-  // --- Uncommon ---
-  mingyun: { word: '命运', pos: 'object', cost: 1, rarity: 'uncommon',
-    desc: '宾语·随机加成', flavor: '命运的齿轮开始转动', effectBonus: 0, randomObjBonus: true },
-  qianbao: { word: '钱包', pos: 'object', cost: 0, rarity: 'uncommon',
-    desc: '宾语·获得5金', flavor: '来点实际的', effectBonus: 0, goldGain: 5 },
-  mianzi: { word: '面子', pos: 'object', cost: 1, rarity: 'uncommon',
-    desc: '宾语·格挡+5', flavor: '面子工程', effectBonus: 5, bonusType: 'defense' },
-  quanshijie: { word: '全世界', pos: 'object', cost: 2, rarity: 'uncommon',
-    desc: '宾语·群体攻击', flavor: '全世界都是你的敌人', aoe: true, effectBonus: 0 },
-  jiangshan: { word: '江山', pos: 'object', cost: 2, rarity: 'uncommon',
-    desc: '宾语·AOE+攻击+3', flavor: '江山如此多娇', aoe: true, effectBonus: 3, bonusType: 'attack' },
-
-  cangtian: { word: '苍天', pos: 'object', cost: 1, rarity: 'uncommon',
-    desc: '宾语·全体伤害', flavor: '苍天在上', aoe: true, effectBonus: 0 },
-  zhenxiang: { word: '真相', pos: 'object', cost: 1, rarity: 'uncommon',
-    desc: '宾语·移除敌人增益', flavor: '真相只有一个', effectBonus: 0, removeBuffs: true },
   yueliang: { word: '月亮', pos: 'object', cost: 0, rarity: 'common',
     desc: '宾语·回血+3', flavor: '举头望明月', effectBonus: 3, bonusType: 'heal' },
-
-  // --- Rare ---
-  wanwu: { word: '万物', pos: 'object', cost: 2, rarity: 'rare', unlockable: true,
-    desc: '宾语·群体+攻击+5', flavor: '万物皆可斩', aoe: true, effectBonus: 5, bonusType: 'attack' },
-  bug_obj: { word: 'bug', pos: 'object', cost: 1, rarity: 'rare', unlockable: true,
-    desc: '宾语·随机超强效果', flavor: '这不是feature吗？', effectBonus: 0, bugEffect: true },
-
-  // ==================== MODIFIERS (修饰·绿色) ====================
-  // --- Starter ---
-  menglie: { word: '猛烈地', pos: 'modifier', cost: 1, rarity: 'starter',
-    desc: '修饰·攻击×1.5', flavor: '力大砖飞', multiplier: 1.5, bonusType: 'attack' },
-
-  // --- Common ---
-  qingqing: { word: '轻轻地', pos: 'modifier', cost: 0, rarity: 'common',
-    desc: '修饰·格挡×1.3', flavor: '轻拿轻放', multiplier: 1.3, bonusType: 'defense' },
-  toutou: { word: '偷偷地', pos: 'modifier', cost: 0, rarity: 'common',
-    desc: '修饰·无视格挡', flavor: '悄咪咪', multiplier: 1.0, bonusType: 'all', stealthMod: true },
-  yongli: { word: '用力地', pos: 'modifier', cost: 1, rarity: 'common',
-    desc: '修饰·攻击×1.3', flavor: '用力过猛', multiplier: 1.3, bonusType: 'attack' },
-  suibian: { word: '随便地', pos: 'modifier', cost: 0, rarity: 'common',
-    desc: '修饰·效果×0.8', flavor: '差不多得了', multiplier: 0.8, bonusType: 'all' },
+  ziji: { word: '自己', pos: 'object', cost: 0, rarity: 'common',
+    desc: '宾语·自我指向', flavor: '自己人', effectBonus: 0, selfTargetObj: true },
 
   // --- Uncommon ---
-  youya: { word: '优雅地', pos: 'modifier', cost: 1, rarity: 'uncommon',
-    desc: '修饰·全×1.3+诗意', flavor: '优雅永不过时', multiplier: 1.3, bonusType: 'all', poetryBonusMod: 0.2 },
-  fennu: { word: '愤怒地', pos: 'modifier', cost: 1, rarity: 'uncommon',
-    desc: '修饰·攻击×1.8,自伤2', flavor: '怒发冲冠', multiplier: 1.8, bonusType: 'attack', selfDmgMod: 2 },
-  hanlei: { word: '含泪地', pos: 'modifier', cost: 0, rarity: 'uncommon',
-    desc: '修饰·回血+5', flavor: '含泪吃下这碗面', multiplier: 1.0, bonusType: 'all', healBonusMod: 5 },
-
-  fengkuang: { word: '疯狂地', pos: 'modifier', cost: 1, rarity: 'uncommon',
-    desc: '修饰·攻击×2,自伤3', flavor: '疯了疯了', multiplier: 2.0, bonusType: 'attack', selfDmgMod: 3 },
+  cangtian: { word: '苍天', pos: 'object', cost: 0, rarity: 'uncommon',
+    desc: '宾语·全体伤害', flavor: '苍天在上', aoe: true, effectBonus: 0 },
+  qianbao: { word: '钱包', pos: 'object', cost: 0, rarity: 'uncommon',
+    desc: '宾语·偷金币5', flavor: '来点实际的', effectBonus: 0, goldGain: 5 },
+  mingyun: { word: '命运', pos: 'object', cost: 0, rarity: 'uncommon',
+    desc: '宾语·随机效果', flavor: '命运的齿轮开始转动', effectBonus: 0, randomObjBonus: true },
+  zhenxiang: { word: '真相', pos: 'object', cost: 0, rarity: 'uncommon',
+    desc: '宾语·移除敌人增益', flavor: '真相只有一个', effectBonus: 0, removeBuffs: true },
+  yaohai: { word: '要害', pos: 'object', cost: 0, rarity: 'uncommon',
+    desc: '宾语·暴击(伤害+50%)', flavor: '一击致命', effectBonus: 0, critObj: true },
 
   // --- Rare ---
+  bug_obj: { word: 'bug', pos: 'object', cost: 0, rarity: 'rare', unlockable: true,
+    desc: '宾语·伤害翻倍30%打自己', flavor: '这不是feature吗？', effectBonus: 0, bugEffect: true },
+  quanchang: { word: '全场', pos: 'object', cost: 1, rarity: 'rare',
+    desc: '宾语·AOE全体', flavor: '全场最靓的仔', aoe: true, effectBonus: 0 },
+  wanwu: { word: '万物', pos: 'object', cost: 2, rarity: 'rare', unlockable: true,
+    desc: '宾语·群体+攻击+5', flavor: '万物皆可斩', aoe: true, effectBonus: 5, bonusType: 'attack' },
+
+  // ==================== MODIFIERS (修饰·绿色) ====================
+  // --- Common ---
+  menglie: { word: '猛烈地', pos: 'modifier', cost: 1, rarity: 'common',
+    desc: '修饰·攻击×1.5', flavor: '力大砖飞', multiplier: 1.5, bonusType: 'attack' },
+  toutou: { word: '偷偷地', pos: 'modifier', cost: 1, rarity: 'common',
+    desc: '修饰·穿透格挡50%', flavor: '悄咪咪', multiplier: 1.0, bonusType: 'all', stealthMod: true },
+  suibian: { word: '随便地', pos: 'modifier', cost: 0, rarity: 'common',
+    desc: '修饰·费用-1效果×0.7', flavor: '差不多得了', multiplier: 0.7, bonusType: 'all' },
+  huluan: { word: '胡乱地', pos: 'modifier', cost: 0, rarity: 'common',
+    desc: '修饰·随机目标伤害×1.5', flavor: '乱打一气', multiplier: 1.5, bonusType: 'attack', randomTargetMod: true },
+
+  // --- Uncommon ---
+  fengkuang: { word: '疯狂地', pos: 'modifier', cost: 1, rarity: 'uncommon',
+    desc: '修饰·伤害×2自伤3', flavor: '疯了疯了', multiplier: 2.0, bonusType: 'attack', selfDmgMod: 3 },
+  youya: { word: '优雅地', pos: 'modifier', cost: 1, rarity: 'uncommon',
+    desc: '修饰·质量+0.5', flavor: '优雅永不过时', multiplier: 1.0, bonusType: 'all', poetryBonusMod: 0.5 },
+  pinming: { word: '拼命地', pos: 'modifier', cost: 1, rarity: 'uncommon',
+    desc: '修饰·攻击×1.8少抽1', flavor: '拼了！', multiplier: 1.8, bonusType: 'attack', drawLessNextMod: 1 },
+  renzhen: { word: '认真地', pos: 'modifier', cost: 1, rarity: 'uncommon',
+    desc: '修饰·质量+0.3效果+20%', flavor: '认真你就赢了', multiplier: 1.2, bonusType: 'all', poetryBonusMod: 0.3 },
+
+  // --- Rare ---
+  anzhong: { word: '暗中', pos: 'modifier', cost: 2, rarity: 'rare',
+    desc: '修饰·穿透全部格挡', flavor: '暗中观察', multiplier: 1.0, bonusType: 'all', fullPenetrateMod: true },
+  fanfu: { word: '反复地', pos: 'modifier', cost: 2, rarity: 'rare',
+    desc: '修饰·效果执行两次', flavor: '反复横跳', multiplier: 1.0, bonusType: 'all', doubleExecute: true },
   jingtian: { word: '惊天动地地', pos: 'modifier', cost: 2, rarity: 'rare', unlockable: true,
     desc: '修饰·全×2.0', flavor: '天崩地裂', multiplier: 2.0, bonusType: 'all' },
   bujianwude: { word: '以不讲武德的方式', pos: 'modifier', cost: 2, rarity: 'rare', unlockable: true,
     desc: '修饰·全×1.5+无视限制', flavor: '年轻人不讲武德', multiplier: 1.5, bonusType: 'all', ignoreAllLimits: true },
 
   // ==================== CONNECTORS (连接·灰色) ====================
-  yi: { word: '以', pos: 'connector', cost: 0, rarity: 'common',
-    desc: '连接·语法+5%', flavor: '以…', grammarBonus: 0.05 },
-  er: { word: '而', pos: 'connector', cost: 0, rarity: 'common',
-    desc: '连接·语法+5%', flavor: '而…', grammarBonus: 0.05 },
-  danshi: { word: '但是', pos: 'connector', cost: 0, rarity: 'common',
-    desc: '连接·攻击分半给格挡', flavor: '攻守兼备', grammarBonus: 0.05, splitAttackToBlock: true },
-  ranhou: { word: '然后', pos: 'connector', cost: 0, rarity: 'common',
-    desc: '连接·抽1牌', flavor: '然后呢？', grammarBonus: 0.05, draw: 1 },
   he: { word: '和', pos: 'connector', cost: 0, rarity: 'common',
-    desc: '连接·多目标攻击', flavor: '一个都别想跑', grammarBonus: 0.05, multiTarget: true },
+    desc: '连接·多目标', flavor: '一个都别想跑', grammarBonus: 0.05, multiTarget: true },
   huo: { word: '或', pos: 'connector', cost: 0, rarity: 'uncommon',
     desc: '连接·随机目标伤害×1.5', flavor: '命运的选择', grammarBonus: 0.05, orRandom: true },
+  ranhou: { word: '然后', pos: 'connector', cost: 1, rarity: 'uncommon',
+    desc: '连接·效果执行两次', flavor: '然后呢？', grammarBonus: 0.05, doubleExecuteConn: true },
+  bang: { word: '帮', pos: 'connector', cost: 0, rarity: 'uncommon',
+    desc: '连接·辅助角色触发被动', flavor: '我帮猫揍敌人', grammarBonus: 0.05, helpConnector: true },
 
   // ==================== PUNCTUATION (标点·紫色) ====================
-  comma: { word: '，', pos: 'punctuation', cost: 0, rarity: 'uncommon', punctType: 'comma',
+  comma: { word: '，', pos: 'punctuation', cost: 0, rarity: 'common', punctType: 'comma',
     desc: '标点·分句+对仗', flavor: '上下句之间' },
   period: { word: '。', pos: 'punctuation', cost: 0, rarity: 'common', punctType: 'period',
     desc: '标点·完句×1.15', flavor: '句号即圆满' },
+  exclamation_punct: { word: '！', pos: 'punctuation', cost: 0, rarity: 'uncommon', punctType: 'exclamation',
+    desc: '标点·爆发×1.3', flavor: '大声点！' },
   question: { word: '？', pos: 'punctuation', cost: 0, rarity: 'uncommon', punctType: 'question',
     desc: '标点·削弱敌人2回合', flavor: '灵魂拷问' },
-  exclamation: { word: '！', pos: 'punctuation', cost: 0, rarity: 'rare', punctType: 'exclamation',
-    desc: '标点·全效果×1.5', flavor: '大声点！' },
 
-  // ==================== EXCLAMATIONS (感叹词·橙色) ====================
+  // ==================== EXCLAMATIONS (感叹词·霓虹青) ====================
   wocao: { word: '卧槽', pos: 'exclamation', cost: 0, rarity: 'common',
-    desc: '感叹词·伤害×1.5', flavor: '卧槽！！！', excMult: 1.5, excType: 'attack' },
+    desc: '感叹词·攻击×1.5', flavor: '卧槽！！！', excMult: 1.5, excType: 'attack' },
   niubi: { word: '牛逼', pos: 'exclamation', cost: 0, rarity: 'uncommon',
-    desc: '感叹词·伤害×1.8', flavor: '太牛逼了！', excMult: 1.8, excType: 'attack' },
+    desc: '感叹词·攻击×1.8', flavor: '太牛逼了！', excMult: 1.8, excType: 'attack' },
   woqu: { word: '我去', pos: 'exclamation', cost: 0, rarity: 'common',
     desc: '感叹词·格挡×1.5', flavor: '我去！这也行？', excMult: 1.5, excType: 'defense' },
   ah: { word: '啊', pos: 'exclamation', cost: 0, rarity: 'common',
     desc: '感叹词·全效果×1.2', flavor: '啊——', excMult: 1.2, excType: 'all' },
   liuliuliu: { word: '666', pos: 'exclamation', cost: 0, rarity: 'common',
-    desc: '感叹词·伤害×1.4', flavor: '六六六！', excMult: 1.4, excType: 'attack' },
+    desc: '感叹词·攻击×1.4', flavor: '六六六！', excMult: 1.4, excType: 'attack' },
   jue: { word: '绝了', pos: 'exclamation', cost: 0, rarity: 'uncommon',
-    desc: '感叹词·全效果×1.6', flavor: '绝绝子！', excMult: 1.6, excType: 'all' },
+    desc: '感叹词·质量×2', flavor: '绝绝子！', excMult: 2.0, excType: 'all' },
   miaoa: { word: '妙啊', pos: 'exclamation', cost: 0, rarity: 'uncommon',
-    desc: '感叹词·全×1.2+抽1牌', flavor: '妙啊妙啊', excMult: 1.2, excType: 'all', excDraw: 1 },
+    desc: '感叹词·抽1张牌', flavor: '妙啊妙啊', excMult: 1.0, excType: 'all', excDraw: 1 },
   jiuming: { word: '救命', pos: 'exclamation', cost: 0, rarity: 'common',
-    desc: '感叹词·回血3+格挡×1.3', flavor: '救命啊！', excMult: 1.3, excType: 'defense', excHeal: 3 },
+    desc: '感叹词·回血3', flavor: '救命啊！', excMult: 1.0, excType: 'all', excHeal: 3 },
   wuhu: { word: '芜湖', pos: 'exclamation', cost: 0, rarity: 'uncommon',
     desc: '感叹词·全效果×1.3', flavor: '芜湖起飞！', excMult: 1.3, excType: 'all' },
-  qifei: { word: '起飞', pos: 'exclamation', cost: 0, rarity: 'rare',
-    desc: '感叹词·全×1.3+下回合+1能量', flavor: '起飞了家人们', excMult: 1.3, excType: 'all', excEnergy: 1 },
+  qifei: { word: '起飞', pos: 'exclamation', cost: 0, rarity: 'uncommon',
+    desc: '感叹词·下回合+1能量', flavor: '起飞了家人们', excMult: 1.0, excType: 'all', excEnergy: 1 },
+  haojiahuo: { word: '好家伙', pos: 'exclamation', cost: 0, rarity: 'uncommon',
+    desc: '感叹词·攻击×1.6', flavor: '好家伙！', excMult: 1.6, excType: 'attack' },
+  wuyu: { word: '无语', pos: 'exclamation', cost: 0, rarity: 'common',
+    desc: '感叹词·敌攻击-3', flavor: '无语了真的', excMult: 1.0, excType: 'all', excWeaken: 3 },
 };
 
 function makeCard(def) {
@@ -1447,15 +1467,15 @@ function createStarterDeck() {
   const deck = [];
   const add = (key, n) => { for(let i=0;i<n;i++) deck.push(makeCard({...WORD_DEFS[key], key})); };
   add('wo', 2);
-  add('liqingzhao', 1);
   add('zhan', 2);
+  add('zou', 1);
   add('shou', 1);
-  add('moyu', 1);
+  add('cu', 1);
   add('diren', 2);
   add('wocao', 1);
   add('ah', 1);
-  add('period', 1);
   add('comma', 1);
+  add('period', 1);
   return deck;
 }
 
@@ -1474,6 +1494,33 @@ function randomCard(rarity) {
   const pool = getCardPool(rarity);
   if (pool.length === 0) return makeCard({...WORD_DEFS.wo, key:'wo'});
   const key = pool[Math.floor(Math.random() * pool.length)];
+  return makeCard({...WORD_DEFS[key], key});
+}
+
+// Weighted random card: 40% attack verbs, 20% exclamations, 15% modifiers, 15% objects, 5% subjects, 5% punctuation
+function randomCardWeighted(rarity) {
+  const pool = getCardPool(rarity);
+  if (pool.length === 0) return makeCard({...WORD_DEFS.wo, key:'wo'});
+  // Categorize
+  const cats = { attackVerb:[], exclamation:[], modifier:[], object:[], subject:[], punctuation:[], other:[] };
+  pool.forEach(key => {
+    const d = WORD_DEFS[key];
+    if (d.pos === 'verb' && d.combatType === 'attack') cats.attackVerb.push(key);
+    else if (d.pos === 'exclamation') cats.exclamation.push(key);
+    else if (d.pos === 'modifier') cats.modifier.push(key);
+    else if (d.pos === 'object') cats.object.push(key);
+    else if (d.pos === 'subject') cats.subject.push(key);
+    else if (d.pos === 'punctuation') cats.punctuation.push(key);
+    else cats.other.push(key);
+  });
+  const weights = [
+    [cats.attackVerb, 0.40], [cats.exclamation, 0.20], [cats.modifier, 0.15],
+    [cats.object, 0.15], [cats.subject, 0.05], [cats.punctuation, 0.03], [cats.other, 0.02],
+  ].filter(([arr]) => arr.length > 0);
+  const totalW = weights.reduce((s,[,w]) => s+w, 0);
+  let r = Math.random() * totalW, chosen = weights[0][0];
+  for (const [arr, w] of weights) { r -= w; if (r <= 0) { chosen = arr; break; } }
+  const key = chosen[Math.floor(Math.random() * chosen.length)];
   return makeCard({...WORD_DEFS[key], key});
 }
 
@@ -1897,6 +1944,20 @@ const SUMMON_EFFECTS = {
       VFX.rollHp(document.getElementById('combat-hp'));
     }
   },
+  '狐仙': {
+    name: '狐仙魅惑', emoji: '🦊', desc: '敌人全体易伤2回合',
+    apply() {
+      G.enemies.forEach(e => { if (e.hp > 0) e.vulnerable = (e.vulnerable||0) + 2; });
+      showFloatingText(document.querySelector('#enemy-area'), '🦊 全体易伤！', '#b470d4');
+    }
+  },
+  '书生': {
+    name: '书生献策', emoji: '📚', desc: '抽2张牌',
+    apply() {
+      drawCards(2);
+      showFloatingText(document.querySelector('#combat-top'), '📚 抽2牌！', '#7090d4');
+    }
+  },
 };
 
 /**
@@ -2049,7 +2110,7 @@ function evaluateSentence(rawCards) {
   let punctMult = 1.0;
   let punctNotes = [];
   if (hasPeriod) { punctMult *= 1.15; punctNotes.push('句号「。」完句 ×1.15'); }
-  if (hasExclamation) { punctMult *= 1.5; punctNotes.push('感叹号「！」强调 ×1.5'); }
+  if (hasExclamation) { punctMult *= 1.3; punctNotes.push('感叹号「！」爆发 ×1.3'); }
   if (hasQuestion) { punctNotes.push('问号「？」→ 削弱敌人2回合'); }
 
   let duizhangResult = null;
@@ -2092,6 +2153,7 @@ function evaluateSentence(rawCards) {
     if (exc.excDraw) { excExtraDraw += exc.excDraw; excNotes.push(`📜「${exc.word}」抽${exc.excDraw}牌`); }
     if (exc.excHeal) { excExtraHeal += exc.excHeal; excNotes.push(`♥「${exc.word}」回血${exc.excHeal}`); }
     if (exc.excEnergy) { excExtraEnergy += exc.excEnergy; excNotes.push(`⚡「${exc.word}」下回合+${exc.excEnergy}能量`); }
+    if (exc.excWeaken) { effects.applyWeak = Math.max(effects.applyWeak, exc.excWeaken); excNotes.push(`😑「${exc.word}」敌攻击-${exc.excWeaken}`); }
   });
 
   // COMBAT EFFECTS
@@ -2129,6 +2191,10 @@ function evaluateSentence(rawCards) {
     }
     // 初音未来 AOE
     if (s.forceAoeSub) effects.aoe = true;
+    // 女侠 穿透
+    if (s.stealthSub) effects.ignoreBlock = true;
+    // 狐仙 半穿透
+    if (s.halfPenetrate) effects._halfPenetrate = true;
     // 猫
     if (s.randomEffect) {
       const roll = Math.random();
@@ -2161,10 +2227,21 @@ function evaluateSentence(rawCards) {
     if (o.removeBuffs) effects._removeBuffs = true;
     if (o.bugEffect) {
       const bugRoll = Math.random();
-      if (bugRoll < 0.25) { objAttackBonus += 15; grammarNotes.push('🐛 bug→攻击+15！'); }
-      else if (bugRoll < 0.5) { objDefenseBonus += 15; grammarNotes.push('🐛 bug→格挡+15！'); }
-      else if (bugRoll < 0.75) { objHealBonus += 10; grammarNotes.push('🐛 bug→治疗+10！'); }
-      else { effects.draw += 3; grammarNotes.push('🐛 bug→抽3牌！'); }
+      if (bugRoll < 0.3) {
+        // 30% chance hit self
+        effects.selfHarm = true; effects.selfHarmDmg = (effects.selfHarmDmg||0) + 5;
+        grammarNotes.push('🐛 bug→打到自己了！');
+      } else {
+        objAttackBonus += 10; grammarNotes.push('🐛 bug→伤害翻倍效果！');
+      }
+    }
+    if (o.critObj) {
+      effects._crit = true;
+      grammarNotes.push('🎯 要害→暴击+50%伤害');
+    }
+    if (o.selfTargetObj) {
+      // Treat as self-target for heal verbs
+      effects._selfTargetFromObj = true;
     }
   });
 
@@ -2182,16 +2259,42 @@ function evaluateSentence(rawCards) {
     if (m.healBonusMod) modHealBonus += m.healBonusMod;
     if (m.stealthMod) hasStealth = true;
     if (m.ignoreAllLimits) hasIgnoreAllLimits = true;
+    if (m.drawLessNextMod) effects.drawLessNext += m.drawLessNextMod;
+    if (m.fullPenetrateMod) effects.ignoreBlock = true;
+    if (m.doubleExecute) effects._doubleExecute = true;
   });
 
   if (hasStealth) effects.ignoreBlock = true;
 
   let splitAttackToBlock = false;
   let orRandomMult = false;
+  let doubleExecuteConn = false;
   connectors.forEach(c => {
     if (c.draw) effects.draw += c.draw;
     if (c.splitAttackToBlock) splitAttackToBlock = true;
     if (c.orRandom) orRandomMult = true;
+    if (c.doubleExecuteConn) doubleExecuteConn = true;
+    // 帮 connector: find helper subject and trigger its passive
+    if (c.helpConnector) {
+      // Look for non-我 subjects as helper
+      const helpers = subjects.filter(s => s.word !== '我');
+      helpers.forEach(h => {
+        if (h.randomEffect) {
+          const roll = Math.random();
+          if (roll < 0.33) { subjectAttackBonus += 4; grammarNotes.push(`🤝 帮·${h.word}→攻击+4`); }
+          else if (roll < 0.66) { subjectDefenseBonus += 4; grammarNotes.push(`🤝 帮·${h.word}→格挡+4`); }
+          else { effects.draw += 1; grammarNotes.push(`🤝 帮·${h.word}→抽1牌`); }
+        } else if (h.drunkRandom) {
+          const roll = Math.floor(Math.random() * 5) + 1;
+          subjectAttackBonus += roll; grammarNotes.push(`🤝 帮·${h.word}→攻击+${roll}`);
+        } else {
+          const b = h.powerBonus || 0;
+          if (b > 0) {
+            subjectAttackBonus += b; grammarNotes.push(`🤝 帮·${h.word}→+${b}`);
+          }
+        }
+      });
+    }
   });
 
   for (let vi = 0; vi < realVerbs.length; vi++) {
@@ -2236,7 +2339,18 @@ function evaluateSentence(rawCards) {
       }
       continue;
     }
-    // 溜了 special: dodge
+    // 溜了 special: subject=我 → block; subject=敌 → reduce attack
+    if (v.liuleSpecial) {
+      if (subjectIsEnemy) {
+        effects.applyWeak += 2;
+        grammarNotes.push('🏃 溜了→敌人降攻击2回合');
+      } else {
+        effects.block += Math.floor(((v.upgraded ? v.upgPower : v.basePower) + subjectDefenseBonus + objDefenseBonus) * defenseMod);
+        grammarNotes.push(`🏃 溜了→格挡${v.upgraded ? v.upgPower : v.basePower}`);
+      }
+      continue;
+    }
+    // 躲 special: dodge
     if (v.dodgeNext) {
       effects.block += 99;
       grammarNotes.push('🏃 溜了→闪避(格挡99)');
@@ -2250,9 +2364,17 @@ function evaluateSentence(rawCards) {
       if (v.forceAoe) effects.aoe = true;
       if (v.ignoreBlock) effects.ignoreBlock = true;
       if (v.applyWeakVerb) effects.applyWeak = Math.max(effects.applyWeak, v.applyWeakVerb);
+      if (v.kickbackVerb) effects._kickback = true;
+      if (v.reduceBlockVerb) effects._reduceEnemyBlock = (effects._reduceEnemyBlock||0) + v.reduceBlockVerb;
+      if (v.selfDmgVerb) { effects.selfHarm = true; effects.selfHarmDmg = (effects.selfHarmDmg||0) + v.selfDmgVerb; }
+      if (v.bounceVerb) effects._bounce = true;
+      if (v.tauntVerb) effects._taunt = true;
+      if (v.confuseVerb) effects._confuse = true;
     } else if (v.combatType === 'defense') {
       effects.block += Math.floor((power + subjectDefenseBonus + objDefenseBonus) * defenseMod);
       if (v.drawLessNext) effects.drawLessNext += v.drawLessNext;
+      if (v.healAlsoVerb) effects.heal += v.healAlsoVerb;
+      if (v.vulnSelfNext) effects._vulnSelfNext = true;
     } else if (v.combatType === 'heal') {
       effects.heal += Math.floor((power + subjectHealBonus + objHealBonus) * healMod);
       if (v.blockAlso) effects.block += Math.floor((v.upgraded ? Math.ceil(v.blockAlso*1.5) : v.blockAlso) * defenseMod);
@@ -2291,6 +2413,7 @@ function evaluateSentence(rawCards) {
   const totalMult = grammarMult * literaryMult * punctMult;
 
   effects.damage = Math.floor(effects.damage * totalMult * excAttackMult);
+  if (effects._crit) effects.damage = Math.floor(effects.damage * 1.5);
   effects.block = Math.floor(effects.block * totalMult * excDefenseMult);
   effects.heal = Math.floor(effects.heal * totalMult * excHealMult);
   if (effects.selfHarm) effects.selfHarmDmg = Math.floor(effects.selfHarmDmg * totalMult);
@@ -2308,6 +2431,14 @@ function evaluateSentence(rawCards) {
       effects.multiTargetIndices = null;
       grammarNotes.push(`🎲「或」→随机目标×1.5`);
     }
+  }
+
+  // Double execute from 然后 connector or 反复地 modifier
+  if (doubleExecuteConn || effects._doubleExecute) {
+    effects.damage = Math.floor(effects.damage * 2);
+    effects.block = Math.floor(effects.block * 2);
+    effects.heal = Math.floor(effects.heal * 2);
+    grammarNotes.push('🔁 效果×2！');
   }
 
   if (realVerbs.some(v => v.combatType === 'attack') && !effects.selfHarm && !hasQuestion && effects.damage < 1) effects.damage = 1;
@@ -3195,6 +3326,43 @@ function applyEffects(effects) {
 
   if (effects.thorns > 0) G._thorns = (G._thorns || 0) + effects.thorns;
 
+  // 踹 kickback: 50% chance enemy skips next attack
+  if (effects._kickback) {
+    const tIdx = effects.targetEnemyIdx >= 0 ? effects.targetEnemyIdx : G.enemies.findIndex(e => e.hp > 0);
+    if (tIdx >= 0 && G.enemies[tIdx] && G.enemies[tIdx].hp > 0 && Math.random() < 0.5) {
+      G.enemies[tIdx].stunned = true;
+      showFloatingText(G.enemies[tIdx].element, '击退！', '#d4a870');
+    }
+  }
+  // 喷 reduceBlock
+  if (effects._reduceEnemyBlock) {
+    G.enemies.forEach(e => { if (e.hp > 0) { e.block = Math.max(0, e.block - effects._reduceEnemyBlock); } });
+  }
+  // 嘲讽 taunt
+  if (effects._taunt) {
+    G.enemies.forEach(e => { if (e.hp > 0) e._mustAttackPlayer = true; });
+    showFloatingText(document.querySelector('#combat-top'), '嘲讽！', '#e8873a');
+  }
+  // 忽悠 confuse
+  if (effects._confuse) {
+    const alive = G.enemies.filter(e => e.hp > 0);
+    if (alive.length > 1) {
+      const target = alive[Math.floor(Math.random() * alive.length)];
+      const dmg = target.nextIntent && target.nextIntent.value ? target.nextIntent.value : 5;
+      target.hp -= dmg; if (target.hp < 0) target.hp = 0;
+      showFloatingText(target.element, `自伤${dmg}！`, '#d4a870');
+    } else if (alive.length === 1) {
+      const e = alive[0]; const dmg = 5;
+      e.hp -= dmg; if (e.hp < 0) e.hp = 0;
+      showFloatingText(e.element, `自伤${dmg}！`, '#d4a870');
+    }
+  }
+  // 硬扛 vulnSelfNext
+  if (effects._vulnSelfNext) {
+    G.vulnerable = Math.max(G.vulnerable, 1);
+    showFloatingText(document.querySelector('#combat-top'), '下回合易伤！', '#d47070');
+  }
+
   if (effects._bonusEnergy > 0) {
     G._bonusEnergyNext = (G._bonusEnergyNext || 0) + effects._bonusEnergy;
     showFloatingText(document.querySelector('#combat-top'), `下回合+${effects._bonusEnergy}能量`, '#c9a84c');
@@ -3454,11 +3622,7 @@ function showRewardScreen() {
     if (roll < 0.50) rarity = 'common';
     else if (roll < 0.82) rarity = 'uncommon';
     else rarity = 'rare';
-    let card = randomCard(rarity);
-    // Bias toward attack cards (40% chance to reroll non-attack)
-    if (card.pos !== 'verb' && card.combatType !== 'attack' && Math.random() < 0.4) {
-      card = randomCard(rarity);
-    }
+    let card = randomCardWeighted(rarity);
 
     const wrapper = document.createElement('div');
     wrapper.className = 'reward-card-wrapper';
@@ -3560,7 +3724,7 @@ function renderShop() {
       if (roll<0.4) { rarity='common'; price=45+Math.floor(Math.random()*25); }
       else if (roll<0.8) { rarity='uncommon'; price=75+Math.floor(Math.random()*35); }
       else { rarity='rare'; price=110+Math.floor(Math.random()*30); }
-      G.shopInventory.push({ card: randomCard(rarity), price, sold: false });
+      G.shopInventory.push({ card: randomCardWeighted(rarity), price, sold: false });
     }
   }
   G.shopInventory.forEach((item, idx) => {
