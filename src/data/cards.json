@@ -1,0 +1,527 @@
+{
+  "wo": {
+    "word": "我", "pos": "subject", "cost": 0, "rarity": "starter",
+    "desc": "主语·0费", "flavor": "区区在下", "powerBonus": 0
+  },
+  "liqingzhao": {
+    "word": "李清照", "pos": "subject", "cost": 0, "rarity": "starter",
+    "desc": "主语·诗意+0.3", "flavor": "千古第一才女", "powerBonus": 0, "poetryBonus": 0.3
+  },
+  "jianke": {
+    "word": "剑客", "pos": "subject", "cost": 0, "rarity": "common",
+    "desc": "主语·攻击+2", "flavor": "仗剑走天涯", "powerBonus": 2, "bonusType": "attack"
+  },
+  "shusheng": {
+    "word": "书生", "pos": "subject", "cost": 0, "rarity": "common",
+    "desc": "主语·质量+0.3", "flavor": "手无缚鸡之力", "powerBonus": 0, "poetryBonus": 0.3
+  },
+  "mao": {
+    "word": "猫", "pos": "subject", "cost": 0, "rarity": "common",
+    "desc": "主语·随机效果", "flavor": "喵？", "powerBonus": 0, "randomEffect": true
+  },
+  "yuetu": {
+    "word": "月兔", "pos": "subject", "cost": 0, "rarity": "common",
+    "desc": "主语·回血+2", "flavor": "广寒宫的加班兔", "powerBonus": 2, "bonusType": "heal"
+  },
+  "sengren": {
+    "word": "僧人", "pos": "subject", "cost": 0, "rarity": "common",
+    "desc": "主语·回血+2", "flavor": "阿弥陀佛", "powerBonus": 2, "bonusType": "heal"
+  },
+  "hatsunemiku": {
+    "word": "初音未来", "pos": "subject", "cost": 0, "rarity": "uncommon",
+    "desc": "主语·音波全体+3", "flavor": "世界第一公主殿下", "powerBonus": 3, "bonusType": "attack", "forceAoeSub": true
+  },
+  "nvxia": {
+    "word": "女侠", "pos": "subject", "cost": 0, "rarity": "uncommon",
+    "desc": "主语·穿透格挡", "flavor": "巾帼不让须眉", "powerBonus": 0, "bonusType": "attack", "stealthSub": true
+  },
+  "jiuxian": {
+    "word": "酒仙", "pos": "subject", "cost": 0, "rarity": "uncommon",
+    "desc": "主语·随机攻击+1~3", "flavor": "醉里挑灯看剑", "powerBonus": 0, "drunkRandom": true
+  },
+  "huxian": {
+    "word": "狐仙", "pos": "subject", "cost": 0, "rarity": "uncommon",
+    "desc": "主语·穿透格挡50%", "flavor": "聊斋来客", "powerBonus": 0, "bonusType": "attack", "halfPenetrate": true
+  },
+  "qinshi": {
+    "word": "琴师", "pos": "subject", "cost": 0, "rarity": "uncommon", "unlockable": true,
+    "desc": "主语·攻击+2/回血+2", "flavor": "高山流水觅知音", "powerBonus": 2, "bonusType": "attack", "healBonusSub": 2
+  },
+  "jiangjun": {
+    "word": "将军", "pos": "subject", "cost": 0, "rarity": "rare", "unlockable": true,
+    "desc": "主语·攻击+5,格挡+3", "flavor": "百万雄师过大江", "powerBonus": 5, "bonusType": "attack", "defenseBonus": 3
+  },
+  "shenmi_daoshi": {
+    "word": "神秘道士", "pos": "subject", "cost": 0, "rarity": "rare", "unlockable": true,
+    "desc": "主语·全+3", "flavor": "贫道掐指一算...", "powerBonus": 3, "bonusType": "all"
+  },
+  "zhan": {
+    "word": "斩", "pos": "verb", "cost": 1, "rarity": "starter",
+    "combatType": "attack", "basePower": 6, "upgPower": 9, "flavor": "刀起刀落",
+    "desc": "攻击 {power}"
+  },
+  "zou": {
+    "word": "揍", "pos": "verb", "cost": 1, "rarity": "common",
+    "combatType": "attack", "basePower": 8, "upgPower": 12, "flavor": "直球就是揍！",
+    "desc": "攻击 {power}"
+  },
+  "dui": {
+    "word": "怼", "pos": "verb", "cost": 1, "rarity": "common",
+    "combatType": "attack", "basePower": 5, "upgPower": 7, "applyWeakVerb": 2, "flavor": "你说什么？再说一遍？",
+    "desc": "攻击 {power}+削弱2回合"
+  },
+  "chuai": {
+    "word": "踹", "pos": "verb", "cost": 1, "rarity": "common",
+    "combatType": "attack", "basePower": 4, "upgPower": 6, "kickbackVerb": true, "flavor": "一脚踹飞",
+    "desc": "攻击 {power}+击退(50%跳过攻击)"
+  },
+  "kan": {
+    "word": "砍", "pos": "verb", "cost": 1, "rarity": "common",
+    "combatType": "attack", "basePower": 7, "upgPower": 10, "flavor": "手起刀落",
+    "desc": "攻击 {power}"
+  },
+  "cu": {
+    "word": "戳", "pos": "verb", "cost": 0, "rarity": "common",
+    "combatType": "attack", "basePower": 3, "upgPower": 5, "flavor": "戳一下试试",
+    "desc": "攻击 {power}"
+  },
+  "chou": {
+    "word": "抽", "pos": "verb", "cost": 1, "rarity": "common",
+    "combatType": "attack", "basePower": 5, "upgPower": 7, "draw": 1, "flavor": "抽你还抽牌",
+    "desc": "攻击 {power}+抽1牌"
+  },
+  "pen": {
+    "word": "喷", "pos": "verb", "cost": 1, "rarity": "common",
+    "combatType": "attack", "basePower": 6, "upgPower": 9, "reduceBlockVerb": 3, "flavor": "口水攻击！",
+    "desc": "攻击 {power}+敌人格挡-3"
+  },
+  "chong": {
+    "word": "冲", "pos": "verb", "cost": 2, "rarity": "uncommon",
+    "combatType": "attack", "basePower": 8, "upgPower": 12, "ignoreBlock": true, "flavor": "冲就完事了！",
+    "desc": "攻击 {power}+穿透"
+  },
+  "chui": {
+    "word": "锤", "pos": "verb", "cost": 2, "rarity": "uncommon",
+    "combatType": "attack", "basePower": 10, "upgPower": 15, "flavor": "一锤定音",
+    "desc": "攻击 {power}"
+  },
+  "nuhou": {
+    "word": "怒吼", "pos": "verb", "cost": 2, "rarity": "uncommon",
+    "combatType": "attack", "basePower": 4, "upgPower": 6, "forceAoe": true, "flavor": "啊啊啊啊啊！",
+    "desc": "攻击 {power}(全体)"
+  },
+  "tan": {
+    "word": "弹", "pos": "verb", "cost": 1, "rarity": "uncommon",
+    "combatType": "attack", "basePower": 5, "upgPower": 7, "bounceVerb": true, "flavor": "跳弹！",
+    "desc": "攻击 {power}跳弹(逐个-1)"
+  },
+  "chaofen": {
+    "word": "嘲讽", "pos": "verb", "cost": 0, "rarity": "uncommon",
+    "combatType": "attack", "basePower": 3, "upgPower": 5, "tauntVerb": true, "flavor": "来打我啊！",
+    "desc": "攻击 {power}+嘲讽"
+  },
+  "huyou": {
+    "word": "忽悠", "pos": "verb", "cost": 1, "rarity": "uncommon",
+    "combatType": "attack", "basePower": 0, "upgPower": 0, "confuseVerb": true, "flavor": "忽悠，接着忽悠",
+    "desc": "敌人攻击队友/单敌自伤"
+  },
+  "bao": {
+    "word": "爆", "pos": "verb", "cost": 2, "rarity": "rare",
+    "combatType": "attack", "basePower": 12, "upgPower": 18, "selfDmgVerb": 3, "flavor": "同归于尽！",
+    "desc": "攻击 {power}，自伤3"
+  },
+  "zhu": {
+    "word": "诛", "pos": "verb", "cost": 2, "rarity": "rare", "unlockable": true,
+    "combatType": "attack", "basePower": 15, "upgPower": 22, "exhaust": true, "flavor": "诛邪！",
+    "desc": "攻击 {power}，消耗"
+  },
+  "kejin": {
+    "word": "氪金", "pos": "verb", "cost": 0, "rarity": "rare", "unlockable": true,
+    "combatType": "attack", "basePower": 20, "upgPower": 28, "spendGold": 10, "flavor": "钞能力！",
+    "desc": "花10金+攻击 {power}"
+  },
+  "shou": {
+    "word": "守", "pos": "verb", "cost": 1, "rarity": "starter",
+    "combatType": "defense", "basePower": 5, "upgPower": 8, "flavor": "固若金汤",
+    "desc": "格挡 {power}"
+  },
+  "dang": {
+    "word": "挡", "pos": "verb", "cost": 0, "rarity": "common",
+    "combatType": "defense", "basePower": 4, "upgPower": 6, "flavor": "挡住了！大概",
+    "desc": "格挡 {power}"
+  },
+  "tangping": {
+    "word": "躺平", "pos": "verb", "cost": 1, "rarity": "common",
+    "combatType": "defense", "basePower": 6, "upgPower": 9, "healAlsoVerb": 2, "flavor": "不卷了不卷了",
+    "desc": "格挡 {power}+回血2"
+  },
+  "dun": {
+    "word": "蹲", "pos": "verb", "cost": 1, "rarity": "common",
+    "combatType": "defense", "basePower": 3, "upgPower": 5, "draw": 1, "flavor": "蹲一会儿",
+    "desc": "格挡 {power}+抽1牌"
+  },
+  "bailan": {
+    "word": "摆烂", "pos": "verb", "cost": 1, "rarity": "uncommon",
+    "combatType": "defense", "basePower": 8, "upgPower": 12, "drawLessNext": 1, "bailanSpecial": true, "flavor": "躺平了",
+    "desc": "自用=挡{power}少抽1；对敌=敌跳过攻击"
+  },
+  "duo": {
+    "word": "躲", "pos": "verb", "cost": 2, "rarity": "uncommon",
+    "combatType": "defense", "basePower": 0, "upgPower": 0, "dodgeNext": true, "flavor": "躲起来！",
+    "desc": "闪避下次攻击(格挡99)"
+  },
+  "yingkang": {
+    "word": "硬扛", "pos": "verb", "cost": 2, "rarity": "uncommon",
+    "combatType": "defense", "basePower": 10, "upgPower": 15, "vulnSelfNext": true, "flavor": "扛住！",
+    "desc": "格挡 {power}，下回合受伤+50%"
+  },
+  "liule": {
+    "word": "溜了", "pos": "verb", "cost": 1, "rarity": "uncommon",
+    "combatType": "defense", "basePower": 7, "upgPower": 10, "liuleSpecial": true, "flavor": "溜了溜了",
+    "desc": "自用=挡{power}；对敌=降攻击"
+  },
+  "moyu": {
+    "word": "摸鱼", "pos": "verb", "cost": 1, "rarity": "common",
+    "combatType": "heal", "basePower": 5, "upgPower": 8, "moyuSpecial": true, "flavor": "带薪摸鱼",
+    "desc": "自用=回血{power}；对敌=易伤3回合"
+  },
+  "kua": {
+    "word": "夸", "pos": "verb", "cost": 1, "rarity": "uncommon",
+    "combatType": "buff", "basePower": 2, "upgPower": 3, "flavor": "夸夸群上线",
+    "desc": "+{power}力量"
+  },
+  "xiu": {
+    "word": "修", "pos": "verb", "cost": 2, "rarity": "uncommon",
+    "combatType": "heal", "basePower": 8, "upgPower": 12, "flavor": "修复一下",
+    "desc": "治疗 {power}"
+  },
+  "bu": {
+    "word": "补", "pos": "verb", "cost": 1, "rarity": "common",
+    "combatType": "heal", "basePower": 4, "upgPower": 6, "blockAlso": 2, "flavor": "补补补",
+    "desc": "回血{power}+格挡2"
+  },
+  "yinshi_verb": {
+    "word": "吟诗", "pos": "verb", "cost": 1, "rarity": "rare",
+    "combatType": "buff", "basePower": 0, "upgPower": 0, "poeticMultVerb": 2.0, "flavor": "举头望明月...",
+    "desc": "诗意加成×2"
+  },
+  "diren": {
+    "word": "敌人", "pos": "object", "cost": 0, "rarity": "starter",
+    "desc": "宾语·指向敌人", "flavor": "那边那个", "effectBonus": 0
+  },
+  "yueliang": {
+    "word": "月亮", "pos": "object", "cost": 0, "rarity": "common",
+    "desc": "宾语·回血+3", "flavor": "举头望明月", "effectBonus": 3, "bonusType": "heal"
+  },
+  "ziji": {
+    "word": "自己", "pos": "object", "cost": 0, "rarity": "common",
+    "desc": "宾语·自我指向", "flavor": "自己人", "effectBonus": 0, "selfTargetObj": true
+  },
+  "cangtian": {
+    "word": "苍天", "pos": "object", "cost": 0, "rarity": "uncommon",
+    "desc": "宾语·全体伤害", "flavor": "苍天在上", "aoe": true, "effectBonus": 0
+  },
+  "qianbao": {
+    "word": "钱包", "pos": "object", "cost": 0, "rarity": "uncommon",
+    "desc": "宾语·偷金币5", "flavor": "来点实际的", "effectBonus": 0, "goldGain": 5
+  },
+  "mingyun": {
+    "word": "命运", "pos": "object", "cost": 0, "rarity": "uncommon",
+    "desc": "宾语·随机效果", "flavor": "命运的齿轮开始转动", "effectBonus": 0, "randomObjBonus": true
+  },
+  "zhenxiang": {
+    "word": "真相", "pos": "object", "cost": 0, "rarity": "uncommon",
+    "desc": "宾语·移除敌人增益", "flavor": "真相只有一个", "effectBonus": 0, "removeBuffs": true
+  },
+  "yaohai": {
+    "word": "要害", "pos": "object", "cost": 0, "rarity": "uncommon",
+    "desc": "宾语·暴击(伤害+50%)", "flavor": "一击致命", "effectBonus": 0, "critObj": true
+  },
+  "bug_obj": {
+    "word": "bug", "pos": "object", "cost": 0, "rarity": "rare", "unlockable": true,
+    "desc": "宾语·伤害翻倍30%打自己", "flavor": "这不是feature吗？", "effectBonus": 0, "bugEffect": true
+  },
+  "quanchang": {
+    "word": "全场", "pos": "object", "cost": 1, "rarity": "rare",
+    "desc": "宾语·AOE全体", "flavor": "全场最靓的仔", "aoe": true, "effectBonus": 0
+  },
+  "wanwu": {
+    "word": "万物", "pos": "object", "cost": 2, "rarity": "rare", "unlockable": true,
+    "desc": "宾语·群体+攻击+5", "flavor": "万物皆可斩", "aoe": true, "effectBonus": 5, "bonusType": "attack"
+  },
+  "menglie": {
+    "word": "猛烈地", "pos": "modifier", "cost": 1, "rarity": "common",
+    "desc": "修饰·攻击×1.5", "flavor": "力大砖飞", "multiplier": 1.5, "bonusType": "attack"
+  },
+  "toutou": {
+    "word": "偷偷地", "pos": "modifier", "cost": 1, "rarity": "common",
+    "desc": "修饰·穿透格挡50%", "flavor": "悄咪咪", "multiplier": 1.0, "bonusType": "all", "stealthMod": true
+  },
+  "suibian": {
+    "word": "随便地", "pos": "modifier", "cost": 0, "rarity": "common",
+    "desc": "修饰·费用-1效果×0.7", "flavor": "差不多得了", "multiplier": 0.7, "bonusType": "all"
+  },
+  "huluan": {
+    "word": "胡乱地", "pos": "modifier", "cost": 0, "rarity": "common",
+    "desc": "修饰·随机目标伤害×1.5", "flavor": "乱打一气", "multiplier": 1.5, "bonusType": "attack", "randomTargetMod": true
+  },
+  "fengkuang": {
+    "word": "疯狂地", "pos": "modifier", "cost": 1, "rarity": "uncommon",
+    "desc": "修饰·伤害×2自伤3", "flavor": "疯了疯了", "multiplier": 2.0, "bonusType": "attack", "selfDmgMod": 3
+  },
+  "youya": {
+    "word": "优雅地", "pos": "modifier", "cost": 1, "rarity": "uncommon",
+    "desc": "修饰·质量+0.5", "flavor": "优雅永不过时", "multiplier": 1.0, "bonusType": "all", "poetryBonusMod": 0.5
+  },
+  "pinming": {
+    "word": "拼命地", "pos": "modifier", "cost": 1, "rarity": "uncommon",
+    "desc": "修饰·攻击×1.8少抽1", "flavor": "拼了！", "multiplier": 1.8, "bonusType": "attack", "drawLessNextMod": 1
+  },
+  "renzhen": {
+    "word": "认真地", "pos": "modifier", "cost": 1, "rarity": "uncommon",
+    "desc": "修饰·质量+0.3效果+20%", "flavor": "认真你就赢了", "multiplier": 1.2, "bonusType": "all", "poetryBonusMod": 0.3
+  },
+  "anzhong": {
+    "word": "暗中", "pos": "modifier", "cost": 2, "rarity": "rare",
+    "desc": "修饰·穿透全部格挡", "flavor": "暗中观察", "multiplier": 1.0, "bonusType": "all", "fullPenetrateMod": true
+  },
+  "fanfu": {
+    "word": "反复地", "pos": "modifier", "cost": 2, "rarity": "rare",
+    "desc": "修饰·效果执行两次", "flavor": "反复横跳", "multiplier": 1.0, "bonusType": "all", "doubleExecute": true
+  },
+  "jingtian": {
+    "word": "惊天动地地", "pos": "modifier", "cost": 2, "rarity": "rare", "unlockable": true,
+    "desc": "修饰·全×2.0", "flavor": "天崩地裂", "multiplier": 2.0, "bonusType": "all"
+  },
+  "bujianwude": {
+    "word": "以不讲武德的方式", "pos": "modifier", "cost": 2, "rarity": "rare", "unlockable": true,
+    "desc": "修饰·全×1.5+无视限制", "flavor": "年轻人不讲武德", "multiplier": 1.5, "bonusType": "all", "ignoreAllLimits": true
+  },
+  "he": {
+    "word": "和", "pos": "connector", "cost": 0, "rarity": "common",
+    "desc": "连接·多目标", "flavor": "一个都别想跑", "grammarBonus": 0.05, "multiTarget": true
+  },
+  "huo": {
+    "word": "或", "pos": "connector", "cost": 0, "rarity": "uncommon",
+    "desc": "连接·随机目标伤害×1.5", "flavor": "命运的选择", "grammarBonus": 0.05, "orRandom": true
+  },
+  "ranhou": {
+    "word": "然后", "pos": "connector", "cost": 1, "rarity": "uncommon",
+    "desc": "连接·效果执行两次", "flavor": "然后呢？", "grammarBonus": 0.05, "doubleExecuteConn": true
+  },
+  "bang": {
+    "word": "帮", "pos": "connector", "cost": 0, "rarity": "uncommon",
+    "desc": "连接·辅助角色触发被动", "flavor": "我帮猫揍敌人", "grammarBonus": 0.05, "helpConnector": true
+  },
+  "comma": {
+    "word": "，", "pos": "punctuation", "cost": 0, "rarity": "common", "punctType": "comma",
+    "desc": "标点·分句+对仗", "flavor": "上下句之间"
+  },
+  "period": {
+    "word": "。", "pos": "punctuation", "cost": 0, "rarity": "common", "punctType": "period",
+    "desc": "标点·完句×1.15", "flavor": "句号即圆满"
+  },
+  "exclamation_punct": {
+    "word": "！", "pos": "punctuation", "cost": 0, "rarity": "uncommon", "punctType": "exclamation",
+    "desc": "标点·爆发×1.3", "flavor": "大声点！"
+  },
+  "question": {
+    "word": "？", "pos": "punctuation", "cost": 0, "rarity": "uncommon", "punctType": "question",
+    "desc": "标点·削弱敌人2回合", "flavor": "灵魂拷问"
+  },
+  "wocao": {
+    "word": "卧槽", "pos": "exclamation", "cost": 0, "rarity": "common",
+    "desc": "感叹词·攻击×1.5", "flavor": "卧槽！！！", "excMult": 1.5, "excType": "attack"
+  },
+  "niubi": {
+    "word": "牛逼", "pos": "exclamation", "cost": 0, "rarity": "uncommon",
+    "desc": "感叹词·攻击×1.8", "flavor": "太牛逼了！", "excMult": 1.8, "excType": "attack"
+  },
+  "woqu": {
+    "word": "我去", "pos": "exclamation", "cost": 0, "rarity": "common",
+    "desc": "感叹词·格挡×1.5", "flavor": "我去！这也行？", "excMult": 1.5, "excType": "defense"
+  },
+  "ah": {
+    "word": "啊", "pos": "exclamation", "cost": 0, "rarity": "common",
+    "desc": "感叹词·全效果×1.2", "flavor": "啊——", "excMult": 1.2, "excType": "all"
+  },
+  "liuliuliu": {
+    "word": "666", "pos": "exclamation", "cost": 0, "rarity": "common",
+    "desc": "感叹词·攻击×1.4", "flavor": "六六六！", "excMult": 1.4, "excType": "attack"
+  },
+  "jue": {
+    "word": "绝了", "pos": "exclamation", "cost": 0, "rarity": "uncommon",
+    "desc": "感叹词·质量×2", "flavor": "绝绝子！", "excMult": 2.0, "excType": "all"
+  },
+  "miaoa": {
+    "word": "妙啊", "pos": "exclamation", "cost": 0, "rarity": "uncommon",
+    "desc": "感叹词·抽1张牌", "flavor": "妙啊妙啊", "excMult": 1.0, "excType": "all", "excDraw": 1
+  },
+  "jiuming": {
+    "word": "救命", "pos": "exclamation", "cost": 0, "rarity": "common",
+    "desc": "感叹词·回血3", "flavor": "救命啊！", "excMult": 1.0, "excType": "all", "excHeal": 3
+  },
+  "wuhu": {
+    "word": "芜湖", "pos": "exclamation", "cost": 0, "rarity": "uncommon",
+    "desc": "感叹词·全效果×1.3", "flavor": "芜湖起飞！", "excMult": 1.3, "excType": "all"
+  },
+  "qifei": {
+    "word": "起飞", "pos": "exclamation", "cost": 0, "rarity": "uncommon",
+    "desc": "感叹词·下回合+1能量", "flavor": "起飞了家人们", "excMult": 1.0, "excType": "all", "excEnergy": 1
+  },
+  "haojiahuo": {
+    "word": "好家伙", "pos": "exclamation", "cost": 0, "rarity": "uncommon",
+    "desc": "感叹词·攻击×1.6", "flavor": "好家伙！", "excMult": 1.6, "excType": "attack"
+  },
+  "wuyu": {
+    "word": "无语", "pos": "exclamation", "cost": 0, "rarity": "common",
+    "desc": "感叹词·敌攻击-3", "flavor": "无语了真的", "excMult": 1.0, "excType": "all", "excWeaken": 3
+  },
+  "huashui": {
+    "word": "划水", "pos": "verb", "cost": 1, "rarity": "uncommon",
+    "combatType": "heal", "basePower": 3, "upgPower": 5, "huashuiSpecial": true, "flavor": "今天也是摸鱼的一天",
+    "desc": "自用=回血{power}；对敌=降攻击2回合"
+  },
+  "pengci": {
+    "word": "碰瓷", "pos": "verb", "cost": 1, "rarity": "uncommon",
+    "combatType": "defense", "basePower": 0, "upgPower": 0, "pengciSpecial": true, "flavor": "我的腰！赔钱！",
+    "desc": "本回合受伤反弹50%"
+  },
+  "shuaiguo": {
+    "word": "甩锅", "pos": "verb", "cost": 1, "rarity": "uncommon",
+    "combatType": "buff", "basePower": 0, "upgPower": 0, "shuaiguoSpecial": true, "flavor": "这不是我的问题",
+    "desc": "把自身debuff转给敌人"
+  },
+  "neijuan": {
+    "word": "内卷", "pos": "verb", "cost": 1, "rarity": "uncommon",
+    "combatType": "attack", "basePower": 6, "upgPower": 9, "selfDmgVerb": 2, "flavor": "卷死你也卷死我",
+    "desc": "攻击 {power}，自伤2"
+  },
+  "tangying": {
+    "word": "躺赢", "pos": "verb", "cost": 0, "rarity": "uncommon",
+    "combatType": "defense", "basePower": 4, "upgPower": 6, "tangyingSpecial": true, "flavor": "我啥也没干啊",
+    "desc": "格挡 {power}+敌死亡+10金币"
+  },
+  "baipiao": {
+    "word": "白嫖", "pos": "verb", "cost": 0, "rarity": "uncommon",
+    "combatType": "buff", "basePower": 0, "upgPower": 0, "draw": 2, "flavor": "免费的最贵",
+    "desc": "抽2张牌"
+  },
+  "zhongcao": {
+    "word": "种草", "pos": "verb", "cost": 1, "rarity": "uncommon",
+    "combatType": "attack", "basePower": 3, "upgPower": 5, "poisonVerb": 3, "poisonDuration": 3, "flavor": "买它！",
+    "desc": "中毒3回合(每回合{power}伤害)"
+  },
+  "pua": {
+    "word": "PUA", "pos": "verb", "cost": 1, "rarity": "rare",
+    "combatType": "attack", "basePower": 0, "upgPower": 0, "puaSpecial": true, "flavor": "你不行的",
+    "desc": "降低敌人攻击力3持续2回合"
+  },
+  "kaibai": {
+    "word": "开摆", "pos": "verb", "cost": 2, "rarity": "rare",
+    "combatType": "defense", "basePower": 0, "upgPower": 0, "kaibaiSpecial": true, "flavor": "摆了摆了",
+    "desc": "本回合不受伤害但无法攻击"
+  },
+  "lacai": {
+    "word": "拉踩", "pos": "verb", "cost": 1, "rarity": "uncommon",
+    "combatType": "attack", "basePower": 4, "upgPower": 6, "stealStrength": 2, "flavor": "踩一捧一基操",
+    "desc": "攻击 {power}+偷2力量"
+  },
+  "diss": {
+    "word": "diss", "pos": "verb", "cost": 1, "rarity": "uncommon",
+    "combatType": "attack", "basePower": 5, "upgPower": 7, "reduceBlockVerb": 5, "flavor": "你说你几级？",
+    "desc": "攻击 {power}+敌人格挡-5"
+  },
+  "qiaomimi": {
+    "word": "悄咪咪地", "pos": "modifier", "cost": 1, "rarity": "uncommon",
+    "desc": "修饰·穿透格挡30%", "flavor": "嘘...", "multiplier": 1.0, "bonusType": "all", "partialPenetrate": 0.3
+  },
+  "bujianwude_mod": {
+    "word": "不讲武德地", "pos": "modifier", "cost": 1, "rarity": "rare",
+    "desc": "修饰·无视敌人增益buff", "flavor": "年轻人不讲武德", "multiplier": 1.0, "bonusType": "all", "ignoreBuffsMod": true
+  },
+  "yizhengyanchi": {
+    "word": "义正言辞地", "pos": "modifier", "cost": 0, "rarity": "common",
+    "desc": "修饰·质量+0.4", "flavor": "我说的都对", "multiplier": 1.0, "bonusType": "all", "poetryBonusMod": 0.4
+  },
+  "hanlei": {
+    "word": "含泪地", "pos": "modifier", "cost": 0, "rarity": "uncommon",
+    "desc": "修饰·效果+30%自伤1", "flavor": "哭着也要打完", "multiplier": 1.3, "bonusType": "all", "selfDmgMod": 1
+  },
+  "mianwubiaoqing": {
+    "word": "面无表情地", "pos": "modifier", "cost": 1, "rarity": "uncommon",
+    "desc": "修饰·不触发敌人反击", "flavor": "...", "multiplier": 1.0, "bonusType": "all", "noCounterMod": true
+  },
+  "biankubian": {
+    "word": "边哭边", "pos": "modifier", "cost": 1, "rarity": "uncommon",
+    "desc": "修饰·攻击时回血2", "flavor": "呜呜呜", "multiplier": 1.0, "bonusType": "attack", "healOnAttackMod": 2
+  },
+  "jiazhuangdanding": {
+    "word": "假装淡定地", "pos": "modifier", "cost": 0, "rarity": "common",
+    "desc": "修饰·格挡×1.5", "flavor": "没事我不慌", "multiplier": 1.5, "bonusType": "defense"
+  },
+  "shesi": {
+    "word": "社死般地", "pos": "modifier", "cost": 1, "rarity": "uncommon",
+    "desc": "修饰·全体攻击质量-0.3", "flavor": "当场去世", "multiplier": 1.0, "bonusType": "all", "forceAoeMod": true, "poetryBonusMod": -0.3
+  },
+  "toutie": {
+    "word": "头铁地", "pos": "modifier", "cost": 0, "rarity": "uncommon",
+    "desc": "修饰·攻击×1.3无视自伤", "flavor": "莽就完了", "multiplier": 1.3, "bonusType": "attack", "ignoreSelfDmg": true
+  },
+  "yinyangguaiqi": {
+    "word": "阴阳怪气地", "pos": "modifier", "cost": 1, "rarity": "uncommon",
+    "desc": "修饰·攻击+5降敌攻击1", "flavor": "哦~是吗~", "multiplier": 1.0, "bonusType": "attack", "flatBonus": 5, "weakenMod": 1
+  },
+  "xiaosi": {
+    "word": "笑死", "pos": "exclamation", "cost": 0, "rarity": "uncommon",
+    "desc": "感叹词·全×1.2+20%敌跳过", "flavor": "笑死我了", "excMult": 1.2, "excType": "all", "excSkipChance": 0.2
+  },
+  "lipu": {
+    "word": "离谱", "pos": "exclamation", "cost": 0, "rarity": "uncommon",
+    "desc": "感叹词·攻击×1.6", "flavor": "离了个大谱", "excMult": 1.6, "excType": "attack"
+  },
+  "male": {
+    "word": "麻了", "pos": "exclamation", "cost": 0, "rarity": "common",
+    "desc": "感叹词·格挡×1.4", "flavor": "麻了麻了", "excMult": 1.4, "excType": "defense"
+  },
+  "dnadongle": {
+    "word": "DNA动了", "pos": "exclamation", "cost": 0, "rarity": "uncommon",
+    "desc": "感叹词·下回合抽牌+2", "flavor": "DNA动了！", "excMult": 1.0, "excType": "all", "excDrawNext": 2
+  },
+  "yeqinghui": {
+    "word": "爷青回", "pos": "exclamation", "cost": 0, "rarity": "uncommon",
+    "desc": "感叹词·回血5", "flavor": "爷的青春回来了", "excMult": 1.0, "excType": "all", "excHeal": 5
+  },
+  "pofangle": {
+    "word": "破防了", "pos": "exclamation", "cost": 0, "rarity": "uncommon",
+    "desc": "感叹词·穿透×1.5", "flavor": "破防了破防了", "excMult": 1.5, "excType": "attack", "excPenetrate": true
+  },
+  "shangtou": {
+    "word": "上头了", "pos": "exclamation", "cost": 0, "rarity": "rare",
+    "desc": "感叹词·攻击×2下回合格挡-50%", "flavor": "上头了上头了", "excMult": 2.0, "excType": "attack", "excBlockDebuff": 0.5
+  },
+  "zhenxiang_exc": {
+    "word": "真香", "pos": "exclamation", "cost": 0, "rarity": "rare",
+    "desc": "感叹词·负面变正面", "flavor": "真香定律", "excMult": 1.0, "excType": "all", "excReverseNeg": true
+  },
+  "ji": {
+    "word": "寄", "pos": "exclamation", "cost": 0, "rarity": "uncommon",
+    "desc": "感叹词·自伤但敌伤×2", "flavor": "寄了寄了", "excMult": 2.0, "excType": "attack", "excSelfDmg": 3
+  },
+  "lian": {
+    "word": "脸", "pos": "object", "cost": 0, "rarity": "uncommon",
+    "desc": "宾语·暴击率+30%", "flavor": "打脸！", "effectBonus": 0, "critChanceBonus": 0.3
+  },
+  "fanwan": {
+    "word": "饭碗", "pos": "object", "cost": 0, "rarity": "uncommon",
+    "desc": "宾语·偷金币8", "flavor": "砸人饭碗", "effectBonus": 0, "goldGain": 8
+  },
+  "jiezou": {
+    "word": "节奏", "pos": "object", "cost": 0, "rarity": "uncommon",
+    "desc": "宾语·施加混乱", "flavor": "带节奏", "effectBonus": 0, "confuseObj": true
+  },
+  "xintai": {
+    "word": "心态", "pos": "object", "cost": 0, "rarity": "uncommon",
+    "desc": "宾语·降全属性3回合", "flavor": "心态崩了", "effectBonus": 0, "xintaiDebuff": true
+  }
+}

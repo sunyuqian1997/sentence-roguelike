@@ -1,0 +1,53 @@
+/* --- 24. Responsive --- */
+@media (max-width: 600px) {
+  .card { width: clamp(80px, 22vw, 95px); min-width: 75px; height: clamp(120px, 32vw, 140px); }
+  .card-word { font-size: clamp(1.3rem, 3.5vw, 1.5rem); }
+  .card.pos-punctuation .card-word { font-size: clamp(1.5rem, 4vw, 1.8rem); }
+  .card-pos-tag { font-size: 0.55rem; }
+  .card-effect-bar { font-size: 0.6rem; }
+  .card-cost { width: 22px; height: 22px; font-size: 0.7rem; }
+  .enemy-portrait { width: 80px; height: 80px; font-size: 2.4rem; }
+  .enemy-hp-bar { width: 80px; }
+  #hand-cards { gap: 5px; }
+  .sentence-word { font-size: 0.8rem; padding: 3px 8px; }
+  .map-node { width: 44px; height: 44px; font-size: 1.1rem; }
+  .map-row { gap: 28px; }
+  #enemy-targets-bar .enemy-target-word { font-size: 0.7rem; padding: 3px 8px; }
+  #sentence-preview { font-size: 1.1rem; }
+  #player-status-bar { padding: 6px 10px; gap: 10px; }
+  .player-hp-display { font-size: 1rem; }
+  .player-hp-display .hp-icon { font-size: 1.2rem; }
+  .player-char-card { padding: 3px 8px; }
+  .player-char-card .char-emoji { font-size: 1.1rem; }
+  .player-char-card .char-name { font-size: 0.75rem; }
+  .enemy { min-width: 90px; padding: 6px 8px 8px; }
+  .btn { min-height: 44px; }
+  .story-portrait { width: 60px; height: 60px; font-size: 1.8rem; }
+}
+@media (max-width: 400px) {
+  .card { width: clamp(70px, 20vw, 80px); min-width: 65px; height: clamp(100px, 28vw, 120px); }
+  .card-word { font-size: 1.2rem; }
+  .btn { min-height: 44px; padding: 0.6em 1.5em; }
+}
+@media (max-height: 500px) {
+  #enemy-area { min-height: 100px; padding: 6px; gap: 10px; }
+  .enemy-portrait { width: 60px; height: 60px; font-size: 1.8rem; }
+  #sentence-area { min-height: 60px; padding: 6px 10px; }
+  #hand-area { padding: 4px 8px 6px; }
+  .card { height: clamp(90px, 20vh, 130px); }
+  #player-status-bar { padding: 4px 10px; }
+}
+
+/* --- 25. Reduced Motion --- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .ink-particle { display: none; }
+  .screen-shake-sm, .screen-shake-md, .screen-shake-lg { animation: none !important; }
+  .card::before { display: none; }
+  #story-overlay.active { animation: none; }
+  .story-portrait { animation: none; }
+}

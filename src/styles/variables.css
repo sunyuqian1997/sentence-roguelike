@@ -1,0 +1,74 @@
+/* ============================================================
+   NEO-INK CYBERPUNK THEME — Ink Wash + Neon Urban Fantasy
+   ============================================================ */
+
+:root {
+  /* Ink blacks & backgrounds */
+  --bg: #0a0a12;
+  --bg-dark: #050510;
+  --bg-card: #12121e;
+  --bg-panel: rgba(14,14,26,0.85);
+  --bg-glass: rgba(14,14,26,0.65);
+
+  /* Paper / text */
+  --paper: #e8e4d8;
+  --paper-dark: #b8b0a0;
+  --ink: #2a2530;
+  --smoke: #7a7572;
+
+  /* Neon accents */
+  --neon-cyan: #00ffcc;
+  --neon-cyan-dim: rgba(0,255,204,0.25);
+  --gold: #c9a84c;
+  --gold-bright: #e8c84c;
+  --gold-dim: rgba(232,200,76,0.2);
+  --vermillion: #ff4444;
+  --vermillion-dark: #aa2222;
+  --vermillion-dim: rgba(255,68,68,0.2);
+
+  /* Secondary palette */
+  --blue-ink: #4a7aff;
+  --blue-dim: rgba(74,122,255,0.2);
+  --pine: #44dd88;
+  --pine-dim: rgba(68,221,136,0.2);
+  --purple: #bb66ff;
+  --purple-dark: #8833cc;
+  --purple-dim: rgba(187,102,255,0.2);
+  --cyan: #66eeff;
+  --cyan-dark: #339daa;
+  --orange: #ff8833;
+  --orange-dark: #cc6622;
+  --orange-dim: rgba(255,136,51,0.2);
+
+  /* Glass-morphism */
+  --glass-bg: rgba(14,14,26,0.55);
+  --glass-border: rgba(0,255,204,0.12);
+  --glass-blur: 12px;
+  --glass-highlight: rgba(255,255,255,0.04);
+
+  /* Card POS colors */
+  --pos-subject: #ff4444;
+  --pos-verb: #e8c84c;
+  --pos-object: #4a7aff;
+  --pos-modifier: #44dd88;
+  --pos-connector: #888888;
+  --pos-punctuation: #bb66ff;
+  --pos-exclamation: #ff8833;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 14px;
+  --space-lg: 22px;
+  --space-xl: 36px;
+
+  /* Fonts */
+  --font-brush: 'Ma Shan Zheng', cursive;
+  --font-serif: 'Noto Serif SC', 'SimSun', serif;
+
+  /* Easing */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-spring: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
