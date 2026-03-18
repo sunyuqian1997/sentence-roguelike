@@ -82,40 +82,92 @@ export function playBossMusic() {
   musicInterval = setInterval(tick, 380);
 }
 
+function playNoise(duration, t, gain) {
+  if (!audioCtx) return;
+  const bufferSize = audioCtx.sampleRate * duration;
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1);
+  const noise = audioCtx.createBufferSource();
+  noise.buffer = buffer;
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(gain, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + duration);
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.value = 800;
+  filter.Q.value = 0.5;
+  noise.connect(filter);
+  filter.connect(g);
+  g.connect(masterGain);
+  noise.start(t);
+  noise.stop(t + duration);
+}
+
 export function playSFX(type) {
   if (!audioCtx || G.muted) return;
   const t = audioCtx.currentTime;
   switch (type) {
     case 'hit':
-      playNote(150, 0.1, 'square', t, 0.15);
-      playNote(100, 0.12, 'square', t + 0.05, 0.1);
+      playNote(80, 0.06, 'square', t, 0.2);
+      playNote(120, 0.08, 'square', t + 0.02, 0.15);
+      playNote(60, 0.12, 'triangle', t, 0.18);
+      playNoise(0.08, t, 0.12);
+      break;
+    case 'hit_heavy':
+      playNote(50, 0.1, 'square', t, 0.25);
+      playNote(80, 0.08, 'sawtooth', t + 0.02, 0.2);
+      playNote(40, 0.15, 'triangle', t, 0.22);
+      playNoise(0.12, t, 0.18);
+      playNote(30, 0.2, 'sine', t + 0.05, 0.15);
+      break;
+    case 'hit_crit':
+      playNote(60, 0.08, 'square', t, 0.25);
+      playNote(200, 0.04, 'sine', t + 0.03, 0.15);
+      playNote(40, 0.15, 'sawtooth', t, 0.2);
+      playNoise(0.15, t, 0.2);
+      playNote(100, 0.06, 'square', t + 0.08, 0.12);
       break;
     case 'block':
-      playNote(400, 0.08, 'sine', t, 0.1);
-      playNote(500, 0.06, 'sine', t + 0.04, 0.08);
+      playNote(300, 0.05, 'triangle', t, 0.1);
+      playNote(450, 0.04, 'sine', t + 0.03, 0.08);
+      playNoise(0.04, t, 0.06);
       break;
     case 'card':
-      playNote(600, 0.04, 'sine', t, 0.08);
-      playNote(800, 0.04, 'sine', t + 0.03, 0.06);
+      playNote(500, 0.03, 'sine', t, 0.06);
+      playNote(700, 0.03, 'sine', t + 0.02, 0.04);
+      break;
+    case 'card_stamp':
+      playNote(200, 0.04, 'square', t, 0.1);
+      playNoise(0.03, t, 0.08);
+      playNote(400, 0.03, 'sine', t + 0.02, 0.06);
       break;
     case 'heal':
       playNote(400, 0.15, 'sine', t, 0.08);
-      playNote(500, 0.15, 'sine', t + 0.08, 0.08);
-      playNote(600, 0.2, 'sine', t + 0.16, 0.08);
+      playNote(500, 0.15, 'sine', t + 0.1, 0.08);
+      playNote(600, 0.2, 'sine', t + 0.2, 0.1);
       break;
     case 'death':
-      playNote(200, 0.3, 'sawtooth', t, 0.08);
-      playNote(150, 0.3, 'sawtooth', t + 0.15, 0.06);
+      playNote(150, 0.3, 'sawtooth', t, 0.1);
+      playNote(100, 0.4, 'sawtooth', t + 0.1, 0.08);
+      playNote(60, 0.5, 'triangle', t + 0.2, 0.06);
+      playNoise(0.3, t, 0.08);
       break;
     case 'chant':
-      playNote(523.3, 0.2, 'sine', t, 0.1);
-      playNote(659.3, 0.2, 'sine', t + 0.1, 0.1);
-      playNote(784, 0.3, 'sine', t + 0.2, 0.12);
+      playNote(392, 0.15, 'sine', t, 0.1);
+      playNote(523.3, 0.15, 'sine', t + 0.1, 0.1);
+      playNote(659.3, 0.2, 'sine', t + 0.2, 0.12);
+      playNote(784, 0.3, 'sine', t + 0.3, 0.1);
       break;
     case 'selfharm':
-      playNote(220, 0.2, 'sawtooth', t, 0.1);
-      playNote(180, 0.15, 'sawtooth', t + 0.1, 0.08);
-      playNote(440, 0.3, 'sine', t + 0.2, 0.12);
+      playNote(180, 0.15, 'sawtooth', t, 0.1);
+      playNote(140, 0.12, 'sawtooth', t + 0.08, 0.08);
+      playNoise(0.1, t + 0.05, 0.1);
+      break;
+    case 'ink_splash':
+      playNoise(0.15, t, 0.15);
+      playNote(100, 0.08, 'triangle', t, 0.1);
+      playNote(150, 0.06, 'sine', t + 0.04, 0.06);
       break;
   }
 }

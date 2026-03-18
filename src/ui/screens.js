@@ -1,7 +1,9 @@
 import { G, META, saveMeta, LEGACY_PERKS, UNLOCKABLE_CARDS_META } from '../game/state.js';
 import { showFloatingText } from '../utils.js';
 import { playSFX, stopMusic, playAmbientMusic } from '../game/audio.js';
-import { randomCardWeighted } from '../data/cards.js';
+import { randomCardWeighted, makeCard, WORD_DEFS, getCardWord, getCardDesc } from '../data/cards.js';
+import { evaluateSentence, detectDuizhang } from '../game/sentence.js';
+import { getPosColor } from '../utils.js';
 import { EVENTS_BY_ACT, EVENTS_FALLBACK } from '../data/events.js';
 import { audioCtx, playNote } from '../game/audio.js';
 import { createCardElement } from './render.js';
@@ -166,6 +168,24 @@ export function renderInkBreakdown(id, reward) {
   el.innerHTML = h;
 }
 
+function renderSentenceJournal(afterId) {
+  if (!G.sentenceJournal || G.sentenceJournal.length === 0) return;
+  const anchor = document.getElementById(afterId);
+  if (!anchor) return;
+  let existing = document.getElementById('sentence-journal');
+  if (existing) existing.remove();
+  const div = document.createElement('div');
+  div.id = 'sentence-journal';
+  div.className = 'ink-reward-breakdown';
+  div.style.marginTop = '12px';
+  let h = '<div style="font-family:var(--font-brush);font-size:1rem;color:var(--ink);letter-spacing:0.15em;margin-bottom:8px;text-align:center;">— 本局诗篇 —</div>';
+  G.sentenceJournal.forEach((s, i) => {
+    h += `<div style="font-family:var(--font-brush);font-size:0.95rem;color:var(--ink-light);line-height:2;text-align:center;letter-spacing:0.08em;">「${s}」</div>`;
+  });
+  div.innerHTML = h;
+  anchor.parentNode.insertBefore(div, anchor.nextSibling);
+}
+
 export function gameOver() {
   stopMusic(); playSFX('death');
   const r = updateMetaAfterRun(false);
@@ -179,6 +199,7 @@ export function gameOver() {
     <div>文银：<span>${G.gold}</span></div>
   `;
   renderInkBreakdown('gameover-ink-breakdown', r.reward);
+  renderSentenceJournal('gameover-ink-breakdown');
 }
 
 export function showVictoryScreen() {
@@ -200,6 +221,7 @@ export function showVictoryScreen() {
     <div>词库：<span>${G.deck.length}张</span></div>
   `;
   renderInkBreakdown('victory-ink-breakdown', r.reward);
+  renderSentenceJournal('victory-ink-breakdown');
 }
 
 // ============================================================
@@ -251,4 +273,133 @@ export function buyCardMeta(key) {
   const info = UNLOCKABLE_CARDS_META[key];
   if(!info||META.unlockedCards.includes(key)||META.ink<info.cost) return;
   META.ink-=info.cost; META.unlockedCards.push(key); saveMeta(); playSFX('card'); renderMetaScreen();
+}
+
+// ============================================================
+// POETRY SHRINE
+// ============================================================
+let poetrySelected = [];
+
+export function showPoetryScreen() {
+  poetrySelected = [];
+  showScreen('poetry-screen');
+  const themes = [
+    { title: '题壁', flavor: '古亭之中，石壁如纸。留下你的诗句，换取灵感与力量。' },
+    { title: '临风台', flavor: '山巅之上，风声如歌。在此吟一句，天地为之动容。' },
+    { title: '墨池', flavor: '一池墨水，映出星辰。你的诗句将化为力量。' },
+  ];
+  const theme = themes[Math.floor(Math.random() * themes.length)];
+  document.getElementById('poetry-title').textContent = theme.title;
+  document.getElementById('poetry-flavor').textContent = theme.flavor;
+  renderPoetryUI();
+}
+
+function renderPoetryUI() {
+  const slots = document.getElementById('poetry-slots');
+  slots.innerHTML = '';
+  poetrySelected.forEach((card, idx) => {
+    const el = document.createElement('div');
+    el.className = 'sentence-word';
+    if (card.pos === 'punctuation') el.classList.add('punct-end');
+    else if (card.pos === 'exclamation') el.classList.add('exclamation-word');
+    else { el.style.borderColor = getPosColor(card.pos); el.style.color = getPosColor(card.pos); }
+    el.textContent = card.word;
+    el.onclick = () => { poetrySelected.splice(idx, 1); renderPoetryUI(); };
+    slots.appendChild(el);
+  });
+
+  const preview = document.getElementById('poetry-preview');
+  preview.textContent = poetrySelected.length > 0 ? '「' + poetrySelected.map(c => c.word).join('') + '」' : '';
+
+  const scoreEl = document.getElementById('poetry-score-display');
+  if (poetrySelected.length >= 2) {
+    const score = evaluatePoetryScore();
+    scoreEl.innerHTML = `诗意评分: <b>${score.total.toFixed(1)}</b> — ${score.grade}`;
+  } else {
+    scoreEl.innerHTML = '至少需要两个词';
+  }
+
+  const btn = document.getElementById('poetry-submit-btn');
+  btn.disabled = poetrySelected.length < 3;
+  btn.style.opacity = btn.disabled ? '0.35' : '1';
+
+  const hand = document.getElementById('poetry-hand');
+  hand.innerHTML = '';
+  G.deck.forEach((card, idx) => {
+    if (poetrySelected.includes(card)) return;
+    const el = createCardElement(card, null, { noClick: true });
+    el.style.cursor = 'pointer';
+    el.onclick = () => {
+      if (poetrySelected.length >= 14) return;
+      poetrySelected.push(card);
+      playSFX('card');
+      renderPoetryUI();
+    };
+    hand.appendChild(el);
+  });
+}
+
+function evaluatePoetryScore() {
+  const result = evaluateSentence(poetrySelected);
+  let total = 0;
+  let grade = '';
+
+  if (result) {
+    total = result.totalMult * poetrySelected.length * 0.5;
+    const dz = detectDuizhang(poetrySelected);
+    if (dz && dz.matched) total *= dz.multiplier;
+    if (poetrySelected.length >= 7) total *= 1.2;
+    if (poetrySelected.length >= 10) total *= 1.3;
+  } else {
+    total = poetrySelected.length * 0.3;
+  }
+
+  if (total >= 12) grade = '传世之作！';
+  else if (total >= 8) grade = '佳作';
+  else if (total >= 5) grade = '尚可';
+  else if (total >= 3) grade = '平平';
+  else grade = '涂鸦';
+
+  return { total, grade };
+}
+
+export function submitPoetry() {
+  if (poetrySelected.length < 3) return;
+  const { total, grade } = evaluatePoetryScore();
+  const text = poetrySelected.map(c => c.word).join('');
+  G.sentenceJournal.push('📜 ' + text);
+
+  let rewardText = '';
+  if (total >= 12) {
+    G.hp = G.maxHp;
+    G.strength += 2;
+    G.gold += 30;
+    G.deck.push(randomCardWeighted('rare'));
+    rewardText = '全回血 +2力量 +30金 +稀有牌！';
+  } else if (total >= 8) {
+    G.hp = Math.min(G.maxHp, G.hp + Math.floor(G.maxHp * 0.4));
+    G.strength += 1;
+    G.gold += 15;
+    rewardText = '回40%血 +1力量 +15金';
+  } else if (total >= 5) {
+    G.hp = Math.min(G.maxHp, G.hp + Math.floor(G.maxHp * 0.25));
+    G.gold += 10;
+    rewardText = '回25%血 +10金';
+  } else if (total >= 3) {
+    G.hp = Math.min(G.maxHp, G.hp + 8);
+    rewardText = '回8血';
+  } else {
+    G.gold += 5;
+    rewardText = '+5金（加油……）';
+  }
+
+  playSFX('chant');
+  alert(`「${text}」\n\n${grade}（${total.toFixed(1)}分）\n${rewardText}`);
+  showScreen('map-screen');
+  renderMap();
+}
+
+export function skipPoetry() {
+  showScreen('map-screen');
+  renderMap();
 }

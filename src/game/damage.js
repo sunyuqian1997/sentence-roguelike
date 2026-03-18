@@ -14,22 +14,51 @@ export function dealDamageToEnemy(idx, amount, ignoreBlock) {
   if (!ignoreBlock && enemy.block > 0) {
     if (amount <= enemy.block) {
       enemy.block -= amount;
-      if (enemy.element) { showFloatingText(enemy.element, `-${amount}`, '#6b9fff'); VFX.enemyHit(enemy.element); }
+      if (enemy.element) {
+        showFloatingText(enemy.element, `-${amount}`, 'var(--blue-ink)');
+        VFX.enemyHit(enemy.element);
+      }
+      playSFX('block');
       return;
     }
     amount -= enemy.block;
-    if (enemy.element) showFloatingText(enemy.element, `-${enemy.block}挡`, '#6b9fff');
+    if (enemy.element) showFloatingText(enemy.element, `-${enemy.block}挡`, 'var(--blue-ink)');
     enemy.block = 0;
   }
+
   enemy.hp -= amount;
   if (enemy.hp < 0) enemy.hp = 0;
-  playSFX('hit');
+
+  const isBig = amount >= 20;
+  const isCrit = amount >= 30;
+  playSFX(isCrit ? 'hit_crit' : isBig ? 'hit_heavy' : 'hit');
+
   if (enemy.element) {
-    VFX.damageNum(enemy.element, `-${amount}`, '#ff6b6b', amount >= 20 ? 3.2 : amount >= 10 ? 2.5 : 2);
+    const numColor = 'var(--vermillion)';
+    const numSize = isCrit ? 3.5 : isBig ? 2.8 : amount >= 10 ? 2.3 : 1.8;
+    VFX.damageNum(enemy.element, `-${amount}`, numColor, numSize);
     VFX.enemyHit(enemy.element);
-    if (amount >= 15) VFX.shake('sm');
-    if (amount >= 25) VFX.shake('md');
-    if (enemy.hp <= 0) setTimeout(() => VFX.enemyDeath(enemy.element), 200);
+
+    if (isCrit) {
+      VFX.shake('lg');
+      VFX.brushStrike();
+      const rect = enemy.element.getBoundingClientRect();
+      VFX.inkSplash(rect.left + rect.width / 2, rect.top + rect.height / 2, 'rgba(197,75,60,0.4)');
+      playSFX('ink_splash');
+    } else if (isBig) {
+      VFX.shake('md');
+      const rect = enemy.element.getBoundingClientRect();
+      VFX.inkSplash(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    } else if (amount >= 10) {
+      VFX.shake('sm');
+    }
+
+    if (enemy.hp <= 0) {
+      setTimeout(() => {
+        VFX.enemyDeath(enemy.element);
+        playSFX('death');
+      }, 200);
+    }
   }
 }
 
@@ -42,25 +71,36 @@ export function dealDamageToPlayer(amount, source) {
     const thornsDmg = G._thorns;
     source.hp -= thornsDmg;
     if (source.hp < 0) source.hp = 0;
-    if (source.element) showFloatingText(source.element, `-${thornsDmg}反伤`, '#d4a870');
+    if (source.element) showFloatingText(source.element, `-${thornsDmg}反伤`, 'var(--orange)');
   }
 
   if (G.block > 0) {
     if (amount <= G.block) {
       G.block -= amount;
-      showFloatingText(document.querySelector('#combat-top'), `挡住${amount}`, '#6b9fff');
+      showFloatingText(document.querySelector('#combat-top'), `挡住${amount}`, 'var(--blue-ink)');
       playSFX('block');
       return;
     }
-    const blocked = G.block; amount -= G.block; G.block = 0;
-    showFloatingText(document.querySelector('#combat-top'), `挡住${blocked}`, '#6b9fff');
+    const blocked = G.block;
+    amount -= G.block;
+    G.block = 0;
+    showFloatingText(document.querySelector('#combat-top'), `挡住${blocked}`, 'var(--blue-ink)');
+    playSFX('block');
   }
 
   G.hp -= amount;
   if (G.hp < 0) G.hp = 0;
-  VFX.damageNum(document.getElementById('player-status-bar'), `-${amount}`, '#ff6b6b', amount >= 15 ? 3 : 2.2);
-  VFX.shake(amount >= 15 ? 'md' : 'sm');
+
+  const isBig = amount >= 15;
+  playSFX(isBig ? 'hit_heavy' : 'hit');
+  VFX.damageNum(document.getElementById('player-status-bar'), `-${amount}`, 'var(--vermillion)', isBig ? 3 : 2.2);
+  VFX.shake(isBig ? 'md' : 'sm');
   VFX.rollHp(document.getElementById('combat-hp'));
+
+  if (isBig) {
+    VFX.inkSplash(window.innerWidth / 2, window.innerHeight * 0.7, 'rgba(197,75,60,0.3)');
+  }
+
   if (G.hp <= 0) setTimeout(gameOver, 500);
 }
 

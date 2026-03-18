@@ -1,199 +1,341 @@
-/* --- 23. Animations --- */
+/* ============================================================
+   INK WASH ANIMATIONS — 水墨动效
+   ============================================================ */
+
+/* --- Screen & overlay transitions --- */
+
 @keyframes screenFadeIn {
-  0% { opacity: 0; transform: translateY(12px); }
+  0%   { opacity: 0; transform: translateY(12px); }
   100% { opacity: 1; transform: translateY(0); }
 }
+
+@keyframes overlaySlideUp {
+  0%   { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes storyFadeIn {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes portraitAppear {
+  0%   { opacity: 0; transform: scale(0.5) rotate(-3deg); }
+  60%  { opacity: 1; transform: scale(1.04) rotate(0.5deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+/* --- Ink grain shimmer (replaces holo) --- */
+
 @keyframes holoShimmer {
-  0% { background-position: 0deg; transform: rotate(0deg); }
-  100% { background-position: 360deg; transform: rotate(360deg); }
+  0%, 100% { opacity: 0.85; }
+  40%      { opacity: 1; }
+  70%      { opacity: 0.9; }
 }
+
+/* --- Card dealing — stamp-press feel --- */
+
 @keyframes cardDeal {
-  0% { opacity: 0; transform: translateY(80px) rotateY(180deg) scale(0.5); }
-  60% { opacity: 1; transform: translateY(-8px) rotateY(10deg) scale(1.05); }
-  100% { transform: translateY(0) rotateY(0) scale(1); }
+  0%   { opacity: 0; transform: translateY(60px) scale(0.4) rotate(-4deg); }
+  55%  { opacity: 1; transform: translateY(-6px) scale(1.06) rotate(1deg); }
+  75%  { transform: translateY(2px) scale(0.98) rotate(-0.5deg); }
+  100% { transform: translateY(0) scale(1) rotate(0); }
 }
+
+/* --- Ink ripple (expanding ink circle) --- */
+
 @keyframes inkRipple {
-  0% { width: 10px; height: 10px; opacity: 1; border-width: 3px; }
+  0%   { width: 10px; height: 10px; opacity: 0.8; border-width: 3px; }
   100% { width: 200vmax; height: 200vmax; opacity: 0; border-width: 1px; }
 }
+
+.ink-ripple {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 10px; height: 10px; border-radius: 50%;
+  border: 2px solid var(--ink);
+  background: radial-gradient(circle, rgba(17, 17, 16, 0.04), transparent 60%);
+  pointer-events: none; z-index: 4000;
+  animation: inkRipple 0.8s var(--ease-out-expo) forwards;
+}
+
+/* --- Damage & combat --- */
+
 @keyframes damageFloat {
-  0% { opacity: 1; transform: translateY(0) scale(1); }
+  0%   { opacity: 1; transform: translateY(0) scale(1); }
   100% { opacity: 0; transform: translateY(-55px) scale(1.5); }
 }
+
 @keyframes enemyDamaged {
-  0% { filter: brightness(1); }
-  15% { filter: brightness(2.5) saturate(0.3); background-color: rgba(255,60,40,0.3); }
-  30% { filter: brightness(0.8); }
-  50% { filter: brightness(1.8); }
+  0%   { filter: brightness(1); }
+  15%  { filter: brightness(2) sepia(0.4) saturate(1.8); background-color: rgba(197, 75, 60, 0.25); }
+  30%  { filter: brightness(0.7) sepia(0.1); }
+  50%  { filter: brightness(1.6) sepia(0.2); }
   100% { filter: brightness(1); }
 }
+
 @keyframes enemyDeath {
-  0% { opacity: 1; filter: blur(0) brightness(1); transform: scale(1); }
-  30% { filter: blur(0) brightness(2); transform: scale(1.05); }
-  100% { opacity: 0; filter: blur(12px) brightness(0.3); transform: scale(0.7) translateY(20px); }
+  0%   { opacity: 1; filter: blur(0) brightness(1) sepia(0); transform: scale(1); }
+  25%  { filter: blur(1px) brightness(1.3) sepia(0.3); transform: scale(1.03); }
+  100% { opacity: 0; filter: blur(10px) brightness(0.4) sepia(0.6); transform: scale(0.65) translateY(25px); }
 }
+
+.enemy-hit-flash { animation: enemyDamaged 0.4s ease; }
+.enemy-shake     { animation: enemy-shake-anim 0.35s ease; }
+.enemy-death     { animation: enemyDeath 0.8s ease forwards; }
+
+@keyframes enemy-shake-anim {
+  0%, 100% { transform: translateX(0); }
+  15%      { transform: translateX(-8px) rotate(-2deg); }
+  30%      { transform: translateX(6px) rotate(1deg); }
+  45%      { transform: translateX(-5px); }
+  60%      { transform: translateX(4px); }
+  75%      { transform: translateX(-2px); }
+}
+
+/* --- Seal pulse --- */
+
 @keyframes sealPulse {
   0%, 100% { opacity: 0.6; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.05); }
+  50%      { opacity: 1; transform: scale(1.05); }
 }
+
+/* --- Node glow (ink shadow breathing) --- */
+
 @keyframes nodeGlow {
-  0%, 100% { box-shadow: 0 0 8px var(--neon-cyan-dim); }
-  50% { box-shadow: 0 0 25px rgba(0,255,204,0.4); }
+  0%, 100% { box-shadow: 0 0 8px rgba(17, 17, 16, 0.12); }
+  50%      { box-shadow: 0 0 22px rgba(17, 17, 16, 0.25); }
 }
+
+/* --- Rest glow (warm paper glow) --- */
+
 @keyframes restGlow {
-  0%, 100% { box-shadow: 0 0 15px rgba(0,255,204,0.08); }
-  50% { box-shadow: 0 0 30px rgba(0,255,204,0.15); }
+  0%, 100% { box-shadow: 0 0 15px rgba(184, 134, 43, 0.08); }
+  50%      { box-shadow: 0 0 30px rgba(184, 134, 43, 0.18); }
 }
+
+/* --- Shake (functional — keep as-is) --- */
+
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
-  10% { transform: translateX(-5px) translateY(2px); }
-  20% { transform: translateX(5px) translateY(-2px); }
-  30% { transform: translateX(-4px); }
-  40% { transform: translateX(4px); }
+  10%      { transform: translateX(-5px) translateY(2px); }
+  20%      { transform: translateX(5px) translateY(-2px); }
+  30%      { transform: translateX(-4px); }
+  40%      { transform: translateX(4px); }
 }
 .shake { animation: shake 0.4s ease; }
+
 @keyframes screen-shake-sm {
-  0%, 100% { transform: translate(0,0); }
-  20% { transform: translate(-3px, 2px); }
-  40% { transform: translate(3px, -2px); }
-  60% { transform: translate(-2px, -1px); }
-  80% { transform: translate(2px, 1px); }
+  0%, 100% { transform: translate(0, 0); }
+  20%      { transform: translate(-3px, 2px); }
+  40%      { transform: translate(3px, -2px); }
+  60%      { transform: translate(-2px, -1px); }
+  80%      { transform: translate(2px, 1px); }
 }
+
 @keyframes screen-shake-md {
-  0%, 100% { transform: translate(0,0); }
-  15% { transform: translate(-6px, 4px); }
-  30% { transform: translate(5px, -3px); }
-  45% { transform: translate(-4px, -2px); }
-  60% { transform: translate(4px, 3px); }
-  75% { transform: translate(-3px, 1px); }
+  0%, 100% { transform: translate(0, 0); }
+  15%      { transform: translate(-6px, 4px); }
+  30%      { transform: translate(5px, -3px); }
+  45%      { transform: translate(-4px, -2px); }
+  60%      { transform: translate(4px, 3px); }
+  75%      { transform: translate(-3px, 1px); }
 }
+
 @keyframes screen-shake-lg {
-  0%, 100% { transform: translate(0,0); }
-  10% { transform: translate(-10px, 6px); }
-  20% { transform: translate(8px, -5px); }
-  30% { transform: translate(-7px, -4px); }
-  40% { transform: translate(9px, 5px); }
-  50% { transform: translate(-6px, 3px); }
-  60% { transform: translate(7px, -4px); }
-  70% { transform: translate(-5px, 2px); }
-  80% { transform: translate(4px, -3px); }
+  0%, 100% { transform: translate(0, 0); }
+  10%      { transform: translate(-10px, 6px); }
+  20%      { transform: translate(8px, -5px); }
+  30%      { transform: translate(-7px, -4px); }
+  40%      { transform: translate(9px, 5px); }
+  50%      { transform: translate(-6px, 3px); }
+  60%      { transform: translate(7px, -4px); }
+  70%      { transform: translate(-5px, 2px); }
+  80%      { transform: translate(4px, -3px); }
 }
+
 .screen-shake-sm { animation: screen-shake-sm 0.3s ease; }
 .screen-shake-md { animation: screen-shake-md 0.4s ease; }
 .screen-shake-lg { animation: screen-shake-lg 0.5s ease; }
+
+/* --- Card fly & sentence --- */
+
 @keyframes cardFlyToSentence {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(0.6) translateY(-40px); opacity: 0.7; }
-  100% { transform: scale(0.9) translateY(0); opacity: 0.15; }
+  0%   { transform: scale(1) rotate(0); opacity: 1; }
+  40%  { transform: scale(0.55) translateY(-35px) rotate(-6deg); opacity: 0.7; }
+  70%  { transform: scale(0.85) translateY(-5px) rotate(2deg); opacity: 0.4; }
+  100% { transform: scale(0.9) translateY(0) rotate(0); opacity: 0.15; }
 }
 .card-fly-to-sentence { animation: cardFlyToSentence 0.35s var(--ease-spring) both; }
+
 @keyframes sentenceWordEnter {
-  0% { transform: scale(0.3); opacity: 0; filter: blur(4px); }
-  50% { transform: scale(1.15); opacity: 1; filter: blur(0); }
-  100% { transform: scale(1); }
+  0%   { transform: scale(0.3) rotate(-2deg); opacity: 0; filter: blur(3px); }
+  50%  { transform: scale(1.12) rotate(0.5deg); opacity: 1; filter: blur(0); }
+  75%  { transform: scale(0.97); }
+  100% { transform: scale(1) rotate(0); }
 }
+
+/* --- Exclamation chain (gold + cinnabar) --- */
+
 @keyframes excChainPop {
-  0% { opacity: 0; transform: translate(-50%,-50%) scale(0.2) rotate(-10deg); }
-  30% { opacity: 1; transform: translate(-50%,-50%) scale(2.0) rotate(3deg); }
-  50% { transform: translate(-50%,-50%) scale(1.5) rotate(-1deg); }
-  100% { opacity: 0; transform: translate(-50%,-50%) scale(1.8) translateY(-30px) rotate(0deg); }
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.2) rotate(-10deg); }
+  30%  { opacity: 1; transform: translate(-50%, -50%) scale(2.0) rotate(3deg); }
+  50%  { transform: translate(-50%, -50%) scale(1.5) rotate(-1deg); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.8) translateY(-30px) rotate(0deg); }
 }
+
 .exc-chain-num {
   position: fixed; pointer-events: none; z-index: 5500;
   font-family: var(--font-brush);
-  font-weight: 900; text-shadow: 0 4px 15px rgba(0,0,0,0.8);
+  font-weight: 900;
+  text-shadow: 0 2px 8px rgba(17, 17, 16, 0.7), 0 0 20px rgba(184, 134, 43, 0.35);
   animation: excChainPop 0.6s var(--ease-spring) forwards;
 }
+
+/* --- Exclamation flash (cinnabar/gold splash) --- */
+
 @keyframes excFlash {
-  0% { opacity: 0.6; }
+  0%   { opacity: 0.5; }
   100% { opacity: 0; }
 }
+
 .exc-flash {
   position: fixed; inset: 0; pointer-events: none; z-index: 4500;
+  background: radial-gradient(circle at 50% 50%, rgba(197, 75, 60, 0.1), rgba(184, 134, 43, 0.05) 50%, transparent 70%);
   animation: excFlash 0.35s ease-out forwards;
 }
+
+/* --- Turn start circle (ink ring) --- */
+
 @keyframes turnCircle {
-  0% { width: 0; height: 0; opacity: 1; }
+  0%   { width: 0; height: 0; opacity: 0.8; }
   100% { width: 150vmax; height: 150vmax; opacity: 0; }
 }
+
 .turn-start-circle {
-  position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
   width: 0; height: 0; border-radius: 50%;
-  background: radial-gradient(circle, rgba(0,255,204,0.08), transparent 70%);
+  background: radial-gradient(circle, rgba(17, 17, 16, 0.06), transparent 70%);
+  border: 1px solid rgba(17, 17, 16, 0.08);
   pointer-events: none; z-index: 3000;
-  animation: turnCircle 0.7s ease-out forwards;
+  animation: turnCircle 0.7s var(--ease-out-expo) forwards;
 }
+
+/* --- HP rolling (keep as-is) --- */
+
 @keyframes hpRolling {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.3); }
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.3); }
   100% { transform: scale(1); }
 }
 .hp-rolling { animation: hpRolling 0.3s ease; }
+
+/* --- Rarity pulses (ink-wash glows) --- */
+
 @keyframes rarePulsing {
-  0%, 100% { box-shadow: 0 4px 12px rgba(0,0,0,0.5), 0 0 15px rgba(232,200,76,0.2); }
-  50% { box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 35px rgba(232,200,76,0.45), 0 0 60px rgba(232,200,76,0.12); }
+  0%, 100% { box-shadow: 0 4px 12px rgba(17, 17, 16, 0.3), 0 0 12px rgba(184, 134, 43, 0.15); }
+  50%      { box-shadow: 0 4px 18px rgba(17, 17, 16, 0.4), 0 0 30px rgba(184, 134, 43, 0.35), 0 0 50px rgba(184, 134, 43, 0.08); }
 }
+
 @keyframes uncommonPulsing {
-  0%, 100% { box-shadow: 0 4px 12px rgba(0,0,0,0.5), 0 0 12px rgba(74,122,255,0.15); }
-  50% { box-shadow: 0 4px 16px rgba(0,0,0,0.5), 0 0 25px rgba(74,122,255,0.3); }
+  0%, 100% { box-shadow: 0 4px 12px rgba(17, 17, 16, 0.3), 0 0 10px rgba(45, 75, 115, 0.12); }
+  50%      { box-shadow: 0 4px 16px rgba(17, 17, 16, 0.35), 0 0 22px rgba(45, 75, 115, 0.25); }
 }
+
 @keyframes excNeonPulse {
-  0%, 100% { box-shadow: 0 4px 12px rgba(0,0,0,0.5), 0 0 12px rgba(0,255,204,0.12); }
-  50% { box-shadow: 0 4px 16px rgba(0,0,0,0.5), 0 0 28px rgba(0,255,204,0.3), 0 0 50px rgba(0,255,204,0.08); }
+  0%, 100% { box-shadow: 0 4px 12px rgba(17, 17, 16, 0.3), 0 0 10px rgba(184, 115, 51, 0.1); }
+  50%      { box-shadow: 0 4px 16px rgba(17, 17, 16, 0.35), 0 0 24px rgba(184, 115, 51, 0.25), 0 0 40px rgba(184, 115, 51, 0.06); }
 }
+
+/* --- Self-harm flash (cinnabar) --- */
+
 @keyframes selfHarmFlash {
-  0% { background: rgba(187,102,255,0); }
-  50% { background: rgba(187,102,255,0.12); }
-  100% { background: rgba(187,102,255,0); }
+  0%   { background: rgba(197, 75, 60, 0); }
+  50%  { background: rgba(197, 75, 60, 0.1); }
+  100% { background: rgba(197, 75, 60, 0); }
 }
 .self-harm-flash { animation: selfHarmFlash 0.6s ease; }
+
+/* --- Victory & defeat --- */
+
 @keyframes victoryPulse {
-  0%, 100% { text-shadow: 0 0 30px rgba(232,200,76,0.4), 0 0 60px rgba(232,200,76,0.15); }
-  50% { text-shadow: 0 0 50px rgba(232,200,76,0.6), 0 0 100px rgba(232,200,76,0.25); }
+  0%, 100% { text-shadow: 0 0 20px rgba(184, 134, 43, 0.3), 0 0 50px rgba(184, 134, 43, 0.1); }
+  50%      { text-shadow: 0 0 40px rgba(184, 134, 43, 0.5), 0 0 80px rgba(184, 134, 43, 0.2); }
 }
+
 @keyframes defeatFlicker {
-  0%, 100% { opacity: 1; text-shadow: 0 0 30px rgba(255,68,68,0.3); }
-  50% { opacity: 0.85; text-shadow: 0 0 50px rgba(255,68,68,0.5); }
-  75% { opacity: 0.95; }
+  0%, 100% { opacity: 1; text-shadow: 0 0 20px rgba(17, 17, 16, 0.3); }
+  50%      { opacity: 0.8; text-shadow: 0 0 40px rgba(17, 17, 16, 0.5); }
+  75%      { opacity: 0.92; }
 }
-@keyframes overlaySlideUp {
-  0% { opacity: 0; transform: translateY(30px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-@keyframes storyFadeIn {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
-}
-@keyframes portraitAppear {
-  0% { opacity: 0; transform: scale(0.5) translateX(-20px); }
-  100% { opacity: 1; transform: scale(1) translateX(0); }
-}
+
+/* --- Ink particle drift --- */
+
 @keyframes ink-drift {
-  0% { transform: translate(0, 0) scale(1); opacity: 0.3; }
-  25% { transform: translate(30px, -50px) scale(1.1); opacity: 0.5; }
-  50% { transform: translate(-20px, -100px) scale(0.9); opacity: 0.2; }
-  75% { transform: translate(40px, -150px) scale(1.05); opacity: 0.4; }
-  100% { transform: translate(0, -200px) scale(1); opacity: 0.3; }
+  0%   { transform: translate(0, 0) scale(1); opacity: 0.15; }
+  25%  { transform: translate(30px, -50px) scale(1.08); opacity: 0.25; }
+  50%  { transform: translate(-20px, -100px) scale(0.92); opacity: 0.1; }
+  75%  { transform: translate(40px, -150px) scale(1.03); opacity: 0.2; }
+  100% { transform: translate(0, -200px) scale(1); opacity: 0.15; }
 }
-/* Ink ripple element */
-.ink-ripple {
-  position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
-  width: 10px; height: 10px; border-radius: 50%;
-  border: 2px solid rgba(0,255,204,0.5);
-  pointer-events: none; z-index: 4000;
-  animation: inkRipple 0.8s ease-out forwards;
+
+.ink-particle {
+  position: absolute; pointer-events: none;
+  width: 3px; height: 3px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(17, 17, 16, 0.2), rgba(17, 17, 16, 0.05));
+  animation: ink-drift 8s linear infinite;
 }
-/* Enemy hit flash */
-.enemy-hit-flash { animation: enemyDamaged 0.4s ease; }
-/* Enemy shake on hit */
-.enemy-shake { animation: enemy-shake-anim 0.35s ease; }
-@keyframes enemy-shake-anim {
-  0%, 100% { transform: translateX(0); }
-  15% { transform: translateX(-8px) rotate(-2deg); }
-  30% { transform: translateX(6px) rotate(1deg); }
-  45% { transform: translateX(-5px); }
-  60% { transform: translateX(4px); }
-  75% { transform: translateX(-2px); }
+
+/* --- Card fly stamp into sentence --- */
+
+@keyframes cardFlyToSentence {
+  0%   { transform: scale(1) rotate(0); opacity: 1; }
+  40%  { transform: scale(0.55) translateY(-35px) rotate(-6deg); opacity: 0.7; }
+  70%  { transform: scale(0.85) translateY(-5px) rotate(2deg); opacity: 0.4; }
+  100% { transform: scale(0.9) translateY(0) rotate(0); opacity: 0.15; }
 }
-/* Enemy death dissolve */
-.enemy-death { animation: enemyDeath 0.8s ease forwards; }
+
+/* --- Ink splash burst (big hits) --- */
+
+@keyframes inkSplash {
+  0%   { transform: translate(-50%, -50%) scale(0); opacity: 0.9; }
+  30%  { transform: translate(-50%, -50%) scale(1.2); opacity: 0.7; }
+  60%  { transform: translate(-50%, -50%) scale(1.8); opacity: 0.3; }
+  100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
+}
+
+.ink-splash {
+  position: fixed; top: 50%; left: 50%;
+  width: 120px; height: 120px;
+  border-radius: 45% 55% 50% 50%;
+  background: radial-gradient(ellipse at 40% 40%,
+    rgba(17, 17, 16, 0.6),
+    rgba(17, 17, 16, 0.2) 50%,
+    transparent 75%
+  );
+  pointer-events: none; z-index: 5000;
+  animation: inkSplash 0.5s var(--ease-out-expo) forwards;
+}
+
+/* --- Brush strike sweep (critical hits) --- */
+
+@keyframes brushStrike {
+  0%   { clip-path: inset(0 100% 0 0); opacity: 0.9; }
+  40%  { clip-path: inset(0 10% 0 0); opacity: 0.8; }
+  70%  { clip-path: inset(0 0 0 0); opacity: 0.5; }
+  100% { clip-path: inset(0 0 0 0); opacity: 0; }
+}
+
+.brush-strike {
+  position: fixed; top: 45%; left: 5%; right: 5%;
+  height: 6px; border-radius: 3px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(17, 17, 16, 0.7) 15%,
+    var(--ink) 40%,
+    var(--ink) 60%,
+    rgba(17, 17, 16, 0.7) 85%,
+    transparent
+  );
+  pointer-events: none; z-index: 5200;
+  animation: brushStrike 0.4s var(--ease-out-expo) forwards;
+}

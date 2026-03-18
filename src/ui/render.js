@@ -1,5 +1,6 @@
 import { G } from '../game/state.js';
-import { WORD_DEFS } from '../data/cards.js';
+import { WORD_DEFS, getCardWord, getCardDesc } from '../data/cards.js';
+import { t, isEn } from '../i18n.js';
 import { showFloatingText, getPosColor } from '../utils.js';
 import { playSFX } from '../game/audio.js';
 import { getEnemyPortraitSVG } from './svgArt.js';
@@ -138,7 +139,8 @@ export function renderSentenceSlots() {
 
   const preview = document.getElementById('sentence-preview');
   if (G.sentence.length > 0) {
-    preview.textContent = '「' + G.sentence.map(c => c._isEnemyTarget ? c.word : (c._isSelfTarget ? '我' : c.word)).join('') + '」';
+    const sep = isEn() ? ' ' : '';
+    preview.textContent = '「' + G.sentence.map(c => c._isEnemyTarget ? c.word : (c._isSelfTarget ? (isEn() ? 'me' : '我') : getCardWord(c))).join(sep) + '」';
   } else {
     preview.textContent = '';
   }
@@ -182,6 +184,7 @@ export function renderSentenceSlots() {
       if (eval_.effects.aoe) parts.push('🌊全体');
       if (eval_.effects.ignoreBlock) parts.push('🗡穿透');
       if (eval_.effects.goldGain > 0) parts.push(`💰${eval_.effects.goldGain}`);
+      if (eval_.effects._execute) parts.push(`💀斩杀`);
       const excPos = checkExclamationPosition(G.sentence);
       const excWarn = excPos.note ? ` <span style="color:#e07070">${excPos.note}</span>` : '';
       sp.innerHTML = `<span>费${getSentenceCost()}</span> ${parts.join(' ')} <span style="color:var(--gold)">✨×${eval_.totalMult.toFixed(2)}</span>${excWarn}`;
@@ -203,7 +206,8 @@ export function createSentenceWordEl(card, idx) {
     el.style.borderColor = getPosColor(card.pos);
     el.style.color = getPosColor(card.pos);
   }
-  el.textContent = card._isEnemyTarget ? `⟨${card.word}⟩` : (card._isSelfTarget ? '⟨我⟩' : card.word);
+  const w = getCardWord(card);
+  el.textContent = card._isEnemyTarget ? `⟨${card.word}⟩` : (card._isSelfTarget ? '⟨我⟩' : w);
   el.onclick = () => removeSentenceWord(idx);
   return el;
 }
@@ -254,40 +258,78 @@ export function createCardElement(card, handIndex, opts={}) {
   if (typeof card.desc === 'function') descText = card.desc(card);
   else if (typeof card.desc === 'string') descText = card.desc;
 
-  const posNames = { subject:'主语', verb:'谓语', object:'宾语', modifier:'修饰', connector:'连接', special:'特殊', punctuation:'标点', exclamation:'感叹' };
+  const posNames = t('posNames');
+  const word = getCardWord(card);
+  const desc = getCardDesc(card);
 
   div.innerHTML = `
     <div class="card-cost">${cost}</div>
     <div class="card-pos-tag">${posNames[card.pos]||card.pos}</div>
-    <div class="card-word">${card.word}${card.upgraded?'+':''}</div>
-    <div class="card-effect-bar">${descText}</div>
+    <div class="card-word">${word}${card.upgraded?'+':''}</div>
+    <div class="card-effect-bar">${desc}</div>
   `;
 
   if (handIndex !== undefined && handIndex !== null && !opts.noClick) {
     div.onclick = (e) => { e.stopPropagation(); addToSentence(handIndex); };
   }
 
-  div.onmouseenter = (e) => showTooltip(e, card);
-  div.onmouseleave = hideTooltip;
+  const isTouchDevice = 'ontouchstart' in window;
+  if (!isTouchDevice) {
+    div.onmouseenter = (e) => showTooltip(e, card);
+    div.onmouseleave = hideTooltip;
+  } else {
+    let pressTimer = null;
+    div.addEventListener('touchstart', (e) => {
+      pressTimer = setTimeout(() => { showTooltipMobile(card); pressTimer = null; }, 400);
+    }, { passive: true });
+    div.addEventListener('touchend', () => { if (pressTimer) clearTimeout(pressTimer); });
+    div.addEventListener('touchmove', () => { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } });
+  }
 
   return div;
 }
 
 export function showTooltip(e, card) {
   const tt = document.getElementById('tooltip');
-  const posNames = { subject:'主语', verb:'谓语', object:'宾语', modifier:'修饰', connector:'连接', special:'特殊', punctuation:'标点', exclamation:'感叹' };
-  const rarityNames = { starter:'初始', common:'普通', uncommon:'非凡', rare:'稀有' };
-  tt.querySelector('.tt-name').textContent = card.word + (card.upgraded?'+':'');
-  tt.querySelector('.tt-type').textContent = `${posNames[card.pos]} · ${rarityNames[card.rarity]||card.rarity} · 费用${getEffectiveCost(card)}`;
-  let d = typeof card.desc === 'function' ? card.desc(card) : (card.desc||'');
+  const posNames = t('posNames');
+  const rarityNames = t('rarityNames');
+  tt.querySelector('.tt-name').textContent = getCardWord(card) + (card.upgraded ? '+' : '');
+  tt.querySelector('.tt-type').textContent = `${posNames[card.pos]} · ${rarityNames[card.rarity] || card.rarity} · ${isEn() ? 'Cost' : '费用'}${getEffectiveCost(card)}`;
+  let d = getCardDesc(card);
   tt.querySelector('.tt-desc').textContent = d;
   tt.querySelector('.tt-flavor').textContent = card.flavor ? `"${card.flavor}"` : '';
   tt.style.display = 'block';
   const r = e.target.getBoundingClientRect();
-  let left = r.right+10, top = r.top;
-  if (left+240>window.innerWidth) left=r.left-250;
-  if (top+120>window.innerHeight) top=window.innerHeight-130;
-  tt.style.left = Math.max(5,left)+'px';
-  tt.style.top = Math.max(5,top)+'px';
+  let left = r.right + 10, top = r.top;
+  if (left + 240 > window.innerWidth) left = r.left - 250;
+  if (top + 120 > window.innerHeight) top = window.innerHeight - 130;
+  tt.style.left = Math.max(5, left) + 'px';
+  tt.style.top = Math.max(5, top) + 'px';
 }
-export function hideTooltip() { document.getElementById('tooltip').style.display='none'; }
+
+function showTooltipMobile(card) {
+  const tt = document.getElementById('tooltip');
+  const posNames = t('posNames');
+  const rarityNames = t('rarityNames');
+  tt.querySelector('.tt-name').textContent = getCardWord(card) + (card.upgraded ? '+' : '');
+  tt.querySelector('.tt-type').textContent = `${posNames[card.pos]} · ${rarityNames[card.rarity] || card.rarity} · ${isEn() ? 'Cost' : '费用'}${getEffectiveCost(card)}`;
+  let d = getCardDesc(card);
+  tt.querySelector('.tt-desc').textContent = d;
+  tt.querySelector('.tt-flavor').textContent = card.flavor ? `"${card.flavor}"` : '';
+  tt.style.display = 'block';
+  tt.style.left = '50%';
+  tt.style.top = '8px';
+  tt.style.transform = 'translateX(-50%)';
+  tt.style.maxWidth = '85vw';
+  setTimeout(() => { tt.style.display = 'none'; tt.style.transform = ''; }, 2000);
+}
+
+export function hideTooltip() {
+  const tt = document.getElementById('tooltip');
+  tt.style.display = 'none';
+  tt.style.transform = '';
+}
+
+if ('ontouchstart' in window) {
+  document.addEventListener('touchstart', () => hideTooltip(), { passive: true });
+}

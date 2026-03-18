@@ -1,32 +1,45 @@
-/* --- 2. Reset & Base --- */
+/* --- Reset & Base --- */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 html { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 html, body {
   width: 100%; height: 100%; overflow: hidden;
-  background: var(--bg); color: var(--paper);
+  background: var(--paper);
+  color: var(--ink);
   font-family: var(--font-serif);
   font-size: clamp(16px, 2.2vw, 21px);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   user-select: none; -webkit-user-select: none;
 }
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(0,255,204,0.15); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(0,255,204,0.3); }
-* { scrollbar-width: thin; scrollbar-color: rgba(0,255,204,0.15) transparent; }
 
-h1, h2, h3, h4 { font-weight: 900; }
-.brush-font { font-family: var(--font-brush); }
-
-/* --- 3. #game --- */
-#game {
-  width: 100%; height: 100%; position: relative; overflow: hidden;
-  perspective: 1200px;
-  background:
-    radial-gradient(ellipse 80% 60% at 20% 15%, rgba(0,255,204,0.03), transparent),
-    radial-gradient(ellipse 70% 50% at 80% 85%, rgba(187,102,255,0.03), transparent),
-    radial-gradient(ellipse 90% 70% at 50% 50%, rgba(10,10,18,1), rgba(5,5,16,1));
+::selection {
+  background: var(--ink);
+  color: var(--paper);
 }
 
-/* --- 4. Typography helpers --- */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(17, 17, 16, 0.15); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(17, 17, 16, 0.3); }
+* { scrollbar-width: thin; scrollbar-color: rgba(17, 17, 16, 0.15) transparent; }
+
+h1, h2, h3, h4 { font-weight: 700; }
+.brush-font { font-family: var(--font-brush); }
+
+/* --- #game container --- */
+#game {
+  width: 100%; height: 100%; position: relative; overflow: hidden;
+  background:
+    radial-gradient(ellipse 120% 100% at 50% 40%, rgba(17,17,16,0.02), transparent),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E"),
+    var(--paper);
+}
+
+/* WebGL ink wash background layer */
+#ink-bg {
+  position: absolute; inset: 0; z-index: 1;
+  pointer-events: none;
+  opacity: 0.6;
+  mix-blend-mode: multiply;
+}
+#ink-bg canvas { width: 100% !important; height: 100% !important; }

@@ -1,4 +1,5 @@
 import { META } from '../game/state.js';
+import { isEn } from '../i18n.js';
 import rawCards from './cards.json';
 
 function resolveDesc(template, def) {
@@ -13,7 +14,24 @@ function resolveDesc(template, def) {
 export const WORD_DEFS = {};
 for (const [key, raw] of Object.entries(rawCards)) {
   const desc = resolveDesc(raw.desc, raw);
-  WORD_DEFS[key] = { ...raw, desc };
+  const enDesc = raw.en ? resolveDesc(raw.en.desc, raw) : desc;
+  WORD_DEFS[key] = { ...raw, desc, enDesc, enWord: raw.en?.word ?? raw.word };
+}
+
+export function getCardWord(card) {
+  if (isEn()) {
+    if (!card._logged) { console.log('[card]', card.word, '→ enWord:', card.enWord, '| key:', card.key); card._logged = true; }
+    return card.enWord ?? card.word;
+  }
+  return card.word;
+}
+
+export function getCardDesc(card) {
+  if (isEn()) {
+    const d = card.enDesc ?? card.desc;
+    return typeof d === 'function' ? d(card) : d;
+  }
+  return typeof card.desc === 'function' ? card.desc(card) : (card.desc || '');
 }
 
 export function makeCard(def) {
@@ -29,11 +47,16 @@ export function createStarterDeck() {
   add('zou', 1);
   add('shou', 1);
   add('cu', 1);
+  add('jianke', 1);
   add('diren', 2);
+  add('menglie', 1);
+  add('fengkuang', 1);
+  add('he', 1);
   add('wocao', 1);
   add('ah', 1);
-  add('comma', 1);
+  add('comma', 2);
   add('period', 1);
+  add('exclamation_punct', 1);
   return deck;
 }
 
@@ -56,8 +79,8 @@ export function randomCard(rarity) {
 }
 
 const CATEGORY_WEIGHTS = [
-  ['attackVerb', 0.30], ['utilVerb', 0.15], ['exclamation', 0.20], ['modifier', 0.15],
-  ['object', 0.12], ['subject', 0.04], ['punctuation', 0.02], ['other', 0.02],
+  ['attackVerb', 0.22], ['utilVerb', 0.12], ['exclamation', 0.15], ['modifier', 0.10],
+  ['object', 0.08], ['subject', 0.18], ['punctuation', 0.06], ['connector', 0.04], ['other', 0.05],
 ];
 
 function categorize(key) {
@@ -69,6 +92,7 @@ function categorize(key) {
   if (d.pos === 'object') return 'object';
   if (d.pos === 'subject') return 'subject';
   if (d.pos === 'punctuation') return 'punctuation';
+  if (d.pos === 'connector') return 'connector';
   return 'other';
 }
 

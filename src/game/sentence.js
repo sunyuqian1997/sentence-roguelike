@@ -69,7 +69,7 @@ export const SUMMON_EFFECTS = {
       G.enemies.forEach((e, i) => {
         if (e.hp > 0) dealDamageToEnemy(i, 4, false);
       });
-      showFloatingText(document.querySelector('#enemy-area'), '🎤 音波攻击！', '#00ffcc');
+      showFloatingText(document.querySelector('#enemy-area'), '🎤 音波攻击！', '#3A7B8C');
     }
   },
   '李清照': {
@@ -86,7 +86,7 @@ export const SUMMON_EFFECTS = {
         G.enemies.forEach((e, i) => { if (e.hp > 0) dealDamageToEnemy(i, 6, false); });
         showFloatingText(document.querySelector('#enemy-area'), '🐱 猫猫发威！全体6伤害', '#e8873a');
       } else {
-        showFloatingText(document.querySelector('#combat-top'), '🐱 喵？（啥也没干）', '#8a8275');
+        showFloatingText(document.querySelector('#combat-top'), '🐱 喵？（啥也没干）', '#7A7872');
       }
     }
   },
@@ -95,7 +95,7 @@ export const SUMMON_EFFECTS = {
     apply() {
       G.hp = Math.min(G.maxHp, G.hp + 8);
       playSFX('heal');
-      VFX.damageNum(document.getElementById('player-status-bar'), '+8♥', '#6bff6b', 2.5);
+      VFX.damageNum(document.getElementById('player-status-bar'), '+8♥', '#4A7C6B', 2.5);
       VFX.rollHp(document.getElementById('combat-hp'));
     }
   },
@@ -106,7 +106,7 @@ export const SUMMON_EFFECTS = {
       if (alive.length > 0) {
         const t = alive[Math.floor(Math.random() * alive.length)];
         dealDamageToEnemy(t, 10, true);
-        showFloatingText(G.enemies[t].element, '⚔️ 女侠穿透！', '#e07070');
+        showFloatingText(G.enemies[t].element, '⚔️ 女侠穿透！', '#C54B3C');
       }
     }
   },
@@ -117,7 +117,7 @@ export const SUMMON_EFFECTS = {
       if (alive.length > 0) {
         const t = alive[Math.floor(Math.random() * alive.length)];
         dealDamageToEnemy(t, 12, false);
-        showFloatingText(G.enemies[t].element, '🗡️ 剑客一刀！', '#e8c84c');
+        showFloatingText(G.enemies[t].element, '🗡️ 剑客一刀！', '#B8862B');
       }
     }
   },
@@ -135,7 +135,7 @@ export const SUMMON_EFFECTS = {
       G.hp = Math.min(G.maxHp, G.hp + 5);
       G._bonusEnergyNext = (G._bonusEnergyNext || 0) + 1;
       playSFX('heal');
-      VFX.damageNum(document.getElementById('player-status-bar'), '+5♥', '#6bff6b', 2.2);
+      VFX.damageNum(document.getElementById('player-status-bar'), '+5♥', '#4A7C6B', 2.2);
       showFloatingText(document.querySelector('#combat-top'), '🐰 下回合+1能量', '#c9a84c');
       VFX.rollHp(document.getElementById('combat-hp'));
     }
@@ -144,7 +144,7 @@ export const SUMMON_EFFECTS = {
     name: '狐仙魅惑', emoji: '🦊', desc: '敌人全体易伤2回合',
     apply() {
       G.enemies.forEach(e => { if (e.hp > 0) e.vulnerable = (e.vulnerable||0) + 2; });
-      showFloatingText(document.querySelector('#enemy-area'), '🦊 全体易伤！', '#b470d4');
+      showFloatingText(document.querySelector('#enemy-area'), '🦊 全体易伤！', '#6B4C6E');
     }
   },
   '书生': {
@@ -195,40 +195,65 @@ export function normalizeSentence(cards) {
   return [...rest, ...exclamations, ...endPuncts];
 }
 
+function checkClauseOrder(clauseCards) {
+  const phaseMap = { modifier: [0, 2, 4], subject: [1], connector: [2], verb: [3], object: [5], special: [3] };
+  let phase = 0, violations = 0;
+  for (const c of clauseCards) {
+    const allowed = phaseMap[c.pos] || [phase];
+    const min = Math.min(...allowed);
+    if (min >= phase) phase = min;
+    else violations++;
+  }
+  return violations;
+}
+
 export function checkWordOrder(cards) {
+  const hasComma = cards.some(c => c.pos === 'punctuation' && c.punctType === 'comma');
+  const notes = [];
+
+  if (hasComma) {
+    const commaIdx = cards.findIndex(c => c.pos === 'punctuation' && c.punctType === 'comma');
+    const clause1 = cards.slice(0, commaIdx).filter(c => c.pos !== 'punctuation' && c.pos !== 'exclamation');
+    const clause2 = cards.slice(commaIdx + 1).filter(c => c.pos !== 'punctuation' && c.pos !== 'exclamation');
+
+    const v1 = checkClauseOrder(clause1);
+    const v2 = checkClauseOrder(clause2);
+    const totalV = v1 + v2;
+
+    const sub1 = clause1.filter(c => c.pos === 'subject').length;
+    const sub2 = clause2.filter(c => c.pos === 'subject' || c._isEnemyTarget).length;
+    const verb1 = clause1.filter(c => c.pos === 'verb').length;
+    const verb2 = clause2.filter(c => c.pos === 'verb').length;
+
+    let bonus = 0;
+    if (sub1 >= 1 && sub2 >= 1 && verb1 >= 1 && verb2 >= 1) {
+      bonus = 0.1;
+      notes.push('复合句（双主语双谓语）+10%');
+    } else if (sub1 >= 1 && verb1 >= 1 && verb2 >= 1) {
+      notes.push('复合句（承前省略）');
+    }
+
+    let score;
+    if (totalV === 0) { score = 1.0 + bonus; if (notes.length === 0) notes.push('语序正确'); }
+    else if (totalV <= 2) { score = 0.85 + bonus; notes.push('语序小错 ×0.85'); }
+    else { score = 0.65; notes.push('语序混乱 ×0.65'); }
+    return { score, notes };
+  }
+
   const nonPunct = cards.filter(c => c.pos !== 'punctuation' && c.pos !== 'exclamation' && !c._isEnemyTarget && !c._isSelfTarget);
   if (nonPunct.length === 0) return { score: 1.0, notes: [] };
 
-  const phaseMap = {
-    'modifier': [0, 2, 4],
-    'subject': [1],
-    'connector': [2],
-    'verb': [3],
-    'object': [5],
-    'special': [3],
-  };
-
-  let currentPhase = 0;
-  let violations = 0;
-  const notes = [];
-
-  for (const card of nonPunct) {
-    const allowedPhases = phaseMap[card.pos] || [currentPhase];
-    const minAllowed = Math.min(...allowedPhases);
-    if (minAllowed >= currentPhase) currentPhase = minAllowed;
-    else violations++;
-  }
-
+  const violations = checkClauseOrder(nonPunct);
   const posCounts = {};
   nonPunct.forEach(c => { posCounts[c.pos] = (posCounts[c.pos] || 0) + 1; });
   let dupPenalty = 0;
-  if ((posCounts['subject'] || 0) > 1) {
-    dupPenalty += (posCounts['subject'] - 1) * 0.05;
-    notes.push(`重复主语 -${((posCounts['subject']-1)*5)}%`);
+  if ((posCounts['subject'] || 0) > 2) {
+    dupPenalty += (posCounts['subject'] - 2) * 0.05;
+    notes.push(`主语过多 -${((posCounts['subject'] - 2) * 5)}%`);
   }
   if ((posCounts['verb'] || 0) > 2) {
     dupPenalty += (posCounts['verb'] - 2) * 0.05;
-    notes.push(`过多谓语 -${((posCounts['verb']-2)*5)}%`);
+    notes.push(`谓语过多 -${((posCounts['verb'] - 2) * 5)}%`);
   }
 
   let score;
@@ -242,65 +267,60 @@ export function checkWordOrder(cards) {
 
 /**
  * Check exclamation position legality.
- * Legal positions:
- *   - Sentence start: excl(s) + comma + body  (e.g. 啊，我揍敌人)
- *   - Sentence end: body + comma + excl(s)  (e.g. 我揍敌人，啊)
- *   - Multiple exclamations with commas between them are fine (卧槽，牛逼，我斩敌人)
- *   - End punctuation (。！？) after exclamations at the end is fine
- * Only penalize exclamations wedged into the middle without comma separation.
- * Returns { legal: bool, penalty: number (0-1 multiplier), note: string }
+ * freePos exclamations (语气词: 啊、卧槽、我去、救命、666、麻了、寄) can go anywhere.
+ * Phrase exclamations (绝了、牛逼、妙啊 etc.) need comma separation from the body.
  */
 export function checkExclamationPosition(cards) {
   const exclamations = cards.filter(c => c.pos === 'exclamation');
   if (exclamations.length === 0) return { legal: true, penalty: 1.0, note: '' };
 
-  const isBodyCard = c => c.pos !== 'exclamation' && !(c.pos === 'punctuation');
-  const bodyIndices = cards.map((c, i) => isBodyCard(c) ? i : -1).filter(i => i >= 0);
+  const allFree = exclamations.every(c => c.freePos);
+  if (allFree) return { legal: true, penalty: 1.0, note: '' };
 
-  if (bodyIndices.length === 0) {
-    return { legal: true, penalty: 1.0, note: '' };
-  }
+  const isBodyCard = c => c.pos !== 'exclamation' && c.pos !== 'punctuation';
+  const bodyIndices = cards.map((c, i) => isBodyCard(c) ? i : -1).filter(i => i >= 0);
+  if (bodyIndices.length === 0) return { legal: true, penalty: 1.0, note: '' };
 
   const firstBodyIdx = bodyIndices[0];
   const lastBodyIdx = bodyIndices[bodyIndices.length - 1];
 
-  const excIndices = cards.map((c, i) => c.pos === 'exclamation' ? i : -1).filter(i => i >= 0);
+  for (let ei = 0; ei < cards.length; ei++) {
+    const card = cards[ei];
+    if (card.pos !== 'exclamation') continue;
+    if (card.freePos) continue;
 
-  for (const ei of excIndices) {
     const atStart = ei < firstBodyIdx;
     const atEnd = ei > lastBodyIdx;
 
     if (!atStart && !atEnd) {
-      const hasCommaBefore = ei > 0 && cards[ei - 1].pos === 'punctuation' && cards[ei - 1].punctType === 'comma';
-      const hasCommaAfter = ei < cards.length - 1 && cards[ei + 1].pos === 'punctuation' && cards[ei + 1].punctType === 'comma';
-      if (!hasCommaBefore && !hasCommaAfter) {
-        return { legal: false, penalty: 0.5, note: '⚠ 感叹词位置不当（应在句首或句尾，或用逗号分隔）×0.5' };
+      const commaBefore = ei > 0 && cards[ei - 1].pos === 'punctuation' && cards[ei - 1].punctType === 'comma';
+      const commaAfter = ei < cards.length - 1 && cards[ei + 1].pos === 'punctuation' && cards[ei + 1].punctType === 'comma';
+      if (!commaBefore && !commaAfter) {
+        return { legal: false, penalty: 0.5, note: `⚠「${card.word}」需要逗号分隔 ×0.5` };
       }
     }
-  }
 
-  const startExcls = excIndices.filter(i => i < firstBodyIdx);
-  const endExcls = excIndices.filter(i => i > lastBodyIdx);
+    if (atStart) {
+      let hasComma = false;
+      for (let i = ei + 1; i < firstBodyIdx; i++) {
+        if (cards[i].pos === 'punctuation' && cards[i].punctType === 'comma') { hasComma = true; break; }
+        if (cards[i].pos === 'exclamation' && !cards[i].freePos) continue;
+      }
+      if (!hasComma) {
+        const nextIsPunct = ei + 1 < cards.length && cards[ei + 1].pos === 'punctuation';
+        if (!nextIsPunct) return { legal: false, penalty: 0.6, note: `⚠「${card.word}」与正文间需要逗号 ×0.6` };
+      }
+    }
 
-  if (startExcls.length > 0) {
-    const lastStartExcl = Math.max(...startExcls);
-    let hasComma = false;
-    for (let i = lastStartExcl + 1; i < firstBodyIdx; i++) {
-      if (cards[i].pos === 'punctuation' && cards[i].punctType === 'comma') { hasComma = true; break; }
-    }
-    if (!hasComma) {
-      return { legal: false, penalty: 0.6, note: '⚠ 感叹词与正文间需要逗号 ×0.6' };
-    }
-  }
-
-  if (endExcls.length > 0) {
-    const firstEndExcl = Math.min(...endExcls);
-    let hasComma = false;
-    for (let i = lastBodyIdx + 1; i < firstEndExcl; i++) {
-      if (cards[i].pos === 'punctuation' && cards[i].punctType === 'comma') { hasComma = true; break; }
-    }
-    if (!hasComma) {
-      return { legal: false, penalty: 0.6, note: '⚠ 感叹词与正文间需要逗号 ×0.6' };
+    if (atEnd) {
+      let hasComma = false;
+      for (let i = lastBodyIdx + 1; i < ei; i++) {
+        if (cards[i].pos === 'punctuation' && cards[i].punctType === 'comma') { hasComma = true; break; }
+      }
+      const prevIsPunct = ei > 0 && cards[ei - 1].pos === 'punctuation';
+      if (!hasComma && !prevIsPunct) {
+        return { legal: false, penalty: 0.6, note: `⚠「${card.word}」与正文间需要标点 ×0.6` };
+      }
     }
   }
 
@@ -331,20 +351,23 @@ export function evaluateSentence(rawCards) {
   let targetEnemyIdx = -1;
   if (hasEnemyTarget) targetEnemyIdx = enemyObjCards[0]._enemyIdx;
 
-  const hasMultiTarget = (connectors.some(c => c.multiTarget) || hasComma) && enemyObjCards.length > 1;
-  const multiTargetIndices = hasMultiTarget ? enemyObjCards.map(c => c._enemyIdx) : [];
-
   const handObjects = objects.filter(c => !c._isEnemyTarget && !c._isSelfTarget);
 
   const hasPeriod = punctCards.some(c => c.punctType === 'period');
-  const hasQuestion = punctCards.some(c => c.punctType === 'question');
-  const hasExclamation = punctCards.some(c => c.punctType === 'exclamation');
+  const hasQuestion = punctCards.some(c => c.punctType === 'question' || c.punctType === 'interrobang');
+  const hasExclamation = punctCards.some(c => c.punctType === 'exclamation' || c.punctType === 'interrobang');
   const hasComma = punctCards.some(c => c.punctType === 'comma');
+  const hasInterrobang = punctCards.some(c => c.punctType === 'interrobang');
+
+  const hasMultiTarget = (connectors.some(c => c.multiTarget) || hasComma) && enemyObjCards.length > 1;
+  const multiTargetIndices = hasMultiTarget ? enemyObjCards.map(c => c._enemyIdx) : [];
 
   const hasVerb = realVerbs.length > 0 || verbs.length > 0;
-  let baseMult = hasVerb ? 1.0 : 0.3;
+  const isDeclaration = !hasVerb && exclamationCards.length > 0 && subjects.length > 0;
+  let baseMult = hasVerb ? 1.0 : isDeclaration ? 0.8 : 0.3;
   let grammarNotes = [];
-  if (!hasVerb) grammarNotes.push('⚠ 没有谓语！废句 ×0.3');
+  if (!hasVerb && !isDeclaration) grammarNotes.push('⚠ 没有谓语！废句 ×0.3');
+  else if (isDeclaration) grammarNotes.push('✓ 宣言句（主语+感叹）×0.8');
   else grammarNotes.push('✓ 有谓语');
 
   let structMult = 0.7;
@@ -352,11 +375,16 @@ export function evaluateSentence(rawCards) {
   const hasObject = handObjects.length > 0 || hasEnemyTarget || hasSelfTarget;
   const hasModifier = modifiers.length > 0;
 
+  const isCompound = hasComma && subjects.length > 1 && realVerbs.length > 1;
   if (hasVerb) {
-    if (hasSubject && hasObject && hasModifier) { structMult = 1.25; grammarNotes.push('修+主+谓+宾 ×1.25'); }
+    if (isCompound) { structMult = 1.35; grammarNotes.push('复合句（多主多谓）×1.35'); }
+    else if (hasSubject && hasObject && hasModifier) { structMult = 1.25; grammarNotes.push('修+主+谓+宾 ×1.25'); }
     else if (hasSubject && hasObject) { structMult = 1.0; grammarNotes.push('主+谓+宾 ×1.0'); }
     else if (hasSubject) { structMult = 0.85; grammarNotes.push('主+谓 ×0.85'); }
     else { structMult = 0.7; grammarNotes.push('仅谓语 ×0.7'); }
+  } else if (isDeclaration) {
+    structMult = subjects.length > 1 ? 1.0 : 0.85;
+    grammarNotes.push(subjects.length > 1 ? '主+主+感叹 ×1.0' : '主+感叹 ×0.85');
   }
 
   const orderResult = checkWordOrder(cards);
@@ -434,6 +462,7 @@ export function evaluateSentence(rawCards) {
     if (exc.excBlockDebuff) { effects._blockDebuffNext = exc.excBlockDebuff; excNotes.push(`🔥「${exc.word}」下回合格挡-50%`); }
     if (exc.excReverseNeg) { effects._reverseNeg = true; excNotes.push(`🔄「${exc.word}」负面变正面`); }
     if (exc.excSelfDmg) { effects.selfHarm = true; effects.selfHarmDmg = (effects.selfHarmDmg||0) + exc.excSelfDmg; excNotes.push(`💀「${exc.word}」自伤${exc.excSelfDmg}`); }
+    if (exc.excPoetry) { literaryMult += exc.excPoetry; literaryNotes.push(`✨「${exc.word}」诗意+${exc.excPoetry}`); }
   });
 
   // EXCLAMATION POSITION CHECK
@@ -515,6 +544,8 @@ export function evaluateSentence(rawCards) {
     }
     if (o.confuseObj) { effects._confuse = true; grammarNotes.push('🌀 节奏→敌人混乱'); }
     if (o.xintaiDebuff) { effects.applyWeak += 3; effects.applyVuln += 3; grammarNotes.push('💔 心态崩了→敌全属性降'); }
+    if (o.poetryObjBonus) { literaryMult += o.poetryObjBonus; literaryNotes.push(`${o.word}诗意 +${o.poetryObjBonus}`); }
+    if (o.windPenetrate) { effects.ignoreBlock = true; grammarNotes.push('🌬️ 长风穿透格挡'); }
   });
 
   let attackMod = 1, defenseMod = 1, healMod = 1;
@@ -639,6 +670,40 @@ export function evaluateSentence(rawCards) {
       grammarNotes.push('🤕 碰瓷→本回合反弹50%伤害');
       continue;
     }
+    if (v.tiredSpecial) {
+      if (subjectIsEnemy) {
+        effects._stunEnemy = true;
+        grammarNotes.push('😴 累了→敌人跳过下次攻击');
+      } else {
+        effects.heal += 4;
+        effects.drawLessNext += 2;
+        grammarNotes.push('😴 累了→回血4，少抽2');
+      }
+      continue;
+    }
+    if (v.sleepSpecial) {
+      if (subjectIsEnemy) {
+        effects._stunEnemy = true;
+        effects._stunEnemy2 = true;
+        grammarNotes.push('💤 沉睡→敌人眩晕2回合');
+      } else {
+        effects.heal += G.maxHp;
+        effects._skipNextTurn = true;
+        grammarNotes.push('💤 沉睡→全回血但跳过下回合');
+      }
+      continue;
+    }
+    if (v.fallenSpecial) {
+      if (subjectIsEnemy) {
+        effects._reduceStrength = 3;
+        grammarNotes.push('🕳️ 堕落→敌人-3力量');
+      } else {
+        effects.strengthGain += 3;
+        effects._vulnSelfNext = true;
+        grammarNotes.push('🕳️ 堕落→+3力量但易伤2回合');
+      }
+      continue;
+    }
     if (v.shuaiguoSpecial) {
       effects._transferDebuffs = true;
       grammarNotes.push('🍳 甩锅→debuff转给敌人');
@@ -679,6 +744,15 @@ export function evaluateSentence(rawCards) {
     if (v.dodgeNext) {
       effects.block += 99;
       grammarNotes.push('🏃 溜了→闪避(格挡99)');
+      continue;
+    }
+    if (v.executeVerb) {
+      effects._execute = {
+        threshold: v.executeThreshold || 0.3,
+        percent: v.executePercent || 0.3,
+      };
+      if (v.selfDmgVerb) { effects.selfHarm = true; effects.selfHarmDmg = (effects.selfHarmDmg || 0) + v.selfDmgVerb; }
+      grammarNotes.push(`💀 斩杀(≤${Math.round((v.executeThreshold||0.3)*100)}%击杀/否则扣${Math.round((v.executePercent||0.3)*100)}%血)，自伤${v.selfDmgVerb||0}`);
       continue;
     }
     if (v.combatType === 'attack') {

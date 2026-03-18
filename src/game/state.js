@@ -1,6 +1,8 @@
 export const META_DEFAULT = {
   ink: 0, totalInk: 0, runs: 0, bestAct: 1, bestFloor: 0,
-  unlockedCards: [], perks: [],
+  unlockedCards: ['jiangjun', 'shenmi_daoshi', 'qinshi', 'zhu', 'kejin'],
+  perks: [],
+  lang: 'zh',
 };
 
 export function loadMeta() {
@@ -34,6 +36,7 @@ export const UNLOCKABLE_CARDS_META = {
   bug_obj: { cost: 35, name: 'bug' },
   jingtian: { cost: 45, name: '惊天动地地' },
   bujianwude: { cost: 50, name: '以不讲武德的方式' },
+  sile: { cost: 55, name: '死了' },
 };
 
 export const G = {
@@ -51,4 +54,5 @@ export const G = {
   actNames: ['', '第一章·昨夜雨疏风骤', '第二章·南渡风烟', '第三章·人杰鬼雄'],
   shopInventory: null,
   drawLessNextTurn: 0,
+  sentenceJournal: [],
 };

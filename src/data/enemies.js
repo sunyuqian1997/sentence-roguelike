@@ -38,7 +38,7 @@ export const ENEMY_DEFS = {
         if(G.hand.length>0) {
           const idx=Math.floor(Math.random()*G.hand.length);
           G.exhaustPile.push(G.hand.splice(idx,1)[0]);
-          showFloatingText(document.querySelector('#combat-top'),'词牌消耗！','#d4a870');
+          showFloatingText(document.querySelector('#combat-top'),'词牌消耗！','#B87333');
         }
       }
     }
@@ -52,7 +52,7 @@ export const ENEMY_DEFS = {
     },
     act_fn(e) {
       if(e.nextIntent.type==='attack') dealDamageToPlayer(10,e);
-      else { G.vulnerable+=2; showFloatingText(document.querySelector('#combat-top'),'易伤！','#d47070'); }
+      else { G.vulnerable+=2; showFloatingText(document.querySelector('#combat-top'),'易伤！','#C54B3C'); }
     }
   },
   cangjie: {
@@ -71,7 +71,7 @@ export const ENEMY_DEFS = {
         for(let i=0;i<h;i++){if(e.hp<=0)break;dealDamageToPlayer(e.nextIntent.value,e);}
       } else if(e.nextIntent.type==='buff') {
         e.strength=(e.strength||0)+2;
-        showFloatingText(e.element,'+2力','#70d490');
+        showFloatingText(e.element,'+2力','#4A7C6B');
       }
     }
   },
@@ -84,7 +84,7 @@ export const ENEMY_DEFS = {
     },
     act_fn(e) {
       if(e.nextIntent.type==='attack') dealDamageToPlayer(8,e);
-      else { e.hp=Math.min(e.maxHp,e.hp+4); showFloatingText(e.element,'+4','#6bff6b'); }
+      else { e.hp=Math.min(e.maxHp,e.hp+4); showFloatingText(e.element,'+4','#4A7C6B'); }
     }
   },
   luoren: {
@@ -133,7 +133,7 @@ export const ENEMY_DEFS = {
     act_fn(e) {
       dealDamageToPlayer(e.nextIntent.value,e);
       e.strength=(e.strength||0)+1;
-      showFloatingText(e.element,'+1力','#70d490');
+      showFloatingText(e.element,'+1力','#4A7C6B');
     }
   },
   mojie: {
@@ -145,7 +145,7 @@ export const ENEMY_DEFS = {
     },
     act_fn(e) {
       if(e.nextIntent.type==='attack') dealDamageToPlayer(12,e);
-      else { G.vulnerable+=2; G.weak+=2; showFloatingText(document.querySelector('#combat-top'),'虚弱+易伤！','#d47070'); }
+      else { G.vulnerable+=2; G.weak+=2; showFloatingText(document.querySelector('#combat-top'),'虚弱+易伤！','#C54B3C'); }
     }
   },
   cidi: {
@@ -153,7 +153,7 @@ export const ENEMY_DEFS = {
     ai(e) {
       if(!e.tc)e.tc=0; e.tc++;
       if(!e.phase)e.phase=1;
-      if(e.phase===1&&e.hp<=95){e.phase=2;showFloatingText(e.element,'第二阶段！','#b470d4');}
+      if(e.phase===1&&e.hp<=95){e.phase=2;showFloatingText(e.element,'第二阶段！','#6B4C6E');}
       if(e.phase===2&&e.hp<=50){e.phase=3;showFloatingText(e.element,'最终阶段！','#ff6b6b');}
       if(e.phase===1) {
         if(e.tc%2===1) e.nextIntent={type:'attack',value:11,icon:'⚔'};
@@ -169,10 +169,10 @@ export const ENEMY_DEFS = {
         for(let i=0;i<h;i++){if(e.hp<=0)break;dealDamageToPlayer(e.nextIntent.value,e);}
       } else if(e.nextIntent.type==='buff') {
         e.strength=(e.strength||0)+2;
-        showFloatingText(e.element,'+2力','#70d490');
+        showFloatingText(e.element,'+2力','#4A7C6B');
       } else {
         G.vulnerable+=2; G.weak+=2;
-        showFloatingText(document.querySelector('#combat-top'),'虚弱+易伤！','#d47070');
+        showFloatingText(document.querySelector('#combat-top'),'虚弱+易伤！','#C54B3C');
       }
     }
   },

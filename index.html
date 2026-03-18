@@ -6,10 +6,12 @@
 <title>墨韵肉鸽 — 易安词剑录</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 <div id="game">
+  <div id="ink-bg"></div>
   <button id="mute-btn" onclick="toggleMute()">♪</button>
   <div id="tooltip"><div class="tt-name"></div><div class="tt-type"></div><div class="tt-desc"></div><div class="tt-flavor"></div></div>
 
@@ -20,7 +22,8 @@
     <button class="btn" onclick="startGame()">执笔出发</button>
     <button class="btn btn-small btn-secondary" onclick="showMetaScreen()" style="margin-top:12px;">文渊阁</button>
     <div class="ink-display-title" id="title-ink-display"></div>
-    <div class="credit">李清照 · 句子构筑者 · v6</div>
+    <button class="btn btn-small btn-secondary" onclick="toggleLang()" style="margin-top:12px;font-size:0.75rem;" id="lang-btn">EN / 中文</button>
+    <div class="credit">李清照 · 句子构筑者 · v7</div>
   </div>
 
   <!-- MAP -->
@@ -143,6 +146,24 @@
     </div>
   </div>
 
+  <!-- POETRY SHRINE -->
+  <div id="poetry-screen" class="screen">
+    <div class="poetry-content">
+      <h2 id="poetry-title">题壁</h2>
+      <p class="poetry-flavor" id="poetry-flavor">古亭之中，石壁如纸。留下你的诗句，换取灵感与力量。</p>
+      <div id="poetry-sentence-area">
+        <div id="poetry-slots"></div>
+        <div id="poetry-preview"></div>
+        <div id="poetry-score-display"></div>
+      </div>
+      <div id="poetry-hand" class="overlay-grid"></div>
+      <div style="display:flex;gap:10px;margin-top:14px;justify-content:center;">
+        <button class="btn" id="poetry-submit-btn" onclick="submitPoetry()">题壁</button>
+        <button class="btn btn-small btn-secondary" onclick="skipPoetry()">离去</button>
+      </div>
+    </div>
+  </div>
+
   <!-- UPGRADE OVERLAY -->
   <div id="upgrade-overlay" class="overlay">
     <h3>选择一张词牌升级：</h3>
@@ -210,17 +231,20 @@
 
 <!-- STORY OVERLAY -->
 <div id="story-overlay">
-  <div class="story-portrait-area">
+  <div class="story-center">
     <div class="story-portrait" id="story-portrait"></div>
-  </div>
-  <div class="story-box">
-    <div class="story-speaker" id="story-speaker">李清照</div>
-    <div class="story-text" id="story-text"></div>
-    <div class="story-continue">点击继续 ▸</div>
+    <div class="story-box">
+      <div class="story-speaker" id="story-speaker">李清照</div>
+      <div class="story-text" id="story-text"></div>
+      <div class="story-continue">点击继续 ▸</div>
+    </div>
   </div>
 </div>
 </div>
 
+<script>
+function toggleLang(){try{var m=JSON.parse(localStorage.getItem('sentence_rogue_meta')||'{}');m.lang=m.lang==='en'?'zh':'en';localStorage.setItem('sentence_rogue_meta',JSON.stringify(m));window.location.href=window.location.href.split('?')[0]+'?t='+Date.now();}catch(e){alert(e);}}
+</script>
 <script type="module" src="/src/main.js"></script>
 </body>
 </html>

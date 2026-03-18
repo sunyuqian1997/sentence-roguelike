@@ -3,7 +3,7 @@ import { shuffleArray } from '../utils.js';
 import { ENEMY_DEFS } from '../data/enemies.js';
 import { showScreen } from '../ui/render.js';
 import { startCombat } from './combat.js';
-import { showRestScreen, showEventScreen, showShopScreen } from '../ui/screens.js';
+import { showRestScreen, showEventScreen, showShopScreen, showPoetryScreen } from '../ui/screens.js';
 import { playStory } from '../ui/storyOverlay.js';
 import STORY_CHAPTERS from '../data/story.json';
 
@@ -14,7 +14,7 @@ export function generateMap(act) {
   const rows = [];
   rows.push([{ type:'fight', connections:[], visited:false, available:true, col:0 }]);
   const slots = [1,2,3,4,5]; shuffleArray(slots);
-  const [eliteR, restR, eventR, shopR] = slots;
+  const [eliteR, restR, eventR, shopR, poetryR] = [...slots];
 
   for (let r=1; r<=5; r++) {
     const nc = 2 + Math.floor(Math.random()*2);
@@ -25,6 +25,7 @@ export function generateMap(act) {
       else if (r===restR && i===Math.floor(nc/2)) type='rest';
       else if (r===eventR && i===0) type='event';
       else if (r===shopR && i===nc-1) type='shop';
+      else if (r===poetryR && i===nc-1) type='poetry';
       rn.push({ type, connections:[], visited:false, available:false, col:i });
     }
     rows.push(rn);
@@ -61,7 +62,7 @@ export function renderMap() {
   document.getElementById('map-gold').textContent = G.gold;
   document.getElementById('map-act-label').textContent = G.actNames[G.act];
 
-  const icons = { fight:'⚔️', elite:'💀', rest:'🌙', event:'❓', shop:'🏮', boss:'👑' };
+  const icons = { fight:'⚔️', elite:'💀', rest:'🌙', event:'❓', shop:'🏮', boss:'👑', poetry:'📜' };
   const nodePositions = [];
 
   G.map.forEach((row, ri) => {
@@ -136,6 +137,7 @@ export function visitNode(row, ni) {
     case 'rest': showRestScreen(); break;
     case 'event': showEventScreen(); break;
     case 'shop': showShopScreen(); break;
+    case 'poetry': showPoetryScreen(); break;
   }
 }
 

@@ -1,44 +1,101 @@
-/* --- 24. Responsive --- */
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
 @media (max-width: 600px) {
-  .card { width: clamp(80px, 22vw, 95px); min-width: 75px; height: clamp(120px, 32vw, 140px); }
-  .card-word { font-size: clamp(1.3rem, 3.5vw, 1.5rem); }
-  .card.pos-punctuation .card-word { font-size: clamp(1.5rem, 4vw, 1.8rem); }
-  .card-pos-tag { font-size: 0.55rem; }
-  .card-effect-bar { font-size: 0.6rem; }
-  .card-cost { width: 22px; height: 22px; font-size: 0.7rem; }
-  .enemy-portrait { width: 80px; height: 80px; font-size: 2.4rem; }
-  .enemy-hp-bar { width: 80px; }
-  #hand-cards { gap: 5px; }
-  .sentence-word { font-size: 0.8rem; padding: 3px 8px; }
-  .map-node { width: 44px; height: 44px; font-size: 1.1rem; }
-  .map-row { gap: 28px; }
-  #enemy-targets-bar .enemy-target-word { font-size: 0.7rem; padding: 3px 8px; }
-  #sentence-preview { font-size: 1.1rem; }
-  #player-status-bar { padding: 6px 10px; gap: 10px; }
-  .player-hp-display { font-size: 1rem; }
-  .player-hp-display .hp-icon { font-size: 1.2rem; }
-  .player-char-card { padding: 3px 8px; }
-  .player-char-card .char-emoji { font-size: 1.1rem; }
-  .player-char-card .char-name { font-size: 0.75rem; }
-  .enemy { min-width: 90px; padding: 6px 8px 8px; }
-  .btn { min-height: 44px; }
-  .story-portrait { width: 60px; height: 60px; font-size: 1.8rem; }
-}
-@media (max-width: 400px) {
-  .card { width: clamp(70px, 20vw, 80px); min-width: 65px; height: clamp(100px, 28vw, 120px); }
-  .card-word { font-size: 1.2rem; }
-  .btn { min-height: 44px; padding: 0.6em 1.5em; }
-}
-@media (max-height: 500px) {
-  #enemy-area { min-height: 100px; padding: 6px; gap: 10px; }
-  .enemy-portrait { width: 60px; height: 60px; font-size: 1.8rem; }
-  #sentence-area { min-height: 60px; padding: 6px 10px; }
-  #hand-area { padding: 4px 8px 6px; }
-  .card { height: clamp(90px, 20vh, 130px); }
-  #player-status-bar { padding: 4px 10px; }
+  .card {
+    width: clamp(70px, 20vw, 85px);
+    min-width: 65px;
+    height: clamp(105px, 28vw, 130px);
+    margin-left: -8px;
+  }
+  .card:first-child { margin-left: 0; }
+  .card:hover { z-index: 20; transform: translateY(-16px) scale(1.08); }
+  .card-word { font-size: clamp(1.3rem, 4vw, 1.6rem); }
+  .card.pos-punctuation .card-word { font-size: clamp(1.6rem, 4.5vw, 2rem); }
+  .card-pos-tag { font-size: 0.5rem; padding: 2px 0; }
+  .card-effect-bar { font-size: 0.5rem; padding: 2px 3px; line-height: 1.1; }
+  .card-cost { width: 20px; height: 20px; font-size: 0.65rem; }
+  .enemy-portrait { width: 65px; height: 65px; font-size: 1.8rem; }
+  .enemy-hp-bar { width: 65px; }
+  .enemy { min-width: 75px; padding: 4px 5px 5px; gap: 2px; }
+  .enemy-name { font-size: 0.8rem; }
+  .enemy-intent { font-size: 0.7rem; padding: 2px 6px; }
+  #hand-cards { gap: 0; padding: 0 2px; }
+  #hand-area { padding: 4px 6px 6px; }
+  #hand-cards-wrapper { gap: 0; }
+  #fixed-card-slot { padding-right: 4px; margin-right: 4px; }
+  #fixed-card-slot .card { margin-left: 0; }
+  .sentence-word { font-size: 0.75rem; padding: 3px 7px; }
+  #sentence-area { padding: 8px 10px; min-height: 70px; }
+  #sentence-preview { font-size: 1rem; }
+  #sentence-score-preview { font-size: 0.65rem; }
+  .map-node { width: 42px; height: 42px; font-size: 1rem; }
+  .map-row { gap: 24px; padding: 10px 0; }
+  #enemy-targets-bar .enemy-target-word { font-size: 0.65rem; padding: 3px 6px; }
+  #player-status-bar { padding: 5px 8px; gap: 8px; font-size: 0.85rem; }
+  .player-hp-display { font-size: 0.95rem; }
+  .player-hp-display .hp-icon { font-size: 1.1rem; }
+  .player-char-card { padding: 3px 6px; }
+  .player-char-card .char-emoji { font-size: 1rem; }
+  .player-char-card .char-name { font-size: 0.7rem; }
+  .player-block-display { font-size: 0.9rem; }
+  .energy-orb { width: 30px; height: 30px; font-size: 0.85rem; }
+  .btn { min-height: 44px; font-size: clamp(0.85rem, 2.5vw, 1rem); }
+  .btn-small { min-height: 36px; }
+  .story-portrait { width: 55px; height: 55px; font-size: 1.6rem; }
+  .story-speaker { font-size: 1rem; }
+  .story-text { font-size: 0.85rem; }
+  #combat-top { padding: 6px 10px; font-size: 0.75rem; }
+  #enemy-area { min-height: 130px; padding: 8px; gap: 10px; }
+  .reward-content, .rest-content, .event-content, .shop-content { padding: 14px; }
+  .reward-content h2, .rest-content h2, .shop-content h2 { font-size: 1.3rem; }
+  #score-overlay { padding: 10px 18px; min-width: 240px; }
+  #score-sentence { font-size: clamp(1.1rem, 4vw, 1.6rem); }
+  .end-content { padding: 14px; }
+  .end-stats { padding: 10px 14px; font-size: 0.85rem; }
 }
 
-/* --- 25. Reduced Motion --- */
+@media (max-width: 400px) {
+  .card {
+    width: clamp(60px, 18vw, 70px);
+    min-width: 55px;
+    height: clamp(88px, 24vw, 105px);
+    margin-left: -12px;
+  }
+  .card:first-child { margin-left: 0; }
+  .card-word { font-size: 1.2rem; }
+  .card-effect-bar { font-size: 0.45rem; }
+  .card-pos-tag { font-size: 0.45rem; }
+  .btn { min-height: 44px; padding: 0.5em 1.2em; }
+  .enemy { min-width: 65px; }
+  .enemy-portrait { width: 50px; height: 50px; font-size: 1.4rem; }
+  #sentence-preview { font-size: 0.9rem; }
+}
+
+@media (max-height: 650px) {
+  #enemy-area { min-height: 110px; padding: 6px; gap: 8px; }
+  .enemy-portrait { width: 60px; height: 60px; font-size: 1.6rem; }
+  #sentence-area { min-height: 60px; padding: 6px 8px; }
+  #hand-area { padding: 4px 6px 6px; }
+  .card { height: clamp(85px, 18vh, 125px); }
+  #player-status-bar { padding: 4px 8px; }
+  #combat-top { padding: 4px 8px; }
+}
+
+@media (max-height: 500px) {
+  #enemy-area { min-height: 80px; padding: 4px; gap: 6px; }
+  .enemy-portrait { width: 45px; height: 45px; font-size: 1.3rem; }
+  .enemy-intent { font-size: 0.65rem; }
+  #sentence-area { min-height: 50px; padding: 4px 6px; }
+  #sentence-preview { font-size: 0.85rem; }
+  #hand-area { padding: 3px 6px 4px; }
+  .card { height: clamp(75px, 15vh, 100px); }
+  .card-effect-bar { display: none; }
+  #player-status-bar { padding: 3px 6px; }
+}
+
+/* --- Reduced Motion --- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -46,8 +103,11 @@
     transition-duration: 0.01ms !important;
   }
   .ink-particle { display: none; }
+  .ink-splash { display: none; }
+  .brush-strike { display: none; }
   .screen-shake-sm, .screen-shake-md, .screen-shake-lg { animation: none !important; }
   .card::before { display: none; }
   #story-overlay.active { animation: none; }
   .story-portrait { animation: none; }
+  #ink-bg { display: none; }
 }

@@ -10,8 +10,8 @@ export function showFloatingText(element, text, color) {
   if (!element) return;
   const d = document.createElement('div');
   d.className = 'damage-number';
-  if (color === '#6bff6b') d.classList.add('heal');
-  if (color === '#6b9fff') d.classList.add('block-dmg');
+  if (color === '#4A7C6B' || color === 'var(--pine)') d.classList.add('heal');
+  if (color === '#2D4B73' || color === 'var(--blue-ink)') d.classList.add('block-dmg');
   d.textContent = text;
   d.style.color = color;
   d.style.left = '50%';
@@ -24,14 +24,14 @@ export function showFloatingText(element, text, color) {
 
 export function getPosColor(pos) {
   switch (pos) {
-    case 'subject': return '#e07070';
-    case 'verb': return '#e8c84c';
-    case 'object': return '#7090d4';
-    case 'modifier': return '#70d490';
-    case 'connector': return '#8a8275';
-    case 'special': return '#b470d4';
-    case 'punctuation': return '#9b59b6';
-    case 'exclamation': return '#e8873a';
-    default: return '#d4c9a8';
+    case 'subject': return '#C54B3C';
+    case 'verb': return '#B8862B';
+    case 'object': return '#2D4B73';
+    case 'modifier': return '#4A7C6B';
+    case 'connector': return '#7A7872';
+    case 'special': return '#6B4C6E';
+    case 'punctuation': return '#6B4C6E';
+    case 'exclamation': return '#B87333';
+    default: return '#4A4A48';
   }
 }

@@ -1,59 +1,70 @@
 /* ============================================================
-   NEO-INK CYBERPUNK THEME — Ink Wash + Neon Urban Fantasy
+   INK WASH WOODBLOCK — 水墨版画 aesthetic
    ============================================================ */
 
 :root {
-  /* Ink blacks & backgrounds */
-  --bg: #0a0a12;
-  --bg-dark: #050510;
-  --bg-card: #12121e;
-  --bg-panel: rgba(14,14,26,0.85);
-  --bg-glass: rgba(14,14,26,0.65);
+  /* Paper & ink foundations */
+  --paper: #F5F2EB;
+  --paper-warm: #EDE8DD;
+  --paper-dark: #D8D0C4;
+  --paper-accent: #C8BFB0;
+  --ink: #111110;
+  --ink-medium: #2A2826;
+  --ink-light: #4A4A48;
+  --ink-faint: #7A7872;
+  --smoke: #9A958C;
 
-  /* Paper / text */
-  --paper: #e8e4d8;
-  --paper-dark: #b8b0a0;
-  --ink: #2a2530;
-  --smoke: #7a7572;
+  /* Cinnabar seal red (朱砂) */
+  --vermillion: #C54B3C;
+  --vermillion-dark: #8B2E23;
+  --vermillion-dim: rgba(197, 75, 60, 0.12);
+  --vermillion-glow: rgba(197, 75, 60, 0.25);
 
-  /* Neon accents */
-  --neon-cyan: #00ffcc;
-  --neon-cyan-dim: rgba(0,255,204,0.25);
-  --gold: #c9a84c;
-  --gold-bright: #e8c84c;
-  --gold-dim: rgba(232,200,76,0.2);
-  --vermillion: #ff4444;
-  --vermillion-dark: #aa2222;
-  --vermillion-dim: rgba(255,68,68,0.2);
+  /* Stone green (青石) */
+  --pine: #4A7C6B;
+  --pine-dim: rgba(74, 124, 107, 0.12);
 
-  /* Secondary palette */
-  --blue-ink: #4a7aff;
-  --blue-dim: rgba(74,122,255,0.2);
-  --pine: #44dd88;
-  --pine-dim: rgba(68,221,136,0.2);
-  --purple: #bb66ff;
-  --purple-dark: #8833cc;
-  --purple-dim: rgba(187,102,255,0.2);
-  --cyan: #66eeff;
-  --cyan-dark: #339daa;
-  --orange: #ff8833;
-  --orange-dark: #cc6622;
-  --orange-dim: rgba(255,136,51,0.2);
+  /* Amber gold (琥珀) */
+  --gold: #B8862B;
+  --gold-bright: #C09451;
+  --gold-dim: rgba(192, 148, 81, 0.12);
 
-  /* Glass-morphism */
-  --glass-bg: rgba(14,14,26,0.55);
-  --glass-border: rgba(0,255,204,0.12);
+  /* Indigo (靛蓝) */
+  --blue-ink: #2D4B73;
+  --blue-dim: rgba(45, 75, 115, 0.12);
+
+  /* Plum (紫檀) */
+  --purple: #6B4C6E;
+  --purple-dark: #4A2E4D;
+  --purple-dim: rgba(107, 76, 110, 0.12);
+
+  /* Orange ochre (赭石) */
+  --orange: #B87333;
+  --orange-dark: #8A5525;
+  --orange-dim: rgba(184, 115, 51, 0.12);
+
+  /* Cyan-ink (石青) */
+  --cyan: #3A7B8C;
+  --cyan-dark: #2A5A66;
+
+  /* Card POS colors — ink-wash tones */
+  --pos-subject: #C54B3C;
+  --pos-verb: #B8862B;
+  --pos-object: #2D4B73;
+  --pos-modifier: #4A7C6B;
+  --pos-connector: #7A7872;
+  --pos-punctuation: #6B4C6E;
+  --pos-exclamation: #B87333;
+
+  /* Surface treatments */
+  --card-bg: rgba(245, 242, 235, 0.92);
+  --card-border: rgba(17, 17, 16, 0.15);
+  --panel-bg: rgba(245, 242, 235, 0.85);
+  --panel-border: rgba(17, 17, 16, 0.08);
+  --glass-bg: rgba(245, 242, 235, 0.75);
+  --glass-border: rgba(17, 17, 16, 0.06);
   --glass-blur: 12px;
-  --glass-highlight: rgba(255,255,255,0.04);
-
-  /* Card POS colors */
-  --pos-subject: #ff4444;
-  --pos-verb: #e8c84c;
-  --pos-object: #4a7aff;
-  --pos-modifier: #44dd88;
-  --pos-connector: #888888;
-  --pos-punctuation: #bb66ff;
-  --pos-exclamation: #ff8833;
+  --glass-highlight: rgba(255, 255, 255, 0.3);
 
   /* Spacing */
   --space-xs: 4px;
@@ -65,10 +76,12 @@
   /* Fonts */
   --font-brush: 'Ma Shan Zheng', cursive;
   --font-serif: 'Noto Serif SC', 'SimSun', serif;
+  --font-western: 'Cormorant Garamond', 'Georgia', serif;
 
   /* Easing */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-spring: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-brush: cubic-bezier(0.19, 1, 0.22, 1);
 }
