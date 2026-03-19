@@ -39,19 +39,23 @@ export function createStarterDeck() {
   const add = (key, n) => {
     for (let i = 0; i < n; i++) deck.push(makeCard({ ...WORD_DEFS[key], key }));
   };
-  add('zhan', 2);
-  add('zou', 1);
+  add('zhan', 1);
+  add('chui', 1);
+  add('gei', 1);
   add('shou', 1);
-  add('cu', 1);
-  add('jianke', 1);
-  add('diren', 2);
+  add('gang', 1);
+  add('diren', 1);
+  add('shijie', 1);
+  add('laozi', 1);
+  add('dajia', 1);
+  add('shuaiqide', 1);
   add('menglie', 1);
-  add('fengkuang', 1);
   add('he', 1);
+  add('jiu', 1);
   add('wocao', 1);
-  add('ah', 1);
+  add('ba2', 1);
+  add('le', 1);
   add('comma', 2);
-  add('period', 1);
   add('exclamation_punct', 1);
   return deck;
 }
