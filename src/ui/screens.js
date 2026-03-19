@@ -16,9 +16,9 @@ import { renderMap } from '../game/map.js';
 export function showRestScreen() {
   showScreen('rest-screen');
   const restThemes = [
-    { title: '月下独酌', flavor: '明月松间照，清泉石上流。暂且搁笔，品一盏清茶...' },
-    { title: '庭院小憩', flavor: '「兴尽晚回舟，误入藕花深处。」花香入梦，暂且歇息...' },
-    { title: '雨窗听竹', flavor: '「梧桐更兼细雨，到黄昏、点点滴滴。」雨声如诗，且待天明...' },
+    { title: '天台', flavor: '风很大。什么都不想。' },
+    { title: '保健室', flavor: '说头疼，其实没有。只是需要一个安静的地方躺一会儿。窗帘把阳光切成条状。' },
+    { title: '便利店', flavor: '放学后的便利店。关东煮的热气模糊了玻璃。耳机里放什么都好，只要不是人说话的声音。' },
   ];
   const theme = restThemes[Math.floor(Math.random() * restThemes.length)];
   document.getElementById('rest-title').textContent = theme.title;

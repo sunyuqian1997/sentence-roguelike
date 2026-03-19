@@ -18,12 +18,12 @@
   <!-- TITLE -->
   <div id="title-screen" class="screen active">
     <h1>易安词剑录</h1>
-    <div class="subtitle">以词为剑，以句为盾</div>
+    <div class="subtitle">我手写我心</div>
     <button class="btn" onclick="startGame()">执笔出发</button>
     <button class="btn btn-small btn-secondary" onclick="showMetaScreen()" style="margin-top:12px;">文渊阁</button>
     <div class="ink-display-title" id="title-ink-display"></div>
     <button class="btn btn-small btn-secondary" onclick="toggleLang()" style="margin-top:12px;font-size:0.75rem;" id="lang-btn">EN / 中文</button>
-    <div class="credit">李清照 · 句子构筑者 · v7</div>
+    <div class="credit">李清照 · 高二三班 · v7</div>
   </div>
 
   <!-- MAP -->
@@ -65,7 +65,7 @@
     </div>
     <div id="player-status-bar">
       <div class="player-char-card" id="player-char-card">
-        <span class="char-emoji" id="player-char-svg">📜</span>
+        <img src="/lqz.png" alt="李清照" id="player-char-svg" style="width:28px;height:28px;border-radius:50%;object-fit:cover;object-position:top;">
         <span class="char-name">李清照</span>
       </div>
       <div class="player-hp-display">
@@ -100,6 +100,7 @@
       <div class="reward-gold" id="reward-gold-text"></div>
       <h3 style="color:var(--paper-dark);font-size:0.95rem;margin-bottom:10px;">选择一张新词牌：</h3>
       <div class="reward-cards" id="reward-cards"></div>
+      <div id="reward-journal"></div>
       <button class="btn btn-small btn-secondary" onclick="skipReward()" style="margin-top:14px;">跳过</button>
     </div>
   </div>
@@ -194,8 +195,8 @@
   <!-- GAME OVER -->
   <div id="gameover-screen" class="screen" style="overflow-y:auto;">
     <div class="end-content">
-      <h2>墨尽笔枯</h2>
-      <p style="font-style:italic;opacity:0.6;margin-bottom:14px;font-size:0.9rem;">物是人非事事休，欲语泪先流...</p>
+      <h2>失语</h2>
+      <p style="font-style:italic;opacity:0.6;margin-bottom:14px;font-size:0.9rem;">话到嘴边，咽了回去。</p>
       <div class="end-stats" id="gameover-stats"></div>
       <div id="gameover-ink-breakdown"></div>
       <div class="death-buttons">
@@ -208,8 +209,8 @@
   <!-- VICTORY -->
   <div id="victory-screen" class="screen" style="overflow-y:auto;">
     <div class="end-content">
-      <h2>大作已成</h2>
-      <p style="font-style:italic;opacity:0.6;margin-bottom:14px;font-size:0.9rem;">生当作人杰，死亦为鬼雄...</p>
+      <h2>发送</h2>
+      <p style="font-style:italic;opacity:0.6;margin-bottom:14px;font-size:0.9rem;">这次没删。</p>
       <div class="end-stats" id="victory-stats"></div>
       <div id="victory-ink-breakdown"></div>
       <div class="death-buttons">
@@ -222,7 +223,7 @@
   <!-- META -->
   <div id="meta-overlay" class="overlay">
     <h2>文渊阁</h2>
-    <div class="meta-subtitle">每一次败北，都是下一篇传奇的序章</div>
+    <div class="meta-subtitle">每一次词穷，都让下一句更有力量</div>
     <div class="meta-stats" id="meta-stats"></div>
     <div class="meta-section" id="meta-perks-section"></div>
     <div class="meta-section" id="meta-cards-section"></div>

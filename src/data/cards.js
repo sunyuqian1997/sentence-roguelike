@@ -19,11 +19,7 @@ for (const [key, raw] of Object.entries(rawCards)) {
 }
 
 export function getCardWord(card) {
-  if (isEn()) {
-    if (!card._logged) { console.log('[card]', card.word, '→ enWord:', card.enWord, '| key:', card.key); card._logged = true; }
-    return card.enWord ?? card.word;
-  }
-  return card.word;
+  return isEn() ? (card.enWord ?? card.word) : card.word;
 }
 
 export function getCardDesc(card) {

@@ -49,12 +49,11 @@ window.toggleLang = function() {
   initInkBackground();
 
   const currentLang = getLang();
-  console.log('[i18n] META.lang =', META.lang, '| getLang() =', currentLang, '| localStorage =', JSON.parse(localStorage.getItem('sentence_rogue_meta') || '{}').lang);
   const langBtn = document.getElementById('lang-btn');
   if (langBtn) langBtn.textContent = currentLang === 'zh' ? 'EN / 中文' : '中文 / EN';
   if (currentLang === 'en') {
     document.querySelector('#title-screen h1').textContent = 'Ink & Verse';
-    document.querySelector('#title-screen .subtitle').textContent = 'Words as swords, sentences as shields';
+    document.querySelector('#title-screen .subtitle').textContent = 'I write what my heart speaks';
   }
 
   const el = document.getElementById('title-ink-display');

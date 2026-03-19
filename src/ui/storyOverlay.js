@@ -53,11 +53,15 @@ export function showNextStoryLine() {
   }
   typeChar();
   const portraitEl = document.getElementById('story-portrait');
-  const speakerMap = {
-    '李清照': 'liqingzhao', '仓颉之影': 'cangjie', '诗圣残魂': 'shisheng',
-    '词帝幽灵': 'cidi', '???': 'shadow',
-  };
-  portraitEl.innerHTML = generateCharSVG(speakerMap[line.speaker] || 'system', 100);
+  if (line.speaker === '李清照') {
+    portraitEl.innerHTML = `<img src="/lqz.png" alt="李清照" style="width:100%;height:100%;border-radius:50%;object-fit:cover;object-position:top;">`;
+  } else {
+    const speakerMap = {
+      '仓颉之影': 'cangjie', '诗圣残魂': 'shisheng',
+      '词帝幽灵': 'cidi', '???': 'shadow',
+    };
+    portraitEl.innerHTML = generateCharSVG(speakerMap[line.speaker] || 'system', 100);
+  }
 }
 
 let _storyClickReady = true;

@@ -51,7 +51,7 @@ export const G = {
   enemyTargets: [],
   allCardsCostZero: false, poeticAura: false,
   musicStarted: false, muted: false,
-  actNames: ['', '第一章·昨夜雨疏风骤', '第二章·南渡风烟', '第三章·人杰鬼雄'],
+  actNames: ['', '第一章·语文课惊魂', '第二章·社交媒体风暴', '第三章·说不出口的话'],
   shopInventory: null,
   drawLessNextTurn: 0,
   sentenceJournal: [],

@@ -68,7 +68,7 @@ export function startCombat(enemyDefs) {
   G.drawLessNextTurn = 0;
 
   showScreen('combat-screen');
-  try { var psvg = document.getElementById('player-char-svg'); if(psvg && typeof generateCharSVG==='function') psvg.innerHTML = generateCharSVG('liqingzhao', 36); } catch(e){}
+  // Player portrait is now an <img> in HTML, no need to generate SVG
   if (isBoss) playBossMusic(); else playCombatMusic();
   G.enemies.forEach(e => e.ai(e));
   startPlayerTurn();
@@ -733,6 +733,17 @@ export function showRewardScreen() {
     wrapper.appendChild(cardEl);
     wrapper.appendChild(rl);
     container.appendChild(wrapper);
+  }
+
+  const journalEl = document.getElementById('reward-journal');
+  if (journalEl && G.sentenceJournal.length > 0) {
+    let h = '<div style="margin-top:14px;padding:10px;border:1px solid var(--panel-border);border-radius:6px;background:rgba(255,255,255,0.3);">';
+    h += '<div style="font-family:var(--font-brush);font-size:0.9rem;color:var(--ink);text-align:center;margin-bottom:6px;">— 本局诗篇 —</div>';
+    G.sentenceJournal.forEach(s => {
+      h += `<div style="font-family:var(--font-brush);font-size:0.85rem;color:var(--ink-light);text-align:center;line-height:1.8;">「${s}」</div>`;
+    });
+    h += '</div>';
+    journalEl.innerHTML = h;
   }
 }
 
