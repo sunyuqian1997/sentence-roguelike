@@ -126,39 +126,53 @@ export function drawCards(count) {
 }
 
 function guaranteePunctuation() {
-  const hasPunct = G.hand.some(c => c.pos === 'punctuation');
-  if (hasPunct) return;
-  const punctKeys = ['comma', 'period', 'exclamation_punct', 'question'];
-  const key = punctKeys[Math.floor(Math.random() * punctKeys.length)];
-  const punctCard = makeCard({ ...WORD_DEFS[key], key });
-  const replaceIdx = G.hand.findIndex(c => c.pos !== 'verb' && c.pos !== 'subject' && c.pos !== 'exclamation');
-  if (replaceIdx >= 0) {
-    G.discardPile.push(G.hand[replaceIdx]);
-    G.hand[replaceIdx] = punctCard;
-  } else {
-    G.hand.push(punctCard);
+  // Always guarantee a comma for duizhang (对仗) opportunities
+  const hasComma = G.hand.some(c => c.pos === 'punctuation' && c.punctType === 'comma');
+  if (!hasComma) {
+    const commaCard = makeCard({ ...WORD_DEFS.comma, key: 'comma' });
+    const replaceIdx = G.hand.findIndex(c => c.pos !== 'verb' && c.pos !== 'subject' && c.pos !== 'exclamation');
+    if (replaceIdx >= 0) {
+      G.discardPile.push(G.hand[replaceIdx]);
+      G.hand[replaceIdx] = commaCard;
+    } else {
+      G.hand.push(commaCard);
+    }
+  }
+  // Also add another punctuation if none besides the comma
+  const hasOtherPunct = G.hand.some(c => c.pos === 'punctuation' && c.punctType !== 'comma');
+  if (!hasOtherPunct && Math.random() < 0.4) {
+    const punctKeys = ['period', 'exclamation_punct', 'question'];
+    const key = punctKeys[Math.floor(Math.random() * punctKeys.length)];
+    const punctCard = makeCard({ ...WORD_DEFS[key], key });
+    const replaceIdx = G.hand.findIndex(c => c.pos !== 'verb' && c.pos !== 'subject' && c.pos !== 'exclamation' && c.pos !== 'punctuation');
+    if (replaceIdx >= 0) {
+      G.discardPile.push(G.hand[replaceIdx]);
+      G.hand[replaceIdx] = punctCard;
+    }
   }
 }
 
 function guaranteeVerb() {
-  const hasVerb = G.hand.some(c => c.pos === 'verb');
-  if (hasVerb) return;
-  // Try to find a verb in drawPile first, then discardPile
-  let verbIdx = G.drawPile.findIndex(c => c.pos === 'verb');
-  let source = G.drawPile;
-  if (verbIdx < 0) {
-    verbIdx = G.discardPile.findIndex(c => c.pos === 'verb');
-    source = G.discardPile;
-  }
-  if (verbIdx < 0) return; // no verb available anywhere
-  const verbCard = source.splice(verbIdx, 1)[0];
-  // Replace a non-essential card in hand (not subject, not punctuation, not exclamation)
-  const replaceIdx = G.hand.findIndex(c => c.pos !== 'subject' && c.pos !== 'punctuation' && c.pos !== 'exclamation');
-  if (replaceIdx >= 0) {
-    G.discardPile.push(G.hand[replaceIdx]);
-    G.hand[replaceIdx] = verbCard;
-  } else {
-    G.hand.push(verbCard);
+  // Guarantee at least 2 verbs for duizhang opportunities
+  const verbCount = G.hand.filter(c => c.pos === 'verb').length;
+  const needed = Math.max(0, 2 - verbCount);
+  for (let i = 0; i < needed; i++) {
+    // Try to find a verb in drawPile first, then discardPile
+    let verbIdx = G.drawPile.findIndex(c => c.pos === 'verb');
+    let source = G.drawPile;
+    if (verbIdx < 0) {
+      verbIdx = G.discardPile.findIndex(c => c.pos === 'verb');
+      source = G.discardPile;
+    }
+    if (verbIdx < 0) break; // no verb available anywhere
+    const verbCard = source.splice(verbIdx, 1)[0];
+    const replaceIdx = G.hand.findIndex(c => c.pos !== 'subject' && c.pos !== 'punctuation' && c.pos !== 'exclamation' && c.pos !== 'verb');
+    if (replaceIdx >= 0) {
+      G.discardPile.push(G.hand[replaceIdx]);
+      G.hand[replaceIdx] = verbCard;
+    } else {
+      G.hand.push(verbCard);
+    }
   }
 }
 
