@@ -109,19 +109,10 @@ export function getTargetedEnemyIdx() {
 }
 
 export function renderEnemyTargetBar() {
+  // Enemy targets are now selected by clicking enemy cards directly,
+  // so the redundant target bar is hidden.
   const bar = document.getElementById('enemy-targets-bar');
-  bar.innerHTML = '';
-
-  G.enemies.forEach((enemy, idx) => {
-    if (enemy.hp <= 0) return;
-    const el = document.createElement('div');
-    el.className = 'enemy-target-word';
-    el.textContent = `⟨${enemy.name}⟩`;
-    const inSentence = G.sentence.some(c => c._isEnemyTarget && c._enemyIdx === idx);
-    if (inSentence) el.classList.add('in-sentence');
-    el.onclick = () => addEnemyTarget(idx, enemy);
-    bar.appendChild(el);
-  });
+  if (bar) bar.innerHTML = '';
 }
 
 export function renderSentenceSlots() {
