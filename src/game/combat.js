@@ -7,6 +7,7 @@ import { showScreen, renderCombat, createCardElement } from '../ui/render.js';
 import { generateCharSVG } from '../ui/svgArt.js';
 import { dealDamageToPlayer, dealDamageToEnemy, checkEnemies } from './damage.js';
 import { generateMap, renderMap } from './map.js';
+import { CARD_PACKS } from '../data/packs.js';
 import { playStory, STORY_CHAPTERS_REF } from '../ui/storyOverlay.js';
 import STORY_CHAPTERS from '../data/story.json';
 import { detectSummon, SUMMON_EFFECTS, evaluateSentence, checkExclamationPosition, detectDuizhang } from './sentence.js';
@@ -716,9 +717,9 @@ export function combatVictory() {
   G._thorns = 0;
   const node = G.map[G.currentRow][G.currentNodeIndex];
   let gold = 0;
-  if (node.type==='fight') gold = 10+Math.floor(Math.random()*11);
-  else if (node.type==='elite') { gold = 25+Math.floor(Math.random()*26); G.elitesKilled++; }
-  else if (node.type==='boss') { gold = 50+Math.floor(Math.random()*51); G.bossesKilled++; }
+  if (node.type==='fight') gold = 20+Math.floor(Math.random()*11);
+  else if (node.type==='elite') { gold = 40+Math.floor(Math.random()*26); G.elitesKilled++; }
+  else if (node.type==='boss') { gold = 75+Math.floor(Math.random()*51); G.bossesKilled++; }
   G.gold += gold;
   G.combatRewards = { gold };
 
@@ -770,6 +771,48 @@ export function showRewardScreen() {
     h += '</div>';
     journalEl.innerHTML = h;
   }
+
+  // Pack shop
+  renderPackShop(container.parentElement);
+}
+
+function renderPackShop(container) {
+  const old = container.querySelector('.pack-shop');
+  if (old) old.remove();
+  const packDiv = document.createElement('div');
+  packDiv.className = 'pack-shop';
+  packDiv.innerHTML = '<h3 style="color:var(--paper-dark);font-size:0.9rem;margin:14px 0 8px;">📦 购买卡包：</h3>';
+  const packs = Object.entries(CARD_PACKS).filter(([id, p]) => !p.default && !META.unlockedPacks?.includes(id));
+  if (packs.length === 0) {
+    packDiv.innerHTML += '<div style="opacity:0.5;font-size:0.8rem;">已全部解锁！</div>';
+  } else {
+    packs.forEach(([id, pack]) => {
+      const canAfford = G.gold >= pack.price;
+      const btn = document.createElement('div');
+      btn.className = 'pack-item' + (canAfford ? '' : ' pack-locked');
+      btn.innerHTML = `
+        <span class="pack-icon">${pack.icon}</span>
+        <span class="pack-name">${pack.name}</span>
+        <span class="pack-desc">${pack.desc}</span>
+        <span class="pack-price">${canAfford ? '' : '🔒'} ${pack.price}⬡</span>
+      `;
+      if (canAfford) {
+        btn.onclick = () => {
+          G.gold -= pack.price;
+          if (!META.unlockedPacks) META.unlockedPacks = [];
+          META.unlockedPacks.push(id);
+          saveMeta();
+          btn.innerHTML = `<span class="pack-icon">${pack.icon}</span><span class="pack-name">${pack.name} ✓ 已解锁！</span>`;
+          btn.onclick = null;
+          btn.className = 'pack-item pack-bought';
+          const goldEl = document.getElementById('reward-gold-text');
+          if (goldEl) goldEl.textContent = `+${G.combatRewards?.gold || 0} 文银 (持有: ${G.gold}⬡)`;
+        };
+      }
+      packDiv.appendChild(btn);
+    });
+  }
+  container.appendChild(packDiv);
 }
 
 export function skipReward() { afterReward(); }

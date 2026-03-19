@@ -870,3 +870,21 @@
     inset 0 0 6px rgba(0, 0, 0, 0.15);
   font-family: var(--font-brush);
 }
+
+/* --- Pack Shop --- */
+.pack-shop { margin-top: 12px; }
+.pack-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; margin: 4px 0;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px; cursor: pointer; transition: all 0.2s;
+  font-size: 0.8rem;
+}
+.pack-item:hover { background: rgba(255,255,255,0.1); border-color: var(--neon-cyan); }
+.pack-locked { opacity: 0.5; cursor: not-allowed; }
+.pack-locked:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
+.pack-bought { border-color: #4A7C6B; background: rgba(74,124,107,0.1); }
+.pack-icon { font-size: 1.2rem; }
+.pack-name { font-weight: 600; color: var(--paper); min-width: 60px; }
+.pack-desc { color: var(--paper-dark); flex: 1; font-size: 0.75rem; }
+.pack-price { color: var(--gold); font-weight: 600; white-space: nowrap; }

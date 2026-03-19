@@ -904,5 +904,169 @@
   "lx_conglairu": {
     "word": "从来如此", "pos": "exclamation", "cost": 0, "rarity": "uncommon", "pack": "luxun",
     "desc": "感叹词·穿透×1.4", "flavor": "从来如此，便对么？", "excMult": 1.4, "excType": "attack", "excPenetrate": true, "freePos": true
+  },
+
+  "lb_shixian": {
+    "word": "诗仙", "pos": "subject", "cost": 0, "rarity": "uncommon", "pack": "libai",
+    "desc": "攻击力+4，诗词加成+0.5", "flavor": "天生我材必有用",
+    "powerBonus": 4, "bonusType": "attack", "poetryBonus": 0.5
+  },
+  "lb_jian": {
+    "word": "剑", "pos": "object", "cost": 0, "rarity": "uncommon", "pack": "libai",
+    "desc": "攻击效果+4", "flavor": "十步杀一人，千里不留行",
+    "effectBonus": 4, "bonusType": "attack"
+  },
+  "lb_jiuzhong": {
+    "word": "酒中", "pos": "modifier", "cost": 0, "rarity": "uncommon", "pack": "libai",
+    "desc": "攻击×1.4，诗词+0.3", "flavor": "举杯邀明月",
+    "multiplier": 1.4, "bonusType": "attack", "poetryBonusMod": 0.3
+  },
+  "lb_kuangxiao": {
+    "word": "狂笑", "pos": "exclamation", "cost": 0, "rarity": "uncommon", "pack": "libai",
+    "desc": "感叹×1.6攻击", "flavor": "仰天大笑出门去",
+    "excMult": 1.6, "excType": "attack", "freePos": true
+  },
+  "lb_feiliuzhi": {
+    "word": "飞流直下地", "pos": "modifier", "cost": 0, "rarity": "rare", "pack": "libai",
+    "desc": "攻击×1.8", "flavor": "飞流直下三千尺",
+    "multiplier": 1.8, "bonusType": "attack"
+  },
+  "lb_yinhe": {
+    "word": "银河", "pos": "object", "cost": 0, "rarity": "rare", "pack": "libai",
+    "desc": "攻击效果+5，群体攻击", "flavor": "疑是银河落九天",
+    "effectBonus": 5, "bonusType": "attack", "aoe": true
+  },
+  "lb_poji": {
+    "word": "破击", "pos": "verb", "cost": 0, "rarity": "uncommon", "pack": "libai",
+    "desc": "攻击8(12)，自伤2", "flavor": "长风破浪会有时",
+    "combatType": "attack", "basePower": 8, "upgPower": 12, "selfDmgVerb": 2
+  },
+  "lb_zui": {
+    "word": "醉", "pos": "modifier", "cost": 0, "rarity": "common", "pack": "libai",
+    "desc": "攻击×1.3，自伤1，诗词+0.2", "flavor": "但愿长醉不复醒",
+    "multiplier": 1.3, "bonusType": "attack", "selfDmgMod": 1, "poetryBonusMod": 0.2
+  },
+
+  "ss_haofang": {
+    "word": "豪放地", "pos": "modifier", "cost": 0, "rarity": "uncommon", "pack": "sushi",
+    "desc": "全能×1.5，诗词+0.3", "flavor": "大江东去浪淘尽",
+    "multiplier": 1.5, "bonusType": "all", "poetryBonusMod": 0.3
+  },
+  "ss_jianghu2": {
+    "word": "赤壁", "pos": "object", "cost": 0, "rarity": "uncommon", "pack": "sushi",
+    "desc": "攻击效果+3，诗词+0.4", "flavor": "人道是三国周郎赤壁",
+    "effectBonus": 3, "bonusType": "attack", "poetryObjBonus": 0.4
+  },
+  "ss_mingyue2": {
+    "word": "婵娟", "pos": "object", "cost": 0, "rarity": "uncommon", "pack": "sushi",
+    "desc": "治疗效果+3，诗词+0.5", "flavor": "但愿人长久，千里共婵娟",
+    "effectBonus": 3, "bonusType": "heal", "poetryObjBonus": 0.5
+  },
+  "ss_zhuxian": {
+    "word": "竹仙", "pos": "subject", "cost": 0, "rarity": "uncommon", "pack": "sushi",
+    "desc": "防御力+3，诗词+0.3", "flavor": "宁可食无肉，不可居无竹",
+    "powerBonus": 3, "bonusType": "defense", "poetryBonus": 0.3
+  },
+  "ss_laofu": {
+    "word": "老夫", "pos": "subject", "cost": 0, "rarity": "uncommon", "pack": "sushi",
+    "desc": "全能力+3", "flavor": "老夫聊发少年狂",
+    "powerBonus": 3, "bonusType": "all"
+  },
+  "ss_kuangge": {
+    "word": "狂歌", "pos": "verb", "cost": 0, "rarity": "uncommon", "pack": "sushi",
+    "desc": "攻击6(9)，群攻，施加虚弱1", "flavor": "一蓑烟雨任平生",
+    "combatType": "attack", "basePower": 6, "upgPower": 9, "forceAoe": true, "applyWeakVerb": 1
+  },
+  "ss_dingfeng": {
+    "word": "定风波", "pos": "verb", "cost": 0, "rarity": "rare", "pack": "sushi",
+    "desc": "防御10(15)，同时回血3", "flavor": "也无风雨也无晴",
+    "combatType": "defense", "basePower": 10, "upgPower": 15, "healAlsoVerb": 3
+  },
+  "ss_dangnian": {
+    "word": "当年", "pos": "modifier", "cost": 0, "rarity": "common", "pack": "sushi",
+    "desc": "全能×1.2，诗词+0.2", "flavor": "遥想公瑾当年",
+    "multiplier": 1.2, "bonusType": "all", "poetryBonusMod": 0.2
+  },
+
+  "mm_yyds": {
+    "word": "YYDS", "pos": "exclamation", "cost": 0, "rarity": "uncommon", "pack": "meme",
+    "desc": "感叹×1.5全能", "flavor": "永远的神",
+    "excMult": 1.5, "excType": "all", "freePos": true
+  },
+  "mm_juejuezi": {
+    "word": "绝绝子", "pos": "exclamation", "cost": 0, "rarity": "common", "pack": "meme",
+    "desc": "感叹×1.3全能", "flavor": "绝绝子！",
+    "excMult": 1.3, "excType": "all", "freePos": true
+  },
+  "mm_emm": {
+    "word": "emmm", "pos": "exclamation", "cost": 0, "rarity": "common", "pack": "meme",
+    "desc": "感叹×1.0，抽1牌", "flavor": "让我想想",
+    "excMult": 1.0, "excType": "all", "excDraw": 1, "freePos": true
+  },
+  "mm_giao": {
+    "word": "一给我里giao", "pos": "exclamation", "cost": 0, "rarity": "uncommon", "pack": "meme",
+    "desc": "感叹×1.7攻击", "flavor": "giaogiao",
+    "excMult": 1.7, "excType": "attack", "freePos": true
+  },
+  "mm_jiuyuan": {
+    "word": "就怨", "pos": "verb", "cost": 0, "rarity": "common", "pack": "meme",
+    "desc": "攻击5(7)，施加虚弱2", "flavor": "你就怨种",
+    "combatType": "attack", "basePower": 5, "upgPower": 7, "applyWeakVerb": 2
+  },
+  "mm_zhantie": {
+    "word": "栈贴", "pos": "verb", "cost": 0, "rarity": "common", "pack": "meme",
+    "desc": "增益2(3)，抽1牌", "flavor": "来人把帖子栈了",
+    "combatType": "buff", "basePower": 2, "upgPower": 3, "draw": 1
+  },
+  "mm_daoshi": {
+    "word": "倒是", "pos": "connector", "cost": 0, "rarity": "uncommon", "pack": "meme",
+    "desc": "语法+0.1，双重执行", "flavor": "你倒是说啊",
+    "grammarBonus": 0.1, "doubleExecuteConn": true
+  },
+  "mm_zhuangbi": {
+    "word": "装逼", "pos": "modifier", "cost": 0, "rarity": "uncommon", "pack": "meme",
+    "desc": "攻击×1.5，自伤2", "flavor": "装逼一时爽",
+    "multiplier": 1.5, "bonusType": "attack", "selfDmgMod": 2
+  },
+
+  "wx_daxia": {
+    "word": "大侠", "pos": "subject", "cost": 0, "rarity": "uncommon", "pack": "wuxia",
+    "desc": "攻击力+4，防御+2", "flavor": "侠之大者，为国为民",
+    "powerBonus": 4, "bonusType": "attack", "defenseBonus": 2
+  },
+  "wx_qigong": {
+    "word": "气功", "pos": "verb", "cost": 0, "rarity": "uncommon", "pack": "wuxia",
+    "desc": "攻击7(10)，无视格挡", "flavor": "降龙十八掌",
+    "combatType": "attack", "basePower": 7, "upgPower": 10, "ignoreBlock": true
+  },
+  "wx_dianxue": {
+    "word": "点穴", "pos": "verb", "cost": 0, "rarity": "uncommon", "pack": "wuxia",
+    "desc": "攻击3(5)，中毒4×3回合", "flavor": "一阳指",
+    "combatType": "attack", "basePower": 3, "upgPower": 5, "poisonVerb": 4, "poisonDuration": 3
+  },
+  "wx_qinggong": {
+    "word": "轻功", "pos": "verb", "cost": 0, "rarity": "uncommon", "pack": "wuxia",
+    "desc": "闪避下次攻击", "flavor": "凌波微步",
+    "combatType": "defense", "basePower": 0, "upgPower": 0, "dodgeNext": true
+  },
+  "wx_neili": {
+    "word": "内力", "pos": "modifier", "cost": 0, "rarity": "uncommon", "pack": "wuxia",
+    "desc": "全能×1.4", "flavor": "九阳神功护体",
+    "multiplier": 1.4, "bonusType": "all"
+  },
+  "wx_jianghu3": {
+    "word": "武林", "pos": "object", "cost": 0, "rarity": "uncommon", "pack": "wuxia",
+    "desc": "群体攻击，诗词+0.2", "flavor": "有人的地方就有江湖",
+    "effectBonus": 0, "aoe": true, "poetryObjBonus": 0.2
+  },
+  "wx_bisha": {
+    "word": "必杀", "pos": "modifier", "cost": 0, "rarity": "rare", "pack": "wuxia",
+    "desc": "攻击×2.0，自伤3", "flavor": "不成功便成仁",
+    "multiplier": 2.0, "bonusType": "attack", "selfDmgMod": 3
+  },
+  "wx_yijian": {
+    "word": "一剑", "pos": "verb", "cost": 0, "rarity": "rare", "pack": "wuxia",
+    "desc": "攻击12(18)，消耗", "flavor": "一剑光寒十四州",
+    "combatType": "attack", "basePower": 12, "upgPower": 18, "exhaust": true
   }
 }
