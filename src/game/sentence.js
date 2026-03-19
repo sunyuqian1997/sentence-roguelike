@@ -196,7 +196,9 @@ export function normalizeSentence(cards) {
 }
 
 function checkClauseOrder(clauseCards) {
-  const phaseMap = { modifier: [0, 2, 4], subject: [1, 3], connector: [1, 2], verb: [3], object: [5], special: [3] };
+  // Flexible phase map: allows poetic inversions like 明月(obj)高悬(verb), 宾语前置
+  // object can appear early (phase 1) for inverted/poetic word order
+  const phaseMap = { modifier: [0, 2, 4], subject: [1, 3], connector: [1, 2], verb: [3, 4], object: [1, 5], special: [3] };
   let phase = 0, violations = 0;
   for (const c of clauseCards) {
     const allowed = phaseMap[c.pos] || [phase];
