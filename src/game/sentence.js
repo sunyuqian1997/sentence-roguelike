@@ -705,14 +705,18 @@ export function evaluateSentence(rawCards) {
       continue;
     }
     if (v.sleepSpecial) {
-      if (subjectIsEnemy) {
+      // "睡" is dual-mode: with object/enemy target = attack (stun enemy)
+      // without object = self-buff (full heal but skip turn)
+      const hasTarget = hasEnemyTarget || handObjects.length > 0;
+      if (hasTarget || subjectIsEnemy) {
         effects._stunEnemy = true;
         effects._stunEnemy2 = true;
-        grammarNotes.push('💤 沉睡→敌人眩晕2回合');
+        effects.damage += v.basePower + subjectAttackBonus;
+        grammarNotes.push('💤 睡→目标眩晕2回合');
       } else {
         effects.heal += G.maxHp;
         effects._skipNextTurn = true;
-        grammarNotes.push('💤 沉睡→全回血但跳过下回合');
+        grammarNotes.push('💤 睡→全回血但跳过下回合');
       }
       continue;
     }
