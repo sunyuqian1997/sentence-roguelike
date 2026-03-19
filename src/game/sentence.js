@@ -196,7 +196,7 @@ export function normalizeSentence(cards) {
 }
 
 function checkClauseOrder(clauseCards) {
-  const phaseMap = { modifier: [0, 2, 4], subject: [1], connector: [2], verb: [3], object: [5], special: [3] };
+  const phaseMap = { modifier: [0, 2, 4], subject: [1, 3], connector: [1, 2], verb: [3], object: [5], special: [3] };
   let phase = 0, violations = 0;
   for (const c of clauseCards) {
     const allowed = phaseMap[c.pos] || [phase];
@@ -427,6 +427,27 @@ export function evaluateSentence(rawCards) {
     if (v.poeticMultVerb) { verbPoetryMult *= v.poeticMultVerb; literaryNotes.push(`${v.word} 诗意×${v.poeticMultVerb}`); }
   });
   literaryMult *= verbPoetryMult;
+
+  // POETIC COMBO DETECTION
+  const allWords = cards.filter(c => c.pos !== 'punctuation').map(c => c.word).join('');
+  const poeticCombos = [
+    { pattern: /山.*海/, bonus: 0.5, label: '🏔️ 山海意象 +0.5' },
+    { pattern: /风.*月/, bonus: 0.4, label: '🌙 风月意象 +0.4' },
+    { pattern: /明月/, bonus: 0.3, label: '🌕 明月意象 +0.3' },
+    { pattern: /天.*地/, bonus: 0.4, label: '🌍 天地意象 +0.4' },
+    { pattern: /生.*死/, bonus: 0.5, label: '💀 生死意象 +0.5' },
+    { pattern: /猛.*斩|猛.*砍|猛.*锤/, bonus: 0.3, label: '⚔️ 猛攻组合 +0.3' },
+    { pattern: /横眉|怒吼/, bonus: 0.3, label: '😤 怒气冲天 +0.3' },
+    { pattern: /远方|家乡/, bonus: 0.3, label: '🏡 思乡意象 +0.3' },
+    { pattern: /萤火|光/, bonus: 0.3, label: '✨ 微光意象 +0.3' },
+    { pattern: /铁屋|荆棘/, bonus: 0.3, label: '🔥 抗争意象 +0.3' },
+  ];
+  for (const combo of poeticCombos) {
+    if (combo.pattern.test(allWords)) {
+      literaryMult += combo.bonus;
+      literaryNotes.push(combo.label);
+    }
+  }
 
   if (G.poeticAura) { literaryMult += 0.5; literaryNotes.push('诗仙附体！'); }
   if (cards.length >= 5) { literaryMult += 0.2; literaryNotes.push('长句加成 +0.2'); }
@@ -832,6 +853,8 @@ export function evaluateSentence(rawCards) {
   effects.draw += excExtraDraw;
   effects.heal += excExtraHeal;
   if (excExtraEnergy > 0) effects._bonusEnergy = excExtraEnergy;
+
+  effects._poetryLevel = literaryMult;
 
   if (orRandomMult && effects.damage > 0) {
     effects.damage = Math.floor(effects.damage * 1.5);

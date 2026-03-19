@@ -538,6 +538,17 @@ export function applyEffects(effects) {
       showFloatingText(G.enemies[tIdx].element, '混乱！', '#6B4C6E');
     }
   }
+
+  // POETIC ATTACK FEEDBACK - 高诗意攻击回血
+  if (effects.damage > 0 && effects._poetryLevel) {
+    if (effects._poetryLevel >= 2.0) {
+      const poetHeal = Math.floor(effects.damage * 0.15);
+      if (poetHeal > 0) {
+        G.hp = Math.min(G.maxHp, G.hp + poetHeal);
+        showFloatingText(document.querySelector('#combat-top'), `✨ 诗意回响 +${poetHeal}♥`, '#c9a84c');
+      }
+    }
+  }
 }
 
 // ============================================================
