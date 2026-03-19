@@ -3142,16 +3142,6 @@
     "flavor": "放屁！",
     "effectBonus": 0
   },
-  "bi": {
-    "word": "逼",
-    "pos": "object",
-    "cost": 0,
-    "rarity": "common",
-    "desc": "宾语·+2攻",
-    "flavor": "装什么装",
-    "effectBonus": 2,
-    "bonusType": "attack"
-  },
   "laozi": {
     "word": "老子",
     "pos": "subject",
