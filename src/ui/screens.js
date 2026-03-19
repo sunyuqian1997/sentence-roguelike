@@ -16,9 +16,9 @@ import { renderMap } from '../game/map.js';
 export function showRestScreen() {
   showScreen('rest-screen');
   const restThemes = [
-    { title: '天台', flavor: '风很大。什么都不想。' },
-    { title: '保健室', flavor: '说头疼，其实没有。只是需要一个安静的地方躺一会儿。窗帘把阳光切成条状。' },
-    { title: '便利店', flavor: '放学后的便利店。关东煮的热气模糊了玻璃。耳机里放什么都好，只要不是人说话的声音。' },
+    { title: '星空花园', flavor: '花园里开满了会发光的文字花。摘一朵放在耳边，能听到很轻很轻的诗。' },
+    { title: '词语温泉', flavor: '热腾腾的温泉里漂浮着各种文字。泡在里面，感觉力量在慢慢恢复。' },
+    { title: '图书馆角落', flavor: '找到了一个舒服的角落。书架上的书在轻轻低语，像催眠曲一样。' },
   ];
   const theme = restThemes[Math.floor(Math.random() * restThemes.length)];
   document.getElementById('rest-title').textContent = theme.title;

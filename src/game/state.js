@@ -3,6 +3,7 @@ export const META_DEFAULT = {
   unlockedCards: ['jiangjun', 'shenmi_daoshi', 'qinshi', 'zhu', 'kejin'],
   perks: [],
   lang: 'zh',
+  unlockedPacks: ['base', 'caodong', 'luxun'],
 };
 
 export function loadMeta() {
@@ -51,7 +52,7 @@ export const G = {
   enemyTargets: [],
   allCardsCostZero: false, poeticAura: false,
   musicStarted: false, muted: false,
-  actNames: ['', '第一章·语文课惊魂', '第二章·社交媒体风暴', '第三章·说不出口的话'],
+  actNames: ['', '第一章·词语花园', '第二章·回声走廊', '第三章·沉默之塔'],
   shopInventory: null,
   drawLessNextTurn: 0,
   sentenceJournal: [],

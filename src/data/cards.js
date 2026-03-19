@@ -62,6 +62,7 @@ export function getCardPool(rarity) {
     if (def.rarity !== rarity) continue;
     if (key === 'wo') continue;
     if (def.unlockable && !META.unlockedCards.includes(key)) continue;
+    if (def.pack && !META.unlockedPacks?.includes(def.pack)) continue;
     pool.push(key);
   }
   return pool;

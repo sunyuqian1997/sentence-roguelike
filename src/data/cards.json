@@ -769,5 +769,140 @@
     "desc": "对敌=降3力量；自用=+3力量+易伤2",
     "flavor": "堕入深渊，换取力量",
     "en": { "word": "Corrupt", "desc": "Enemy=STR-3; Self=STR+3+Vuln 2" }
+  },
+
+  "cd_shaonian": {
+    "word": "少年", "pos": "subject", "cost": 0, "rarity": "uncommon", "pack": "caodong",
+    "desc": "主语·攻击+2", "flavor": "欲说还休，却道天凉好个秋", "powerBonus": 2, "bonusType": "attack"
+  },
+  "cd_lanni": {
+    "word": "烂泥", "pos": "subject", "cost": 0, "rarity": "common", "pack": "caodong",
+    "desc": "主语·自伤2回血4", "flavor": "我烂在这，好无聊", "powerBonus": 0, "selfDmgSub": 2, "healSub": 4
+  },
+  "cd_chui": {
+    "word": "吹", "pos": "verb", "cost": 1, "rarity": "common", "pack": "caodong",
+    "combatType": "attack", "basePower": 5, "upgPower": 7, "forceAoe": true,
+    "desc": "攻击{power}·全体", "flavor": "大风吹 大风吹 吹什么"
+  },
+  "cd_jiazhuang": {
+    "word": "假装", "pos": "verb", "cost": 1, "rarity": "uncommon", "pack": "caodong",
+    "combatType": "defense", "basePower": 6, "upgPower": 9,
+    "desc": "格挡{power}", "flavor": "无聊的人请假装要死"
+  },
+  "cd_chumai": {
+    "word": "出卖", "pos": "verb", "cost": 1, "rarity": "uncommon", "pack": "caodong",
+    "combatType": "attack", "basePower": 4, "upgPower": 6, "goldGainVerb": 5,
+    "desc": "攻击{power}·+5文银", "flavor": "我看着 天真的我自己 出卖了自己"
+  },
+  "cd_deng": {
+    "word": "等", "pos": "verb", "cost": 1, "rarity": "common", "pack": "caodong",
+    "combatType": "defense", "basePower": 5, "upgPower": 8, "draw": 1,
+    "desc": "格挡{power}·抽1", "flavor": "等雨停"
+  },
+  "cd_taopao": {
+    "word": "逃跑", "pos": "verb", "cost": 1, "rarity": "uncommon", "pack": "caodong",
+    "combatType": "defense", "basePower": 7, "upgPower": 10,
+    "desc": "格挡{power}", "flavor": "到不了的都叫做远方"
+  },
+  "cd_yuanfang": {
+    "word": "远方", "pos": "object", "cost": 0, "rarity": "uncommon", "pack": "caodong",
+    "desc": "宾语·攻击+3", "flavor": "到不了的都叫做远方", "effectBonus": 3, "bonusType": "attack"
+  },
+  "cd_shanhai": {
+    "word": "山海", "pos": "object", "cost": 0, "rarity": "rare", "pack": "caodong",
+    "desc": "宾语·全体+4", "flavor": "我们走过了山也走过了海", "aoe": true, "effectBonus": 4, "bonusType": "attack"
+  },
+  "cd_dafeng": {
+    "word": "大风", "pos": "object", "cost": 0, "rarity": "uncommon", "pack": "caodong",
+    "desc": "宾语·全体攻击", "flavor": "大风吹着我 这样的我", "aoe": true, "effectBonus": 0
+  },
+  "cd_jiaxiang": {
+    "word": "家乡", "pos": "object", "cost": 0, "rarity": "common", "pack": "caodong",
+    "desc": "宾语·回血+4", "flavor": "回不去的名字叫家乡", "effectBonus": 4, "bonusType": "heal"
+  },
+  "cd_wuliao": {
+    "word": "无聊地", "pos": "modifier", "cost": 0, "rarity": "common", "pack": "caodong",
+    "desc": "修饰·随机效果", "flavor": "好无聊 我好无聊", "multiplier": 1.0, "randomTargetMod": true
+  },
+  "cd_tianzhen": {
+    "word": "天真地", "pos": "modifier", "cost": 0, "rarity": "uncommon", "pack": "caodong",
+    "desc": "修饰·攻击×1.3自伤2", "flavor": "我看着天真的我自己", "multiplier": 1.3, "bonusType": "attack", "selfDmgMod": 2
+  },
+  "cd_daodi": {
+    "word": "到底", "pos": "exclamation", "cost": 0, "rarity": "uncommon", "pack": "caodong",
+    "desc": "感叹词·穿透×1.3", "flavor": "到底有谁在乎谁", "excMult": 1.3, "excType": "attack", "excPenetrate": true
+  },
+  "cd_suowei": {
+    "word": "所谓的", "pos": "exclamation", "cost": 0, "rarity": "common", "pack": "caodong",
+    "desc": "感叹词·全×1.2", "flavor": "所谓的正常", "excMult": 1.2, "excType": "all", "freePos": true
+  },
+
+  "lx_mengshi": {
+    "word": "猛士", "pos": "subject", "cost": 0, "rarity": "rare", "pack": "luxun",
+    "desc": "主语·攻击+5", "flavor": "真的猛士，敢于直面惨淡的人生", "powerBonus": 5, "bonusType": "attack"
+  },
+  "lx_kuangren": {
+    "word": "狂人", "pos": "subject", "cost": 0, "rarity": "uncommon", "pack": "luxun",
+    "desc": "主语·攻击+3随机效果", "flavor": "从来如此，便对么？", "powerBonus": 3, "bonusType": "attack", "randomEffect": true
+  },
+  "lx_zhanshi": {
+    "word": "战士", "pos": "subject", "cost": 0, "rarity": "uncommon", "pack": "luxun",
+    "desc": "主语·攻击+3格挡+2", "flavor": "有缺点的战士终竟是战士", "powerBonus": 3, "bonusType": "attack", "defenseBonus": 2
+  },
+  "lx_guoke": {
+    "word": "过客", "pos": "subject", "cost": 0, "rarity": "common", "pack": "luxun",
+    "desc": "主语·穿透格挡", "flavor": "我只得走，我还是走好罢", "powerBonus": 0, "bonusType": "attack", "stealthSub": true
+  },
+  "lx_nahan": {
+    "word": "呐喊", "pos": "verb", "cost": 2, "rarity": "rare", "pack": "luxun",
+    "combatType": "attack", "basePower": 6, "upgPower": 9, "forceAoe": true, "applyWeakVerb": 2,
+    "desc": "攻击{power}·全体·弱化2", "flavor": "凡有一人的主张，得了赞和，是促其前进的"
+  },
+  "lx_fankang": {
+    "word": "反抗", "pos": "verb", "cost": 1, "rarity": "uncommon", "pack": "luxun",
+    "combatType": "attack", "basePower": 8, "upgPower": 12,
+    "desc": "攻击{power}", "flavor": "我要反抗，试他一试"
+  },
+  "lx_panghuang": {
+    "word": "彷徨", "pos": "verb", "cost": 1, "rarity": "common", "pack": "luxun",
+    "combatType": "defense", "basePower": 5, "upgPower": 8, "draw": 1,
+    "desc": "格挡{power}·抽1", "flavor": "人生最苦痛的是梦醒了无路可以走"
+  },
+  "lx_jianbi": {
+    "word": "剪辫", "pos": "verb", "cost": 1, "rarity": "uncommon", "pack": "luxun",
+    "combatType": "attack", "basePower": 5, "upgPower": 7, "removeBuffs": true,
+    "desc": "攻击{power}·移除增益", "flavor": "我以我血荐轩辕"
+  },
+  "lx_tiewu": {
+    "word": "铁屋", "pos": "object", "cost": 0, "rarity": "uncommon", "pack": "luxun",
+    "desc": "宾语·格挡+5", "flavor": "假如一间铁屋子，绝无窗户而万难破毁", "effectBonus": 5, "bonusType": "defense"
+  },
+  "lx_jingji": {
+    "word": "荆棘", "pos": "object", "cost": 0, "rarity": "uncommon", "pack": "luxun",
+    "desc": "宾语·攻击+3自伤1", "flavor": "从只有荆棘的地方开辟出来的", "effectBonus": 3, "bonusType": "attack"
+  },
+  "lx_yinghuo": {
+    "word": "萤火", "pos": "object", "cost": 0, "rarity": "common", "pack": "luxun",
+    "desc": "宾语·回血+3", "flavor": "有一分热，发一分光，就令萤火一般", "effectBonus": 3, "bonusType": "heal"
+  },
+  "lx_lu": {
+    "word": "路", "pos": "object", "cost": 0, "rarity": "common", "pack": "luxun",
+    "desc": "宾语·质量+0.3", "flavor": "地上本没有路，走的人多了，也便成了路", "effectBonus": 0, "poetryObjBonus": 0.3
+  },
+  "lx_hengmei": {
+    "word": "横眉冷对地", "pos": "modifier", "cost": 0, "rarity": "rare", "pack": "luxun",
+    "desc": "修饰·攻击×1.8", "flavor": "横眉冷对千夫指", "multiplier": 1.8, "bonusType": "attack"
+  },
+  "lx_candan": {
+    "word": "惨淡地", "pos": "modifier", "cost": 0, "rarity": "uncommon", "pack": "luxun",
+    "desc": "修饰·全×1.3自伤2", "flavor": "敢于直面惨淡的人生", "multiplier": 1.3, "bonusType": "all", "selfDmgMod": 2
+  },
+  "lx_jiujiu": {
+    "word": "救救孩子", "pos": "exclamation", "cost": 0, "rarity": "rare", "pack": "luxun",
+    "desc": "感叹词·全×1.5+回血5", "flavor": "没有吃过人的孩子，或者还有？", "excMult": 1.5, "excType": "all", "excHeal": 5
+  },
+  "lx_conglairu": {
+    "word": "从来如此", "pos": "exclamation", "cost": 0, "rarity": "uncommon", "pack": "luxun",
+    "desc": "感叹词·穿透×1.4", "flavor": "从来如此，便对么？", "excMult": 1.4, "excType": "attack", "excPenetrate": true, "freePos": true
   }
 }

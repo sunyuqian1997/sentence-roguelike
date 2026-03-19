@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>墨韵肉鸽 — 易安词剑录</title>
+<title>词灵录 — 魔法少女造句战斗</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
@@ -17,13 +17,13 @@
 
   <!-- TITLE -->
   <div id="title-screen" class="screen active">
-    <h1>易安词剑录</h1>
-    <div class="subtitle">我手写我心</div>
-    <button class="btn" onclick="startGame()">执笔出发</button>
+    <h1>词灵录</h1>
+    <div class="subtitle">文字即魔法</div>
+    <button class="btn" onclick="startGame()">开始冒险✨</button>
     <button class="btn btn-small btn-secondary" onclick="showMetaScreen()" style="margin-top:12px;">文渊阁</button>
     <div class="ink-display-title" id="title-ink-display"></div>
     <button class="btn btn-small btn-secondary" onclick="toggleLang()" style="margin-top:12px;font-size:0.75rem;" id="lang-btn">EN / 中文</button>
-    <div class="credit">李清照 · 高二三班 · v7</div>
+    <div class="credit">李清照 · 词灵使 · v8</div>
   </div>
 
   <!-- MAP -->
@@ -195,12 +195,12 @@
   <!-- GAME OVER -->
   <div id="gameover-screen" class="screen" style="overflow-y:auto;">
     <div class="end-content">
-      <h2>失语</h2>
-      <p style="font-style:italic;opacity:0.6;margin-bottom:14px;font-size:0.9rem;">话到嘴边，咽了回去。</p>
+      <h2>词穷了…</h2>
+      <p style="font-style:italic;opacity:0.6;margin-bottom:14px;font-size:0.9rem;">魔法用尽了，文字散落一地……</p>
       <div class="end-stats" id="gameover-stats"></div>
       <div id="gameover-ink-breakdown"></div>
       <div class="death-buttons">
-        <button class="btn" onclick="startGame()">重新执笔</button>
+        <button class="btn" onclick="startGame()">再次冒险✨</button>
         <button class="btn btn-small btn-secondary" onclick="showMetaScreen()">文渊阁</button>
       </div>
     </div>
@@ -209,12 +209,12 @@
   <!-- VICTORY -->
   <div id="victory-screen" class="screen" style="overflow-y:auto;">
     <div class="end-content">
-      <h2>发送</h2>
-      <p style="font-style:italic;opacity:0.6;margin-bottom:14px;font-size:0.9rem;">这次没删。</p>
+      <h2>冒险完成！✨</h2>
+      <p style="font-style:italic;opacity:0.6;margin-bottom:14px;font-size:0.9rem;">文字的秩序恢复了，图书馆的书页轻轻翻动。</p>
       <div class="end-stats" id="victory-stats"></div>
       <div id="victory-ink-breakdown"></div>
       <div class="death-buttons">
-        <button class="btn" onclick="startGame()">再谱新篇</button>
+        <button class="btn" onclick="startGame()">再次冒险✨</button>
         <button class="btn btn-small btn-secondary" onclick="showMetaScreen()">文渊阁</button>
       </div>
     </div>
