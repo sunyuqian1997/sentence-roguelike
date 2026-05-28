@@ -3274,5 +3274,168 @@
     "desc": "连词·+0.05",
     "flavor": "让我来",
     "grammarBonus": 0.05
+  },
+  "yingzi": {
+    "word": "影子",
+    "pos": "subject",
+    "cost": 0,
+    "rarity": "starter",
+    "desc": "主语·穿透格挡",
+    "flavor": "墙后还有一面墙",
+    "powerBonus": 0,
+    "bonusType": "attack",
+    "stealthSub": true,
+    "en": {
+      "word": "Shadow",
+      "desc": "Subject · Penetrate DEF"
+    }
+  },
+  "wuming": {
+    "word": "无名者",
+    "pos": "subject",
+    "cost": 0,
+    "rarity": "starter",
+    "desc": "主语·质量+0.4",
+    "flavor": "她没有名字，所以她是所有人",
+    "powerBonus": 0,
+    "poetryBonus": 0.4,
+    "en": {
+      "word": "Nameless",
+      "desc": "Subject · Quality+0.4"
+    }
+  },
+  "sui": {
+    "word": "碎",
+    "pos": "verb",
+    "cost": 1,
+    "rarity": "starter",
+    "combatType": "attack",
+    "basePower": 5,
+    "upgPower": 8,
+    "flavor": "玻璃落地的那一秒",
+    "desc": "攻击 {power}",
+    "en": {
+      "word": "Shatter",
+      "desc": "ATK {power}"
+    }
+  },
+  "chen": {
+    "word": "沉",
+    "pos": "verb",
+    "cost": 1,
+    "rarity": "starter",
+    "combatType": "defense",
+    "basePower": 5,
+    "upgPower": 8,
+    "flavor": "向海底，向更深的海底",
+    "desc": "格挡 {power}",
+    "en": {
+      "word": "Sink",
+      "desc": "DEF {power}"
+    }
+  },
+  "piaofu": {
+    "word": "漂",
+    "pos": "verb",
+    "cost": 1,
+    "rarity": "starter",
+    "combatType": "heal",
+    "basePower": 4,
+    "upgPower": 6,
+    "blockAlso": 2,
+    "flavor": "在两次呼吸之间",
+    "desc": "回血{power}+格挡2",
+    "en": {
+      "word": "Drift",
+      "desc": "Heal {power}+DEF 2"
+    }
+  },
+  "hai": {
+    "word": "海",
+    "pos": "object",
+    "cost": 0,
+    "rarity": "starter",
+    "desc": "宾语·全体伤害",
+    "flavor": "盐，又一遍的盐",
+    "aoe": true,
+    "effectBonus": 0,
+    "poetryObjBonus": 0.2,
+    "en": {
+      "word": "Sea",
+      "desc": "Object · AoE damage"
+    }
+  },
+  "huijin": {
+    "word": "灰烬",
+    "pos": "object",
+    "cost": 0,
+    "rarity": "starter",
+    "desc": "宾语·攻击+2·诗+0.2",
+    "flavor": "燃烧之后剩下的，全部",
+    "effectBonus": 2,
+    "bonusType": "attack",
+    "poetryObjBonus": 0.2,
+    "en": {
+      "word": "Ashes",
+      "desc": "Object · ATK+2, Poetry+0.2"
+    }
+  },
+  "guge": {
+    "word": "骨",
+    "pos": "object",
+    "cost": 0,
+    "rarity": "starter",
+    "desc": "宾语·暴击(伤害+50%)",
+    "flavor": "也是最后一根",
+    "effectBonus": 0,
+    "critObj": true,
+    "en": {
+      "word": "Bone",
+      "desc": "Object · Crit (DMG+50%)"
+    }
+  },
+  "chaoshide": {
+    "word": "潮湿地",
+    "pos": "modifier",
+    "cost": 0,
+    "rarity": "starter",
+    "desc": "修饰·全×1.2·诗+0.3",
+    "flavor": "雨后第三天的报纸",
+    "multiplier": 1.2,
+    "bonusType": "all",
+    "poetryBonusMod": 0.3,
+    "en": {
+      "word": "Damply",
+      "desc": "Mod · All×1.2, Quality+0.3"
+    }
+  },
+  "er": {
+    "word": "而",
+    "pos": "connector",
+    "cost": 0,
+    "rarity": "starter",
+    "desc": "连词·+0.1",
+    "flavor": "雪而不是雨，铁而不是糖",
+    "grammarBonus": 0.1,
+    "en": {
+      "word": "Yet",
+      "desc": "Conn · +0.1 grammar"
+    }
+  },
+  "oh": {
+    "word": "哦",
+    "pos": "exclamation",
+    "cost": 0,
+    "rarity": "starter",
+    "freePos": true,
+    "desc": "感叹·全×1.15·诗+0.2",
+    "flavor": "像突然认出陌生人",
+    "excMult": 1.15,
+    "excType": "all",
+    "excPoetry": 0.2,
+    "en": {
+      "word": "Oh",
+      "desc": "Excl · All×1.15, Quality+0.2"
+    }
   }
 }

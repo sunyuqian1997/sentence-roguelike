@@ -4,6 +4,7 @@ import { G, META } from './game/state.js';
 import { toggleMute } from './game/audio.js';
 import { initInkBackground } from './ui/inkShader.js';
 import { getLang, setLang } from './i18n.js';
+import { initCheats } from './cheats.js';
 import { startGame, endPlayerTurn, chantSentence, addToSentence, removeSentenceWord, skipReward } from './game/combat.js';
 import {
   showRestScreen, restHeal, restUpgrade, closeUpgrade,
@@ -47,6 +48,7 @@ window.toggleLang = function() {
 // Init
 (function init() {
   initInkBackground();
+  initCheats();
 
   const currentLang = getLang();
   const langBtn = document.getElementById('lang-btn');
