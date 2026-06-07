@@ -100,6 +100,44 @@
 }
 .overlay-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; max-width: 700px; }
 
+/* --- Journal (in-combat) --- */
+.journal-list {
+  display: flex; flex-direction: column; gap: 4px;
+  max-width: min(560px, 92vw);
+  width: 100%;
+  background: var(--paper);
+  border: 1px solid var(--ink-faint);
+  border-radius: 6px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 20px rgba(17,17,16,0.08);
+  max-height: 70vh; overflow-y: auto;
+}
+.journal-line {
+  font-family: var(--font-brush);
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  line-height: 2;
+  display: flex; align-items: baseline; gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px dashed rgba(17,17,16,0.06);
+}
+.journal-line:last-child { border-bottom: none; }
+.journal-num {
+  font-family: var(--font-serif);
+  color: var(--smoke);
+  font-size: 0.75rem;
+  min-width: 24px;
+}
+.journal-text { flex: 1; }
+.journal-empty {
+  font-style: italic;
+  color: var(--smoke);
+  text-align: center;
+  padding: 30px 10px;
+  font-family: var(--font-brush);
+}
+
 /* --- 21. Tooltip --- */
 #tooltip {
   position: fixed; z-index: 9999;

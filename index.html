@@ -49,15 +49,18 @@
       </div>
       <div class="combat-info"><span id="combat-status-effects"></span></div>
       <div class="combat-info">
+        <button class="btn-small btn btn-secondary" onclick="viewJournal()" style="font-size:0.65rem;padding:3px 8px;" id="journal-btn">诗册</button>
         <button class="btn-small btn btn-secondary" onclick="viewDeck()" style="font-size:0.65rem;padding:3px 8px;">词库</button>
       </div>
     </div>
     <div id="enemy-area"></div>
     <div id="sentence-area">
       <div id="sentence-label">
-        <span>【造句区】点击手牌和敌人构建句子 · 5字/7字=诗意加成✨</span>
+        <span>【造句区】点句子 · 5/7字=诗意加成 · 押韵+0.4 · 浸湿纸鬼</span>
+        <span id="rhyme-streak-tag"></span>
         <div id="enemy-targets-bar"></div>
       </div>
+      <div id="recent-journal-strip"></div>
       <div id="sentence-slots-container"></div>
       <div id="sentence-preview"></div>
       <div id="duizhang-preview"></div>
@@ -177,6 +180,13 @@
     <h3>你的词库（<span id="deck-count">0</span>张）</h3>
     <div id="deck-cards-grid" class="overlay-grid"></div>
     <button class="btn btn-small btn-secondary" onclick="closeDeck()" style="margin-top:14px;">关闭</button>
+  </div>
+
+  <!-- JOURNAL OVERLAY -->
+  <div id="journal-overlay" class="overlay">
+    <h3>本局诗册（<span id="journal-count">0</span>句）</h3>
+    <div id="journal-list" class="journal-list"></div>
+    <button class="btn btn-small btn-secondary" onclick="closeJournal()" style="margin-top:14px;">关闭</button>
   </div>
 
   <!-- REMOVE OVERLAY -->

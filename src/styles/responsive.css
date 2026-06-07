@@ -2,34 +2,51 @@
    RESPONSIVE
    ============================================================ */
 
+/* --- Tablet & mid-size --- */
+@media (max-width: 768px) {
+  #combat-top { padding: 6px 10px; gap: 6px; }
+  #combat-top .combat-info { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  #recent-journal-strip { font-size: 0.72rem; gap: 4px 8px; }
+}
+
+/* --- Mobile portrait (≤600px) --- */
 @media (max-width: 600px) {
   .card {
     width: clamp(70px, 20vw, 85px);
-    min-width: 65px;
-    height: clamp(105px, 28vw, 130px);
+    min-width: 64px;
+    height: clamp(108px, 28vw, 130px);
     margin-left: -8px;
   }
   .card:first-child { margin-left: 0; }
-  .card:hover { z-index: 20; transform: translateY(-16px) scale(1.08); }
-  .card-word { font-size: clamp(1.3rem, 4vw, 1.6rem); }
-  .card.pos-punctuation .card-word { font-size: clamp(1.6rem, 4.5vw, 2rem); }
+  .card:hover { z-index: 20; transform: translateY(-12px) scale(1.06); }
+  .card-word { font-size: clamp(1.25rem, 4vw, 1.55rem); }
+  .card.pos-punctuation .card-word { font-size: clamp(1.55rem, 4.5vw, 1.95rem); }
   .card-pos-tag { font-size: 0.5rem; padding: 2px 0; }
   .card-effect-bar { font-size: 0.5rem; padding: 2px 3px; line-height: 1.1; }
   .card-cost { width: 20px; height: 20px; font-size: 0.65rem; }
-  .enemy-portrait { width: 65px; height: 65px; font-size: 1.8rem; }
-  .enemy-hp-bar { width: 65px; }
-  .enemy { min-width: 75px; padding: 4px 5px 5px; gap: 2px; }
-  .enemy-name { font-size: 0.8rem; }
-  .enemy-intent { font-size: 0.7rem; padding: 2px 6px; }
+  .enemy-portrait { width: 64px; height: 64px; font-size: 1.7rem; }
+  .enemy-hp-bar { width: 64px; }
+  .enemy { min-width: 72px; padding: 4px 5px 5px; gap: 2px; }
+  .enemy-name { font-size: 0.78rem; }
+  .enemy-intent { font-size: 0.68rem; padding: 2px 6px; }
   #hand-cards { gap: 0; padding: 0 2px; }
   #hand-area { padding: 4px 6px 6px; }
   #hand-cards-wrapper { gap: 0; }
   #fixed-card-slot { padding-right: 4px; margin-right: 4px; }
   #fixed-card-slot .card { margin-left: 0; }
   .sentence-word { font-size: 0.75rem; padding: 3px 7px; }
-  #sentence-area { padding: 8px 10px; min-height: 70px; }
+  #sentence-area { padding: 8px 10px; min-height: 68px; }
   #sentence-preview { font-size: 1rem; }
   #sentence-score-preview { font-size: 0.65rem; }
+  #sentence-label { font-size: 0.7rem; }
+  #sentence-label > span:first-child {
+    flex: 1 1 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  #rhyme-streak-tag { font-size: 0.72rem; padding: 1px 6px; }
+  #recent-journal-strip { font-size: 0.7rem; gap: 4px 8px; margin: 2px 0 4px; }
   .map-node { width: 42px; height: 42px; font-size: 1rem; }
   .map-row { gap: 24px; padding: 10px 0; }
   #enemy-targets-bar .enemy-target-word { font-size: 0.65rem; padding: 3px 6px; }
@@ -42,57 +59,87 @@
   .player-block-display { font-size: 0.9rem; }
   .energy-orb { width: 30px; height: 30px; font-size: 0.85rem; }
   .btn { min-height: 44px; font-size: clamp(0.85rem, 2.5vw, 1rem); }
-  .btn-small { min-height: 36px; }
+  .btn-small { min-height: 36px; padding: 0.35em 1em; }
   .story-portrait { width: 55px; height: 55px; font-size: 1.6rem; }
   .story-speaker { font-size: 1rem; }
   .story-text { font-size: 0.85rem; }
-  #combat-top { padding: 6px 10px; font-size: 0.75rem; }
-  #enemy-area { min-height: 130px; padding: 8px; gap: 10px; }
+  #combat-top { padding: 5px 8px; font-size: 0.72rem; gap: 4px; flex-wrap: wrap; }
+  #combat-top .combat-info { gap: 4px; flex-wrap: wrap; }
+  #combat-top .combat-info .btn { padding: 2px 7px !important; font-size: 0.62rem !important; min-height: 28px !important; }
+  #enemy-area { min-height: 128px; padding: 8px; gap: 10px; }
   .reward-content, .rest-content, .event-content, .shop-content { padding: 14px; }
   .reward-content h2, .rest-content h2, .shop-content h2 { font-size: 1.3rem; }
-  #score-overlay { padding: 10px 18px; min-width: 240px; }
-  #score-sentence { font-size: clamp(1.1rem, 4vw, 1.6rem); }
+  #score-overlay { padding: 10px 18px; min-width: 240px; max-width: 92vw; }
+  #score-sentence { font-size: clamp(1.05rem, 4vw, 1.55rem); }
+  #score-details { font-size: 0.72rem; line-height: 1.7; }
   .end-content { padding: 14px; }
   .end-stats { padding: 10px 14px; font-size: 0.85rem; }
+  /* Journal */
+  .journal-list { padding: 12px 14px; max-height: 65vh; }
+  .journal-line { font-size: 0.92rem; line-height: 1.7; }
+  .overlay h3 { font-size: 1rem; margin-bottom: 10px; }
 }
 
+/* --- Small mobile (≤400px iPhone SE, fold) --- */
 @media (max-width: 400px) {
   .card {
-    width: clamp(60px, 18vw, 70px);
-    min-width: 55px;
-    height: clamp(88px, 24vw, 105px);
-    margin-left: -12px;
+    width: clamp(58px, 17vw, 68px);
+    min-width: 54px;
+    height: clamp(86px, 23vw, 102px);
+    margin-left: -10px;
   }
   .card:first-child { margin-left: 0; }
-  .card-word { font-size: 1.2rem; }
+  .card-word { font-size: 1.15rem; }
   .card-effect-bar { font-size: 0.45rem; }
   .card-pos-tag { font-size: 0.45rem; }
-  .btn { min-height: 44px; padding: 0.5em 1.2em; }
-  .enemy { min-width: 65px; }
+  .card-cost { width: 18px; height: 18px; font-size: 0.6rem; }
+  .btn { min-height: 40px; padding: 0.5em 1em; font-size: 0.85rem; }
+  .btn-small { min-height: 32px; padding: 0.3em 0.8em; font-size: 0.72rem; }
+  .enemy { min-width: 58px; padding: 3px 4px 4px; }
   .enemy-portrait { width: 50px; height: 50px; font-size: 1.4rem; }
-  #sentence-preview { font-size: 0.9rem; }
+  .enemy-hp-bar { width: 50px; }
+  .enemy-name { font-size: 0.7rem; }
+  #sentence-preview { font-size: 0.92rem; }
+  #sentence-area { padding: 6px 8px; min-height: 60px; }
+  .sentence-word { font-size: 0.7rem; padding: 2px 6px; }
+  #combat-top { font-size: 0.68rem; }
+  #combat-top .combat-info .btn { font-size: 0.6rem !important; padding: 2px 6px !important; min-height: 24px !important; }
+  #player-status-bar { padding: 4px 6px; gap: 5px; font-size: 0.78rem; }
+  .energy-orb { width: 26px; height: 26px; font-size: 0.78rem; }
+  .player-char-card { padding: 2px 5px; gap: 4px; }
+  .player-char-card .char-name { font-size: 0.62rem; }
+  .player-char-card img { width: 22px !important; height: 22px !important; }
+  #recent-journal-strip { font-size: 0.65rem; }
+  #score-overlay { padding: 8px 14px; min-width: 200px; max-width: 95vw; }
+  #score-sentence { font-size: 1.1rem; }
+  #score-details { font-size: 0.68rem; line-height: 1.6; }
+  .journal-line { font-size: 0.85rem; }
+  .overlay { padding: 12px; }
 }
 
+/* --- Short viewports (landscape mobile) --- */
 @media (max-height: 650px) {
-  #enemy-area { min-height: 110px; padding: 6px; gap: 8px; }
+  #enemy-area { min-height: 108px; padding: 6px; gap: 8px; }
   .enemy-portrait { width: 60px; height: 60px; font-size: 1.6rem; }
   #sentence-area { min-height: 60px; padding: 6px 8px; }
   #hand-area { padding: 4px 6px 6px; }
   .card { height: clamp(85px, 18vh, 125px); }
   #player-status-bar { padding: 4px 8px; }
   #combat-top { padding: 4px 8px; }
+  #recent-journal-strip { display: none; }
 }
 
 @media (max-height: 500px) {
-  #enemy-area { min-height: 80px; padding: 4px; gap: 6px; }
-  .enemy-portrait { width: 45px; height: 45px; font-size: 1.3rem; }
+  #enemy-area { min-height: 78px; padding: 4px; gap: 6px; }
+  .enemy-portrait { width: 44px; height: 44px; font-size: 1.3rem; }
   .enemy-intent { font-size: 0.65rem; }
-  #sentence-area { min-height: 50px; padding: 4px 6px; }
+  #sentence-area { min-height: 48px; padding: 4px 6px; }
   #sentence-preview { font-size: 0.85rem; }
   #hand-area { padding: 3px 6px 4px; }
-  .card { height: clamp(75px, 15vh, 100px); }
+  .card { height: clamp(72px, 15vh, 98px); }
   .card-effect-bar { display: none; }
   #player-status-bar { padding: 3px 6px; }
+  #sentence-label { font-size: 0.65rem; }
 }
 
 /* --- Reduced Motion --- */

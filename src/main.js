@@ -10,6 +10,7 @@ import {
   showRestScreen, restHeal, restUpgrade, closeUpgrade,
   showEventScreen, showShopScreen, shopRemoveCard, closeRemove, leaveShop,
   viewDeck, closeDeck,
+  viewJournal, closeJournal,
   gameOver, showVictoryScreen,
   showMetaScreen, closeMetaScreen, buyPerk, buyCardMeta,
   showPoetryScreen, submitPoetry, skipPoetry,
@@ -21,6 +22,8 @@ window.showMetaScreen = showMetaScreen;
 window.closeMetaScreen = closeMetaScreen;
 window.viewDeck = viewDeck;
 window.closeDeck = closeDeck;
+window.viewJournal = viewJournal;
+window.closeJournal = closeJournal;
 window.chantSentence = chantSentence;
 window.endPlayerTurn = endPlayerTurn;
 window.skipReward = skipReward;

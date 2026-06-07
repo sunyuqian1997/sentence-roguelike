@@ -615,7 +615,42 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
   font-family: var(--font-serif);
+}
+
+#rhyme-streak-tag {
+  display: none;
+  font-family: var(--font-brush);
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 2px 8px;
+  border: 1px solid var(--gold);
+  background: var(--gold-dim);
+  color: var(--gold);
+  border-radius: 3px;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+#recent-journal-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin: 0 0 6px;
+  font-family: var(--font-brush);
+  font-size: 0.78rem;
+  color: var(--smoke);
+  letter-spacing: 0.06em;
+  opacity: 0.75;
+  min-height: 0;
+}
+#recent-journal-strip:empty { display: none; }
+.recent-journal-item {
+  white-space: nowrap;
+  border-left: 2px solid var(--ink-faint);
+  padding-left: 6px;
 }
 
 #enemy-targets-bar {

@@ -24,6 +24,8 @@ export function startGame() {
   G.block = 0; G.strength = 0; G.vulnerable = 0; G.weak = 0;
   G.floorsCleared = 0; G.elitesKilled = 0; G.bossesKilled = 0; G.sentencesChanted = 0;
   G.sentenceJournal = [];
+  G.lastRhymeKey = null;
+  G.rhymeStreak = 0;
   G.currentRow = -1; G.currentNodeIndex = -1;
   G.sentence = []; G.enemyTargets = [];
   G.allCardsCostZero = false; G.poeticAura = false;
@@ -67,6 +69,8 @@ export function startCombat(enemyDefs) {
   G.allCardsCostZero = false; G.poeticAura = false; G.poeticAuraNext = false;
   G.turn = 0; G.vulnerable = 0; G.weak = 0;
   G.drawLessNextTurn = 0;
+  G.lastRhymeKey = null;
+  G.rhymeStreak = 0;
 
   showScreen('combat-screen');
   // Player portrait is now an <img> in HTML, no need to generate SVG
@@ -296,6 +300,13 @@ export function chantSentence() {
     }, 1200);
   } else {
     const result = evaluateSentence(sentenceCards);
+    // Update rhyme tracking BEFORE applying effects so the next sentence sees it.
+    if (result && result.effects && result.effects._rhymeInfo) {
+      const r = result.effects._rhymeInfo;
+      if (r.rhymes) G.rhymeStreak = r.streak;
+      else G.rhymeStreak = 0;
+      if (r.key) G.lastRhymeKey = r.key;
+    }
     showScoreAnimation(result, () => {
       applyEffects(result.effects);
       checkEnemies();
@@ -552,6 +563,41 @@ export function applyEffects(effects) {
       G.enemies[tIdx].confused = true;
       showFloatingText(G.enemies[tIdx].element, '混乱！', '#6B4C6E');
     }
+  }
+
+  // MOTIF DEBUFFS — apply per-enemy thematic effects (纸鬼沉海 etc.)
+  if (effects._motifTriggers && effects._motifTriggers.length > 0) {
+    effects._motifTriggers.forEach(t => {
+      const eff = t.motif.effect || {};
+      t.enemyIdx.forEach(idx => {
+        const e = G.enemies[idx];
+        if (!e || e.hp <= 0) return;
+        if (eff.vuln) {
+          e.vulnerable = (e.vulnerable || 0) + eff.vuln;
+          if (e.element) showFloatingText(e.element, `${t.motif.label} 易伤+${eff.vuln}`, '#6B4C6E');
+        }
+        if (eff.weak) {
+          e.weak = (e.weak || 0) + eff.weak;
+          if (e.element) showFloatingText(e.element, `弱+${eff.weak}`, '#B87333');
+        }
+        if (eff.stripBlock && e.block > 0) {
+          const stripped = e.block; e.block = 0;
+          if (e.element) showFloatingText(e.element, `挡-${stripped}`, '#3A7B8C');
+        }
+        if (eff.reduceStrength && e.strength) {
+          e.strength = Math.max(0, e.strength - eff.reduceStrength);
+          if (e.element) showFloatingText(e.element, `力-${eff.reduceStrength}`, '#C54B3C');
+        }
+        if (eff.burn) {
+          e.poison = { dmg: 3, turns: eff.burn };
+          if (e.element) showFloatingText(e.element, `🔥${eff.burn}回合`, '#C54B3C');
+        }
+        if (eff.soak) {
+          e._soaked = (e._soaked || 0) + 1;
+          if (e.element) showFloatingText(e.element, `💧 浸湿`, '#3A7B8C');
+        }
+      });
+    });
   }
 
   // POETIC ATTACK FEEDBACK - 高诗意攻击回血

@@ -135,6 +135,24 @@ export function viewDeck() {
 export function closeDeck() { document.getElementById('deck-overlay').classList.remove('active'); }
 
 // ============================================================
+// IN-COMBAT JOURNAL
+// ============================================================
+export function viewJournal() {
+  const list = document.getElementById('journal-list');
+  if (!list) return;
+  document.getElementById('journal-count').textContent = G.sentenceJournal.length;
+  if (G.sentenceJournal.length === 0) {
+    list.innerHTML = '<div class="journal-empty">尚无诗句…吟诵一句以开篇。</div>';
+  } else {
+    list.innerHTML = G.sentenceJournal.map((s, i) =>
+      `<div class="journal-line"><span class="journal-num">${i + 1}.</span><span class="journal-text">「${s}」</span></div>`
+    ).join('');
+  }
+  document.getElementById('journal-overlay').classList.add('active');
+}
+export function closeJournal() { document.getElementById('journal-overlay').classList.remove('active'); }
+
+// ============================================================
 // GAME OVER / VICTORY
 // ============================================================
 export function calculateInkReward(isVictory) {

@@ -4,6 +4,7 @@ import { playSFX } from './audio.js';
 import { VFX } from '../ui/vfx.js';
 import { dealDamageToEnemy } from './damage.js';
 import { drawCards } from './combat.js';
+import { detectMotifs, getRhymeKey, checkRhyme } from './poetics.js';
 
 // ============================================================
 // DUIZHANG (对仗) SYSTEM
@@ -454,6 +455,31 @@ export function evaluateSentence(rawCards) {
   if (G.poeticAura) { literaryMult += 0.5; literaryNotes.push('诗仙附体！'); }
   if (cards.length >= 5) { literaryMult += 0.2; literaryNotes.push('长句加成 +0.2'); }
 
+  // ---------- RHYME / 韵律 BONUS ----------
+  // Compares the last character of THIS sentence with the last sentence's rhyme key.
+  // First rhyme: +0.4. Streak of 3+: +0.8.
+  const _bodyTextForRhyme = nonPunctCards.map(c => c.word).join('');
+  const _rhymeKey = getRhymeKey(_bodyTextForRhyme);
+  let _rhymeInfo = { rhymes: false, key: _rhymeKey, prevKey: G.lastRhymeKey || null, streak: 0 };
+  if (_rhymeKey && G.lastRhymeKey) {
+    const rc = checkRhyme(_rhymeKey, G.lastRhymeKey);
+    if (rc.rhymes) {
+      const streak = (G.rhymeStreak || 0) + 1;
+      _rhymeInfo.rhymes = true;
+      _rhymeInfo.streak = streak;
+      if (streak >= 3) {
+        literaryMult += 0.8;
+        literaryNotes.push(`🎵 三连押韵！+0.8 (×${streak})`);
+      } else if (streak >= 2) {
+        literaryMult += 0.6;
+        literaryNotes.push(`🎵 连押 +0.6 (×${streak})`);
+      } else {
+        literaryMult += 0.4;
+        literaryNotes.push(`🎵 押韵 +0.4`);
+      }
+    }
+  }
+
   // COMBAT EFFECTS — declared before exclamation loop so exc properties can write into it
   const effects = {
     damage: 0, block: 0, heal: 0, strengthGain: 0, draw: 0,
@@ -462,7 +488,23 @@ export function evaluateSentence(rawCards) {
     targetEnemyIdx: targetEnemyIdx,
     applyWeak: 0, isQuestion: hasQuestion, ignoreBlock: false,
     goldGain: 0, thorns: 0, drawLessNext: 0,
+    _motifTriggers: null,
+    _rhymeInfo: null,
   };
+
+  // MOTIFS (thematic effects against tagged enemies — e.g. 纸鬼沉海)
+  const _motifSrc = cards.filter(c => c.pos !== 'punctuation').map(c => c._isEnemyTarget ? c.word : c.word).join('');
+  const _motifs = detectMotifs(_motifSrc, G.enemies);
+  if (_motifs.length > 0) {
+    effects._motifTriggers = _motifs;
+    let motifBonus = 0;
+    _motifs.forEach(t => {
+      literaryNotes.push(`${t.motif.label}：${t.motif.flavor}`);
+      motifBonus += (t.motif.effect.bonusDmgPct || 0);
+    });
+    if (motifBonus > 0) literaryMult += motifBonus;
+  }
+  effects._rhymeInfo = _rhymeInfo;
 
   if (hasQuestion) { effects.applyWeak = 2; }
 

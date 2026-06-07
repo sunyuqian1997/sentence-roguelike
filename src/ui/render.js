@@ -37,8 +37,39 @@ export function renderCombat() {
   renderEnemies();
   renderEnemyTargetBar();
   renderSentenceSlots();
+  renderRecentJournal();
+  renderRhymeStreak();
+  renderJournalBtnBadge();
   renderHand();
   updateChantButton();
+}
+
+function renderRecentJournal() {
+  const strip = document.getElementById('recent-journal-strip');
+  if (!strip) return;
+  const lines = (G.sentenceJournal || []).slice(-2);
+  if (lines.length === 0) { strip.innerHTML = ''; return; }
+  strip.innerHTML = lines.map(s => `<span class="recent-journal-item">「${s}」</span>`).join('');
+}
+
+function renderRhymeStreak() {
+  const tag = document.getElementById('rhyme-streak-tag');
+  if (!tag) return;
+  const streak = G.rhymeStreak || 0;
+  if (streak > 0) {
+    tag.textContent = `🎵 押韵×${streak}`;
+    tag.style.display = 'inline-block';
+  } else {
+    tag.textContent = '';
+    tag.style.display = 'none';
+  }
+}
+
+function renderJournalBtnBadge() {
+  const btn = document.getElementById('journal-btn');
+  if (!btn) return;
+  const n = (G.sentenceJournal || []).length;
+  btn.textContent = n > 0 ? `诗册·${n}` : '诗册';
 }
 
 export function renderEnemies() {
