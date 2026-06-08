@@ -37,19 +37,27 @@ export function renderCombat() {
   renderEnemies();
   renderEnemyTargetBar();
   renderSentenceSlots();
-  renderRecentJournal();
+  renderCombatJournal();
   renderRhymeStreak();
-  renderJournalBtnBadge();
   renderHand();
   updateChantButton();
 }
 
-function renderRecentJournal() {
-  const strip = document.getElementById('recent-journal-strip');
-  if (!strip) return;
-  const lines = (G.sentenceJournal || []).slice(-2);
-  if (lines.length === 0) { strip.innerHTML = ''; return; }
-  strip.innerHTML = lines.map(s => `<span class="recent-journal-item">「${s}」</span>`).join('');
+function renderCombatJournal() {
+  const list = document.getElementById('combat-journal-list');
+  const countEl = document.getElementById('combat-journal-count');
+  if (!list) return;
+  const lines = G.sentenceJournal || [];
+  if (countEl) countEl.textContent = lines.length > 0 ? `(${lines.length})` : '';
+  if (lines.length === 0) {
+    list.innerHTML = '<span class="combat-journal-empty">尚无诗句…吟诵一句以开篇</span>';
+    return;
+  }
+  list.innerHTML = lines.map((s, i) =>
+    `<span class="combat-journal-item"><span class="cj-num">${i + 1}</span>「${s}」</span>`
+  ).join('');
+  // auto-scroll to latest entry
+  requestAnimationFrame(() => { list.scrollLeft = list.scrollWidth; });
 }
 
 function renderRhymeStreak() {
@@ -58,18 +66,11 @@ function renderRhymeStreak() {
   const streak = G.rhymeStreak || 0;
   if (streak > 0) {
     tag.textContent = `🎵 押韵×${streak}`;
-    tag.style.display = 'inline-block';
+    tag.style.display = 'inline-flex';
   } else {
     tag.textContent = '';
     tag.style.display = 'none';
   }
-}
-
-function renderJournalBtnBadge() {
-  const btn = document.getElementById('journal-btn');
-  if (!btn) return;
-  const n = (G.sentenceJournal || []).length;
-  btn.textContent = n > 0 ? `诗册·${n}` : '诗册';
 }
 
 export function renderEnemies() {
@@ -218,20 +219,42 @@ export function renderSentenceSlots() {
 }
 
 export function createSentenceWordEl(card, idx) {
-  const el = document.createElement('div');
-  el.className = 'sentence-word';
-  if (card._isEnemyTarget) el.classList.add('enemy-obj');
-  else if (card._isSelfTarget) el.classList.add('self-target');
-  else if (card.pos === 'punctuation') el.classList.add('punct-end');
-  else if (card.pos === 'exclamation') el.classList.add('exclamation-word');
-  else {
-    el.style.borderColor = getPosColor(card.pos);
-    el.style.color = getPosColor(card.pos);
+  // Render the full card itself in the sentence slot — preserves cost/POS/effects.
+  // Enemy-target and self-target slots are synthetic (no real hand card) so we
+  // render a card-shaped chip with a matching look.
+  const wrap = document.createElement('div');
+  wrap.className = 'sentence-card-wrap';
+  wrap.title = '点击取消';
+  wrap.onclick = (e) => { e.stopPropagation(); removeSentenceWord(idx); };
+
+  if (card._isEnemyTarget) {
+    wrap.classList.add('target-enemy');
+    wrap.innerHTML = `
+      <div class="card pos-object sentence-mini-card enemy-target-card">
+        <div class="card-cost">⊙</div>
+        <div class="card-pos-tag">目标</div>
+        <div class="card-word">${card.word}</div>
+        <div class="card-effect-bar">敌人</div>
+      </div>`;
+    return wrap;
   }
-  const w = getCardWord(card);
-  el.textContent = card._isEnemyTarget ? `⟨${card.word}⟩` : (card._isSelfTarget ? '⟨我⟩' : w);
-  el.onclick = () => removeSentenceWord(idx);
-  return el;
+  if (card._isSelfTarget) {
+    wrap.classList.add('target-self');
+    wrap.innerHTML = `
+      <div class="card pos-subject sentence-mini-card self-target-card">
+        <div class="card-cost">⊙</div>
+        <div class="card-pos-tag">主语</div>
+        <div class="card-word">我</div>
+        <div class="card-effect-bar">自身</div>
+      </div>`;
+    return wrap;
+  }
+
+  const el = createCardElement(card, null, { noClick: true });
+  el.classList.add('sentence-mini-card');
+  el.onclick = null;
+  wrap.appendChild(el);
+  return wrap;
 }
 
 export function renderHand() {

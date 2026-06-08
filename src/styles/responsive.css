@@ -6,7 +6,10 @@
 @media (max-width: 768px) {
   #combat-top { padding: 6px 10px; gap: 6px; }
   #combat-top .combat-info { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-  #recent-journal-strip { font-size: 0.72rem; gap: 4px 8px; }
+  #combat-journal { margin: 5px 8px 3px; padding: 6px 10px 7px; }
+  .combat-journal-title { font-size: 0.76rem; }
+  .combat-journal-item { font-size: 0.85rem; }
+  #combat-journal-list { gap: 12px; padding: 0 12px; }
 }
 
 /* --- Mobile portrait (≤600px) --- */
@@ -35,7 +38,10 @@
   #fixed-card-slot { padding-right: 4px; margin-right: 4px; }
   #fixed-card-slot .card { margin-left: 0; }
   .sentence-word { font-size: 0.75rem; padding: 3px 7px; }
-  #sentence-area { padding: 8px 10px; min-height: 68px; }
+  .sentence-mini-card { width: clamp(54px, 16vw, 66px) !important; min-width: 50px !important; height: clamp(76px, 23vw, 92px) !important; }
+  .sentence-mini-card .card-word { font-size: 1rem !important; }
+  .sentence-half { min-height: 80px; gap: 4px; }
+  #sentence-area { padding: 8px 10px; min-height: 100px; }
   #sentence-preview { font-size: 1rem; }
   #sentence-score-preview { font-size: 0.65rem; }
   #sentence-label { font-size: 0.7rem; }
@@ -45,8 +51,11 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  #rhyme-streak-tag { font-size: 0.72rem; padding: 1px 6px; }
-  #recent-journal-strip { font-size: 0.7rem; gap: 4px 8px; margin: 2px 0 4px; }
+  #rhyme-streak-tag { font-size: 0.7rem; padding: 1px 7px; right: 8px; }
+  #combat-journal { margin: 4px 6px 2px; padding: 5px 9px 6px; }
+  .combat-journal-title { font-size: 0.72rem; padding: 0 12px; }
+  .combat-journal-item { font-size: 0.8rem; }
+  #combat-journal-list { gap: 10px; padding: 0 10px; min-height: 18px; }
   .map-node { width: 42px; height: 42px; font-size: 1rem; }
   .map-row { gap: 24px; padding: 10px 0; }
   #enemy-targets-bar .enemy-target-word { font-size: 0.65rem; padding: 3px 6px; }
@@ -100,8 +109,11 @@
   .enemy-hp-bar { width: 50px; }
   .enemy-name { font-size: 0.7rem; }
   #sentence-preview { font-size: 0.92rem; }
-  #sentence-area { padding: 6px 8px; min-height: 60px; }
+  #sentence-area { padding: 6px 8px; min-height: 92px; }
   .sentence-word { font-size: 0.7rem; padding: 2px 6px; }
+  .sentence-mini-card { width: clamp(48px, 15vw, 58px) !important; min-width: 46px !important; height: clamp(68px, 22vw, 82px) !important; }
+  .sentence-mini-card .card-word { font-size: 0.9rem !important; }
+  .sentence-half { min-height: 72px; gap: 3px; }
   #combat-top { font-size: 0.68rem; }
   #combat-top .combat-info .btn { font-size: 0.6rem !important; padding: 2px 6px !important; min-height: 24px !important; }
   #player-status-bar { padding: 4px 6px; gap: 5px; font-size: 0.78rem; }
@@ -109,7 +121,8 @@
   .player-char-card { padding: 2px 5px; gap: 4px; }
   .player-char-card .char-name { font-size: 0.62rem; }
   .player-char-card img { width: 22px !important; height: 22px !important; }
-  #recent-journal-strip { font-size: 0.65rem; }
+  .combat-journal-title { font-size: 0.68rem; }
+  .combat-journal-item { font-size: 0.76rem; }
   #score-overlay { padding: 8px 14px; min-width: 200px; max-width: 95vw; }
   #score-sentence { font-size: 1.1rem; }
   #score-details { font-size: 0.68rem; line-height: 1.6; }
@@ -126,7 +139,7 @@
   .card { height: clamp(85px, 18vh, 125px); }
   #player-status-bar { padding: 4px 8px; }
   #combat-top { padding: 4px 8px; }
-  #recent-journal-strip { display: none; }
+  #combat-journal { display: none; }
 }
 
 @media (max-height: 500px) {

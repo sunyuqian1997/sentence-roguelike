@@ -49,18 +49,25 @@
       </div>
       <div class="combat-info"><span id="combat-status-effects"></span></div>
       <div class="combat-info">
-        <button class="btn-small btn btn-secondary" onclick="viewJournal()" style="font-size:0.65rem;padding:3px 8px;" id="journal-btn">诗册</button>
         <button class="btn-small btn btn-secondary" onclick="viewDeck()" style="font-size:0.65rem;padding:3px 8px;">词库</button>
       </div>
     </div>
+
+    <!-- Persistent poem scroll for this combat -->
+    <div id="combat-journal" onclick="viewJournal()">
+      <div class="combat-journal-title">本局诗册 <span id="combat-journal-count">0</span></div>
+      <div id="combat-journal-list">
+        <span class="combat-journal-empty">尚无诗句…</span>
+      </div>
+      <span id="rhyme-streak-tag"></span>
+    </div>
+
     <div id="enemy-area"></div>
     <div id="sentence-area">
       <div id="sentence-label">
-        <span>【造句区】点句子 · 5/7字=诗意加成 · 押韵+0.4 · 浸湿纸鬼</span>
-        <span id="rhyme-streak-tag"></span>
+        <span>【造句区】点击手牌入句 · 5/7字=诗意加成 · 押韵 · 主题母题</span>
         <div id="enemy-targets-bar"></div>
       </div>
-      <div id="recent-journal-strip"></div>
       <div id="sentence-slots-container"></div>
       <div id="sentence-preview"></div>
       <div id="duizhang-preview"></div>

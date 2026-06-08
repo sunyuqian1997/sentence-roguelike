@@ -620,37 +620,139 @@
   font-family: var(--font-serif);
 }
 
+/* ============================================================
+   COMBAT JOURNAL — persistent poem scroll
+   ============================================================ */
+#combat-journal {
+  position: relative;
+  margin: 6px 12px 4px;
+  padding: 8px 14px 9px 14px;
+  background: linear-gradient(180deg, rgba(245, 240, 225, 0.78), rgba(238, 232, 216, 0.78));
+  border: 1px solid rgba(184, 134, 43, 0.35);
+  border-radius: 4px;
+  box-shadow:
+    inset 0 0 16px rgba(184, 134, 43, 0.06),
+    2px 2px 0 rgba(184, 134, 43, 0.1);
+  cursor: pointer;
+  transition: all 0.25s var(--ease-brush);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='p'%3E%3CfeTurbulence baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23p)' opacity='0.035'/%3E%3C/svg%3E");
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+#combat-journal::before,
+#combat-journal::after {
+  content: '';
+  position: absolute;
+  top: 4px; bottom: 4px;
+  width: 6px;
+  background: linear-gradient(180deg, rgba(184,134,43,0.18), rgba(184,134,43,0.06), rgba(184,134,43,0.18));
+  border-radius: 3px;
+}
+#combat-journal::before { left: 4px; }
+#combat-journal::after { right: 4px; }
+#combat-journal:hover {
+  border-color: var(--gold);
+  box-shadow:
+    inset 0 0 20px rgba(184, 134, 43, 0.1),
+    2px 3px 6px rgba(184, 134, 43, 0.15);
+  transform: translateY(-1px);
+}
+
+.combat-journal-title {
+  font-family: var(--font-brush);
+  font-size: 0.82rem;
+  letter-spacing: 0.15em;
+  color: var(--ink);
+  text-align: center;
+  padding: 0 18px;
+  position: relative;
+}
+.combat-journal-title::before,
+.combat-journal-title::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 24%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(184,134,43,0.5), transparent);
+}
+.combat-journal-title::before { left: 14%; }
+.combat-journal-title::after { right: 14%; }
+#combat-journal-count {
+  color: var(--smoke);
+  font-size: 0.7rem;
+  margin-left: 4px;
+  font-family: var(--font-serif);
+}
+
+#combat-journal-list {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  padding: 0 18px;
+  min-height: 22px;
+  align-items: center;
+  scroll-behavior: smooth;
+}
+#combat-journal-list::-webkit-scrollbar { height: 4px; }
+#combat-journal-list::-webkit-scrollbar-thumb { background: rgba(184,134,43,0.3); border-radius: 2px; }
+.combat-journal-item {
+  font-family: var(--font-brush);
+  font-size: 0.92rem;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  position: relative;
+  flex-shrink: 0;
+}
+.combat-journal-item:not(:last-child)::after {
+  content: '·';
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--smoke);
+  opacity: 0.4;
+}
+.cj-num {
+  font-family: var(--font-serif);
+  font-size: 0.65rem;
+  color: var(--smoke);
+  font-weight: 700;
+}
+.combat-journal-empty {
+  font-family: var(--font-brush);
+  font-style: italic;
+  color: var(--smoke);
+  opacity: 0.6;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  margin: 0 auto;
+}
+
 #rhyme-streak-tag {
+  position: absolute;
+  top: -8px;
+  right: 12px;
   display: none;
   font-family: var(--font-brush);
   font-weight: 700;
-  font-size: 0.8rem;
-  padding: 2px 8px;
+  font-size: 0.78rem;
+  padding: 2px 10px;
   border: 1px solid var(--gold);
-  background: var(--gold-dim);
+  background: var(--paper);
   color: var(--gold);
-  border-radius: 3px;
+  border-radius: 12px;
   letter-spacing: 0.08em;
   white-space: nowrap;
-}
-
-#recent-journal-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 12px;
-  margin: 0 0 6px;
-  font-family: var(--font-brush);
-  font-size: 0.78rem;
-  color: var(--smoke);
-  letter-spacing: 0.06em;
-  opacity: 0.75;
-  min-height: 0;
-}
-#recent-journal-strip:empty { display: none; }
-.recent-journal-item {
-  white-space: nowrap;
-  border-left: 2px solid var(--ink-faint);
-  padding-left: 6px;
+  box-shadow: 0 2px 6px rgba(184,134,43,0.2);
+  z-index: 2;
 }
 
 #enemy-targets-bar {
@@ -708,23 +810,73 @@
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence baseFrequency='1' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23g)' opacity='0.015'/%3E%3C/svg%3E");
   pointer-events: none;
 }
-#sentence-slots-container:empty::after {
-  content: '点击手牌中的词语，在此构建句子...';
+#sentence-slots-container:empty::after,
+#sentence-slots-container > .sentence-half:empty::after {
+  content: '点击手牌入句，敌人/我为目标 →';
   color: var(--smoke);
-  opacity: 0.4;
-  font-size: 0.8rem;
+  opacity: 0.45;
+  font-size: 0.78rem;
   font-style: italic;
   font-family: var(--font-serif);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  letter-spacing: 0.08em;
 }
 
 .sentence-half {
   display: flex;
-  gap: 5px;
+  gap: 6px;
   flex-wrap: wrap;
-  align-items: center;
-  min-height: 36px;
-  padding: 3px 0;
+  align-items: flex-end;
+  min-height: 92px;
+  padding: 4px 2px;
 }
+
+/* Sentence cards — full mini cards in the造句区 */
+.sentence-card-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s var(--ease-brush);
+  animation: sentenceWordEnter 0.3s var(--ease-brush);
+}
+.sentence-card-wrap:hover { transform: translateY(-3px); }
+.sentence-card-wrap:hover::after {
+  content: '✕';
+  position: absolute;
+  font-size: 0.65rem;
+  color: var(--vermillion);
+  pointer-events: none;
+}
+.sentence-mini-card {
+  width: clamp(64px, 9vw, 80px) !important;
+  min-width: 60px !important;
+  height: clamp(88px, 13vw, 108px) !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+  transform: none !important;
+  pointer-events: none;
+}
+.sentence-mini-card .card-word { font-size: clamp(1rem, 2.4vw, 1.3rem) !important; }
+.sentence-mini-card .card-pos-tag { font-size: 0.5rem !important; padding: 1px 0 !important; }
+.sentence-mini-card .card-effect-bar { font-size: 0.5rem !important; padding: 2px 3px !important; line-height: 1.1 !important; }
+.sentence-mini-card .card-cost { width: 18px !important; height: 18px !important; font-size: 0.6rem !important; }
+
+.sentence-mini-card.enemy-target-card {
+  border-color: var(--vermillion) !important;
+  background-color: rgba(197, 75, 60, 0.06) !important;
+  box-shadow: 2px 2px 0 rgba(197, 75, 60, 0.12) !important;
+}
+.sentence-mini-card.enemy-target-card .card-word { color: var(--vermillion) !important; }
+.sentence-mini-card.self-target-card {
+  border-color: var(--purple) !important;
+  background-color: rgba(107, 76, 110, 0.06) !important;
+  box-shadow: 2px 2px 0 rgba(107, 76, 110, 0.12) !important;
+}
+.sentence-mini-card.self-target-card .card-word { color: var(--purple) !important; }
 .sentence-comma-divider {
   width: 100%;
   height: 1px;
