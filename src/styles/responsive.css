@@ -6,10 +6,7 @@
 @media (max-width: 768px) {
   #combat-top { padding: 6px 10px; gap: 6px; }
   #combat-top .combat-info { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-  #combat-journal { margin: 5px 8px 3px; padding: 6px 10px 7px; }
-  .combat-journal-title { font-size: 0.76rem; }
-  .combat-journal-item { font-size: 0.85rem; }
-  #combat-journal-list { gap: 12px; padding: 0 12px; }
+  #last-chant-pill { font-size: 0.78rem; padding: 2px 10px; margin: 0 8px; }
 }
 
 /* --- Mobile portrait (≤600px) --- */
@@ -51,11 +48,8 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  #rhyme-streak-tag { font-size: 0.7rem; padding: 1px 7px; right: 8px; }
-  #combat-journal { margin: 4px 6px 2px; padding: 5px 9px 6px; }
-  .combat-journal-title { font-size: 0.72rem; padding: 0 12px; }
-  .combat-journal-item { font-size: 0.8rem; }
-  #combat-journal-list { gap: 10px; padding: 0 10px; min-height: 18px; }
+  #rhyme-streak-tag { font-size: 0.7rem; padding: 1px 7px; }
+  #last-chant-pill { font-size: 0.74rem; padding: 2px 8px; margin: 0 6px; gap: 6px; }
   .map-node { width: 42px; height: 42px; font-size: 1rem; }
   .map-row { gap: 24px; padding: 10px 0; }
   #enemy-targets-bar .enemy-target-word { font-size: 0.65rem; padding: 3px 6px; }
@@ -121,8 +115,7 @@
   .player-char-card { padding: 2px 5px; gap: 4px; }
   .player-char-card .char-name { font-size: 0.62rem; }
   .player-char-card img { width: 22px !important; height: 22px !important; }
-  .combat-journal-title { font-size: 0.68rem; }
-  .combat-journal-item { font-size: 0.76rem; }
+  #last-chant-pill { font-size: 0.7rem; }
   #score-overlay { padding: 8px 14px; min-width: 200px; max-width: 95vw; }
   #score-sentence { font-size: 1.1rem; }
   #score-details { font-size: 0.68rem; line-height: 1.6; }
@@ -139,7 +132,7 @@
   .card { height: clamp(85px, 18vh, 125px); }
   #player-status-bar { padding: 4px 8px; }
   #combat-top { padding: 4px 8px; }
-  #combat-journal { display: none; }
+  #last-chant-pill { display: none !important; }
 }
 
 @media (max-height: 500px) {

@@ -37,40 +37,34 @@ export function renderCombat() {
   renderEnemies();
   renderEnemyTargetBar();
   renderSentenceSlots();
-  renderCombatJournal();
-  renderRhymeStreak();
+  renderLastChantPill();
+  renderJournalBtnBadge();
   renderHand();
   updateChantButton();
 }
 
-function renderCombatJournal() {
-  const list = document.getElementById('combat-journal-list');
-  const countEl = document.getElementById('combat-journal-count');
-  if (!list) return;
+function renderLastChantPill() {
+  const pill = document.getElementById('last-chant-pill');
+  const txt = document.getElementById('last-chant-text');
+  const tag = document.getElementById('rhyme-streak-tag');
+  if (!pill || !txt) return;
   const lines = G.sentenceJournal || [];
-  if (countEl) countEl.textContent = lines.length > 0 ? `(${lines.length})` : '';
-  if (lines.length === 0) {
-    list.innerHTML = '<span class="combat-journal-empty">尚无诗句…吟诵一句以开篇</span>';
-    return;
+  const streak = G.rhymeStreak || 0;
+  const hasContent = lines.length > 0 || streak > 0;
+  if (!hasContent) { pill.style.display = 'none'; return; }
+  pill.style.display = 'flex';
+  txt.textContent = lines.length > 0 ? `上一句：「${lines[lines.length - 1]}」` : '';
+  if (tag) {
+    if (streak > 0) { tag.textContent = `🎵 押韵×${streak}`; tag.style.display = 'inline-flex'; }
+    else { tag.textContent = ''; tag.style.display = 'none'; }
   }
-  list.innerHTML = lines.map((s, i) =>
-    `<span class="combat-journal-item"><span class="cj-num">${i + 1}</span>「${s}」</span>`
-  ).join('');
-  // auto-scroll to latest entry
-  requestAnimationFrame(() => { list.scrollLeft = list.scrollWidth; });
 }
 
-function renderRhymeStreak() {
-  const tag = document.getElementById('rhyme-streak-tag');
-  if (!tag) return;
-  const streak = G.rhymeStreak || 0;
-  if (streak > 0) {
-    tag.textContent = `🎵 押韵×${streak}`;
-    tag.style.display = 'inline-flex';
-  } else {
-    tag.textContent = '';
-    tag.style.display = 'none';
-  }
+function renderJournalBtnBadge() {
+  const btn = document.getElementById('journal-btn');
+  if (!btn) return;
+  const n = (G.sentenceJournal || []).length;
+  btn.textContent = n > 0 ? `诗册·${n}` : '诗册';
 }
 
 export function renderEnemies() {
@@ -161,12 +155,7 @@ export function renderSentenceSlots() {
   container.appendChild(half);
 
   const preview = document.getElementById('sentence-preview');
-  if (G.sentence.length > 0) {
-    const sep = isEn() ? ' ' : '';
-    preview.textContent = '「' + G.sentence.map(c => c._isEnemyTarget ? c.word : (c._isSelfTarget ? (isEn() ? 'me' : '我') : getCardWord(c))).join(sep) + '」';
-  } else {
-    preview.textContent = '';
-  }
+  if (preview) preview.textContent = '';
 
   const dzEl = document.getElementById('duizhang-preview');
   const hasCommaInSentence = displayCards.some(c => c.pos === 'punctuation' && c.punctType === 'comma');

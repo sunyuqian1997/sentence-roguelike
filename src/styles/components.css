@@ -621,138 +621,44 @@
 }
 
 /* ============================================================
-   COMBAT JOURNAL — persistent poem scroll
+   LAST-CHANT PILL — single-line "上一句" hint
    ============================================================ */
-#combat-journal {
-  position: relative;
-  margin: 6px 12px 4px;
-  padding: 8px 14px 9px 14px;
-  background: linear-gradient(180deg, rgba(245, 240, 225, 0.78), rgba(238, 232, 216, 0.78));
-  border: 1px solid rgba(184, 134, 43, 0.35);
-  border-radius: 4px;
-  box-shadow:
-    inset 0 0 16px rgba(184, 134, 43, 0.06),
-    2px 2px 0 rgba(184, 134, 43, 0.1);
-  cursor: pointer;
-  transition: all 0.25s var(--ease-brush);
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='p'%3E%3CfeTurbulence baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23p)' opacity='0.035'/%3E%3C/svg%3E");
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-#combat-journal::before,
-#combat-journal::after {
-  content: '';
-  position: absolute;
-  top: 4px; bottom: 4px;
-  width: 6px;
-  background: linear-gradient(180deg, rgba(184,134,43,0.18), rgba(184,134,43,0.06), rgba(184,134,43,0.18));
-  border-radius: 3px;
-}
-#combat-journal::before { left: 4px; }
-#combat-journal::after { right: 4px; }
-#combat-journal:hover {
-  border-color: var(--gold);
-  box-shadow:
-    inset 0 0 20px rgba(184, 134, 43, 0.1),
-    2px 3px 6px rgba(184, 134, 43, 0.15);
-  transform: translateY(-1px);
-}
-
-.combat-journal-title {
-  font-family: var(--font-brush);
-  font-size: 0.82rem;
-  letter-spacing: 0.15em;
-  color: var(--ink);
-  text-align: center;
-  padding: 0 18px;
-  position: relative;
-}
-.combat-journal-title::before,
-.combat-journal-title::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  width: 24%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(184,134,43,0.5), transparent);
-}
-.combat-journal-title::before { left: 14%; }
-.combat-journal-title::after { right: 14%; }
-#combat-journal-count {
-  color: var(--smoke);
-  font-size: 0.7rem;
-  margin-left: 4px;
-  font-family: var(--font-serif);
-}
-
-#combat-journal-list {
-  display: flex;
-  gap: 14px;
-  overflow-x: auto;
-  scrollbar-width: thin;
-  padding: 0 18px;
-  min-height: 22px;
-  align-items: center;
-  scroll-behavior: smooth;
-}
-#combat-journal-list::-webkit-scrollbar { height: 4px; }
-#combat-journal-list::-webkit-scrollbar-thumb { background: rgba(184,134,43,0.3); border-radius: 2px; }
-.combat-journal-item {
-  font-family: var(--font-brush);
-  font-size: 0.92rem;
-  letter-spacing: 0.06em;
-  color: var(--ink);
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: baseline;
-  gap: 5px;
-  position: relative;
+#last-chant-pill {
+  display: none;
   flex-shrink: 0;
-}
-.combat-journal-item:not(:last-child)::after {
-  content: '·';
-  position: absolute;
-  right: -10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--smoke);
-  opacity: 0.4;
-}
-.cj-num {
-  font-family: var(--font-serif);
-  font-size: 0.65rem;
-  color: var(--smoke);
-  font-weight: 700;
-}
-.combat-journal-empty {
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 12px;
+  padding: 3px 12px;
   font-family: var(--font-brush);
-  font-style: italic;
-  color: var(--smoke);
-  opacity: 0.6;
   font-size: 0.82rem;
   letter-spacing: 0.08em;
-  margin: 0 auto;
+  color: var(--ink-light);
+  background: linear-gradient(90deg, transparent, rgba(184,134,43,0.06), transparent);
+  border-top: 1px dashed rgba(184,134,43,0.25);
+  border-bottom: 1px dashed rgba(184,134,43,0.25);
 }
-
+#last-chant-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 70%;
+}
 #rhyme-streak-tag {
-  position: absolute;
-  top: -8px;
-  right: 12px;
   display: none;
   font-family: var(--font-brush);
   font-weight: 700;
-  font-size: 0.78rem;
-  padding: 2px 10px;
+  font-size: 0.76rem;
+  padding: 1px 9px;
   border: 1px solid var(--gold);
   background: var(--paper);
   color: var(--gold);
   border-radius: 12px;
   letter-spacing: 0.08em;
   white-space: nowrap;
-  box-shadow: 0 2px 6px rgba(184,134,43,0.2);
-  z-index: 2;
+  box-shadow: 0 1px 4px rgba(184,134,43,0.18);
+  flex-shrink: 0;
 }
 
 #enemy-targets-bar {
