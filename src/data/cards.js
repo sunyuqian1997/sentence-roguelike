@@ -40,35 +40,43 @@ export function createStarterDeck() {
     if (!WORD_DEFS[key]) return;
     for (let i = 0; i < n; i++) deck.push(makeCard({ ...WORD_DEFS[key], key }));
   };
-  // 拼贴诗起始词库 — 扩大种类（更多动词/宾语/修饰/连词），仍偏意象碎片。
-  // 主语
+  // 拼贴诗起始词库 — 大幅扩种，覆盖每个词性的多种语气与功能
+  // 主语 (4)
   tryAdd('wo');          // 我
   tryAdd('wuming');      // 无名者
   tryAdd('yingzi');      // 影子（穿透）
-  // 动词 — 攻击
+  tryAdd('mao');         // 猫（随机效果）
+  // 动词 - 攻击 (5)
   tryAdd('zhan');        // 斩
   tryAdd('sui');         // 碎
   tryAdd('chui');        // 锤
-  tryAdd('chen');        // 沉
-  // 动词 — 防守/治疗/位移
+  tryAdd('kan');         // 砍
+  tryAdd('cu');          // 戳
+  // 动词 - 防守 (3)
   tryAdd('shou');        // 守
-  tryAdd('piaofu');      // 漂（回血+格挡）
-  // 宾语
+  tryAdd('chen');        // 沉
+  tryAdd('dang');        // 挡
+  // 动词 - 治疗/回血 (2)
+  tryAdd('piaofu');      // 漂
+  tryAdd('moyu');        // 摸鱼
+  // 宾语 (4)
   tryAdd('hai');         // 海
   tryAdd('huijin');      // 灰烬
   tryAdd('guge');        // 骨
-  // 修饰
+  tryAdd('yueliang');    // 月亮
+  // 修饰 (3)
   tryAdd('chaoshide');   // 潮湿地
-  tryAdd('shuaiqide');   // 帅气地 / 修饰
-  // 连接
+  tryAdd('shuaiqide');   // 帅气地
+  tryAdd('menglie');     // 猛烈地
+  // 连接 (2)
   tryAdd('er');          // 而
   tryAdd('he');          // 和
-  // 感叹
+  // 感叹 (2)
   tryAdd('oh');          // 哦
-  // 标点
+  tryAdd('ah');          // 啊
+  // 标点 (3)
   tryAdd('comma', 2);    // ，×2
   tryAdd('period');      // 。
-  // Filter out duplicates pushed when WORD_DEFS missing (tryAdd just no-ops)
   return deck;
 }
 

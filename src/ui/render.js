@@ -380,12 +380,20 @@ export function showTooltip(e, card) {
   tt.querySelector('.tt-desc').textContent = d;
   tt.querySelector('.tt-flavor').textContent = card.flavor ? `"${card.flavor}"` : '';
   tt.style.display = 'block';
-  const r = e.target.getBoundingClientRect();
-  let left = r.right + 10, top = r.top;
-  if (left + 240 > window.innerWidth) left = r.left - 250;
-  if (top + 120 > window.innerHeight) top = window.innerHeight - 130;
-  tt.style.left = Math.max(5, left) + 'px';
-  tt.style.top = Math.max(5, top) + 'px';
+  tt.style.transform = '';
+  // Measure after content is set so height is accurate
+  const ttRect = tt.getBoundingClientRect();
+  const r = e.currentTarget.getBoundingClientRect();
+  // Default: above the card, horizontally centered on it
+  let left = r.left + r.width / 2 - ttRect.width / 2;
+  let top = r.top - ttRect.height - 10;
+  // If above would clip, fall back to below
+  if (top < 5) top = r.bottom + 10;
+  // Clamp horizontal
+  if (left + ttRect.width > window.innerWidth - 5) left = window.innerWidth - ttRect.width - 5;
+  if (left < 5) left = 5;
+  tt.style.left = left + 'px';
+  tt.style.top = top + 'px';
 }
 
 function showTooltipMobile(card) {
