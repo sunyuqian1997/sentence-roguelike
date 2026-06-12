@@ -6,6 +6,7 @@ import { playSFX } from '../game/audio.js';
 import { getEnemyPortraitSVG } from './svgArt.js';
 import { detectDuizhang, detectSummon, SUMMON_EFFECTS, evaluateSentence, checkExclamationPosition } from '../game/sentence.js';
 import { PUN_STATUS } from '../game/poetics.js';
+import { resolveMeaning } from '../game/meanings.js';
 import { getEffectiveCost, getSentenceCost, addToSentence, removeSentenceWord, updateChantButton } from '../game/combat.js';
 
 // ============================================================
@@ -42,6 +43,84 @@ export function renderCombat() {
   renderJournalBtnBadge();
   renderHand();
   updateChantButton();
+  updatePuppets();
+}
+
+// Update puppet poses based on current sentence — no DOM rebuild, just
+// data-pose attribute changes so CSS transitions handle smoothness.
+function updatePuppets() {
+  const playerEl = document.getElementById('puppet-player');
+  const enemyEl = document.getElementById('puppet-enemy');
+  if (!playerEl || !enemyEl) return;
+
+  const sentence = G.sentence || [];
+  const hasEnemyTarget = sentence.some(c => c._isEnemyTarget);
+  const verbs = sentence.filter(c => c && c.pos === 'verb');
+  const lastVerb = verbs[verbs.length - 1];
+
+  // Detect active pun via meanings
+  let activePunTag = null;
+  for (let i = 0; i < sentence.length; i++) {
+    const m = resolveMeaning(sentence[i], sentence, i);
+    if (m && m.pun) { activePunTag = m.pun.tag; break; }
+    if (sentence[i] && sentence[i].pun && !Array.isArray(sentence[i].meanings)) {
+      // Only count direct pun if no copula context (would be caught above otherwise)
+      const hasCopula = sentence.slice(0, i).some(c => c && c.copulaConn);
+      if (hasCopula) { activePunTag = sentence[i].pun.tag; break; }
+    }
+  }
+
+  // Default poses
+  let playerPose = 'idle';
+  let enemyPose = 'idle';
+  let playerEmoji = '';
+  let enemyEmoji = '';
+
+  if (hasEnemyTarget) enemyPose = 'targeted';
+
+  if (lastVerb) {
+    if (lastVerb.combatType === 'attack') {
+      playerPose = 'attack';
+      if (hasEnemyTarget) enemyPose = 'hit';
+    } else if (lastVerb.combatType === 'defense') {
+      playerPose = 'defend';
+    } else if (lastVerb.combatType === 'heal') {
+      playerPose = 'heal';
+    }
+  }
+
+  if (activePunTag) {
+    const punToPose = {
+      gay: { pose: 'charmed', emoji: '❤️' },
+      doomed: { pose: 'doomed', emoji: '💀' },
+      old: { pose: 'old', emoji: '👴' },
+      juan: { pose: 'juan', emoji: '💦' },
+      lying: { pose: 'lying', emoji: '' },
+      numb: { pose: 'dazed', emoji: '😵' },
+      sad: { pose: 'doomed', emoji: '😞' },
+      fleeing: { pose: 'dazed', emoji: '💨' },
+      daylight: { pose: 'charmed', emoji: '☀️' },
+    };
+    const cfg = punToPose[activePunTag];
+    if (cfg) {
+      enemyPose = cfg.pose;
+      enemyEmoji = cfg.emoji;
+    }
+  }
+
+  // Laughter motif detection — both sides dazed
+  const motifText = sentence.map(c => (c && c.word) || '').join('');
+  if (/欢笑|哈哈|沉溺|暂停|深度思考/.test(motifText)) {
+    enemyPose = 'dazed';
+    enemyEmoji = '😂';
+  }
+
+  if (playerEl.dataset.pose !== playerPose) playerEl.dataset.pose = playerPose;
+  if (enemyEl.dataset.pose !== enemyPose) enemyEl.dataset.pose = enemyPose;
+  const playerEmojiEl = playerEl.querySelector('.puppet-emoji');
+  const enemyEmojiEl = enemyEl.querySelector('.puppet-emoji');
+  if (playerEmojiEl && playerEmojiEl.textContent !== playerEmoji) playerEmojiEl.textContent = playerEmoji;
+  if (enemyEmojiEl && enemyEmojiEl.textContent !== enemyEmoji) enemyEmojiEl.textContent = enemyEmoji;
 }
 
 function renderRoundJournal() {
@@ -234,7 +313,8 @@ export function createSentenceWordEl(card, idx) {
         <div class="card-pos-tag">目标</div>
         <div class="card-word">${card.word}</div>
         <div class="card-effect-bar">敌人</div>
-      </div>`;
+      </div>
+      <div class="meaning-caption">作宾语</div>`;
     return wrap;
   }
   if (card._isSelfTarget) {
@@ -245,14 +325,40 @@ export function createSentenceWordEl(card, idx) {
         <div class="card-pos-tag">主语</div>
         <div class="card-word">我</div>
         <div class="card-effect-bar">自身</div>
-      </div>`;
+      </div>
+      <div class="meaning-caption">作主语</div>`;
     return wrap;
   }
 
   const el = createCardElement(card, null, { noClick: true });
   el.classList.add('sentence-mini-card');
   el.onclick = null;
+
+  // Resolve active meaning given full sentence context
+  const activeMeaning = resolveMeaning(card, G.sentence, idx);
+  const captionText = activeMeaning
+    ? `${activeMeaning.emoji || '✨'} ${activeMeaning.label}`
+    : (Array.isArray(card.meanings) && card.meanings.length > 0 ? '⚪ 默认用法' : '');
+
+  // Multi-meaning badge on the mini card
+  if (Array.isArray(card.meanings) && card.meanings.length > 0) {
+    const badge = document.createElement('div');
+    badge.className = 'meaning-badge';
+    badge.textContent = '💡';
+    badge.title = '多义卡：根据上下文选用法';
+    el.appendChild(badge);
+  }
+  if (activeMeaning) {
+    el.classList.add('meaning-active');
+  }
+
   wrap.appendChild(el);
+  if (captionText) {
+    const cap = document.createElement('div');
+    cap.className = 'meaning-caption' + (activeMeaning ? ' meaning-caption-active' : '');
+    cap.textContent = captionText;
+    wrap.appendChild(cap);
+  }
   return wrap;
 }
 
@@ -345,11 +451,15 @@ export function createCardElement(card, handIndex, opts={}) {
   const word = getCardWord(card);
   const desc = getCardDesc(card);
 
+  const multiMeaningBadge = (Array.isArray(card.meanings) && card.meanings.length > 0)
+    ? `<div class="meaning-badge" title="多义卡">💡</div>`
+    : '';
   div.innerHTML = `
     <div class="card-cost">${cost}</div>
     <div class="card-pos-tag">${posNames[card.pos]||card.pos}</div>
     <div class="card-word">${word}${card.upgraded?'+':''}</div>
     <div class="card-effect-bar">${desc}</div>
+    ${multiMeaningBadge}
   `;
 
   if (handIndex !== undefined && handIndex !== null && !opts.noClick) {

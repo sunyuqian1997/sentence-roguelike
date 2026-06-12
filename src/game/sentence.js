@@ -5,6 +5,24 @@ import { VFX } from '../ui/vfx.js';
 import { dealDamageToEnemy } from './damage.js';
 import { drawCards } from './combat.js';
 import { detectMotifs, getRhymeKey, checkRhyme, detectPredicates } from './poetics.js';
+import { resolveMeaning, applyMeaningPatch } from './meanings.js';
+
+// Returns a new array where each card's active meaning is resolved against
+// the surrounding context, with the patch already merged in. Stores
+// _activeMeaning on the returned card so UI can show "作动词" / "作主语" etc.
+export function applyMeaningsToSentence(cards) {
+  return cards.map((c, i) => {
+    if (!c) return c;
+    const m = resolveMeaning(c, cards, i);
+    if (!m) {
+      return c;
+    }
+    const patched = applyMeaningPatch(c, m);
+    if (m.pos) patched.pos = m.pos;
+    if (m.pun) patched.pun = m.pun;
+    return patched;
+  });
+}
 
 // ============================================================
 // DUIZHANG (对仗) SYSTEM
@@ -333,6 +351,8 @@ export function checkExclamationPosition(cards) {
 export function evaluateSentence(rawCards) {
   if (rawCards.length === 0) return null;
 
+  // Multi-meaning resolution: rewrite each card with its active meaning patched in
+  rawCards = applyMeaningsToSentence(rawCards);
   const cards = normalizeSentence(rawCards);
   const punctCards = cards.filter(c => c.pos === 'punctuation');
   const nonPunctCards = cards.filter(c => c.pos !== 'punctuation' && c.pos !== 'exclamation');

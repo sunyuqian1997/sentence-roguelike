@@ -3075,13 +3075,19 @@
     "upgPower": 5,
     "healAlsoVerb": 3,
     "draw": 1,
-    "desc": "格挡3+回血3+抽1·谐音「gay」",
+    "desc": "默认作动词：挡3+回血3+抽1。在 是/为 后面则作谐音 gay。",
     "flavor": "给≈gay：A是给→施加魅惑",
-    "pun": {
-      "tag": "gay",
-      "label": "🌈 魅惑",
-      "flavor": "给≈gay"
-    }
+    "meanings": [
+      {
+        "id": "gei_pun",
+        "label": "谐音·gay",
+        "emoji": "🌈",
+        "pos": "connector",
+        "priority": 10,
+        "when": { "afterCopulaWithin": 3 },
+        "pun": { "tag": "gay", "label": "🌈 魅惑", "flavor": "给≈gay" }
+      }
+    ]
   },
   "zhao": {
     "word": "罩",
@@ -3616,18 +3622,33 @@
     "pos": "modifier",
     "cost": 0,
     "rarity": "common",
-    "desc": "修饰·全×1.1·谐音「老/年老」·A是老→施加衰老",
-    "flavor": "老纸鬼 / 我老打xxx",
+    "desc": "默认修饰·全×1.1；前置主语时(老打/老纸鬼)作副词加成；是/为后作衰老谐音",
+    "flavor": "老纸鬼 / 我老打xxx / A是老→衰老",
     "multiplier": 1.1,
     "bonusType": "all",
-    "pun": {
-      "tag": "old",
-      "label": "👴 衰老",
-      "flavor": "老=年老，力气衰退"
-    },
+    "meanings": [
+      {
+        "id": "lao_adv",
+        "label": "副词·总是",
+        "emoji": "🔁",
+        "pos": "modifier",
+        "priority": 5,
+        "when": { "prevSubjectOrEnemy": true, "notAfterCopula": true },
+        "patch": { "multiplier": 1.2, "bonusType": "attack", "draw": 1 }
+      },
+      {
+        "id": "lao_pun",
+        "label": "谐音·衰老",
+        "emoji": "👴",
+        "pos": "connector",
+        "priority": 10,
+        "when": { "afterCopulaWithin": 3 },
+        "pun": { "tag": "old", "label": "👴 衰老", "flavor": "老=年老，力气衰退" }
+      }
+    ],
     "en": {
       "word": "Old",
-      "desc": "Mod · All×1.1, A is 老 → apply aged"
+      "desc": "Mod · All×1.1, multi-meaning"
     }
   },
   "ri": {
@@ -3638,13 +3659,33 @@
     "powerBonus": 2,
     "bonusType": "attack",
     "poetryBonus": 0.2,
-    "desc": "主语·攻+2·谐音「日(动)」·A是日→施加昼明",
-    "flavor": "日≈白天 / 日≈干（动词）",
+    "desc": "默认作主语·攻+2；前置主语时作动词攻击；是/为后作昼明谐音",
+    "flavor": "日≈白天 / 日≈干（动词）/ 日≈昼明",
     "pun": {
       "tag": "daylight",
       "label": "☀️ 日光",
       "flavor": "日≈白日 / 暗影者惧之"
     },
+    "meanings": [
+      {
+        "id": "ri_verb",
+        "label": "作动词·日",
+        "emoji": "👊",
+        "pos": "verb",
+        "priority": 5,
+        "when": { "prevSubjectOrEnemy": true, "notAfterCopula": true },
+        "patch": { "combatType": "attack", "basePower": 6, "upgPower": 8 }
+      },
+      {
+        "id": "ri_pun",
+        "label": "谐音·昼明",
+        "emoji": "☀️",
+        "pos": "connector",
+        "priority": 10,
+        "when": { "afterCopulaWithin": 3 },
+        "pun": { "tag": "daylight", "label": "☀️ 日光", "flavor": "日≈白日 / 暗影者惧之" }
+      }
+    ],
     "en": {
       "word": "Day",
       "desc": "Subject · ATK+2, A is 日 → apply daylight"

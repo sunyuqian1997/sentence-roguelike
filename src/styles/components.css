@@ -726,6 +726,256 @@
   box-shadow: 0 8px 24px rgba(17,17,16,0.25), 0 0 16px var(--vermillion-dim) !important;
   transform: scale(0.92);
 }
+
+/* Multi-meaning system */
+.meaning-badge {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  font-size: 0.85rem;
+  z-index: 4;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 2px rgba(17,17,16,0.25));
+  animation: meaningBadgePulse 2s ease-in-out infinite;
+}
+@keyframes meaningBadgePulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+.meaning-caption {
+  font-family: var(--font-brush);
+  font-size: 0.72rem;
+  color: var(--smoke);
+  letter-spacing: 0.06em;
+  margin-top: 3px;
+  text-align: center;
+  white-space: nowrap;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.meaning-caption-active {
+  color: var(--purple);
+  font-weight: 700;
+  animation: captionGlow 1.5s ease-in-out infinite;
+}
+@keyframes captionGlow {
+  0%, 100% { text-shadow: 0 0 0 transparent; }
+  50% { text-shadow: 0 0 8px var(--purple-dim); }
+}
+.sentence-mini-card.meaning-active {
+  border-color: var(--purple) !important;
+  box-shadow: 2px 2px 0 rgba(107, 76, 110, 0.3) !important;
+}
+
+/* Puppet stage in造句区 */
+#puppet-stage {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 16px;
+  padding: 6px 18px 4px;
+  margin-bottom: 4px;
+  min-height: 92px;
+  position: relative;
+}
+.puppet {
+  position: relative;
+  width: 64px;
+  height: 84px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.35s var(--ease-brush);
+}
+.puppet-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.puppet-svg .head { fill: var(--paper); stroke: var(--ink); stroke-width: 2; }
+.puppet-svg .body,
+.puppet-svg .arm,
+.puppet-svg .leg {
+  stroke: var(--ink);
+  stroke-width: 3;
+  stroke-linecap: round;
+  fill: none;
+  transition: all 0.3s var(--ease-brush);
+  transform-origin: center;
+}
+.puppet-svg .arm { transform-origin: 40px 42px; }
+.puppet-svg .leg { transform-origin: 40px 65px; }
+.puppet-svg .shield,
+.puppet-svg .weapon {
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s var(--ease-brush);
+  pointer-events: none;
+}
+.puppet-svg .shield {
+  fill: var(--blue-dim);
+  stroke: var(--blue-ink);
+  stroke-width: 2;
+}
+.puppet-svg .weapon {
+  stroke: var(--vermillion-dark);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.puppet-svg .puppet-emoji {
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.puppet-label {
+  font-family: var(--font-brush);
+  font-size: 0.7rem;
+  color: var(--smoke);
+  letter-spacing: 0.08em;
+  margin-top: 2px;
+}
+#puppet-player .puppet-label { color: var(--pine); }
+#puppet-enemy .puppet-label { color: var(--vermillion); }
+#puppet-vs {
+  font-family: var(--font-brush);
+  font-size: 1.3rem;
+  color: var(--smoke);
+  letter-spacing: 0.2em;
+  align-self: center;
+}
+
+/* ---- Pose: attack (raise right arm + weapon) ---- */
+.puppet[data-pose="attack"] .arm-r {
+  transform: rotate(-95deg) translate(0, -2px);
+}
+.puppet[data-pose="attack"] .weapon {
+  opacity: 1;
+  animation: weaponSwing 0.55s var(--ease-out-back) infinite alternate;
+}
+.puppet[data-pose="attack"] {
+  transform: translateX(6px);
+}
+@keyframes weaponSwing {
+  0% { transform: rotate(-6deg); }
+  100% { transform: rotate(8deg); }
+}
+
+/* ---- Pose: defend (shield up, slight crouch) ---- */
+.puppet[data-pose="defend"] .arm-l {
+  transform: rotate(60deg);
+}
+.puppet[data-pose="defend"] .shield {
+  opacity: 1;
+  transform: translate(2px, -2px);
+}
+.puppet[data-pose="defend"] {
+  transform: translateY(2px) scaleY(0.96);
+}
+
+/* ---- Pose: heal (hands at heart, glow) ---- */
+.puppet[data-pose="heal"] .arm-l {
+  transform: rotate(45deg);
+}
+.puppet[data-pose="heal"] .arm-r {
+  transform: rotate(-45deg);
+}
+.puppet[data-pose="heal"] .head {
+  fill: rgba(74, 124, 107, 0.2);
+}
+.puppet[data-pose="heal"] {
+  filter: drop-shadow(0 0 6px rgba(74, 124, 107, 0.5));
+}
+
+/* ---- Pose: targeted (slight bob, vermillion glow) ---- */
+.puppet[data-pose="targeted"] {
+  animation: puppetBob 0.8s ease-in-out infinite;
+  filter: drop-shadow(0 0 8px var(--vermillion-glow));
+}
+@keyframes puppetBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* ---- Pose: hit (flash red + shake) ---- */
+.puppet[data-pose="hit"] {
+  animation: puppetHit 0.3s ease;
+}
+.puppet[data-pose="hit"] .body,
+.puppet[data-pose="hit"] .arm,
+.puppet[data-pose="hit"] .leg { stroke: var(--vermillion); }
+@keyframes puppetHit {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+/* ---- Pose: charmed (gay pun — heart emoji floating, swaying) ---- */
+.puppet[data-pose="charmed"] .puppet-emoji {
+  opacity: 1;
+  font-size: 18px;
+}
+.puppet[data-pose="charmed"] {
+  animation: puppetSway 1.2s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px rgba(255, 105, 180, 0.55));
+}
+@keyframes puppetSway {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+/* ---- Pose: doomed (skull above head) ---- */
+.puppet[data-pose="doomed"] .puppet-emoji {
+  opacity: 1;
+  font-size: 18px;
+}
+.puppet[data-pose="doomed"] .head { fill: var(--paper-dark); }
+.puppet[data-pose="doomed"] .body,
+.puppet[data-pose="doomed"] .arm,
+.puppet[data-pose="doomed"] .leg { stroke: var(--ink-faint); }
+
+/* ---- Pose: old (slight stoop, cane) ---- */
+.puppet[data-pose="old"] {
+  transform: translateY(4px) skewX(-3deg);
+}
+.puppet[data-pose="old"] .puppet-emoji { opacity: 1; font-size: 16px; }
+.puppet[data-pose="old"] .body { stroke-width: 2; }
+
+/* ---- Pose: juan (sweating, tense, spinning) ---- */
+.puppet[data-pose="juan"] .puppet-emoji { opacity: 1; font-size: 16px; }
+.puppet[data-pose="juan"] {
+  animation: puppetSpin 0.6s linear infinite;
+}
+@keyframes puppetSpin {
+  0% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+  100% { transform: rotate(-2deg); }
+}
+
+/* ---- Pose: lying (rotate 90°) ---- */
+.puppet[data-pose="lying"] {
+  transform: rotate(-78deg) translateY(8px);
+}
+
+/* ---- Pose: dazed (stars overhead) ---- */
+.puppet[data-pose="dazed"] .puppet-emoji { opacity: 1; font-size: 16px; }
+.puppet[data-pose="dazed"] {
+  animation: puppetWobble 0.7s ease-in-out infinite;
+}
+@keyframes puppetWobble {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  25% { transform: translateX(-2px) rotate(-3deg); }
+  75% { transform: translateX(2px) rotate(3deg); }
+}
+
+/* ---- Pose: idle gentle breathing ---- */
+.puppet[data-pose="idle"] {
+  animation: puppetBreathe 3s ease-in-out infinite;
+}
+@keyframes puppetBreathe {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.02); }
+}
 .sentence-card-wrap.drag-over {
   position: relative;
 }
