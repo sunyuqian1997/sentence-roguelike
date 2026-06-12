@@ -43,29 +43,29 @@
 
   <!-- COMBAT -->
   <div id="combat-screen" class="screen">
-    <div id="combat-top">
-      <div class="combat-info">
-        <span style="font-size:0.7rem;opacity:0.45">抽: <span id="draw-count">0</span> | 弃: <span id="discard-count">0</span></span>
-      </div>
-      <div class="combat-info"><span id="combat-status-effects"></span></div>
-      <div class="combat-info">
-        <button class="btn-small btn btn-secondary" onclick="viewJournal()" style="font-size:0.65rem;padding:3px 8px;" id="journal-btn">诗册</button>
-        <button class="btn-small btn btn-secondary" onclick="viewDeck()" style="font-size:0.65rem;padding:3px 8px;">词库</button>
-      </div>
-    </div>
-
-    <!-- Arena: left portrait | center column (journal + enemies + sentence) | right portrait -->
+    <!-- Arena: left rail (player portrait+我card) | center (top bar + journal + sentence area) | right rail (enemy cards) -->
     <div id="combat-arena">
       <div id="player-portrait-rail" class="portrait-rail player-rail">
-        <div class="portrait-frame" id="player-portrait-frame">
+        <div class="portrait-art player-art">
           <img id="player-portrait-img" src="/lqz.png" alt="李清照" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-          <div class="portrait-placeholder">我方</div>
+          <div class="portrait-placeholder">李清照</div>
         </div>
-        <div class="portrait-name" id="player-portrait-name">李清照</div>
+        <div class="rail-name" id="player-portrait-name">李清照</div>
+        <div id="fixed-card-slot"></div>
       </div>
 
       <div id="combat-center">
-        <!-- 本回合诗册：累积本场战斗已吟诵的句子，战斗结束清零 -->
+        <div id="combat-top">
+          <div class="combat-info">
+            <span style="font-size:0.7rem;opacity:0.45">抽: <span id="draw-count">0</span> | 弃: <span id="discard-count">0</span></span>
+          </div>
+          <div class="combat-info"><span id="combat-status-effects"></span></div>
+          <div class="combat-info">
+            <button class="btn-small btn btn-secondary" onclick="viewJournal()" style="font-size:0.65rem;padding:3px 8px;" id="journal-btn">诗册</button>
+            <button class="btn-small btn btn-secondary" onclick="viewDeck()" style="font-size:0.65rem;padding:3px 8px;">词库</button>
+          </div>
+        </div>
+        <!-- 本场诗册：累积本场战斗已吟诵的句子，战斗结束清零 -->
         <div id="round-journal">
           <div class="round-journal-header">
             <span class="round-journal-title">本场诗册</span>
@@ -76,11 +76,9 @@
           </div>
         </div>
 
-        <div id="enemy-area"></div>
-
         <div id="sentence-area">
           <div id="sentence-label">
-            <span>【造句区】点击手牌入句 · 5/7字=诗意加成 · 押韵 · 主题母题</span>
+            <span>【造句区】点击手牌入句，点立绘下方"我"/敌人卡片选目标</span>
             <div id="enemy-targets-bar"></div>
           </div>
           <div id="sentence-slots-container"></div>
@@ -90,11 +88,8 @@
       </div>
 
       <div id="enemy-portrait-rail" class="portrait-rail enemy-rail">
-        <div class="portrait-frame" id="enemy-portrait-frame">
-          <img id="enemy-portrait-img" src="/enemy.png" alt="敌方" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-          <div class="portrait-placeholder">敌方</div>
-        </div>
-        <div class="portrait-name" id="enemy-portrait-name">未知</div>
+        <div class="rail-heading">敌方</div>
+        <div id="enemy-area"></div>
       </div>
     </div>
     <div id="player-status-bar">
@@ -115,7 +110,6 @@
     </div>
     <div id="hand-area">
       <div id="hand-cards-wrapper">
-        <div id="fixed-card-slot"></div>
         <div id="hand-cards"></div>
       </div>
       <div id="hand-controls">

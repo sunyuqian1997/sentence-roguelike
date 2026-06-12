@@ -38,7 +38,6 @@ export function renderCombat() {
   renderEnemyTargetBar();
   renderSentenceSlots();
   renderRoundJournal();
-  renderEnemyPortrait();
   renderJournalBtnBadge();
   renderHand();
   updateChantButton();
@@ -61,33 +60,6 @@ function renderRoundJournal() {
     const streak = G.rhymeStreak || 0;
     if (streak > 0) { tag.textContent = `🎵 押韵×${streak}`; tag.style.display = 'inline-flex'; }
     else { tag.textContent = ''; tag.style.display = 'none'; }
-  }
-}
-
-function renderEnemyPortrait() {
-  const img = document.getElementById('enemy-portrait-img');
-  const nameEl = document.getElementById('enemy-portrait-name');
-  if (!nameEl) return;
-  // Pick the strongest alive enemy (highest maxHp) as the rail portrait subject
-  const alive = G.enemies.filter(e => e.hp > 0);
-  if (alive.length === 0) {
-    nameEl.textContent = '已清';
-    return;
-  }
-  const lead = alive.reduce((a, b) => (a.maxHp >= b.maxHp ? a : b));
-  nameEl.textContent = lead.name + (alive.length > 1 ? ` 等${alive.length}` : '');
-  // If user later drops a /<enemyId>.png into public/, switch the img src.
-  if (img && lead.id) {
-    const candidate = `/${lead.id}.png`;
-    if (img.src.indexOf(candidate) === -1 && !img.dataset.failed) {
-      img.src = candidate;
-      img.onerror = function () {
-        this.style.display = 'none';
-        this.dataset.failed = '1';
-        const ph = this.nextElementSibling;
-        if (ph) ph.style.display = 'flex';
-      };
-    }
   }
 }
 
@@ -122,13 +94,18 @@ export function renderEnemies() {
     const hasVerb = G.sentence.some(c => c.pos === 'verb');
     if (hasVerb) div.classList.add('targetable');
 
+    const portraitHTML = enemy.portrait
+      ? `<img class="enemy-portrait-img" src="${enemy.portrait}" alt="${enemy.name}" onerror="this.outerHTML='<div class=\\'enemy-portrait\\'>${(enemy.emoji||'👾').replace(/'/g,'&#39;')}</div>'">`
+      : `<div class="enemy-portrait">${typeof getEnemyPortraitSVG === 'function' ? getEnemyPortraitSVG(enemy) : (enemy.emoji||'👾')}</div>`;
     div.innerHTML = `
+      <div class="enemy-name">${enemy.name}</div>
       <div class="enemy-intent ${ic}">${it}</div>
-      <div class="enemy-portrait">${typeof getEnemyPortraitSVG === 'function' ? getEnemyPortraitSVG(enemy) : (enemy.emoji||'👾')}</div>
+      ${portraitHTML}
       ${enemy.block>0?`<div class="enemy-block-indicator">🛡${enemy.block}</div>`:''}
-      <div class="enemy-name" style="font-size:1.05rem;margin-top:4px;">${enemy.name}</div>
-      <div class="enemy-hp-bar"><div class="enemy-hp-fill" style="width:${(enemy.hp/enemy.maxHp)*100}%"></div></div>
-      <div class="enemy-hp-text">${enemy.hp}/${enemy.maxHp}</div>
+      <div class="enemy-hp-row">
+        <div class="enemy-hp-bar"><div class="enemy-hp-fill" style="width:${(enemy.hp/enemy.maxHp)*100}%"></div></div>
+        <div class="enemy-hp-text">${enemy.hp}/${enemy.maxHp}</div>
+      </div>
       <div class="enemy-status-effects">
         ${enemy.vulnerable>0?'<span class="status-icon status-vulnerable">伤'+enemy.vulnerable+'</span>':''}
         ${enemy.weak>0?'<span class="status-icon status-weak">弱'+enemy.weak+'</span>':''}
@@ -239,13 +216,13 @@ export function renderSentenceSlots() {
 }
 
 export function createSentenceWordEl(card, idx) {
-  // Render the full card itself in the sentence slot — preserves cost/POS/effects.
-  // Enemy-target and self-target slots are synthetic (no real hand card) so we
-  // render a card-shaped chip with a matching look.
   const wrap = document.createElement('div');
   wrap.className = 'sentence-card-wrap';
-  wrap.title = '点击取消';
+  wrap.title = '点击取消 · 拖动排序';
+  wrap.dataset.sentenceIdx = String(idx);
+  wrap.draggable = true;
   wrap.onclick = (e) => { e.stopPropagation(); removeSentenceWord(idx); };
+  attachSentenceDragHandlers(wrap);
 
   if (card._isEnemyTarget) {
     wrap.classList.add('target-enemy');
@@ -275,6 +252,45 @@ export function createSentenceWordEl(card, idx) {
   el.onclick = null;
   wrap.appendChild(el);
   return wrap;
+}
+
+function attachSentenceDragHandlers(wrap) {
+  wrap.addEventListener('dragstart', (e) => {
+    wrap.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', wrap.dataset.sentenceIdx);
+  });
+  wrap.addEventListener('dragend', () => {
+    wrap.classList.remove('dragging');
+    document.querySelectorAll('.sentence-card-wrap.drag-over').forEach(el => el.classList.remove('drag-over'));
+  });
+  wrap.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    wrap.classList.add('drag-over');
+  });
+  wrap.addEventListener('dragleave', () => {
+    wrap.classList.remove('drag-over');
+  });
+  wrap.addEventListener('drop', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const fromIdx = parseInt(e.dataTransfer.getData('text/plain'), 10);
+    const toIdx = parseInt(wrap.dataset.sentenceIdx, 10);
+    wrap.classList.remove('drag-over');
+    if (Number.isInteger(fromIdx) && Number.isInteger(toIdx) && fromIdx !== toIdx) {
+      reorderSentence(fromIdx, toIdx);
+    }
+  });
+}
+
+function reorderSentence(fromIdx, toIdx) {
+  if (fromIdx < 0 || fromIdx >= G.sentence.length) return;
+  if (toIdx < 0 || toIdx >= G.sentence.length) return;
+  const moved = G.sentence.splice(fromIdx, 1)[0];
+  G.sentence.splice(toIdx, 0, moved);
+  playSFX('card');
+  renderCombat();
 }
 
 export function renderHand() {

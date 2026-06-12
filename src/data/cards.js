@@ -36,27 +36,39 @@ export function makeCard(def) {
 
 export function createStarterDeck() {
   const deck = [];
-  const add = (key, n) => {
+  const tryAdd = (key, n = 1) => {
+    if (!WORD_DEFS[key]) return;
     for (let i = 0; i < n; i++) deck.push(makeCard({ ...WORD_DEFS[key], key }));
   };
-  // 拼贴诗起始词库：保留功能骨架（攻/防/治/连接/感叹/标点），
-  // 用碎片意象替换原本偏口语的部分。整体气质：断裂、意象密度高、像剪报粘起来的诗。
-  add('wo', 1);          // 主语·我
-  add('wuming', 1);      // 主语·无名者（她没有名字，所以她是所有人）
-  add('yingzi', 1);      // 主语·影子（穿透格挡）
-  add('zhan', 1);        // 动词·斩
-  add('sui', 1);         // 动词·碎（玻璃落地的那一秒）
-  add('shou', 1);        // 动词·守
-  add('chen', 1);        // 动词·沉（向海底，向更深的海底）
-  add('piaofu', 1);      // 动词·漂（在两次呼吸之间）
-  add('hai', 1);         // 宾语·海（盐，又一遍的盐）
-  add('huijin', 1);      // 宾语·灰烬（燃烧之后剩下的，全部）
-  add('guge', 1);        // 宾语·骨（也是最后一根）
-  add('chaoshide', 1);   // 修饰·潮湿地（雨后第三天的报纸）
-  add('er', 1);          // 连接·而（雪而不是雨，铁而不是糖）
-  add('oh', 1);          // 感叹·哦（像突然认出陌生人）
-  add('comma', 2);       // 标点·，×2
-  add('period', 1);      // 标点·。
+  // 拼贴诗起始词库 — 扩大种类（更多动词/宾语/修饰/连词），仍偏意象碎片。
+  // 主语
+  tryAdd('wo');          // 我
+  tryAdd('wuming');      // 无名者
+  tryAdd('yingzi');      // 影子（穿透）
+  // 动词 — 攻击
+  tryAdd('zhan');        // 斩
+  tryAdd('sui');         // 碎
+  tryAdd('chui');        // 锤
+  tryAdd('chen');        // 沉
+  // 动词 — 防守/治疗/位移
+  tryAdd('shou');        // 守
+  tryAdd('piaofu');      // 漂（回血+格挡）
+  // 宾语
+  tryAdd('hai');         // 海
+  tryAdd('huijin');      // 灰烬
+  tryAdd('guge');        // 骨
+  // 修饰
+  tryAdd('chaoshide');   // 潮湿地
+  tryAdd('shuaiqide');   // 帅气地 / 修饰
+  // 连接
+  tryAdd('er');          // 而
+  tryAdd('he');          // 和
+  // 感叹
+  tryAdd('oh');          // 哦
+  // 标点
+  tryAdd('comma', 2);    // ，×2
+  tryAdd('period');      // 。
+  // Filter out duplicates pushed when WORD_DEFS missing (tryAdd just no-ops)
   return deck;
 }
 

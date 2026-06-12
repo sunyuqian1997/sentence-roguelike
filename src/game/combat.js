@@ -205,15 +205,55 @@ export function addToSentence(handIndex) {
     if (G.sentence.some(c => c.pos === 'punctuation' && c.punctType === 'comma')) return;
   }
 
+  // FLIP: capture origin card rect before mutation
+  const handEls = document.querySelectorAll('#hand-cards .card');
+  const sourceEl = handEls[handIndex];
+  const sourceRect = sourceEl ? sourceEl.getBoundingClientRect() : null;
+  const sourceClone = sourceEl ? sourceEl.cloneNode(true) : null;
+
   G.sentence.push(card);
   playSFX('card');
   renderCombat();
   requestAnimationFrame(() => {
-    const words = document.querySelectorAll('#sentence-slots-container .sentence-word');
-    if (words.length > 0) words[words.length - 1].classList.add('sentence-word-enter');
     const hasVerb = G.sentence.some(c => c.pos === 'verb');
     const hasTarget = G.sentence.some(c => c._isEnemyTarget || c._isSelfTarget);
     document.getElementById('sentence-area').classList.toggle('sentence-complete', hasVerb && hasTarget);
+
+    // FLIP: animate clone from source to destination
+    if (sourceRect && sourceClone) {
+      const newSlots = document.querySelectorAll('#sentence-slots-container .sentence-card-wrap');
+      const targetWrap = newSlots[newSlots.length - 1];
+      if (!targetWrap) return;
+      const targetCard = targetWrap.querySelector('.sentence-mini-card') || targetWrap;
+      const targetRect = targetCard.getBoundingClientRect();
+
+      // Hide the real destination momentarily
+      targetWrap.style.opacity = '0';
+
+      sourceClone.style.position = 'fixed';
+      sourceClone.style.left = sourceRect.left + 'px';
+      sourceClone.style.top = sourceRect.top + 'px';
+      sourceClone.style.width = sourceRect.width + 'px';
+      sourceClone.style.height = sourceRect.height + 'px';
+      sourceClone.style.margin = '0';
+      sourceClone.style.zIndex = '9000';
+      sourceClone.style.pointerEvents = 'none';
+      sourceClone.style.transition = 'all 0.28s cubic-bezier(0.4, 0, 0.2, 1)';
+      sourceClone.classList.add('card-flying');
+      document.body.appendChild(sourceClone);
+
+      requestAnimationFrame(() => {
+        sourceClone.style.left = targetRect.left + 'px';
+        sourceClone.style.top = targetRect.top + 'px';
+        sourceClone.style.width = targetRect.width + 'px';
+        sourceClone.style.height = targetRect.height + 'px';
+        sourceClone.style.opacity = '0.85';
+      });
+      setTimeout(() => {
+        sourceClone.remove();
+        targetWrap.style.opacity = '';
+      }, 300);
+    }
   });
 }
 

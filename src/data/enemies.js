@@ -9,7 +9,7 @@ export const ENEMY_DEFS = {
     act_fn(e) { dealDamageToPlayer(e.nextIntent.value, e); }
   },
   zhigui: {
-    name: '纸鬼', hp: 24, act: 1, type: 'normal', emoji: '📜', tags: ['paper','ghost'],
+    name: '纸鬼', hp: 24, act: 1, type: 'normal', emoji: '📜', portrait: '/zhihui.png', tags: ['paper','ghost'],
     ai(e) {
       if(!e.tc) e.tc=0; e.tc++;
       if(e.tc%2===1) e.nextIntent={type:'attack',value:3,hits:3,icon:'⚔'};
@@ -21,7 +21,7 @@ export const ENEMY_DEFS = {
     }
   },
   canju: {
-    name: '残句怪', hp: 16, act: 1, type: 'normal', emoji: '❓', tags: ['word','fragment'],
+    name: '残句怪', hp: 16, act: 1, type: 'normal', emoji: '❓', portrait: '/canjuguai.png', tags: ['word','fragment'],
     ai(e) { e.nextIntent={type:'attack',value:9,icon:'⚔'}; },
     act_fn(e) { dealDamageToPlayer(9,e); }
   },

@@ -406,8 +406,8 @@
   background-color: rgba(197, 75, 60, 0.04);
 }
 .card.pos-verb {
-  border-color: rgba(184, 134, 43, 0.3);
-  background-color: rgba(184, 134, 43, 0.04);
+  border-color: rgba(74, 111, 160, 0.3);
+  background-color: rgba(74, 111, 160, 0.04);
 }
 .card.pos-object {
   border-color: rgba(45, 75, 115, 0.3);
@@ -538,7 +538,7 @@
 }
 @keyframes rareGold {
   0%, 100% { box-shadow: 2px 2px 0 rgba(17, 17, 16, 0.06); }
-  50% { box-shadow: 2px 2px 0 rgba(184, 134, 43, 0.15), 0 0 14px var(--gold-dim); }
+  50% { box-shadow: 2px 2px 0 rgba(74, 111, 160, 0.15), 0 0 14px var(--gold-dim); }
 }
 .card.rarity-uncommon:hover {
   box-shadow:
@@ -550,7 +550,7 @@
   box-shadow:
     4px 6px 0 rgba(17, 17, 16, 0.1),
     6px 10px 20px rgba(17, 17, 16, 0.12),
-    0 0 18px rgba(184, 134, 43, 0.18);
+    0 0 18px rgba(74, 111, 160, 0.18);
 }
 
 /* Upgraded — vermillion seal stamp overlay */
@@ -694,11 +694,11 @@
 
 .sentence-half {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   flex-wrap: wrap;
   align-items: flex-end;
-  min-height: 92px;
-  padding: 4px 2px;
+  min-height: 150px;
+  padding: 6px 2px;
 }
 
 /* Sentence cards — full mini cards in the造句区 */
@@ -711,6 +711,31 @@
   animation: sentenceWordEnter 0.3s var(--ease-brush);
 }
 .sentence-card-wrap:hover { transform: translateY(-3px); }
+.sentence-card-wrap.dragging {
+  opacity: 0.35;
+  transform: scale(0.95);
+}
+.card-flying {
+  box-shadow: 0 8px 24px rgba(17,17,16,0.25), 0 0 16px var(--vermillion-dim) !important;
+  transform: scale(0.92);
+}
+.sentence-card-wrap.drag-over {
+  position: relative;
+}
+.sentence-card-wrap.drag-over::before {
+  content: '';
+  position: absolute;
+  left: -6px; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--vermillion);
+  border-radius: 2px;
+  box-shadow: 0 0 8px var(--vermillion-glow);
+  animation: dragMarker 0.4s ease-out;
+}
+@keyframes dragMarker {
+  0% { opacity: 0; transform: scaleY(0.5); }
+  100% { opacity: 1; transform: scaleY(1); }
+}
 .sentence-card-wrap:hover::after {
   content: '✕';
   position: absolute;
@@ -719,18 +744,18 @@
   pointer-events: none;
 }
 .sentence-mini-card {
-  width: clamp(64px, 9vw, 80px) !important;
-  min-width: 60px !important;
-  height: clamp(88px, 13vw, 108px) !important;
+  width: clamp(90px, 12vw, 115px) !important;
+  min-width: 80px !important;
+  height: clamp(130px, 18vw, 160px) !important;
   margin: 0 !important;
   cursor: pointer !important;
   transform: none !important;
   pointer-events: none;
 }
-.sentence-mini-card .card-word { font-size: clamp(1rem, 2.4vw, 1.3rem) !important; }
-.sentence-mini-card .card-pos-tag { font-size: 0.5rem !important; padding: 1px 0 !important; }
-.sentence-mini-card .card-effect-bar { font-size: 0.5rem !important; padding: 2px 3px !important; line-height: 1.1 !important; }
-.sentence-mini-card .card-cost { width: 18px !important; height: 18px !important; font-size: 0.6rem !important; }
+.sentence-mini-card .card-word { font-size: clamp(1.3rem, 2.8vw, 1.7rem) !important; }
+.sentence-mini-card .card-pos-tag { font-size: 0.65rem !important; padding: 2px 0 !important; }
+.sentence-mini-card .card-effect-bar { font-size: 0.6rem !important; padding: 3px 4px !important; line-height: 1.2 !important; }
+.sentence-mini-card .card-cost { width: 22px !important; height: 22px !important; font-size: 0.72rem !important; }
 
 .sentence-mini-card.enemy-target-card {
   border-color: var(--vermillion) !important;
@@ -817,20 +842,29 @@
   letter-spacing: 0.1em;
 }
 #sentence-score-preview {
-  font-size: 0.75rem;
+  font-size: clamp(0.95rem, 1.6vw, 1.15rem);
   color: var(--gold);
-  opacity: 0.9;
-  margin-top: 3px;
+  opacity: 0.95;
+  margin-top: 6px;
   display: flex;
-  gap: 10px;
+  gap: 14px;
   flex-wrap: wrap;
   align-items: center;
   font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+#sentence-score-preview .score-mult {
+  font-family: var(--font-brush);
+  font-size: 1.25em;
+  color: var(--gold);
 }
 #duizhang-preview {
-  font-size: 0.7rem;
-  margin-top: 3px;
+  font-size: clamp(0.88rem, 1.4vw, 1.05rem);
+  margin-top: 5px;
   min-height: 1em;
+  font-family: var(--font-brush);
+  letter-spacing: 0.05em;
 }
 .duizhang-good { color: var(--pine); }
 .duizhang-bad { color: var(--orange); }
@@ -854,22 +888,20 @@
 #fixed-card-slot {
   flex-shrink: 0;
   display: flex;
-  align-items: flex-end;
-  padding-right: 8px;
-  margin-right: 8px;
-  border-right: 1.5px solid rgba(184, 134, 43, 0.25);
+  align-items: center;
+  justify-content: center;
 }
 #fixed-card-slot .card {
-  border-color: rgba(184, 134, 43, 0.4);
+  border-color: rgba(74, 111, 160, 0.4);
   box-shadow:
-    2px 2px 0 rgba(184, 134, 43, 0.1),
+    2px 2px 0 rgba(74, 111, 160, 0.1),
     0 0 8px var(--gold-dim);
 }
 #fixed-card-slot .card:hover {
   box-shadow:
-    4px 6px 0 rgba(184, 134, 43, 0.15),
+    4px 6px 0 rgba(74, 111, 160, 0.15),
     6px 10px 20px rgba(17, 17, 16, 0.12),
-    0 0 14px rgba(184, 134, 43, 0.15);
+    0 0 14px rgba(74, 111, 160, 0.15);
 }
 #fixed-card-slot .card .card-pin {
   position: absolute;

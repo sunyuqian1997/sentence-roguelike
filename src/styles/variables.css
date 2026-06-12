@@ -3,11 +3,11 @@
    ============================================================ */
 
 :root {
-  /* Paper & ink foundations */
-  --paper: #F5F2EB;
-  --paper-warm: #EDE8DD;
-  --paper-dark: #D8D0C4;
-  --paper-accent: #C8BFB0;
+  /* Paper & ink foundations — light blue mist (淡蓝) */
+  --paper: #EAF1F7;
+  --paper-warm: #DFE9F2;
+  --paper-dark: #C6D4E2;
+  --paper-accent: #ADBED1;
   --ink: #111110;
   --ink-medium: #2A2826;
   --ink-light: #4A4A48;
@@ -24,10 +24,10 @@
   --pine: #4A7C6B;
   --pine-dim: rgba(74, 124, 107, 0.12);
 
-  /* Amber gold (琥珀) */
-  --gold: #B8862B;
-  --gold-bright: #C09451;
-  --gold-dim: rgba(192, 148, 81, 0.12);
+  /* Soft cool accent (replaces amber — keeps "gold" name for legacy refs) */
+  --gold: #4A6FA0;
+  --gold-bright: #6B8DBA;
+  --gold-dim: rgba(74, 111, 160, 0.12);
 
   /* Indigo (靛蓝) */
   --blue-ink: #2D4B73;
