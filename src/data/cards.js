@@ -68,15 +68,24 @@ export function createStarterDeck() {
   tryAdd('chaoshide');   // 潮湿地
   tryAdd('shuaiqide');   // 帅气地
   tryAdd('menglie');     // 猛烈地
-  // 连接 (2)
+  // 连接 (3)
   tryAdd('er');          // 而
   tryAdd('he');          // 和
+  tryAdd('shi_copula');  // 是（系词，谐音梗核心）
   // 感叹 (2)
   tryAdd('oh');          // 哦
   tryAdd('ah');          // 啊
   // 标点 (3)
   tryAdd('comma', 2);    // ，×2
   tryAdd('period');      // 。
+  // 谐音/梗系列 (起手保证有一张)
+  tryAdd('gei');         // 给≈gay
+  tryAdd('lao');         // 老（衰老 pun）
+  tryAdd('ri');          // 日（昼明 pun）
+  // "皇帝你儿子是给" 套件 — 经典梗组合保证可用
+  tryAdd('huangdi');     // 皇帝
+  tryAdd('ni');          // 你
+  tryAdd('erzi');        // 儿子
   return deck;
 }
 

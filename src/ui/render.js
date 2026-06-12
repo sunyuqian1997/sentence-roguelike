@@ -5,6 +5,7 @@ import { showFloatingText, getPosColor } from '../utils.js';
 import { playSFX } from '../game/audio.js';
 import { getEnemyPortraitSVG } from './svgArt.js';
 import { detectDuizhang, detectSummon, SUMMON_EFFECTS, evaluateSentence, checkExclamationPosition } from '../game/sentence.js';
+import { PUN_STATUS } from '../game/poetics.js';
 import { getEffectiveCost, getSentenceCost, addToSentence, removeSentenceWord, updateChantButton } from '../game/combat.js';
 
 // ============================================================
@@ -110,6 +111,7 @@ export function renderEnemies() {
         ${enemy.vulnerable>0?'<span class="status-icon status-vulnerable">伤'+enemy.vulnerable+'</span>':''}
         ${enemy.weak>0?'<span class="status-icon status-weak">弱'+enemy.weak+'</span>':''}
         ${(enemy.strength||0)>0?'<span class="status-icon status-strength">力'+enemy.strength+'</span>':''}
+        ${(enemy._puns||[]).map(t => `<span class="status-icon status-pun" title="${(PUN_STATUS[t]||{}).label||t}">${(PUN_STATUS[t]||{}).label||t}</span>`).join('')}
       </div>
     `;
     div.onclick = () => addEnemyTarget(idx, enemy);

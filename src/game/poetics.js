@@ -79,6 +79,14 @@ export const MOTIFS = [
     flavor: '斯文扫地',
     effect: { weak: 2, reduceStrength: 1, bonusDmgPct: 0.2 },
   },
+  {
+    id: 'laughter_pause',
+    test: /欢笑|大笑|哈哈|沉溺|暂停|深度思考/,
+    targetTags: ['scholar','celestial','word','ghost','spirit','paper','ink','fragment','mirror','wind','dark','human'],
+    label: '😄 沉溺欢笑',
+    flavor: '笑到忘记招式：暂停深度思考',
+    effect: { stunChance: 1.0, weak: 1, bonusDmgPct: 0.2 },
+  },
 ];
 
 // Returns an array of triggered motifs (with the matching enemy indices).
@@ -166,4 +174,175 @@ export function getRhymeKey(sentenceText) {
 export function checkRhyme(currentKey, prevKey) {
   if (!currentKey || !prevKey) return { rhymes: false, key: currentKey, prevKey };
   return { rhymes: currentKey === prevKey, key: currentKey, prevKey };
+}
+
+// ---------- PREDICATE / PUN DETECTION ----------
+// Detect "A 是 B" patterns where B has a `pun` field.
+// A can be: enemy-target card, subject card (我 OK), 我-fixed card.
+// Returns array of { targetIdx: <enemy index> | 'self', pun: <pun obj>, label, flavor, srcCard }.
+// Only returns when there's a copula connector (是/为) AND a punned card adjacent (after).
+export function detectPredicates(cards) {
+  const results = [];
+  for (let i = 0; i < cards.length; i++) {
+    const c = cards[i];
+    if (!c || !c.copulaConn) continue;
+    // Find the predicate (B) — first non-punctuation card after the copula that has a pun
+    let predIdx = -1;
+    for (let j = i + 1; j < cards.length; j++) {
+      const pc = cards[j];
+      if (!pc) continue;
+      if (pc.pos === 'punctuation') continue; // skip punct, but stop at comma
+      if (pc.pos === 'punctuation' && pc.punctType === 'comma') break;
+      if (pc.pun) { predIdx = j; break; }
+      // Allow modifiers in between (eg "A 是 很 给")
+      if (pc.pos === 'modifier' || pc.pos === 'exclamation') continue;
+      break;
+    }
+    if (predIdx < 0) continue;
+    // Find subject (A) — closest enemy-target or subject before the copula
+    let subjectKind = null;
+    let subjectEnemyIdx = -1;
+    for (let k = i - 1; k >= 0; k--) {
+      const sc = cards[k];
+      if (!sc) continue;
+      if (sc._isEnemyTarget) { subjectKind = 'enemy'; subjectEnemyIdx = sc._enemyIdx; break; }
+      if (sc._isSelfTarget || sc._isFixedWo) { subjectKind = 'self'; break; }
+      if (sc.pos === 'subject') { subjectKind = sc.word === '我' ? 'self' : 'subject'; break; }
+    }
+    if (!subjectKind) continue;
+    // Pick subject word for display
+    let subjectWord = '';
+    for (let k = i - 1; k >= 0; k--) {
+      const sc = cards[k];
+      if (!sc) continue;
+      if (sc._isEnemyTarget || sc._isSelfTarget || sc._isFixedWo || sc.pos === 'subject') {
+        subjectWord = sc.word; break;
+      }
+    }
+    results.push({
+      subjectKind,
+      subjectEnemyIdx,
+      subjectWord,
+      pun: cards[predIdx].pun,
+      srcWord: cards[predIdx].word,
+      copulaWord: c.word,
+    });
+  }
+  return results;
+}
+
+// ---------- STATUS DEFINITIONS ----------
+// What each pun tag does on application + pair-interaction it triggers between enemies.
+export const PUN_STATUS = {
+  gay: {
+    label: '🌈 魅惑',
+    onApply(e) { /* applied via _puns array */ },
+    // When 2+ enemies share this tag, they cuddle: both skip attack
+    pairEffect(enemies) {
+      enemies.forEach(e => { e.stunned = true; e._gayCuddle = true; });
+      return { msg: '🌈 一对纸鬼互相魅惑！双方跳过攻击' };
+    },
+  },
+  numb: {
+    label: '😶 麻木',
+    // Numb enemies take 50% reduced damage but can't apply debuffs themselves
+    pairEffect(enemies) {
+      enemies.forEach(e => { e.weak = (e.weak || 0) + 2; });
+      return { msg: '😶 麻木集体感染 → 全员虚弱2' };
+    },
+  },
+  doomed: {
+    label: '💀 寄了',
+    // Doomed enemies take +50% damage; if all enemies doomed → 30% instant kill chance
+    pairEffect(enemies) {
+      enemies.forEach(e => { e.vulnerable = (e.vulnerable || 0) + 3; });
+      return { msg: '💀 集体寄了 → 全员易伤3' };
+    },
+  },
+  fleeing: {
+    label: '🏃 溜了',
+    // Fleeing enemies have a chance to skip turn; if 2+ → they flee together (50% chance miss)
+    pairEffect(enemies) {
+      enemies.forEach(e => { if (Math.random() < 0.5) e.stunned = true; });
+      return { msg: '🏃 互相裹挟逃跑 → 各自50%跳过' };
+    },
+  },
+  lying: {
+    label: '🛌 躺平',
+    // Lying enemies skip attacks
+    pairEffect(enemies) {
+      enemies.forEach(e => { e.stunned = true; });
+      return { msg: '🛌 集体躺平 → 全员跳过攻击' };
+    },
+  },
+  juan: {
+    label: '🌀 内卷',
+    // Juan enemies attack each other (self-damage)
+    pairEffect(enemies) {
+      const dmg = 6;
+      enemies.forEach(e => { e.hp = Math.max(0, e.hp - dmg); });
+      return { msg: '🌀 内卷互殴 → 各自-' + dmg + 'HP' };
+    },
+  },
+  sad: {
+    label: '😞 emo',
+    // Sad enemies don't attack but heal each other (mixed effect)
+    pairEffect(enemies) {
+      enemies.forEach(e => { e.stunned = true; });
+      return { msg: '😞 集体emo → 全员跳过' };
+    },
+  },
+  old: {
+    label: '👴 衰老',
+    pairEffect(enemies) {
+      enemies.forEach(e => { e.weak = (e.weak || 0) + 3; if (e.strength) e.strength = Math.max(0, e.strength - 2); });
+      return { msg: '👴 老态龙钟 → 全员弱3，力量-2' };
+    },
+  },
+  daylight: {
+    label: '☀️ 日光',
+    pairEffect(enemies) {
+      // Sunlight burns ghosts: deal 4 to anyone with ghost/dark tag among the group
+      let burned = 0;
+      enemies.forEach(e => {
+        const tags = e.tags || [];
+        if (tags.includes('ghost') || tags.includes('dark')) {
+          e.hp = Math.max(0, e.hp - 4); burned++;
+        } else {
+          e.vulnerable = (e.vulnerable || 0) + 2;
+        }
+      });
+      return { msg: '☀️ 日光普照 → 鬼/暗系-4，其余易伤2' };
+    },
+  },
+};
+
+// On-apply (single-instance) tweaks. Some pun tags have an immediate effect
+// when applied (eg 衰老 should immediately lower strength).
+export const PUN_ON_APPLY = {
+  old: (e) => { e.weak = (e.weak || 0) + 2; if (e.strength) e.strength = Math.max(0, e.strength - 1); },
+  daylight: (e) => { e.vulnerable = (e.vulnerable || 0) + 1; },
+};
+
+// Triggers the pair-effect for enemies that share a pun tag.
+// Returns array of { msg, tag } describing what fired.
+export function processEnemyPuns(enemies) {
+  const fired = [];
+  const aliveByTag = {};
+  enemies.forEach((e, i) => {
+    if (!e || e.hp <= 0) return;
+    if (!e._puns) return;
+    e._puns.forEach(tag => {
+      (aliveByTag[tag] ||= []).push(e);
+    });
+  });
+  for (const tag of Object.keys(aliveByTag)) {
+    const group = aliveByTag[tag];
+    if (group.length < 2) continue;
+    const def = PUN_STATUS[tag];
+    if (!def || !def.pairEffect) continue;
+    const r = def.pairEffect(group);
+    if (r && r.msg) fired.push({ msg: r.msg, tag });
+  }
+  return fired;
 }

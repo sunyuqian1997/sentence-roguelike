@@ -511,7 +511,12 @@
     "upgPower": 9,
     "healAlsoVerb": 2,
     "flavor": "不卷了不卷了",
-    "desc": "格挡 {power}+回血2",
+    "desc": "格挡 {power}+回血2·A是躺平→施加躺平",
+    "pun": {
+      "tag": "lying",
+      "label": "🛌 躺平",
+      "flavor": "彻底不打了"
+    },
     "en": {
       "word": "Lie Flat",
       "desc": "DEF {power}+Heal 2"
@@ -544,10 +549,54 @@
     "drawLessNext": 1,
     "bailanSpecial": true,
     "flavor": "躺平了",
-    "desc": "自用=挡{power}少抽1；对敌=敌跳过攻击",
+    "desc": "自用=挡{power}少抽1；对敌=敌跳过攻击·A是摆烂→施加躺平",
+    "pun": {
+      "tag": "lying",
+      "label": "🛌 躺平",
+      "flavor": "彻底躺了"
+    },
     "en": {
       "word": "Slack Off",
       "desc": "Self=DEF {power} Draw-1; Enemy=Skip ATK"
+    }
+  },
+  "juan": {
+    "word": "卷",
+    "pos": "verb",
+    "cost": 1,
+    "rarity": "common",
+    "combatType": "attack",
+    "basePower": 4,
+    "upgPower": 6,
+    "desc": "攻击{power}·谐音「内卷」·A是卷→施加内卷",
+    "flavor": "卷起来！卷到死！",
+    "pun": {
+      "tag": "juan",
+      "label": "🌀 内卷",
+      "flavor": "卷≈被迫加班"
+    },
+    "en": {
+      "word": "Roll",
+      "desc": "ATK {power}, A is 卷 → apply juan"
+    }
+  },
+  "sang": {
+    "word": "丧",
+    "pos": "modifier",
+    "cost": 0,
+    "rarity": "common",
+    "multiplier": 1.0,
+    "bonusType": "all",
+    "desc": "修饰·A是丧→施加emo自闭",
+    "flavor": "丧≈sad / 一切皆灰",
+    "pun": {
+      "tag": "sad",
+      "label": "😞 emo",
+      "flavor": "丧≈sad"
+    },
+    "en": {
+      "word": "Sad",
+      "desc": "Mod, A is 丧 → apply emo"
     }
   },
   "duo": {
@@ -1067,6 +1116,34 @@
       "desc": "Conn · Trigger assist passive"
     }
   },
+  "shi_copula": {
+    "word": "是",
+    "pos": "connector",
+    "cost": 0,
+    "rarity": "common",
+    "desc": "系词·A是B → 给B施加双关状态",
+    "flavor": "皇帝你儿子是…",
+    "grammarBonus": 0.05,
+    "copulaConn": true,
+    "en": {
+      "word": "is",
+      "desc": "Copula · A is B → apply B's pun"
+    }
+  },
+  "wei_copula": {
+    "word": "为",
+    "pos": "connector",
+    "cost": 0,
+    "rarity": "uncommon",
+    "desc": "系词·A为B → 给B施加双关状态",
+    "flavor": "皆为浮云",
+    "grammarBonus": 0.05,
+    "copulaConn": true,
+    "en": {
+      "word": "is/be",
+      "desc": "Copula · A wei B → apply B's pun"
+    }
+  },
   "comma": {
     "word": "，",
     "pos": "punctuation",
@@ -1197,10 +1274,15 @@
     "cost": 0,
     "rarity": "common",
     "freePos": true,
-    "desc": "感叹词·攻击×1.4",
-    "flavor": "六六六！",
+    "desc": "感叹词·攻击×1.4·A是666→施加溜了",
+    "flavor": "666≈溜：被夸到想跑",
     "excMult": 1.4,
     "excType": "attack",
+    "pun": {
+      "tag": "fleeing",
+      "label": "🏃 溜了",
+      "flavor": "666≈溜了"
+    },
     "en": {
       "word": "666",
       "desc": "Excl · ATK×1.4"
@@ -1672,10 +1754,15 @@
     "cost": 0,
     "rarity": "common",
     "freePos": true,
-    "desc": "感叹词·格挡×1.4",
+    "desc": "感叹词·格挡×1.4·A是麻了→施加麻木",
     "flavor": "麻了麻了",
     "excMult": 1.4,
     "excType": "defense",
+    "pun": {
+      "tag": "numb",
+      "label": "😶 麻木",
+      "flavor": "麻了 / 痛感屏蔽"
+    },
     "en": {
       "word": "Numb",
       "desc": "Excl · DEF×1.4"
@@ -1762,11 +1849,16 @@
     "cost": 0,
     "rarity": "uncommon",
     "freePos": true,
-    "desc": "感叹词·自伤但敌伤×2",
-    "flavor": "寄了寄了",
+    "desc": "感叹词·自伤但敌伤×2·A是寄→宣判寄了",
+    "flavor": "寄≈死定了：宣判即崩溃",
     "excMult": 2,
     "excType": "attack",
     "excSelfDmg": 3,
+    "pun": {
+      "tag": "doomed",
+      "label": "💀 寄了",
+      "flavor": "寄≈宣判死亡"
+    },
     "en": {
       "word": "GG",
       "desc": "Excl · Self-dmg but Enemy DMG×2"
@@ -2983,8 +3075,13 @@
     "upgPower": 5,
     "healAlsoVerb": 3,
     "draw": 1,
-    "desc": "格挡3+回血3+抽1",
-    "flavor": "给你给你都给你"
+    "desc": "格挡3+回血3+抽1·谐音「gay」",
+    "flavor": "给≈gay：A是给→施加魅惑",
+    "pun": {
+      "tag": "gay",
+      "label": "🌈 魅惑",
+      "flavor": "给≈gay"
+    }
   },
   "zhao": {
     "word": "罩",
@@ -3183,6 +3280,111 @@
     "powerBonus": 2,
     "bonusType": "defense",
     "defenseBonus": 2
+  },
+  "huangdi": {
+    "word": "皇帝",
+    "pos": "subject",
+    "cost": 0,
+    "rarity": "common",
+    "powerBonus": 3,
+    "bonusType": "attack",
+    "poetryBonus": 0.2,
+    "desc": "主语·攻+3·诗+0.2",
+    "flavor": "圣旨到，给朕跪下",
+    "en": {
+      "word": "Emperor",
+      "desc": "Subject · ATK+3, Quality+0.2"
+    }
+  },
+  "ni": {
+    "word": "你",
+    "pos": "subject",
+    "cost": 0,
+    "rarity": "common",
+    "powerBonus": 1,
+    "bonusType": "all",
+    "desc": "主语·二人称·全+1（可串联其他主语）",
+    "flavor": "你才是…",
+    "en": {
+      "word": "You",
+      "desc": "Subject · 2nd person · All+1"
+    }
+  },
+  "erzi": {
+    "word": "儿子",
+    "pos": "subject",
+    "cost": 0,
+    "rarity": "common",
+    "powerBonus": 2,
+    "bonusType": "attack",
+    "desc": "主语·攻+2·可承接父系主语（皇帝你儿子是给）",
+    "flavor": "亲生的，错不了",
+    "en": {
+      "word": "Son",
+      "desc": "Subject · ATK+2"
+    }
+  },
+  "chenni": {
+    "word": "沉溺",
+    "pos": "verb",
+    "cost": 1,
+    "rarity": "common",
+    "combatType": "attack",
+    "basePower": 5,
+    "upgPower": 7,
+    "desc": "攻击{power}·配合\"欢笑\"触发母题：暂停敌方思考",
+    "flavor": "沉溺于一种状态，无法自拔",
+    "en": {
+      "word": "Indulge",
+      "desc": "ATK {power}, combo with 欢笑"
+    }
+  },
+  "huanxiao": {
+    "word": "欢笑",
+    "pos": "object",
+    "cost": 0,
+    "rarity": "common",
+    "effectBonus": 2,
+    "bonusType": "all",
+    "poetryObjBonus": 0.2,
+    "desc": "宾语·全+2·诗+0.2·触发\"沉溺欢笑\"母题",
+    "flavor": "笑声是一种武器",
+    "en": {
+      "word": "Laughter",
+      "desc": "Object · All+2, triggers laughter motif"
+    }
+  },
+  "shenducisikao": {
+    "word": "深度思考",
+    "pos": "object",
+    "cost": 0,
+    "rarity": "uncommon",
+    "effectBonus": 1,
+    "bonusType": "attack",
+    "poetryObjBonus": 0.3,
+    "draw": 1,
+    "desc": "宾语·攻+1·抽1·配合\"暂停\"触发停思",
+    "flavor": "想得太多，反而忘了打人",
+    "en": {
+      "word": "Deep Thought",
+      "desc": "Object · ATK+1, Draw 1"
+    }
+  },
+  "zanting": {
+    "word": "暂停",
+    "pos": "verb",
+    "cost": 0,
+    "rarity": "common",
+    "combatType": "defense",
+    "basePower": 4,
+    "upgPower": 6,
+    "applyWeakVerb": 1,
+    "desc": "格挡{power}+敌方虚弱1·触发\"暂停深度思考\"母题",
+    "flavor": "时间，停一下",
+    "en": {
+      "word": "Pause",
+      "desc": "DEF {power}, Weak 1"
+    }
   },
   "ba2": {
     "word": "吧",
@@ -3407,6 +3609,45 @@
     "en": {
       "word": "Damply",
       "desc": "Mod · All×1.2, Quality+0.3"
+    }
+  },
+  "lao": {
+    "word": "老",
+    "pos": "modifier",
+    "cost": 0,
+    "rarity": "common",
+    "desc": "修饰·全×1.1·谐音「老/年老」·A是老→施加衰老",
+    "flavor": "老纸鬼 / 我老打xxx",
+    "multiplier": 1.1,
+    "bonusType": "all",
+    "pun": {
+      "tag": "old",
+      "label": "👴 衰老",
+      "flavor": "老=年老，力气衰退"
+    },
+    "en": {
+      "word": "Old",
+      "desc": "Mod · All×1.1, A is 老 → apply aged"
+    }
+  },
+  "ri": {
+    "word": "日",
+    "pos": "subject",
+    "cost": 0,
+    "rarity": "common",
+    "powerBonus": 2,
+    "bonusType": "attack",
+    "poetryBonus": 0.2,
+    "desc": "主语·攻+2·谐音「日(动)」·A是日→施加昼明",
+    "flavor": "日≈白天 / 日≈干（动词）",
+    "pun": {
+      "tag": "daylight",
+      "label": "☀️ 日光",
+      "flavor": "日≈白日 / 暗影者惧之"
+    },
+    "en": {
+      "word": "Day",
+      "desc": "Subject · ATK+2, A is 日 → apply daylight"
     }
   },
   "er": {

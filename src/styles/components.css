@@ -262,6 +262,13 @@
   color: var(--pine);
   border-color: var(--pine);
 }
+.status-pun {
+  color: var(--purple);
+  border-color: var(--purple);
+  background: var(--purple-dim);
+  font-family: var(--font-brush);
+  letter-spacing: 0.05em;
+}
 
 /* --- 11. Player Status Bar --- */
 #player-status-bar {

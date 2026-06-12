@@ -4,7 +4,7 @@ import { playSFX } from './audio.js';
 import { VFX } from '../ui/vfx.js';
 import { dealDamageToEnemy } from './damage.js';
 import { drawCards } from './combat.js';
-import { detectMotifs, getRhymeKey, checkRhyme } from './poetics.js';
+import { detectMotifs, getRhymeKey, checkRhyme, detectPredicates } from './poetics.js';
 
 // ============================================================
 // DUIZHANG (对仗) SYSTEM
@@ -490,6 +490,7 @@ export function evaluateSentence(rawCards) {
     goldGain: 0, thorns: 0, drawLessNext: 0,
     _motifTriggers: null,
     _rhymeInfo: null,
+    _predicates: null,
   };
 
   // MOTIFS (thematic effects against tagged enemies — e.g. 纸鬼沉海)
@@ -505,6 +506,24 @@ export function evaluateSentence(rawCards) {
     if (motifBonus > 0) literaryMult += motifBonus;
   }
   effects._rhymeInfo = _rhymeInfo;
+
+  // PREDICATES (A 是 B 谐音双关 → 给目标施加状态)
+  const _preds = detectPredicates(cards);
+  if (_preds.length > 0) {
+    effects._predicates = _preds;
+    _preds.forEach(p => {
+      let tgtLabel;
+      if (p.subjectKind === 'enemy') {
+        tgtLabel = (G.enemies[p.subjectEnemyIdx] ? G.enemies[p.subjectEnemyIdx].name : '敌人');
+      } else if (p.subjectKind === 'self') {
+        tgtLabel = '我';
+      } else {
+        tgtLabel = p.subjectWord || '它';
+      }
+      literaryNotes.push(`${p.pun.label}：${tgtLabel}${p.copulaWord}${p.srcWord} — ${p.pun.flavor}`);
+    });
+    literaryMult += 0.3 * _preds.length;
+  }
 
   if (hasQuestion) { effects.applyWeak = 2; }
 

@@ -11,6 +11,7 @@ import { CARD_PACKS } from '../data/packs.js';
 import { playStory, STORY_CHAPTERS_REF } from '../ui/storyOverlay.js';
 import STORY_CHAPTERS from '../data/story.json';
 import { detectSummon, SUMMON_EFFECTS, evaluateSentence, checkExclamationPosition, detectDuizhang } from './sentence.js';
+import { processEnemyPuns, PUN_STATUS, PUN_ON_APPLY } from './poetics.js';
 import { EVENTS_BY_ACT, EVENTS_FALLBACK } from '../data/events.js';
 import { closeMetaScreen, showVictoryScreen } from '../ui/screens.js';
 
@@ -609,6 +610,32 @@ export function applyEffects(effects) {
     }
   }
 
+  // PREDICATE PUNS — A 是 B → apply pun status
+  if (effects._predicates && effects._predicates.length > 0) {
+    effects._predicates.forEach(p => {
+      const tag = p.pun.tag;
+      const applyToEnemy = (e) => {
+        if (!e || e.hp <= 0) return;
+        if (!e._puns) e._puns = [];
+        if (!e._puns.includes(tag)) e._puns.push(tag);
+        if (PUN_ON_APPLY[tag]) PUN_ON_APPLY[tag](e);
+        if (e.element) showFloatingText(e.element, p.pun.label, '#9B59B6');
+      };
+      if (p.subjectKind === 'enemy') {
+        applyToEnemy(G.enemies[p.subjectEnemyIdx]);
+      } else if (p.subjectKind === 'subject') {
+        // Generic subject ("皇帝你儿子是给") — wisecrack heard by all enemies
+        G.enemies.forEach(applyToEnemy);
+        showFloatingText(document.querySelector('#combat-top'), `📢 ${p.subjectWord}${p.copulaWord}${p.srcWord}：${p.pun.label}`, '#9B59B6');
+      } else {
+        // self — record on player only
+        if (!G._puns) G._puns = [];
+        if (!G._puns.includes(tag)) G._puns.push(tag);
+        showFloatingText(document.querySelector('#combat-top'), `自陈：${p.pun.label}`, '#9B59B6');
+      }
+    });
+  }
+
   // MOTIF DEBUFFS — apply per-enemy thematic effects (纸鬼沉海 etc.)
   if (effects._motifTriggers && effects._motifTriggers.length > 0) {
     effects._motifTriggers.forEach(t => {
@@ -639,6 +666,10 @@ export function applyEffects(effects) {
         if (eff.soak) {
           e._soaked = (e._soaked || 0) + 1;
           if (e.element) showFloatingText(e.element, `💧 浸湿`, '#3A7B8C');
+        }
+        if (eff.stunChance && Math.random() < eff.stunChance) {
+          e.stunned = true;
+          if (e.element) showFloatingText(e.element, `😄 笑停了`, '#B87333');
         }
       });
     });
@@ -742,7 +773,15 @@ export function endPlayerTurn() {
 }
 
 export function enemyTurn() {
-  let delay = 0;
+  // Process pun pair-effects BEFORE enemies act — eg. two gay enemies cuddle
+  const fired = processEnemyPuns(G.enemies);
+  fired.forEach((f, i) => {
+    setTimeout(() => {
+      const host = document.querySelector('#enemy-area') || document.querySelector('#combat-top');
+      if (host) showFloatingText(host, f.msg, '#9B59B6');
+    }, i * 350);
+  });
+  let delay = fired.length * 350;
   G.enemies.forEach((enemy) => {
     if (enemy.hp <= 0) return;
     enemy.block = 0;
