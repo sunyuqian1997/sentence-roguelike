@@ -24,6 +24,7 @@ export function startGame() {
   G.block = 0; G.strength = 0; G.vulnerable = 0; G.weak = 0;
   G.floorsCleared = 0; G.elitesKilled = 0; G.bossesKilled = 0; G.sentencesChanted = 0;
   G.sentenceJournal = [];
+  G.combatJournal = [];
   G.lastRhymeKey = null;
   G.rhymeStreak = 0;
   G.currentRow = -1; G.currentNodeIndex = -1;
@@ -71,6 +72,7 @@ export function startCombat(enemyDefs) {
   G.drawLessNextTurn = 0;
   G.lastRhymeKey = null;
   G.rhymeStreak = 0;
+  G.combatJournal = [];
 
   showScreen('combat-screen');
   // Player portrait is now an <img> in HTML, no need to generate SVG
@@ -255,6 +257,8 @@ export function chantSentence() {
   G.sentencesChanted++;
   const journalText = G.sentence.map(c => c._isEnemyTarget ? c.word : (c._isSelfTarget ? '我' : c.word)).join('');
   G.sentenceJournal.push(journalText);
+  if (!G.combatJournal) G.combatJournal = [];
+  G.combatJournal.push(journalText);
   playSFX('chant');
   VFX.inkRipple();
 

@@ -5,7 +5,9 @@ import { toggleMute } from './game/audio.js';
 import { initInkBackground } from './ui/inkShader.js';
 import { getLang, setLang } from './i18n.js';
 import { initCheats } from './cheats.js';
-import { startGame, endPlayerTurn, chantSentence, addToSentence, removeSentenceWord, skipReward } from './game/combat.js';
+import { startGame, startCombat, endPlayerTurn, chantSentence, addToSentence, removeSentenceWord, skipReward } from './game/combat.js';
+import { renderCombat } from './ui/render.js';
+import { ENEMY_DEFS } from './data/enemies.js';
 import {
   showRestScreen, restHeal, restUpgrade, closeUpgrade,
   showEventScreen, showShopScreen, shopRemoveCard, closeRemove, leaveShop,
@@ -47,6 +49,12 @@ window.toggleLang = function() {
     alert('Language switch failed: ' + e.message);
   }
 };
+
+// Expose G + helpers for cheat console / debugging only
+window.G = G;
+window.__renderCombat = renderCombat;
+window.__startCombat = startCombat;
+window.__ENEMY_DEFS = ENEMY_DEFS;
 
 // Init
 (function init() {

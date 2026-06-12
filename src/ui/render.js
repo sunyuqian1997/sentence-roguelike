@@ -37,26 +37,57 @@ export function renderCombat() {
   renderEnemies();
   renderEnemyTargetBar();
   renderSentenceSlots();
-  renderLastChantPill();
+  renderRoundJournal();
+  renderEnemyPortrait();
   renderJournalBtnBadge();
   renderHand();
   updateChantButton();
 }
 
-function renderLastChantPill() {
-  const pill = document.getElementById('last-chant-pill');
-  const txt = document.getElementById('last-chant-text');
+function renderRoundJournal() {
+  const list = document.getElementById('round-journal-lines');
   const tag = document.getElementById('rhyme-streak-tag');
-  if (!pill || !txt) return;
-  const lines = G.sentenceJournal || [];
-  const streak = G.rhymeStreak || 0;
-  const hasContent = lines.length > 0 || streak > 0;
-  if (!hasContent) { pill.style.display = 'none'; return; }
-  pill.style.display = 'flex';
-  txt.textContent = lines.length > 0 ? `上一句：「${lines[lines.length - 1]}」` : '';
+  if (!list) return;
+  const lines = G.combatJournal || [];
+  if (lines.length === 0) {
+    list.innerHTML = '<div class="round-journal-empty">尚未吟诵…</div>';
+  } else {
+    list.innerHTML = lines.map((s, i) =>
+      `<div class="round-journal-line"><span class="rj-num">${i + 1}.</span>「${s}」</div>`
+    ).join('');
+    requestAnimationFrame(() => { list.scrollTop = list.scrollHeight; });
+  }
   if (tag) {
+    const streak = G.rhymeStreak || 0;
     if (streak > 0) { tag.textContent = `🎵 押韵×${streak}`; tag.style.display = 'inline-flex'; }
     else { tag.textContent = ''; tag.style.display = 'none'; }
+  }
+}
+
+function renderEnemyPortrait() {
+  const img = document.getElementById('enemy-portrait-img');
+  const nameEl = document.getElementById('enemy-portrait-name');
+  if (!nameEl) return;
+  // Pick the strongest alive enemy (highest maxHp) as the rail portrait subject
+  const alive = G.enemies.filter(e => e.hp > 0);
+  if (alive.length === 0) {
+    nameEl.textContent = '已清';
+    return;
+  }
+  const lead = alive.reduce((a, b) => (a.maxHp >= b.maxHp ? a : b));
+  nameEl.textContent = lead.name + (alive.length > 1 ? ` 等${alive.length}` : '');
+  // If user later drops a /<enemyId>.png into public/, switch the img src.
+  if (img && lead.id) {
+    const candidate = `/${lead.id}.png`;
+    if (img.src.indexOf(candidate) === -1 && !img.dataset.failed) {
+      img.src = candidate;
+      img.onerror = function () {
+        this.style.display = 'none';
+        this.dataset.failed = '1';
+        const ph = this.nextElementSibling;
+        if (ph) ph.style.display = 'flex';
+      };
+    }
   }
 }
 

@@ -56,6 +56,7 @@ export const G = {
   shopInventory: null,
   drawLessNextTurn: 0,
   sentenceJournal: [],
+  combatJournal: [],
   lastRhymeKey: null,
   rhymeStreak: 0,
 };

@@ -620,46 +620,7 @@
   font-family: var(--font-serif);
 }
 
-/* ============================================================
-   LAST-CHANT PILL — single-line "上一句" hint
-   ============================================================ */
-#last-chant-pill {
-  display: none;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin: 0 12px;
-  padding: 3px 12px;
-  font-family: var(--font-brush);
-  font-size: 0.82rem;
-  letter-spacing: 0.08em;
-  color: var(--ink-light);
-  background: linear-gradient(90deg, transparent, rgba(184,134,43,0.06), transparent);
-  border-top: 1px dashed rgba(184,134,43,0.25);
-  border-bottom: 1px dashed rgba(184,134,43,0.25);
-}
-#last-chant-text {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 70%;
-}
-#rhyme-streak-tag {
-  display: none;
-  font-family: var(--font-brush);
-  font-weight: 700;
-  font-size: 0.76rem;
-  padding: 1px 9px;
-  border: 1px solid var(--gold);
-  background: var(--paper);
-  color: var(--gold);
-  border-radius: 12px;
-  letter-spacing: 0.08em;
-  white-space: nowrap;
-  box-shadow: 0 1px 4px rgba(184,134,43,0.18);
-  flex-shrink: 0;
-}
+/* (last-chant pill replaced by #round-journal in arena) */
 
 #enemy-targets-bar {
   display: flex;
