@@ -241,6 +241,107 @@ export function playChantPuppetAnim(effects) {
   seq.forEach(({ at, do: fn }) => setTimeout(fn, at));
 }
 
+// Triggered from enemyTurn — enemy is the actor, player reacts.
+// intent shape from enemies.js: { type:'attack'|'defend'|'buff'|'debuff'|'special', value, hits?, label? }
+export function playEnemyPuppetAnim(intent, opts) {
+  opts = opts || {};
+  const playerEl = document.getElementById('puppet-player');
+  const enemyEl = document.getElementById('puppet-enemy');
+  if (!playerEl || !enemyEl) return;
+  playerEl.dataset.chanting = '1';
+  enemyEl.dataset.chanting = '1';
+
+  // Stunned/sleeping enemies — just yawn + return
+  if (opts.stunned) {
+    enemyEl.dataset.pose = 'dazed';
+    const ee = enemyEl.querySelector('.puppet-emoji');
+    if (ee) ee.textContent = '💤';
+    setTimeout(() => {
+      enemyEl.dataset.pose = 'idle';
+      if (ee) ee.textContent = '';
+      playerEl.dataset.chanting = '';
+      enemyEl.dataset.chanting = '';
+    }, 600);
+    return;
+  }
+
+  const t = (intent && intent.type) || 'attack';
+  const dmg = intent && intent.value || 0;
+  const hits = intent && intent.hits || 1;
+  const heavy = dmg >= 12 || hits >= 2;
+
+  // 0: wind-up
+  setTimeout(() => {
+    enemyEl.style.transition = 'transform 0.15s ease-out';
+    enemyEl.style.transform = 'translateY(2px) scaleY(0.95)';
+  }, 0);
+
+  // 120: enemy dashes / poses
+  setTimeout(() => {
+    enemyEl.style.transition = 'transform 0.3s cubic-bezier(0.22,1,0.36,1)';
+    if (t === 'attack') {
+      enemyEl.style.transform = 'translateX(-80px)';
+      enemyEl.dataset.pose = 'attack';
+    } else if (t === 'defend') {
+      enemyEl.style.transform = 'translateY(0)';
+      enemyEl.dataset.pose = 'defend';
+    } else if (t === 'buff') {
+      enemyEl.style.transform = 'translateY(-4px) scale(1.06)';
+      enemyEl.dataset.pose = 'heal'; // reuse heal pose for buff glow
+      enemyEl.style.filter = 'drop-shadow(0 0 8px var(--gold))';
+    } else if (t === 'debuff') {
+      enemyEl.style.transform = 'translateX(-40px)';
+      enemyEl.dataset.pose = 'attack';
+      enemyEl.style.filter = 'drop-shadow(0 0 8px var(--purple))';
+    } else if (t === 'special') {
+      enemyEl.style.transform = 'translateY(-4px)';
+      enemyEl.dataset.pose = 'attack';
+      enemyEl.style.filter = 'drop-shadow(0 0 10px var(--cyan))';
+    }
+  }, 120);
+
+  // 420: impact on player (or buff resolves)
+  setTimeout(() => {
+    if (t === 'attack') {
+      playerEl.style.transition = 'transform 0.25s ease-out';
+      playerEl.style.transform = 'translateX(-8px) rotate(-4deg)';
+      playerEl.dataset.pose = 'hit';
+      playerEl.classList.remove('puppet-impact');
+      void playerEl.offsetWidth;
+      playerEl.classList.add('puppet-impact');
+      if (heavy) {
+        playerEl.style.transform = 'translateX(-14px) rotate(-7deg) scale(0.96)';
+      }
+    } else if (t === 'debuff') {
+      playerEl.dataset.pose = 'dazed';
+      const pe = playerEl.querySelector('.puppet-emoji');
+      if (pe) pe.textContent = '😵';
+    }
+  }, 420);
+
+  // 720: return
+  setTimeout(() => {
+    enemyEl.style.transition = 'transform 0.3s cubic-bezier(0.22,1,0.36,1)';
+    enemyEl.style.transform = '';
+    enemyEl.style.filter = '';
+    playerEl.style.transition = 'transform 0.3s ease-out';
+    playerEl.style.transform = '';
+  }, 720);
+
+  // 1000: clear
+  setTimeout(() => {
+    enemyEl.style.transform = '';
+    enemyEl.style.filter = '';
+    playerEl.style.transform = '';
+    playerEl.classList.remove('puppet-impact');
+    const pe = playerEl.querySelector('.puppet-emoji');
+    if (pe) pe.textContent = '';
+    playerEl.dataset.chanting = '';
+    enemyEl.dataset.chanting = '';
+    // Sentence is empty after end-turn, so updatePuppets restores idle
+  }, 1000);
+}
+
 function renderRoundJournal() {
   const list = document.getElementById('round-journal-lines');
   const tag = document.getElementById('rhyme-streak-tag');

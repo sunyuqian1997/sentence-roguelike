@@ -3,7 +3,7 @@ import { showFloatingText, shuffleArray } from '../utils.js';
 import { playSFX, initAudio, playAmbientMusic, playCombatMusic, playBossMusic, stopMusic } from './audio.js';
 import { VFX } from '../ui/vfx.js';
 import { WORD_DEFS, makeCard, createStarterDeck, randomCard, randomCardWeighted } from '../data/cards.js';
-import { showScreen, renderCombat, createCardElement, playChantPuppetAnim } from '../ui/render.js';
+import { showScreen, renderCombat, createCardElement, playChantPuppetAnim, playEnemyPuppetAnim } from '../ui/render.js';
 import { generateCharSVG } from '../ui/svgArt.js';
 import { dealDamageToPlayer, dealDamageToEnemy, checkEnemies } from './damage.js';
 import { generateMap, renderMap } from './map.js';
@@ -840,6 +840,10 @@ export function enemyTurn() {
 
     setTimeout(() => {
       if (enemy.hp <= 0) return;
+      // Trigger puppet animation BEFORE the actual effect — animation runs
+      // ~1000ms but we apply effect at 420ms (when the puppet "lands the hit").
+      const intentForAnim = enemy.nextIntent ? { ...enemy.nextIntent } : null;
+      playEnemyPuppetAnim(intentForAnim, { stunned: enemy.stunned });
       if (enemy.stunned) {
         enemy.stunned = enemy._stunNext || false;
         enemy._stunNext = false;
@@ -860,7 +864,7 @@ export function enemyTurn() {
       renderCombat();
       if (G.hp <= 0) return;
     }, delay);
-    delay += 550;
+    delay += 700;
   });
   G._reflectDmg = 0;
   setTimeout(() => { if (G.hp > 0) startPlayerTurn(); }, delay + 400);
