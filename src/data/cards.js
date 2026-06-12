@@ -71,7 +71,7 @@ export function createStarterDeck() {
   // 连接 (3)
   tryAdd('er');          // 而
   tryAdd('he');          // 和
-  tryAdd('shi_copula');  // 是（系词，谐音梗核心）
+  tryAdd('shi_copula', 2); // 是×2（系词，谐音梗核心，起手保证看到）
   // 感叹 (2)
   tryAdd('oh');          // 哦
   tryAdd('ah');          // 啊

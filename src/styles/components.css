@@ -968,6 +968,22 @@
   75% { transform: translateX(2px) rotate(3deg); }
 }
 
+/* ---- Impact flash on chant strike ---- */
+.puppet.puppet-impact {
+  animation: puppetImpactFlash 0.45s ease-out !important;
+}
+@keyframes puppetImpactFlash {
+  0% { filter: brightness(1); }
+  25% {
+    filter: brightness(1.5) drop-shadow(0 0 12px var(--vermillion));
+    transform: translateX(8px) rotate(4deg) scale(1.08);
+  }
+  60% {
+    filter: brightness(1.1) drop-shadow(0 0 6px var(--vermillion-dim));
+  }
+  100% { filter: brightness(1); transform: translateX(0) rotate(0) scale(1); }
+}
+
 /* ---- Pose: idle gentle breathing ---- */
 .puppet[data-pose="idle"] {
   animation: puppetBreathe 3s ease-in-out infinite;

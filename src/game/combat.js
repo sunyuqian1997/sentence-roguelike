@@ -3,7 +3,7 @@ import { showFloatingText, shuffleArray } from '../utils.js';
 import { playSFX, initAudio, playAmbientMusic, playCombatMusic, playBossMusic, stopMusic } from './audio.js';
 import { VFX } from '../ui/vfx.js';
 import { WORD_DEFS, makeCard, createStarterDeck, randomCard, randomCardWeighted } from '../data/cards.js';
-import { showScreen, renderCombat, createCardElement } from '../ui/render.js';
+import { showScreen, renderCombat, createCardElement, playChantPuppetAnim } from '../ui/render.js';
 import { generateCharSVG } from '../ui/svgArt.js';
 import { dealDamageToPlayer, dealDamageToEnemy, checkEnemies } from './damage.js';
 import { generateMap, renderMap } from './map.js';
@@ -113,6 +113,7 @@ export function startPlayerTurn() {
   drawCards(dc);
   guaranteePunctuation();
   guaranteeVerb();
+  guaranteeCopula();
   renderCombat();
   requestAnimationFrame(() => {
     document.querySelectorAll('#hand-cards .card').forEach((c, i) => {
@@ -157,6 +158,31 @@ function guaranteePunctuation() {
       G.discardPile.push(G.hand[replaceIdx]);
       G.hand[replaceIdx] = punctCard;
     }
+  }
+}
+
+function guaranteeCopula() {
+  // Only relevant if the deck has any copula card.
+  const deckHasCopula = [...G.drawPile, ...G.discardPile, ...G.hand].some(c => c.copulaConn);
+  if (!deckHasCopula) return;
+  // Already in hand? done.
+  if (G.hand.some(c => c.copulaConn)) return;
+  // Try to find a copula in drawPile, then discardPile
+  let idx = G.drawPile.findIndex(c => c.copulaConn);
+  let source = G.drawPile;
+  if (idx < 0) {
+    idx = G.discardPile.findIndex(c => c.copulaConn);
+    source = G.discardPile;
+  }
+  if (idx < 0) return;
+  const copCard = source.splice(idx, 1)[0];
+  // Replace a non-essential card so we don't kick verbs/subjects out
+  const replaceIdx = G.hand.findIndex(c => c.pos !== 'verb' && c.pos !== 'subject' && c.pos !== 'punctuation' && !c.copulaConn);
+  if (replaceIdx >= 0) {
+    G.discardPile.push(G.hand[replaceIdx]);
+    G.hand[replaceIdx] = copCard;
+  } else {
+    G.hand.push(copCard);
   }
 }
 
@@ -336,6 +362,7 @@ export function chantSentence() {
     overlay.classList.add('active');
     VFX.excFlash('#00ffcc');
     VFX.shake('sm');
+    playChantPuppetAnim({ damage: 1 }); // summon = dramatic dash + strike
 
     setTimeout(() => {
       overlay.classList.remove('active');
@@ -352,6 +379,7 @@ export function chantSentence() {
       else G.rhymeStreak = 0;
       if (r.key) G.lastRhymeKey = r.key;
     }
+    playChantPuppetAnim(result.effects);
     showScoreAnimation(result, () => {
       applyEffects(result.effects);
       checkEnemies();

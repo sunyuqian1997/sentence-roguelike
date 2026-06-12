@@ -115,12 +115,130 @@ function updatePuppets() {
     enemyEmoji = '😂';
   }
 
+  // Don't override if we're mid-chant
+  if (playerEl.dataset.chanting === '1') return;
   if (playerEl.dataset.pose !== playerPose) playerEl.dataset.pose = playerPose;
   if (enemyEl.dataset.pose !== enemyPose) enemyEl.dataset.pose = enemyPose;
   const playerEmojiEl = playerEl.querySelector('.puppet-emoji');
   const enemyEmojiEl = enemyEl.querySelector('.puppet-emoji');
   if (playerEmojiEl && playerEmojiEl.textContent !== playerEmoji) playerEmojiEl.textContent = playerEmoji;
   if (enemyEmojiEl && enemyEmojiEl.textContent !== enemyEmoji) enemyEmojiEl.textContent = enemyEmoji;
+}
+
+// Triggered from chantSentence — runs a short stage-fight sequence:
+// player charges → strikes / shields / heals based on effects, enemy reacts.
+// Effects param is the evaluator result.effects (may be undefined for summons).
+export function playChantPuppetAnim(effects) {
+  const playerEl = document.getElementById('puppet-player');
+  const enemyEl = document.getElementById('puppet-enemy');
+  if (!playerEl || !enemyEl) return;
+  playerEl.dataset.chanting = '1';
+  enemyEl.dataset.chanting = '1';
+
+  const isAttack = !!(effects && (effects.damage > 0 || effects.aoe));
+  const isHeal = !!(effects && effects.heal > 0 && !isAttack);
+  const isBlock = !!(effects && effects.block > 0 && !isAttack);
+  const punTag = (effects && effects._predicates && effects._predicates.length > 0)
+    ? effects._predicates[0].pun.tag : null;
+  const motif = (effects && effects._motifTriggers && effects._motifTriggers.length > 0)
+    ? effects._motifTriggers[0].motif.id : null;
+
+  // Sequence
+  // t=0: wind-up
+  // t=120: charge (translateX) + appropriate pose
+  // t=420: strike → enemy hit / pun-pose / motif effect
+  // t=720: settle
+  // t=1000: back to normal idle resolution
+  const seq = [];
+
+  // 0: wind-up — slight crouch
+  seq.push({ at: 0, do: () => {
+    playerEl.style.transition = 'transform 0.15s ease-out';
+    playerEl.style.transform = 'translateY(2px) scaleY(0.95)';
+    enemyEl.style.transition = 'transform 0.15s ease-out';
+  }});
+
+  // 120: charge or strike pose
+  seq.push({ at: 120, do: () => {
+    playerEl.style.transition = 'transform 0.3s cubic-bezier(0.22,1,0.36,1)';
+    if (isAttack) {
+      playerEl.style.transform = 'translateX(80px)'; // dash toward enemy
+      playerEl.dataset.pose = 'attack';
+    } else if (isBlock) {
+      playerEl.style.transform = 'translateY(0)';
+      playerEl.dataset.pose = 'defend';
+    } else if (isHeal) {
+      playerEl.style.transform = 'translateY(-3px)';
+      playerEl.dataset.pose = 'heal';
+    } else {
+      playerEl.style.transform = 'translateX(40px)';
+      playerEl.dataset.pose = 'attack';
+    }
+  }});
+
+  // 420: impact
+  seq.push({ at: 420, do: () => {
+    if (isAttack) {
+      enemyEl.style.transition = 'transform 0.25s ease-out';
+      enemyEl.style.transform = 'translateX(8px) rotate(4deg)';
+      enemyEl.dataset.pose = 'hit';
+      // ink-splash on enemy
+      try {
+        const r = enemyEl.getBoundingClientRect();
+        if (typeof window !== 'undefined' && window.dispatchEvent) {
+          // VFX is imported elsewhere; emit a CSS shake via class
+          enemyEl.classList.remove('puppet-impact');
+          void enemyEl.offsetWidth;
+          enemyEl.classList.add('puppet-impact');
+        }
+      } catch (e) { /* ignore */ }
+    }
+    if (punTag) {
+      const punToPose = {
+        gay: { pose: 'charmed', emoji: '❤️' },
+        doomed: { pose: 'doomed', emoji: '💀' },
+        old: { pose: 'old', emoji: '👴' },
+        juan: { pose: 'juan', emoji: '💦' },
+        lying: { pose: 'lying', emoji: '' },
+        numb: { pose: 'dazed', emoji: '😵' },
+        sad: { pose: 'doomed', emoji: '😞' },
+        fleeing: { pose: 'dazed', emoji: '💨' },
+        daylight: { pose: 'charmed', emoji: '☀️' },
+      };
+      const cfg = punToPose[punTag];
+      if (cfg) {
+        enemyEl.dataset.pose = cfg.pose;
+        const ee = enemyEl.querySelector('.puppet-emoji');
+        if (ee) ee.textContent = cfg.emoji;
+      }
+    }
+    if (motif === 'laughter_pause') {
+      enemyEl.dataset.pose = 'dazed';
+      const ee = enemyEl.querySelector('.puppet-emoji');
+      if (ee) ee.textContent = '😂';
+    }
+  }});
+
+  // 720: return
+  seq.push({ at: 720, do: () => {
+    playerEl.style.transition = 'transform 0.3s cubic-bezier(0.22,1,0.36,1)';
+    playerEl.style.transform = '';
+    enemyEl.style.transition = 'transform 0.3s ease-out';
+    enemyEl.style.transform = '';
+  }});
+
+  // 1000: clear chant flag so updatePuppets can resume
+  seq.push({ at: 1000, do: () => {
+    playerEl.style.transform = '';
+    enemyEl.style.transform = '';
+    playerEl.dataset.chanting = '';
+    enemyEl.dataset.chanting = '';
+    // Don't reset pose — updatePuppets will handle (sentence is empty after chant)
+    playerEl.dataset.pose = 'idle';
+    enemyEl.classList.remove('puppet-impact');
+  }});
+
+  seq.forEach(({ at, do: fn }) => setTimeout(fn, at));
 }
 
 function renderRoundJournal() {
