@@ -48,8 +48,10 @@ try {
 
   await send('Runtime.enable');
   await send('Page.enable');
+  const W = parseInt(process.env.SHOT_W || '1280', 10);
+  const H = parseInt(process.env.SHOT_H || '720', 10);
   await send('Emulation.setDeviceMetricsOverride', {
-    width: 1280, height: 720, deviceScaleFactor: 2, mobile: false,
+    width: W, height: H, deviceScaleFactor: 1, mobile: false,
   });
   await send('Page.navigate', { url: URL });
   await sleep(parseInt(WAIT, 10));
