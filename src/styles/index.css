@@ -5,3 +5,4 @@
 @import './overlays.css';
 @import './animations.css';
 @import './responsive.css';
+@import './pixel.css'; /* retro pixel skin — must stay last */

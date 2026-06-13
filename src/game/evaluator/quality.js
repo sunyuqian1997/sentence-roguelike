@@ -1,0 +1,161 @@
+// Sentence-quality rules (文学性评估) — the pluggable heart of the evaluator.
+//
+// Each rule is { id, apply(ctx) } and may bump ctx.literaryMult, push
+// ctx.literaryNotes, or write structured payloads into ctx.effects
+// (_motifTriggers / _rhymeInfo / _predicates). Rules run in array order.
+//
+// To add a new quality check (e.g. a future LLM-based "creative intent" judge
+// that awards a fallback bonus when regex rules miss the joke), push a rule
+// into QUALITY_RULES — nothing else in the pipeline needs to change. An async
+// judge should pre-compute its verdict before chantSentence and surface it
+// through G so its rule can stay synchronous.
+import { G } from '../state.js';
+import { detectMotifs, getRhymeKey, checkRhyme, detectPredicates, resolveIdentityTrait } from '../poetics.js';
+
+const POETIC_COMBOS = [
+  { pattern: /山.*海/, bonus: 0.5, label: '🏔️ 山海意象 +0.5' },
+  { pattern: /风.*月/, bonus: 0.4, label: '🌙 风月意象 +0.4' },
+  { pattern: /明月/, bonus: 0.3, label: '🌕 明月意象 +0.3' },
+  { pattern: /天.*地/, bonus: 0.4, label: '🌍 天地意象 +0.4' },
+  { pattern: /生.*死/, bonus: 0.5, label: '💀 生死意象 +0.5' },
+  { pattern: /猛.*斩|猛.*砍|猛.*锤/, bonus: 0.3, label: '⚔️ 猛攻组合 +0.3' },
+  { pattern: /横眉|怒吼/, bonus: 0.3, label: '😤 怒气冲天 +0.3' },
+  { pattern: /远方|家乡/, bonus: 0.3, label: '🏡 思乡意象 +0.3' },
+  { pattern: /萤火|光/, bonus: 0.3, label: '✨ 微光意象 +0.3' },
+  { pattern: /铁屋|荆棘/, bonus: 0.3, label: '🔥 抗争意象 +0.3' },
+];
+
+const bodyText = (ctx) => ctx.cards.filter(c => c.pos !== 'punctuation').map(c => c.word).join('');
+
+export const QUALITY_RULES = [
+  {
+    id: 'poem_length',
+    apply(ctx) {
+      if (ctx.totalChars === 5) { ctx.literaryMult *= 1.3; ctx.literaryNotes.push('五言诗意 ×1.3！'); }
+      else if (ctx.totalChars === 7) { ctx.literaryMult *= 1.5; ctx.literaryNotes.push('七言诗意 ×1.5！'); }
+    },
+  },
+  {
+    id: 'subject_poetry',
+    apply(ctx) {
+      ctx.subjects.forEach(s => {
+        if (s.poetryBonus) { ctx.literaryMult += s.poetryBonus; ctx.literaryNotes.push(`${s.word}诗意 +${s.poetryBonus}`); }
+      });
+    },
+  },
+  {
+    id: 'modifier_poetry',
+    apply(ctx) {
+      ctx.modifiers.forEach(m => {
+        if (m.poetryBonusMod) { ctx.literaryMult += m.poetryBonusMod; ctx.literaryNotes.push(`${m.word}诗意 +${m.poetryBonusMod}`); }
+      });
+    },
+  },
+  {
+    id: 'verb_poetry_mult',
+    apply(ctx) {
+      let mult = 1.0;
+      ctx.realVerbs.forEach(v => {
+        if (v.poeticMultVerb) { mult *= v.poeticMultVerb; ctx.literaryNotes.push(`${v.word} 诗意×${v.poeticMultVerb}`); }
+      });
+      ctx.literaryMult *= mult;
+    },
+  },
+  {
+    id: 'poetic_combos',
+    apply(ctx) {
+      const allWords = bodyText(ctx);
+      for (const combo of POETIC_COMBOS) {
+        if (combo.pattern.test(allWords)) {
+          ctx.literaryMult += combo.bonus;
+          ctx.literaryNotes.push(combo.label);
+        }
+      }
+    },
+  },
+  {
+    id: 'poetic_aura',
+    apply(ctx) {
+      if (G.poeticAura) { ctx.literaryMult += 0.5; ctx.literaryNotes.push('诗仙附体！'); }
+      if (ctx.cards.length >= 5) { ctx.literaryMult += 0.2; ctx.literaryNotes.push('长句加成 +0.2'); }
+    },
+  },
+  {
+    id: 'rhyme',
+    apply(ctx) {
+      // Compares this sentence's last character with the previous sentence's
+      // rhyme key. Single +0.4, streak×2 +0.6, streak×3+ +0.8.
+      const key = getRhymeKey(ctx.nonPunctCards.map(c => c.word).join(''));
+      const info = { rhymes: false, key, prevKey: G.lastRhymeKey || null, streak: 0 };
+      if (key && G.lastRhymeKey && checkRhyme(key, G.lastRhymeKey).rhymes) {
+        const streak = (G.rhymeStreak || 0) + 1;
+        info.rhymes = true;
+        info.streak = streak;
+        if (streak >= 3) { ctx.literaryMult += 0.8; ctx.literaryNotes.push(`🎵 三连押韵！+0.8 (×${streak})`); }
+        else if (streak >= 2) { ctx.literaryMult += 0.6; ctx.literaryNotes.push(`🎵 连押 +0.6 (×${streak})`); }
+        else { ctx.literaryMult += 0.4; ctx.literaryNotes.push(`🎵 押韵 +0.4`); }
+      }
+      ctx.effects._rhymeInfo = info;
+    },
+  },
+  {
+    id: 'motifs',
+    apply(ctx) {
+      // Thematic effects against tagged enemies — e.g. 纸鬼沉海
+      const motifs = detectMotifs(bodyText(ctx), G.enemies);
+      if (motifs.length === 0) return;
+      ctx.effects._motifTriggers = motifs;
+      let bonus = 0;
+      motifs.forEach(t => {
+        ctx.literaryNotes.push(`${t.motif.label}：${t.motif.flavor}`);
+        bonus += (t.motif.effect.bonusDmgPct || 0);
+      });
+      if (bonus > 0) ctx.literaryMult += bonus;
+    },
+  },
+  {
+    id: 'predicates',
+    apply(ctx) {
+      // "A 是 B" clauses: puns AND identity rewrites (Baba-is-you style).
+      // Payload goes to effects._predicates; combat.js#applyEffects applies it.
+      const preds = detectPredicates(ctx.cards);
+      if (preds.length === 0) return;
+      ctx.effects._predicates = preds;
+      preds.forEach(p => {
+        let tgtLabel;
+        if (p.subjectKind === 'enemy') {
+          tgtLabel = (G.enemies[p.subjectEnemyIdx] ? G.enemies[p.subjectEnemyIdx].name : '敌人');
+        } else if (p.subjectKind === 'self') {
+          tgtLabel = '我';
+        } else {
+          tgtLabel = p.subjectWord || '它';
+        }
+        if (p.kind === 'pun') {
+          ctx.literaryNotes.push(`${p.pun.label}：${tgtLabel}${p.copulaWord}${p.srcWord} — ${p.pun.flavor}`);
+          ctx.literaryMult += 0.3;
+        } else if (p.kind === 'identity') {
+          const trait = resolveIdentityTrait(p.identityWord, p.identityIsEnemyName);
+          const traitLabel = p.target === 'self' ? trait.selfLabel : trait.enemyLabel;
+          ctx.literaryNotes.push(`${trait.emoji} ${tgtLabel}${p.copulaWord}${p.srcWord} → ${traitLabel}`);
+          ctx.literaryMult += 0.25;
+        } else if (p.kind === 'forbidden') {
+          ctx.literaryNotes.push(`✗ 僭越！${tgtLabel}不能${p.copulaWord}我`);
+          ctx.literaryMult = Math.max(0.1, ctx.literaryMult - 0.3);
+        } else if (p.kind === 'tautology') {
+          ctx.literaryNotes.push(`🪞 我${p.copulaWord}我 — 同义反复，但有禅意 +0.1`);
+          ctx.literaryMult += 0.1;
+        }
+      });
+    },
+  },
+  {
+    id: 'question_weaken',
+    apply(ctx) {
+      if (ctx.hasQuestion) ctx.effects.applyWeak = 2;
+    },
+  },
+];
+
+export function applyQuality(ctx) {
+  for (const rule of QUALITY_RULES) rule.apply(ctx);
+}

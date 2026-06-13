@@ -629,42 +629,6 @@
 
 /* (last-chant pill replaced by #round-journal in arena) */
 
-#enemy-targets-bar {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-#enemy-targets-bar .enemy-target-word {
-  padding: 4px 12px;
-  border-radius: 2px;
-  cursor: pointer;
-  font-size: 0.8rem;
-  transition: all 0.3s var(--ease-brush);
-  font-weight: 700;
-  border: 1.5px solid var(--vermillion);
-  color: var(--vermillion);
-  background: var(--vermillion-dim);
-  font-family: var(--font-serif);
-}
-#enemy-targets-bar .enemy-target-word:hover {
-  background: rgba(197, 75, 60, 0.18);
-  transform: translateY(-1px);
-  box-shadow: 2px 2px 0 rgba(197, 75, 60, 0.15);
-}
-#enemy-targets-bar .enemy-target-word.in-sentence {
-  opacity: 0.35;
-  border-style: dashed;
-}
-#enemy-targets-bar .self-target-btn {
-  border-color: var(--purple);
-  color: var(--purple);
-  background: var(--purple-dim);
-}
-#enemy-targets-bar .self-target-btn:hover {
-  background: rgba(107, 76, 110, 0.18);
-  box-shadow: 2px 2px 0 rgba(107, 76, 110, 0.15);
-}
-
 #sentence-slots-container {
   display: flex;
   flex-direction: column;
@@ -768,21 +732,26 @@
   box-shadow: 2px 2px 0 rgba(107, 76, 110, 0.3) !important;
 }
 
-/* Puppet stage in造句区 */
+/* ============================================================
+   Puppet stage (棍人剧场) — ink-brush figures above the造句区.
+   Player = poet (发髻+长衫+毛笔), enemy = vermillion paper wisp.
+   Poses are driven purely by [data-pose]; see src/ui/puppets.js.
+   ============================================================ */
 #puppet-stage {
   display: flex;
   align-items: center;
-  justify-content: space-around;
-  gap: 16px;
-  padding: 6px 18px 4px;
-  margin-bottom: 4px;
-  min-height: 92px;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 28px 4px;
+  margin: 0 auto 4px;
+  max-width: 360px; /* keep the duelists close — no十万八千里 */
+  min-height: 96px;
   position: relative;
 }
 .puppet {
   position: relative;
-  width: 64px;
-  height: 84px;
+  width: 68px;
+  height: 88px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -793,34 +762,94 @@
   height: 100%;
   overflow: visible;
 }
-.puppet-svg .head { fill: var(--paper); stroke: var(--ink); stroke-width: 2; }
-.puppet-svg .body,
-.puppet-svg .arm,
-.puppet-svg .leg {
+.puppet-svg .ground {
+  fill: rgba(17, 17, 16, 0.08);
+  stroke: none;
+}
+.puppet-svg .head {
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 2.2;
+  transition: fill 0.3s;
+}
+.puppet-svg .hair {
+  fill: var(--ink);
+  stroke: var(--ink);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+.puppet-svg .face circle {
+  fill: var(--ink);
+  stroke: none;
+  transition: fill 0.3s;
+}
+.puppet-svg .body {
+  fill: rgba(17, 17, 16, 0.05);
+  stroke: var(--ink);
+  stroke-width: 2.2;
+  stroke-linejoin: round;
+  transition: all 0.3s var(--ease-brush);
+}
+.puppet-svg .sash {
+  fill: none;
+  stroke: var(--ink-light);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+.puppet-svg .arm {
   stroke: var(--ink);
   stroke-width: 3;
   stroke-linecap: round;
   fill: none;
-  transition: all 0.3s var(--ease-brush);
-  transform-origin: center;
+  transition: transform 0.3s var(--ease-brush);
 }
-.puppet-svg .arm { transform-origin: 40px 42px; }
-.puppet-svg .leg { transform-origin: 40px 65px; }
+.puppet-svg .arm path { fill: none; }
+.puppet-svg .arm-l { transform-origin: 38px 40px; }
+.puppet-svg .arm-r { transform-origin: 42px 40px; }
+.puppet-svg .leg {
+  stroke: var(--ink);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  transition: all 0.3s var(--ease-brush);
+}
+/* Items held in the front hand — toggled per pose */
 .puppet-svg .shield,
 .puppet-svg .weapon {
   opacity: 0;
   transition: opacity 0.3s, transform 0.3s var(--ease-brush);
   pointer-events: none;
 }
-.puppet-svg .shield {
+.puppet-svg .shield rect {
   fill: var(--blue-dim);
   stroke: var(--blue-ink);
   stroke-width: 2;
 }
+.puppet-svg .shield line {
+  stroke: var(--blue-ink);
+  stroke-width: 1.2;
+  opacity: 0.6;
+}
 .puppet-svg .weapon {
-  stroke: var(--vermillion-dark);
-  stroke-width: 4;
-  stroke-linecap: round;
+  transform-origin: 58px 56px; /* pivots at the hand */
+}
+.puppet-svg .weapon line {
+  stroke: var(--ink);
+  stroke-width: 2.8;
+}
+.puppet-svg .weapon .brush-tip {
+  fill: var(--vermillion-dark);
+  stroke: none;
+}
+/* Enemy wisp: vermillion paper-ghost, no legs, faded talisman on chest */
+#puppet-enemy .puppet-svg .head { fill: var(--paper-dark); stroke: var(--vermillion-dark); }
+#puppet-enemy .puppet-svg .body { fill: rgba(197, 75, 60, 0.06); stroke: var(--vermillion-dark); }
+#puppet-enemy .puppet-svg .arm { stroke: var(--vermillion-dark); }
+#puppet-enemy .puppet-svg .face circle { fill: var(--vermillion-dark); }
+#puppet-enemy .puppet-svg .talisman {
+  fill: none;
+  stroke: var(--vermillion);
+  stroke-width: 1.2;
+  opacity: 0.45;
 }
 .puppet-svg .puppet-emoji {
   font-family: 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
@@ -845,49 +874,37 @@
   align-self: center;
 }
 
-/* ---- Pose: attack (raise right arm + weapon) ---- */
-.puppet[data-pose="attack"] .arm-r {
-  transform: rotate(-95deg) translate(0, -2px);
-}
+/* ---- Pose: attack — front arm raises the brush, lean in ---- */
+.puppet[data-pose="attack"] { transform: translateX(6px) rotate(2deg); }
+.puppet[data-pose="attack"] .arm-r { transform: rotate(-70deg); }
 .puppet[data-pose="attack"] .weapon {
   opacity: 1;
   animation: weaponSwing 0.55s var(--ease-out-back) infinite alternate;
 }
-.puppet[data-pose="attack"] {
-  transform: translateX(6px);
-}
 @keyframes weaponSwing {
   0% { transform: rotate(-6deg); }
-  100% { transform: rotate(8deg); }
+  100% { transform: rotate(10deg); }
 }
+/* Enemy attacks leftward with its front (left) arm */
+#puppet-enemy[data-pose="attack"] { transform: translateX(-6px) rotate(-2deg); }
+#puppet-enemy[data-pose="attack"] .arm-l { transform: rotate(60deg); }
+#puppet-enemy[data-pose="attack"] .arm-r { transform: none; }
 
-/* ---- Pose: defend (shield up, slight crouch) ---- */
-.puppet[data-pose="defend"] .arm-l {
-  transform: rotate(60deg);
-}
-.puppet[data-pose="defend"] .shield {
-  opacity: 1;
-  transform: translate(2px, -2px);
-}
-.puppet[data-pose="defend"] {
-  transform: translateY(2px) scaleY(0.96);
-}
+/* ---- Pose: defend — scroll-shield up, crouch ---- */
+.puppet[data-pose="defend"] { transform: translateY(2px) scaleY(0.95); }
+.puppet[data-pose="defend"] .arm-r { transform: rotate(-12deg); }
+.puppet[data-pose="defend"] .shield { opacity: 1; transform: translate(0, -3px); }
+#puppet-enemy[data-pose="defend"] { transform: translateY(2px) scaleY(0.93); }
+#puppet-enemy[data-pose="defend"] .arm-l { transform: rotate(-18deg); }
+#puppet-enemy[data-pose="defend"] .arm-r { transform: rotate(18deg); }
 
-/* ---- Pose: heal (hands at heart, glow) ---- */
-.puppet[data-pose="heal"] .arm-l {
-  transform: rotate(45deg);
-}
-.puppet[data-pose="heal"] .arm-r {
-  transform: rotate(-45deg);
-}
-.puppet[data-pose="heal"] .head {
-  fill: rgba(74, 124, 107, 0.2);
-}
-.puppet[data-pose="heal"] {
-  filter: drop-shadow(0 0 6px rgba(74, 124, 107, 0.5));
-}
+/* ---- Pose: heal — hands gathered at the heart, pine glow ---- */
+.puppet[data-pose="heal"] .arm-l { transform: rotate(35deg); }
+.puppet[data-pose="heal"] .arm-r { transform: rotate(-35deg); }
+.puppet[data-pose="heal"] .head { fill: rgba(74, 124, 107, 0.2); }
+.puppet[data-pose="heal"] { filter: drop-shadow(0 0 6px rgba(74, 124, 107, 0.5)); }
 
-/* ---- Pose: targeted (slight bob, vermillion glow) ---- */
+/* ---- Pose: targeted — nervous bob, vermillion glow ---- */
 .puppet[data-pose="targeted"] {
   animation: puppetBob 0.8s ease-in-out infinite;
   filter: drop-shadow(0 0 8px var(--vermillion-glow));
@@ -897,24 +914,19 @@
   50% { transform: translateY(-3px); }
 }
 
-/* ---- Pose: hit (flash red + shake) ---- */
-.puppet[data-pose="hit"] {
-  animation: puppetHit 0.3s ease;
-}
+/* ---- Pose: hit — flash red + recoil shake ---- */
+.puppet[data-pose="hit"] { animation: puppetHit 0.3s ease; }
 .puppet[data-pose="hit"] .body,
 .puppet[data-pose="hit"] .arm,
 .puppet[data-pose="hit"] .leg { stroke: var(--vermillion); }
 @keyframes puppetHit {
   0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-3px); }
-  75% { transform: translateX(3px); }
+  25% { transform: translateX(-3px) rotate(-2deg); }
+  75% { transform: translateX(3px) rotate(2deg); }
 }
 
-/* ---- Pose: charmed (gay pun — heart emoji floating, swaying) ---- */
-.puppet[data-pose="charmed"] .puppet-emoji {
-  opacity: 1;
-  font-size: 18px;
-}
+/* ---- Pose: charmed (🌈 pun) — lovesick sway ---- */
+.puppet[data-pose="charmed"] .puppet-emoji { opacity: 1; font-size: 18px; }
 .puppet[data-pose="charmed"] {
   animation: puppetSway 1.2s ease-in-out infinite;
   filter: drop-shadow(0 0 6px rgba(255, 105, 180, 0.55));
@@ -924,51 +936,42 @@
   50% { transform: rotate(3deg); }
 }
 
-/* ---- Pose: doomed (skull above head) ---- */
-.puppet[data-pose="doomed"] .puppet-emoji {
-  opacity: 1;
-  font-size: 18px;
-}
+/* ---- Pose: doomed (💀 寄了) — drained of ink ---- */
+.puppet[data-pose="doomed"] .puppet-emoji { opacity: 1; font-size: 18px; }
 .puppet[data-pose="doomed"] .head { fill: var(--paper-dark); }
 .puppet[data-pose="doomed"] .body,
 .puppet[data-pose="doomed"] .arm,
 .puppet[data-pose="doomed"] .leg { stroke: var(--ink-faint); }
 
-/* ---- Pose: old (slight stoop, cane) ---- */
-.puppet[data-pose="old"] {
-  transform: translateY(4px) skewX(-3deg);
-}
+/* ---- Pose: old (👴 衰老) — stooped, arms drooping ---- */
+.puppet[data-pose="old"] { transform: translateY(4px) skewX(-4deg); }
 .puppet[data-pose="old"] .puppet-emoji { opacity: 1; font-size: 16px; }
-.puppet[data-pose="old"] .body { stroke-width: 2; }
+.puppet[data-pose="old"] .body { stroke-width: 1.8; }
+.puppet[data-pose="old"] .arm-l { transform: rotate(-12deg); }
+.puppet[data-pose="old"] .arm-r { transform: rotate(12deg); }
 
-/* ---- Pose: juan (sweating, tense, spinning) ---- */
+/* ---- Pose: juan (🌀 内卷) — sweating, vibrating with effort ---- */
 .puppet[data-pose="juan"] .puppet-emoji { opacity: 1; font-size: 16px; }
-.puppet[data-pose="juan"] {
-  animation: puppetSpin 0.6s linear infinite;
-}
+.puppet[data-pose="juan"] { animation: puppetSpin 0.6s linear infinite; }
 @keyframes puppetSpin {
   0% { transform: rotate(-2deg); }
   50% { transform: rotate(2deg); }
   100% { transform: rotate(-2deg); }
 }
 
-/* ---- Pose: lying (rotate 90°) ---- */
-.puppet[data-pose="lying"] {
-  transform: rotate(-78deg) translateY(8px);
-}
+/* ---- Pose: lying (🛌 躺平) — flat on the floor ---- */
+.puppet[data-pose="lying"] { transform: rotate(-78deg) translateY(8px); }
 
-/* ---- Pose: dazed (stars overhead) ---- */
+/* ---- Pose: dazed — wobbling, seeing stars ---- */
 .puppet[data-pose="dazed"] .puppet-emoji { opacity: 1; font-size: 16px; }
-.puppet[data-pose="dazed"] {
-  animation: puppetWobble 0.7s ease-in-out infinite;
-}
+.puppet[data-pose="dazed"] { animation: puppetWobble 0.7s ease-in-out infinite; }
 @keyframes puppetWobble {
   0%, 100% { transform: translateX(0) rotate(0); }
   25% { transform: translateX(-2px) rotate(-3deg); }
   75% { transform: translateX(2px) rotate(3deg); }
 }
 
-/* ---- Impact flash on chant strike ---- */
+/* ---- Impact flash at the moment a strike lands ---- */
 .puppet.puppet-impact {
   animation: puppetImpactFlash 0.45s ease-out !important;
 }
@@ -984,13 +987,17 @@
   100% { filter: brightness(1); transform: translateX(0) rotate(0) scale(1); }
 }
 
-/* ---- Pose: idle gentle breathing ---- */
-.puppet[data-pose="idle"] {
-  animation: puppetBreathe 3s ease-in-out infinite;
-}
+/* ---- Pose: idle — gentle breathing ---- */
+.puppet[data-pose="idle"] { animation: puppetBreathe 3s ease-in-out infinite; }
 @keyframes puppetBreathe {
   0%, 100% { transform: scaleY(1); }
   50% { transform: scaleY(1.02); }
+}
+/* Enemy wisp drifts a touch while idle */
+#puppet-enemy[data-pose="idle"] { animation: puppetDrift 3.6s ease-in-out infinite; }
+@keyframes puppetDrift {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  50% { transform: translateY(-2.5px) scaleY(1.015); }
 }
 .sentence-card-wrap.drag-over {
   position: relative;

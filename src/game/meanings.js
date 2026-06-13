@@ -50,6 +50,25 @@ function buildCtx(card, sentence, idx) {
   return { card, sentence, idx, prev, next, copulaIdx, hasCopulaBefore, distFromCopula, subjectBefore, verbBefore };
 }
 
+const isMeCard = (c) =>
+  !!(c && (c._isSelfTarget || c._isFixedWo || (c.pos === 'subject' && c.word === '我')));
+
+// "给我V" anchor: the NEXT card is 我 (must be adjacent), then a verb follows
+// within ≤2 modifiers ("给我狠狠戳" ok, "给老我戳" not Chinese).
+function matchesMeThenVerb(ctx) {
+  const next = ctx.sentence[ctx.idx + 1];
+  if (!isMeCard(next)) return false;
+  let k = ctx.idx + 2;
+  let mods = 0;
+  while (k < ctx.sentence.length) {
+    const c = ctx.sentence[k];
+    if (!c) return false;
+    if (c.pos === 'modifier' && mods < 2) { mods++; k++; continue; }
+    return c.pos === 'verb' || c.pos === 'special';
+  }
+  return false;
+}
+
 function matchesWhen(when, ctx) {
   if (!when) return true;
   // Hard exclusions first (return false if any hits)
@@ -59,6 +78,7 @@ function matchesWhen(when, ctx) {
   if (when.afterCopulaWithin && ctx.hasCopulaBefore && ctx.distFromCopula <= when.afterCopulaWithin) any = true;
   if (when.prevSubjectOrEnemy && ctx.subjectBefore >= 0) any = true;
   if (when.prevVerb && ctx.verbBefore >= 0) any = true;
+  if (when.nextIsMeThenVerb && matchesMeThenVerb(ctx)) any = true;
   if (when.nearText) {
     const re = when.nearText instanceof RegExp ? when.nearText : new RegExp(when.nearText);
     const joined = ctx.sentence.map((c) => (c && c.word) || '').join('');
@@ -68,7 +88,7 @@ function matchesWhen(when, ctx) {
     try { if (when.custom(ctx)) any = true; } catch (e) { /* ignore */ }
   }
   // If when has no inclusive matchers at all and no hard exclusion failed, accept
-  const hasInclusive = !!(when.afterCopulaWithin || when.prevSubjectOrEnemy || when.prevVerb || when.nearText || when.custom);
+  const hasInclusive = !!(when.afterCopulaWithin || when.prevSubjectOrEnemy || when.prevVerb || when.nextIsMeThenVerb || when.nearText || when.custom);
   if (!hasInclusive) return true;
   return any;
 }
@@ -91,9 +111,26 @@ export function resolveMeaning(card, sentence, idx) {
   return chosen;
 }
 
-// Apply patch from active meaning onto a working card copy. Used by evaluator.
-// Returns a NEW object — never mutates the input.
+// Apply an active meaning onto a working card copy. Returns a NEW object —
+// never mutates the input, even when the meaning only overrides pos/pun.
+// (A meaning without `patch` used to return the original card, letting callers
+// accidentally mutate the player's hand card permanently.)
 export function applyMeaningPatch(card, meaning) {
-  if (!meaning || !meaning.patch) return card;
-  return { ...card, ...meaning.patch, _activeMeaning: meaning };
+  if (!meaning) return card;
+  const patched = { ...card, ...(meaning.patch || {}), _activeMeaning: meaning };
+  if (meaning.pos) patched.pos = meaning.pos;
+  if (meaning.pun) patched.pun = meaning.pun;
+  return patched;
+}
+
+// Single source of truth for "what does each card mean in this sentence".
+// Returns a new array of cards with active meanings resolved and patched in
+// (_activeMeaning set). Both the evaluator and the UI must consume this so
+// they can never disagree about a card's active usage.
+export function applyMeaningsToSentence(cards) {
+  return cards.map((c, i) => {
+    if (!c) return c;
+    const m = resolveMeaning(c, cards, i);
+    return m ? applyMeaningPatch(c, m) : c;
+  });
 }

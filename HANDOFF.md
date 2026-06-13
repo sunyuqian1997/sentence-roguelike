@@ -1,6 +1,6 @@
 # 词灵录 (Sentence Roguelike) — Handoff Document
 
-Status snapshot: 2026-06-12 · Commit head: `cde573c`
+Status snapshot: 2026-06-12 (架构重构后) · 评估器已拆分为 `src/game/evaluator/` 规则管线
 Author of original direction: project owner (referred to below as "user")
 Author of this handoff: prior dev assistant
 
@@ -123,7 +123,7 @@ Author of this handoff: prior dev assistant
 UI: 卡片左上 💡 角标呼吸动画；造句区每张卡下方 caption "作动词·日" / "🌈 谐音·gay" / "⚪ 默认用法"；命中非默认 meaning 时卡片紫边 + caption 发光
 
 ### 2.6 造句区棍人剧场 (Puppet Stage)
-DOM 见 `index.html` `#puppet-stage`，逻辑见 `src/ui/render.js`：
+DOM 见 `index.html` `#puppet-stage`，逻辑见 `src/ui/puppets.js`（已从 render.js 独立）：
 - `updatePuppets(G.sentence)` — 每次 renderCombat 调用，根据当前句子内容只修改 `[data-pose]` 属性，CSS 自动过渡
 - `playChantPuppetAnim(effects)` — 吟诵时玩家滑 +80px 攻击/防御/治疗 → 720ms 滑回
 - `playEnemyPuppetAnim(intent, opts)` — 敌人 act 时镜像版本：敌人滑 -80px → 玩家 hit/dazed
@@ -171,18 +171,29 @@ sentence-roguelike/
 │  │  ├─ state.js              # const G = { ... }  全局状态对象
 │  │  ├─ combat.js             # startGame, startCombat, startPlayerTurn, addToSentence,
 │  │  │                        # chantSentence, applyEffects, enemyTurn, combatVictory, showRewardScreen
-│  │  ├─ sentence.js           # evaluateSentence, normalizeSentence, checkWordOrder,
-│  │  │                        # checkExclamationPosition, detectDuizhang, detectSummon, SUMMON_EFFECTS
+│  │  ├─ sentence.js           # FACADE：re-export evaluator/ + summons.js，调用方导入面不变
+│  │  ├─ evaluator/            # 句子评估管线（按阶段拆分，无 DOM 依赖）
+│  │  │  ├─ index.js           # evaluateSentence 编排 + finalize 最终数学
+│  │  │  ├─ context.js         # buildContext：多义解析→normalize→词性分组→effects 初始化
+│  │  │  ├─ constructions.js   # 句式注册表（一等抽象）：给我V祈使、让NP V兼语…
+│  │  │  ├─ grammar.js         # checkWordOrder + applyGrammar（结构/语序/连词）
+│  │  │  ├─ punctuation.js     # detectDuizhang + applyPunctuation（。！？，+对仗）
+│  │  │  ├─ quality.js         # QUALITY_RULES 可插拔规则数组（诗意/意象/押韵/motif/谐音）
+│  │  │  ├─ exclamation.js     # checkExclamationPosition + 感叹词倍率
+│  │  │  └─ cardEffects.js     # 主/宾/修/连数值贡献 + VERB_SPECIALS 特殊动词注册表
+│  │  ├─ summons.js            # SUMMON_EFFECTS + detectSummon（召唤系统，含 DOM 反馈）
 │  │  ├─ poetics.js            # MOTIFS, detectMotifs, getRhymeKey, checkRhyme,
 │  │  │                        # detectPredicates, PUN_STATUS, PUN_ON_APPLY, processEnemyPuns
-│  │  ├─ meanings.js           # resolveMeaning(card, sentence, idx) + applyMeaningPatch
+│  │  ├─ meanings.js           # resolveMeaning + applyMeaningPatch + applyMeaningsToSentence
+│  │  │                        # （多义系统唯一所有者；评估器与 UI 共用同一条解析路径）
 │  │  ├─ damage.js             # dealDamageToEnemy, dealDamageToPlayer, checkEnemies
 │  │  ├─ audio.js              # WebAudio 程序合成音效
 │  │  └─ map.js                # generateMap, renderMap, getRandomEnemies
 │  ├─ ui/
 │  │  ├─ render.js             # renderCombat 主循环；createCardElement, createSentenceWordEl;
-│  │  │                        # updatePuppets, playChantPuppetAnim, playEnemyPuppetAnim,
 │  │  │                        # renderRoundJournal, renderEnemies, renderHand, showTooltip
+│  │  ├─ puppets.js            # 棍人剧场：updatePuppets, playChantPuppetAnim,
+│  │  │                        # playEnemyPuppetAnim, PUN_TO_POSE, IMPACT_MS(=420ms 撞击帧)
 │  │  ├─ screens.js            # 非战斗屏：rest, event, shop, deck overlay, journal overlay, meta
 │  │  ├─ vfx.js                # VFX.shake, damageNum, inkRipple, brushStrike, ...
 │  │  ├─ svgArt.js             # getEnemyPortraitSVG (后备 emoji)
@@ -345,10 +356,11 @@ import { G, META } from './game/state.js';
 // 造句
 import { addToSentence, removeSentenceWord, chantSentence } from './game/combat.js';
 
-// 评估
-import { evaluateSentence, detectDuizhang, detectSummon } from './game/sentence.js';
+// 评估（sentence.js 是 facade；想扩展规则时直接进 evaluator/）
+import { evaluateSentence, detectDuizhang, detectSummon,
+         QUALITY_RULES, VERB_SPECIALS } from './game/sentence.js';
 
-// 多义
+// 多义（唯一所有者；UI 与评估器都走 applyMeaningsToSentence）
 import { resolveMeaning, applyMeaningPatch, applyMeaningsToSentence } from './game/meanings.js';
 
 // 母题 / 押韵 / 谐音
@@ -356,8 +368,11 @@ import { detectMotifs, getRhymeKey, checkRhyme, detectPredicates,
          PUN_STATUS, PUN_ON_APPLY, processEnemyPuns } from './game/poetics.js';
 
 // 渲染
-import { renderCombat, updatePuppets, playChantPuppetAnim, playEnemyPuppetAnim,
-         createCardElement } from './ui/render.js';
+import { renderCombat, createCardElement } from './ui/render.js';
+
+// 棍人剧场
+import { updatePuppets, playChantPuppetAnim, playEnemyPuppetAnim,
+         PUN_TO_POSE, IMPACT_MS } from './ui/puppets.js';
 
 // 调试入口 (浏览器 console)
 window.G              // 直接读写全局状态
@@ -375,13 +390,51 @@ window.cheat() / window.giveGold(999)
 1. `src/data/cards.json` 加一项，参考已有 entry 结构
 2. 起始牌组要有的话，`src/data/cards.js#createStarterDeck` 加 `tryAdd('xxx')`
 3. 想让奖励池抽到，确保 `rarity` 是 common/uncommon/rare 且 `unlockable` 不为 true，或加到对应 pack
-4. 如果是特殊 verb 行为 (类似 sleepSpecial)，需要在 `src/game/sentence.js#evaluateSentence` verb 大循环里加 if 分支
+4. 如果是特殊 verb 行为 (类似 sleepSpecial)，在 cards.json 定义一个 flag，然后在
+   `src/game/evaluator/cardEffects.js#VERB_SPECIALS` 注册表里加 `['yourFlag', handler]`
+   —— 不要在管线里硬编码词面判断。注册表按数组顺序匹配，命中即跳过通用 combatType 处理
 
 ### 7.2 加一个新的 pun tag
 1. cards.json: 给某张卡加 `pun: { tag: 'newtag', label, flavor }`
 2. `src/game/poetics.js#PUN_STATUS` 加一项 `{ label, pairEffect(enemies){...} }`
 3. (可选) `PUN_ON_APPLY` 加单实例瞬时效果
-4. `src/ui/render.js#updatePuppets` 和 `#playChantPuppetAnim` 的 `punToPose` 字典里加映射，敌人棍人会切对应姿态
+4. `src/ui/puppets.js#PUN_TO_POSE` 加 `{ pose, emoji }` 映射（唯一一处，预览/吟诵动画共用）
+
+### 7.2a 身份系统（Baba-is-you 式 A是B）
+`src/game/poetics.js#IDENTITY_TRAITS`：当 B 是主语卡/敌人名（而不是 pun 卡）时，
+copula 改写 A 的身份。方向决定吉凶：
+- `纸鬼是猫` → 猫的 enemyEffect debuff 该敌人（弱2+30%打盹）
+- `我是影子` → 影子的 selfEffect buff 玩家（挡6）
+- `皇帝是我` → 自我宣称 = 该词 selfEffect buff 玩家
+- `纸鬼是我` → **禁止**（kind: forbidden，僭越，诗意-0.3，无效果）
+- `我是我` → tautology，+0.1 禅意
+- `我是纸鬼` → MIMIC_IDENTITY_TRAIT（化形入魔：力+2易伤1）
+- 词不在表里 → DEFAULT_IDENTITY_TRAIT 兜底（保证"各种语义组合必须有意义"）
+加新身份：IDENTITY_TRAITS 加一项 `{ emoji, enemyLabel, enemyEffect, selfLabel, selfEffect }`，
+effect 字段是声明式数据，由 combat.js#applyEffects 解释（enemyEffect: weak/vulnerable/
+strengthDelta/stunChance；selfEffect: block/heal/draw/strength/vulnerable/poeticAuraNext）。
+另外：`纸鬼碎我`（敌为主语+我为宾语）→ 我承受伤害且无 +2 力量补偿（evaluator/index.js finalize）。
+
+### 7.2a-2 句式系统（Constructions，一等抽象）
+`src/game/evaluator/constructions.js`：句式 = 重新分配语义角色的语法模式，
+管线位置在 buildContext 之后、applyGrammar 之前。每项 `{ id, label, detect(ctx), apply(ctx, m) }`。
+已实现：
+- **给我V 祈使**（"纸鬼给我戳"）：敌人被命令对自己执行 V。
+  - 触发锚点 = 给卡的 `gei_imperative` meaning（`when.nextIsMeThenVerb`，"给我"必须相邻，我与V之间容≤2修饰词）
+  - 多义裁决链：谐音gay(priority 10, copula后) > 祈使(8) > 默认动词 —— meanings 是单一事实源
+  - 三变体：command（敌NP在给前→×1.4+穿透+语法×1.15）/ unnamed（无NP→随机敌自伤，无×1.4）/
+    benefactive（敌NP在V后"给我戳纸鬼"→仅语法×1.15）
+  - 结算：effects._imperative 在 finalize 读取；非攻击动词（给我躺）走 VERB_SPECIALS 敌方分支
+    （ctx.forceSubjectIsEnemy）
+- **让/叫 NP V 兼语**（"让纸鬼死"）：同语义、委婉版（×1.2 无穿透，语法×1.1）
+加新句式（把字句/被字句/叠词连击候选）：CONSTRUCTIONS push 一项即可，约定：成分间容≤2修饰词、逗号断句。
+
+### 7.2b 加一条句子质量规则（含未来 LLM 评价）
+`src/game/evaluator/quality.js#QUALITY_RULES` push 一项 `{ id, apply(ctx) }`：
+- 可读 ctx.cards / ctx.text / ctx.totalChars / 词性分组
+- 加分写 `ctx.literaryMult += x` + `ctx.literaryNotes.push(...)`
+- 结构化效果写 `ctx.effects._yourPayload`，再在 combat.js#applyEffects 消费
+- LLM 兜底评价的接入点也在这里：异步判定在吟诵前预计算、挂到 G 上，规则同步读取
 
 ### 7.3 给一张卡加多义
 1. cards.json: 加 `meanings: [Meaning]` 数组
@@ -413,18 +466,27 @@ window.cheat() / window.giveGold(999)
 3. 加入怪物池: enemies 池子在 `src/game/map.js#getRandomEnemies` 按 `act` + `type` 过滤，所以新敌人加好 act/type 就自动入池
 
 ### 7.6 给敌人加新的 puppet 反应
-- 当前 5 种 intent type: attack / defend / buff / debuff / special — 都在 `src/ui/render.js#playEnemyPuppetAnim` 里
+- 当前 5 种 intent type: attack / defend / buff / debuff / special — 都在 `src/ui/puppets.js#playEnemyPuppetAnim` 里
 - 想加新的 type 比如 `'summon'` `'curse'`，在 `playEnemyPuppetAnim` 里加分支
+- 撞击帧常量 `IMPACT_MS`（420ms）被 combat.js#enemyTurn 用来对齐 act_fn 与动画，改时序两边一起改
 
 ---
 
 ## 8. 已知问题 / TODO (按优先级)
 
-### 高优先级
-1. **多义系统的"撤销"路径不完整** — 现在 `applyMeaningsToSentence` 只在 evaluateSentence 内部走一次，临时构造的 patched 卡 (含 _activeMeaning) 不传出去。UI 单独再调一次 resolveMeaning 来显示 caption 是冗余的、且可能与评估不同步。建议把 active meaning 写到 result.cards 里然后让 UI 读。
-2. **detectPredicates 离 copula 最近的主语判定**对"皇帝你儿子是给"取到的是"儿子"作为主语，但实际广播全场 — 这个语义和注释里写的"取最近主语"是矛盾的，应该重写。
-3. **puppet stage 的"我"标签和左立绘有视觉重复** — 左侧已有李清照立绘，造句区的小人又写"我"。可能改成 emoji / 角色简化图标更清爽。
-4. **敌人 hit 动画与 dealDamageToEnemy 的红色飞字时序不同步** — playEnemyPuppetAnim 在 act_fn 之前就开始，但 dealDamageToPlayer 在 act_fn 内同步触发，两边动画时间没对齐。
+### 已修复（2026-06-12 架构重构）
+1. ~~多义系统 UI/评估不同步~~ — meanings.js 现在是唯一所有者，`applyMeaningsToSentence` 被评估器
+   (evaluator/context.js) 和 UI (render.js 造句区 / puppets.js 姿态预览) 共同消费；同时修复了
+   无 patch 的 meaning 会让 `applyMeaningPatch` 返回原对象、导致 pos/pun 写入永久污染手牌卡的 bug。
+2. ~~detectPredicates 主语判定矛盾~~ — 已重写：合并双循环、修复逗号 break 永不可达（之前
+   `pos==='punctuation'` 先 continue 导致逗号停句逻辑死代码）、主语短语显示取 copula 前连续片段
+   （"皇帝你儿子是给" 现在完整显示）。
+3. ~~puppet 火柴人粗糙~~ — index.html 重绘为水墨小人（诗人：发髻+长衫+毛笔；敌人：朱砂纸鬼飘带 + 符纸），
+   姿态 CSS 全部重做（attack/defend 持物跟手、敌我朝向区分、idle 飘移）。
+4. ~~敌人 act 与 puppet 撞击不同步~~ — enemyTurn 现在把 act_fn 延迟到 IMPACT_MS(420ms) 撞击帧执行，
+   伤害飞字与动画落点对齐。
+5. ~~applyEffects 中 `_confuse` 双重处理~~ — 删除了旧的"立即随机自伤"块，保留 confused 标记 +
+   enemyTurn 的混乱结算路径。
 
 ### 中优先级
 5. **加 LLM 兜底创意识别** — 现在 motif/pun 都是正则/规则匹配，玩家写出"皇帝你儿子是给"会识别，但写"狗皇帝你大儿子是个 gay 比" 就识别不到。可考虑后端 API 接 LLM 判断"句子是否在表达 gay/嘲讽/抒情/…"，给一个 fallback +0.5 倍率。
@@ -449,12 +511,18 @@ npm run build     # 产出 dist/
 
 调试时建议：
 - URL 加 `?cheat=1` 自动开金币 + 文气，加 `?t=随便填` 绕过 vite 缓存
+- URL 加 `?autocombat=1` 直接进战斗（跳过地图/剧情，自动建牌组+发手牌），
+  可选 `&enemy=zhigui` 指定敌人、`&sentence=纸鬼,给,我,戳` 预填造句区（敌人名→目标卡，"我"→固定卡）
 - 控制台 `window.G` 可以直接改任何状态
-- `window.__startCombat([{...window.__ENEMY_DEFS.zhigui}])` 直接进战斗，跳过地图/剧情
+- `window.__startCombat([{...window.__ENEMY_DEFS.zhigui}])` 直接进战斗（但需先 `G.deck=createStarterDeck()`）
 - 修改 cards.json 不需要重启 dev，vite HMR 自动重载
 
-截图 / 自动化：
-- 用 headless chrome + remote-debugging-port 走 CDP，详见 `/tmp/sentence-roguelike-shots/shot.js` (示例脚本)
+自测工具链（项目根目录，零运行时依赖、仅 dev 依赖 `ws`）：
+- `node test-eval.node.mjs` — 39 个句子评估单测，直接 import evaluator（无需浏览器，评估器是 DOM-free 的）。
+  改评估逻辑后必跑，最后一行打印 `ALL N CASES RAN WITHOUT ERROR`
+- `node shot.mjs <out.png> <url> [waitMs]` — headless Chrome 走 CDP 截图（1280×720@2x），并捕获 console 报错
+- `node probe.mjs <url> "<JS表达式>" [waitMs]` — 在真实页面里求值并打印结果（用于读 G.sentence、evaluateSentence 等运行时状态）
+- 三者都需先 `npm run dev`（默认 :5173）。截图里的 `THREE.WebGLRenderer: Error creating WebGL context` 是 headless 无 GPU 所致，真机正常
 - **不要** 直接 `await import()` 然后改模块导出的 G — vite 给每个 module 加 `?t=` cache-bust，dynamic import 拿到的可能是新实例。应该用 `window.G` 操作主线程内的实例。
 
 部署：
@@ -502,7 +570,7 @@ npm run build     # 产出 dist/
    - 在 `startGame` 和 `startCombat` 里看是否需要 reset
    - localStorage 持久化的只能放 META (state.js 顶部)
 
-8. **render.js 已经有点大** (~500 行)。如果要加新的 UI 模块（比如新 overlay），考虑独立文件。
+8. **新 UI 模块独立成文件**（puppets.js 是先例）。render.js 只负责渲染主循环。
 
 9. **棍人姿态 data-pose 切换不能在动画期间被打断**。所以 `updatePuppets` 检 `dataset.chanting === '1'` 跳过。新加动作时务必保持这个约束。
 

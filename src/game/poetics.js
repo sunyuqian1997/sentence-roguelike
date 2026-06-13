@@ -181,52 +181,175 @@ export function checkRhyme(currentKey, prevKey) {
 // A can be: enemy-target card, subject card (我 OK), 我-fixed card.
 // Returns array of { targetIdx: <enemy index> | 'self', pun: <pun obj>, label, flavor, srcCard }.
 // Only returns when there's a copula connector (是/为) AND a punned card adjacent (after).
+const isSubjectish = (c) =>
+  !!(c && (c._isEnemyTarget || c._isSelfTarget || c._isFixedWo || c.pos === 'subject'));
+
+const isMeCard = (c) =>
+  !!(c && (c._isSelfTarget || c._isFixedWo || (c.pos === 'subject' && c.word === '我')));
+
+// ---------- IDENTITY TRAITS (Baba-is-you style "A 是 B") ----------
+// When B is an identity word (subject card / enemy name), the copula rewrites
+// who A *is*. Direction decides flavor:
+//   enemy 是 X → X's enemyEffect debuffs that enemy ("纸鬼是猫" = 爪软犯困)
+//   我 是 X   → X's selfEffect buffs the player   ("我是影子" = 身形飘忽)
+//   X 是 我   → claiming an identity = self-buff   ("皇帝是我" = 黄袍加身)
+//   敌 是 我  → FORBIDDEN (僭越) — invalid, scored as a penalty
+//   我 是 我  → tautology, tiny poetry nod
+// Effect fields are declarative; combat.js#applyEffects interprets them.
+//   enemyEffect: { weak, vulnerable, strengthDelta, stunChance }
+//   selfEffect:  { block, heal, draw, strength, vulnerable, poeticAuraNext }
+export const IDENTITY_TRAITS = {
+  '猫': {
+    emoji: '🐱',
+    enemyLabel: '变成猫：爪软犯困', enemyEffect: { weak: 2, stunChance: 0.3 },
+    selfLabel: '猫步轻盈：挡4抽1', selfEffect: { block: 4, draw: 1 },
+  },
+  '影子': {
+    emoji: '🌑',
+    enemyLabel: '化为影：虚而易穿', enemyEffect: { vulnerable: 2, strengthDelta: -1 },
+    selfLabel: '身形飘忽：挡6', selfEffect: { block: 6 },
+  },
+  '无名者': {
+    emoji: '👤',
+    enemyLabel: '失其名：迷茫弱化', enemyEffect: { weak: 1, stunChance: 0.5 },
+    selfLabel: '无名之力：抽2', selfEffect: { draw: 2 },
+  },
+  '李清照': {
+    emoji: '📜',
+    enemyLabel: '文气压制：弱2', enemyEffect: { weak: 2 },
+    selfLabel: '词魂附体：回3+下回合诗意', selfEffect: { heal: 3, poeticAuraNext: true },
+  },
+  '皇帝': {
+    emoji: '👑',
+    enemyLabel: '僭越遭谴：易伤2', enemyEffect: { vulnerable: 2 },
+    selfLabel: '黄袍加身：力+2', selfEffect: { strength: 2 },
+  },
+  '初音未来': {
+    emoji: '🎤',
+    enemyLabel: '被迫打call：跳过回合', enemyEffect: { stunChance: 1.0 },
+    selfLabel: '元气满满：回5', selfEffect: { heal: 5 },
+  },
+  '剑客': {
+    emoji: '🗡️',
+    enemyLabel: '缴械：力-2', enemyEffect: { strengthDelta: -2 },
+    selfLabel: '剑心通明：力+2', selfEffect: { strength: 2 },
+  },
+  '书生': {
+    emoji: '📚',
+    enemyLabel: '手无缚鸡之力：弱2', enemyEffect: { weak: 2 },
+    selfLabel: '书生献策：抽2', selfEffect: { draw: 2 },
+  },
+  '月兔': {
+    emoji: '🐰',
+    enemyLabel: '怯懦：弱1易伤1', enemyEffect: { weak: 1, vulnerable: 1 },
+    selfLabel: '月兔祝福：回4', selfEffect: { heal: 4 },
+  },
+  '僧人': {
+    emoji: '🙏',
+    enemyLabel: '顿悟放下：力-1弱1', enemyEffect: { weak: 1, strengthDelta: -1 },
+    selfLabel: '禅定：回4', selfEffect: { heal: 4 },
+  },
+};
+
+// Fallbacks: any subject word still means something ("各种语义组合必须有意义")
+export const DEFAULT_IDENTITY_TRAIT = {
+  emoji: '❓',
+  enemyLabel: '身份错乱：弱1易伤1', enemyEffect: { weak: 1, vulnerable: 1 },
+  selfLabel: '自我重塑：回3', selfEffect: { heal: 3 },
+};
+// B is an enemy's name ("我是纸鬼" — becoming the monster)
+export const MIMIC_IDENTITY_TRAIT = {
+  emoji: '👻',
+  enemyLabel: '认贼作父：弱1易伤1', enemyEffect: { weak: 1, vulnerable: 1 },
+  selfLabel: '化形入魔：力+2但易伤1', selfEffect: { strength: 2, vulnerable: 1 },
+};
+
+export function resolveIdentityTrait(word, isEnemyName) {
+  if (IDENTITY_TRAITS[word]) return IDENTITY_TRAITS[word];
+  return isEnemyName ? MIMIC_IDENTITY_TRAIT : DEFAULT_IDENTITY_TRAIT;
+}
+
+// Detect "A 是 B" clauses. Returns records of:
+//   { kind: 'pun'|'identity'|'forbidden'|'tautology',
+//     target: 'enemy'|'self'|'broadcast',
+//     subjectKind, subjectEnemyIdx, subjectWord,
+//     srcWord, copulaWord,
+//     pun?,                      // kind === 'pun'
+//     identityWord?, identityIsEnemyName? }  // kind === 'identity'
 export function detectPredicates(cards) {
   const results = [];
   for (let i = 0; i < cards.length; i++) {
     const c = cards[i];
     if (!c || !c.copulaConn) continue;
-    // Find the predicate (B) — first non-punctuation card after the copula that has a pun
+
+    // Predicate (B): first meaningful card after the copula. Modifiers and
+    // exclamations may sit in between ("A 是 很 给"); a comma ends the clause.
     let predIdx = -1;
+    let predType = null; // 'pun' | 'me' | 'subject' | 'enemyName'
     for (let j = i + 1; j < cards.length; j++) {
       const pc = cards[j];
       if (!pc) continue;
-      if (pc.pos === 'punctuation') continue; // skip punct, but stop at comma
-      if (pc.pos === 'punctuation' && pc.punctType === 'comma') break;
-      if (pc.pun) { predIdx = j; break; }
-      // Allow modifiers in between (eg "A 是 很 给")
+      if (pc.pos === 'punctuation') {
+        if (pc.punctType === 'comma') break;
+        continue;
+      }
+      if (pc.pun) { predIdx = j; predType = 'pun'; break; }
+      if (isMeCard(pc)) { predIdx = j; predType = 'me'; break; }
+      if (pc._isEnemyTarget) { predIdx = j; predType = 'enemyName'; break; }
+      if (pc.pos === 'subject') { predIdx = j; predType = 'subject'; break; }
       if (pc.pos === 'modifier' || pc.pos === 'exclamation') continue;
       break;
     }
     if (predIdx < 0) continue;
-    // Find subject (A) — closest enemy-target or subject before the copula
-    let subjectKind = null;
-    let subjectEnemyIdx = -1;
+    const pred = cards[predIdx];
+
+    // Subject (A): nearest subject-ish card before the copula.
+    let head = -1;
     for (let k = i - 1; k >= 0; k--) {
-      const sc = cards[k];
-      if (!sc) continue;
-      if (sc._isEnemyTarget) { subjectKind = 'enemy'; subjectEnemyIdx = sc._enemyIdx; break; }
-      if (sc._isSelfTarget || sc._isFixedWo) { subjectKind = 'self'; break; }
-      if (sc.pos === 'subject') { subjectKind = sc.word === '我' ? 'self' : 'subject'; break; }
+      if (isSubjectish(cards[k])) { head = k; break; }
     }
-    if (!subjectKind) continue;
-    // Pick subject word for display
-    let subjectWord = '';
-    for (let k = i - 1; k >= 0; k--) {
-      const sc = cards[k];
-      if (!sc) continue;
-      if (sc._isEnemyTarget || sc._isSelfTarget || sc._isFixedWo || sc.pos === 'subject') {
-        subjectWord = sc.word; break;
+    if (head < 0) continue;
+    const sc = cards[head];
+    let subjectKind, subjectEnemyIdx = -1;
+    if (sc._isEnemyTarget) { subjectKind = 'enemy'; subjectEnemyIdx = sc._enemyIdx; }
+    else if (isMeCard(sc)) subjectKind = 'self';
+    else subjectKind = 'subject';
+
+    // For display, take the full contiguous subject phrase ("皇帝你儿子"),
+    // not just the head word ("儿子").
+    let start = head;
+    while (start > 0 && isSubjectish(cards[start - 1])) start--;
+    const subjectWord = cards.slice(start, head + 1).map(x => x.word).join('');
+
+    const base = {
+      subjectKind, subjectEnemyIdx, subjectWord,
+      srcWord: pred.word, copulaWord: c.word,
+    };
+
+    if (predType === 'pun') {
+      const target = subjectKind === 'enemy' ? 'enemy' : subjectKind === 'self' ? 'self' : 'broadcast';
+      results.push({ ...base, kind: 'pun', target, pun: pred.pun });
+    } else if (predType === 'me') {
+      if (subjectKind === 'enemy') {
+        results.push({ ...base, kind: 'forbidden', target: 'enemy' });
+      } else if (subjectKind === 'self') {
+        results.push({ ...base, kind: 'tautology', target: 'self' });
+      } else {
+        // "皇帝是我" — claiming an identity buffs the player with A's trait
+        results.push({
+          ...base, kind: 'identity', target: 'self',
+          identityWord: subjectWord, identityIsEnemyName: false,
+        });
       }
+    } else {
+      // B is a subject card or an enemy name → identity rewrite
+      const target = subjectKind === 'enemy' ? 'enemy' : subjectKind === 'self' ? 'self' : 'broadcast';
+      results.push({
+        ...base, kind: 'identity', target,
+        identityWord: pred.word,
+        identityIsEnemyName: predType === 'enemyName',
+      });
     }
-    results.push({
-      subjectKind,
-      subjectEnemyIdx,
-      subjectWord,
-      pun: cards[predIdx].pun,
-      srcWord: cards[predIdx].word,
-      copulaWord: c.word,
-    });
   }
   return results;
 }

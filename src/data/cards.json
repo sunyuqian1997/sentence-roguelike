@@ -3075,8 +3075,8 @@
     "upgPower": 5,
     "healAlsoVerb": 3,
     "draw": 1,
-    "desc": "默认作动词：挡3+回血3+抽1。在 是/为 后面则作谐音 gay。",
-    "flavor": "给≈gay：A是给→施加魅惑",
+    "desc": "默认作动词：挡3+回血3+抽1。是/为后=谐音gay；「给我+动词」=祈使军令。",
+    "flavor": "给≈gay：A是给→施加魅惑；纸鬼给我戳→纸鬼自戳",
     "meanings": [
       {
         "id": "gei_pun",
@@ -3086,6 +3086,15 @@
         "priority": 10,
         "when": { "afterCopulaWithin": 3 },
         "pun": { "tag": "gay", "label": "🌈 魅惑", "flavor": "给≈gay" }
+      },
+      {
+        "id": "gei_imperative",
+        "label": "祈使·给我",
+        "emoji": "🫵",
+        "pos": "connector",
+        "priority": 8,
+        "when": { "nextIsMeThenVerb": true },
+        "patch": { "combatType": "special", "basePower": 0, "upgPower": 0, "healAlsoVerb": 0, "draw": 0 }
       }
     ]
   },

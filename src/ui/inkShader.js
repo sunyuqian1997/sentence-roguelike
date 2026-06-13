@@ -69,9 +69,18 @@ export function initInkBackground() {
   const container = document.getElementById('ink-bg');
   if (!container || typeof THREE === 'undefined') return null;
 
+  // The animated ink background is decorative. If WebGL is unavailable
+  // (headless capture, blocked GPU, old hardware) fail soft — never let it
+  // abort app init.
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false });
+  } catch (e) {
+    return null;
+  }
+
   const scene = new THREE.Scene();
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false });
 
   renderer.setSize(container.clientWidth, container.clientHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));

@@ -3,7 +3,8 @@ import { showFloatingText, shuffleArray } from '../utils.js';
 import { playSFX, initAudio, playAmbientMusic, playCombatMusic, playBossMusic, stopMusic } from './audio.js';
 import { VFX } from '../ui/vfx.js';
 import { WORD_DEFS, makeCard, createStarterDeck, randomCard, randomCardWeighted } from '../data/cards.js';
-import { showScreen, renderCombat, createCardElement, playChantPuppetAnim, playEnemyPuppetAnim } from '../ui/render.js';
+import { showScreen, renderCombat, createCardElement } from '../ui/render.js';
+import { playChantPuppetAnim, playEnemyPuppetAnim, IMPACT_MS } from '../ui/puppets.js';
 import { generateCharSVG } from '../ui/svgArt.js';
 import { dealDamageToPlayer, dealDamageToEnemy, checkEnemies } from './damage.js';
 import { generateMap, renderMap } from './map.js';
@@ -11,7 +12,7 @@ import { CARD_PACKS } from '../data/packs.js';
 import { playStory, STORY_CHAPTERS_REF } from '../ui/storyOverlay.js';
 import STORY_CHAPTERS from '../data/story.json';
 import { detectSummon, SUMMON_EFFECTS, evaluateSentence, checkExclamationPosition, detectDuizhang } from './sentence.js';
-import { processEnemyPuns, PUN_STATUS, PUN_ON_APPLY } from './poetics.js';
+import { processEnemyPuns, PUN_STATUS, PUN_ON_APPLY, resolveIdentityTrait } from './poetics.js';
 import { EVENTS_BY_ACT, EVENTS_FALLBACK } from '../data/events.js';
 import { closeMetaScreen, showVictoryScreen } from '../ui/screens.js';
 
@@ -471,20 +472,6 @@ export function applyEffects(effects) {
     showFloatingText(document.querySelector('#combat-top'), '嘲讽！', '#B87333');
   }
 
-  if (effects._confuse) {
-    const alive = G.enemies.filter(e => e.hp > 0);
-    if (alive.length > 1) {
-      const target = alive[Math.floor(Math.random() * alive.length)];
-      const dmg = target.nextIntent && target.nextIntent.value ? target.nextIntent.value : 5;
-      target.hp -= dmg; if (target.hp < 0) target.hp = 0;
-      showFloatingText(target.element, `自伤${dmg}！`, '#B87333');
-    } else if (alive.length === 1) {
-      const e = alive[0]; const dmg = 5;
-      e.hp -= dmg; if (e.hp < 0) e.hp = 0;
-      showFloatingText(e.element, `自伤${dmg}！`, '#B87333');
-    }
-  }
-
   if (effects._vulnSelfNext) {
     G.vulnerable = Math.max(G.vulnerable, 1);
     showFloatingText(document.querySelector('#combat-top'), '下回合易伤！', '#d47070');
@@ -638,28 +625,67 @@ export function applyEffects(effects) {
     }
   }
 
-  // PREDICATE PUNS — A 是 B → apply pun status
+  // PREDICATES — "A 是 B" clauses: puns + identity rewrites
   if (effects._predicates && effects._predicates.length > 0) {
     effects._predicates.forEach(p => {
-      const tag = p.pun.tag;
-      const applyToEnemy = (e) => {
-        if (!e || e.hp <= 0) return;
-        if (!e._puns) e._puns = [];
-        if (!e._puns.includes(tag)) e._puns.push(tag);
-        if (PUN_ON_APPLY[tag]) PUN_ON_APPLY[tag](e);
-        if (e.element) showFloatingText(e.element, p.pun.label, '#9B59B6');
-      };
-      if (p.subjectKind === 'enemy') {
-        applyToEnemy(G.enemies[p.subjectEnemyIdx]);
-      } else if (p.subjectKind === 'subject') {
-        // Generic subject ("皇帝你儿子是给") — wisecrack heard by all enemies
-        G.enemies.forEach(applyToEnemy);
-        showFloatingText(document.querySelector('#combat-top'), `📢 ${p.subjectWord}${p.copulaWord}${p.srcWord}：${p.pun.label}`, '#9B59B6');
-      } else {
-        // self — record on player only
-        if (!G._puns) G._puns = [];
-        if (!G._puns.includes(tag)) G._puns.push(tag);
-        showFloatingText(document.querySelector('#combat-top'), `自陈：${p.pun.label}`, '#9B59B6');
+      if (p.kind === 'pun') {
+        const tag = p.pun.tag;
+        const applyToEnemy = (e) => {
+          if (!e || e.hp <= 0) return;
+          if (!e._puns) e._puns = [];
+          if (!e._puns.includes(tag)) e._puns.push(tag);
+          if (PUN_ON_APPLY[tag]) PUN_ON_APPLY[tag](e);
+          if (e.element) showFloatingText(e.element, p.pun.label, '#9B59B6');
+        };
+        if (p.target === 'enemy') {
+          applyToEnemy(G.enemies[p.subjectEnemyIdx]);
+        } else if (p.target === 'broadcast') {
+          // Generic subject ("皇帝你儿子是给") — wisecrack heard by all enemies
+          G.enemies.forEach(applyToEnemy);
+          showFloatingText(document.querySelector('#combat-top'), `📢 ${p.subjectWord}${p.copulaWord}${p.srcWord}：${p.pun.label}`, '#9B59B6');
+        } else {
+          // self — record on player only
+          if (!G._puns) G._puns = [];
+          if (!G._puns.includes(tag)) G._puns.push(tag);
+          showFloatingText(document.querySelector('#combat-top'), `自陈：${p.pun.label}`, '#9B59B6');
+        }
+        return;
+      }
+
+      if (p.kind === 'identity') {
+        const trait = resolveIdentityTrait(p.identityWord, p.identityIsEnemyName);
+        if (p.target === 'self') {
+          const se = trait.selfEffect || {};
+          if (se.block) G.block += se.block;
+          if (se.heal) G.hp = Math.min(G.maxHp, G.hp + se.heal);
+          if (se.draw) drawCards(se.draw);
+          if (se.strength) G.strength += se.strength;
+          if (se.vulnerable) G.vulnerable += se.vulnerable;
+          if (se.poeticAuraNext) G.poeticAuraNext = true;
+          showFloatingText(document.querySelector('#combat-top'), `${trait.emoji} ${trait.selfLabel}`, '#9B59B6');
+        } else {
+          const ee = trait.enemyEffect || {};
+          const applyToEnemy = (e) => {
+            if (!e || e.hp <= 0) return;
+            if (ee.weak) e.weak = (e.weak || 0) + ee.weak;
+            if (ee.vulnerable) e.vulnerable = (e.vulnerable || 0) + ee.vulnerable;
+            if (ee.strengthDelta) e.strength = (e.strength || 0) + ee.strengthDelta;
+            if (ee.stunChance && Math.random() < ee.stunChance) e.stunned = true;
+            if (e.element) showFloatingText(e.element, `${trait.emoji} ${trait.enemyLabel}`, '#9B59B6');
+          };
+          if (p.target === 'enemy') applyToEnemy(G.enemies[p.subjectEnemyIdx]);
+          else G.enemies.forEach(applyToEnemy);
+        }
+        return;
+      }
+
+      if (p.kind === 'forbidden') {
+        showFloatingText(document.querySelector('#combat-top'), `✗ 僭越！${p.subjectWord}不能${p.copulaWord}我`, '#C54B3C');
+        return;
+      }
+
+      if (p.kind === 'tautology') {
+        showFloatingText(document.querySelector('#combat-top'), '🪞 我是我', '#9B59B6');
       }
     });
   }
@@ -840,16 +866,20 @@ export function enemyTurn() {
 
     setTimeout(() => {
       if (enemy.hp <= 0) return;
-      // Trigger puppet animation BEFORE the actual effect — animation runs
-      // ~1000ms but we apply effect at 420ms (when the puppet "lands the hit").
       const intentForAnim = enemy.nextIntent ? { ...enemy.nextIntent } : null;
       playEnemyPuppetAnim(intentForAnim, { stunned: enemy.stunned });
       if (enemy.stunned) {
         enemy.stunned = enemy._stunNext || false;
         enemy._stunNext = false;
-        showFloatingText(enemy.element,'眩晕！','#B87333');
+        showFloatingText(enemy.element, '眩晕！', '#B87333');
+        enemy.ai(enemy);
+        renderCombat();
+        return;
       }
-      else {
+      // Apply the actual effect when the puppet lands the hit, so damage
+      // numbers / HP rolls pop exactly on impact.
+      setTimeout(() => {
+        if (enemy.hp <= 0) return;
         const hpBefore = G.hp;
         enemy.act_fn(enemy);
         if (G._reflectDmg && G._reflectDmg > 0 && G.hp < hpBefore) {
@@ -859,10 +889,9 @@ export function enemyTurn() {
             if (enemy.element) showFloatingText(enemy.element, `反弹${reflected}`, '#B87333');
           }
         }
-      }
-      enemy.ai(enemy);
-      renderCombat();
-      if (G.hp <= 0) return;
+        enemy.ai(enemy);
+        renderCombat();
+      }, IMPACT_MS);
     }, delay);
     delay += 700;
   });

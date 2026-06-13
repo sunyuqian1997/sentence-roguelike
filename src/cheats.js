@@ -8,6 +8,31 @@
 // ============================================================
 
 import { G, META, saveMeta } from './game/state.js';
+import { WORD_DEFS, createStarterDeck } from './data/cards.js';
+
+// Debug helper: drop words straight into the sentence area by their Chinese
+// text (for screenshots / autocombat). Enemy names become enemy-target cards.
+function prefillSentence(words) {
+  const byWord = {};
+  for (const [key, def] of Object.entries(WORD_DEFS)) {
+    if (!(def.word in byWord)) byWord[def.word] = key;
+  }
+  G.sentence = [];
+  let uid = 0;
+  for (const w of words) {
+    const trimmed = w.trim();
+    if (!trimmed) continue;
+    const enemyIdx = (G.enemies || []).findIndex(e => e.name === trimmed);
+    if (enemyIdx >= 0) {
+      G.sentence.push({ word: trimmed, pos: 'object', cost: 0, _isEnemyTarget: true, _enemyIdx: enemyIdx, id: 'dbg' + (uid++) });
+    } else if (trimmed === '我') {
+      G.sentence.push({ ...WORD_DEFS.wo, key: 'wo', _isFixedWo: true, id: 'dbg' + (uid++) });
+    } else if (byWord[trimmed]) {
+      G.sentence.push({ ...WORD_DEFS[byWord[trimmed]], key: byWord[trimmed], id: 'dbg' + (uid++) });
+    }
+  }
+  if (window.__renderCombat) window.__renderCombat();
+}
 
 const CHEAT_GOLD_FLOOR = 9999;
 let cheatMode = false;
@@ -77,6 +102,24 @@ export function initCheats() {
     const params = new URLSearchParams(window.location.search);
     if (params.get('cheat') === '1' || params.get('cheat') === 'true') {
       setCheatMode(true);
+    }
+    // 调试/截图入口：?autocombat=1 直接进入一场战斗（跳过地图与剧情），
+    // 可选 ?enemy=zhigui 指定敌人，?sentence=纸鬼,给,我,戳 预填造句区。
+    if (params.get('autocombat') === '1') {
+      const enemyKey = params.get('enemy') || 'zhigui';
+      const tryStart = () => {
+        if (!window.__startCombat || !window.__ENEMY_DEFS) { setTimeout(tryStart, 120); return; }
+        try {
+          const defs = window.__ENEMY_DEFS;
+          const def = defs[enemyKey] || Object.values(defs)[0];
+          // __startCombat skips startGame, so seed a deck or drawCards finds nothing.
+          if (!G.deck || G.deck.length === 0) G.deck = createStarterDeck();
+          window.__startCombat([{ ...def }]);
+          const pre = params.get('sentence');
+          if (pre) setTimeout(() => prefillSentence(pre.split(',')), 200);
+        } catch (e) { console.error('autocombat failed', e); }
+      };
+      tryStart();
     }
   } catch (e) { /* ignore */ }
 

@@ -1,0 +1,348 @@
+/* ============================================================
+   RETRO PIXEL SKIN — 复古像素风
+   Imported LAST: overrides the soft ink-wash chrome with hard
+   pixel chrome (square corners, stepped shadows, NES-style
+   double-line panels, pixel font when available).
+   ============================================================ */
+
+/* Chinese pixel font — graceful fallback to serif if the file is absent.
+   Place the font at public/fonts/zpix.ttf (SIL OFL). */
+@font-face {
+  font-family: 'Zpix';
+  src: url('/fonts/zpix.ttf') format('truetype');
+  font-display: swap;
+}
+
+:root {
+  --font-pixel: 'Zpix', 'Fusion Pixel', 'Noto Serif SC', monospace;
+  --px-border: 3px solid var(--ink);
+  --px-shadow: 4px 4px 0 rgba(17, 17, 16, 0.35);
+  --px-shadow-sm: 3px 3px 0 rgba(17, 17, 16, 0.3);
+}
+
+/* ---- Global hard edges ---- */
+* {
+  border-radius: 0 !important;
+  text-shadow: none !important;
+}
+img, .enemy-portrait-img, #player-char-svg {
+  image-rendering: pixelated;
+}
+body {
+  font-family: var(--font-pixel);
+}
+
+/* Pixel font everywhere the brush/serif fonts were used for UI chrome.
+   (The calligraphy fonts stay only via fallback if Zpix is missing.) */
+.btn, .card, .enemy, .puppet-label, #sentence-label, #score-overlay,
+#tooltip, .story-box, .journal-list, #round-journal, .pack-item,
+.player-char-card, .player-hp-display, .player-block-display,
+.energy-display, .enemy-intent, .status-icon, .meaning-caption,
+#sentence-score-preview, #duizhang-preview, .rail-heading,
+#score-sentence, #score-details, .story-speaker, .story-text {
+  font-family: var(--font-pixel) !important;
+  letter-spacing: 0.04em;
+}
+
+/* ---- Scanlines + CRT vignette (stronger, reads clearly as retro hardware) ---- */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 99990;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(17, 17, 16, 0.07) 0px,
+      rgba(17, 17, 16, 0.07) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    radial-gradient(ellipse at center, transparent 58%, rgba(17, 17, 16, 0.12) 100%);
+}
+
+/* ---- NES dialog panels: thick border + inner paper ring ---- */
+#sentence-area,
+#round-journal,
+#score-overlay,
+#tooltip,
+.story-box,
+.journal-list,
+#sentence-slots-container {
+  border: var(--px-border) !important;
+  box-shadow:
+    inset 0 0 0 2px var(--paper),
+    inset 0 0 0 4px rgba(17, 17, 16, 0.18),
+    var(--px-shadow) !important;
+  background-image: none !important;
+}
+#sentence-area::before,
+#sentence-area::after,
+#score-overlay::before,
+#sentence-slots-container::before {
+  display: none !important;
+}
+
+/* ---- Buttons: flat face, hard drop, press = sink ---- */
+.btn {
+  border: var(--px-border) !important;
+  background: var(--paper) !important;
+  box-shadow: var(--px-shadow) !important;
+  transition: transform 0.06s steps(2), box-shadow 0.06s steps(2);
+}
+.btn::before, .btn::after { display: none !important; }
+.btn:hover {
+  transform: none;
+  background: var(--paper-warm) !important;
+  box-shadow: var(--px-shadow) !important;
+}
+.btn:active:not(:disabled) {
+  transform: translate(4px, 4px);
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0) !important;
+}
+.btn-vermillion {
+  color: var(--vermillion-dark) !important;
+  border-color: var(--vermillion-dark) !important;
+  box-shadow: 4px 4px 0 rgba(139, 46, 35, 0.4) !important;
+}
+
+/* ---- Cards: chunky frames, square cost chip ---- */
+.card {
+  border: var(--px-border) !important;
+  box-shadow: var(--px-shadow-sm) !important;
+  background-image: none !important;
+}
+.card::before { display: none !important; }
+.card:hover {
+  transform: translateY(-14px);
+  box-shadow: 5px 5px 0 rgba(17, 17, 16, 0.4) !important;
+}
+.card .card-cost {
+  border: 2px solid var(--paper) !important;
+  outline: 2px solid var(--ink);
+  background: var(--ink) !important;
+  width: 24px; height: 24px;
+  top: 2px; left: 2px;
+}
+.card .card-pos-tag {
+  letter-spacing: 0.15em;
+  border-bottom: 2px solid rgba(17, 17, 16, 0.35);
+}
+.sentence-mini-card.meaning-active {
+  border-color: var(--purple) !important;
+  box-shadow: 3px 3px 0 var(--purple) !important;
+}
+
+/* ---- Enemy cards / portraits ---- */
+.enemy {
+  border: 3px solid var(--vermillion-dark) !important;
+  box-shadow: 4px 4px 0 rgba(139, 46, 35, 0.35) !important;
+  background-image: none !important;
+}
+.enemy.targeted {
+  box-shadow:
+    0 0 0 3px var(--vermillion-dim),
+    4px 4px 0 rgba(139, 46, 35, 0.5) !important;
+}
+.enemy-portrait, .enemy-portrait-img {
+  border: 2px solid var(--ink) !important;
+}
+.enemy-hp-bar {
+  height: 10px;
+  border: 2px solid var(--ink) !important;
+  background: var(--paper) !important;
+}
+.enemy-hp-fill {
+  background: var(--vermillion) !important;
+  box-shadow: none !important;
+}
+.enemy-intent, .status-icon {
+  border-width: 2px !important;
+  font-weight: 700;
+}
+
+/* ---- Energy orb → square gem ---- */
+.energy-orb {
+  border: var(--px-border) !important;
+  background: var(--gold) !important;
+  box-shadow: inset -3px -3px 0 rgba(17, 17, 16, 0.25), var(--px-shadow-sm) !important;
+}
+
+/* ---- Status / top bars ---- */
+#player-status-bar, #hand-area {
+  border-top: var(--px-border) !important;
+  background-image: none !important;
+}
+.player-char-card {
+  border-width: 2px !important;
+  box-shadow: var(--px-shadow-sm) !important;
+}
+
+/* ---- Tooltip / overlays ---- */
+.overlay { backdrop-filter: none !important; }
+#story-overlay { backdrop-filter: none !important; }
+#mute-btn {
+  border: 2px solid var(--ink) !important;
+  box-shadow: var(--px-shadow-sm) !important;
+}
+
+/* ---- Puppets: thicker pixel-ish strokes, crisp edges ---- */
+.puppet-svg { shape-rendering: crispEdges; }
+.puppet-svg .arm, .puppet-svg .leg { stroke-linecap: square; }
+
+/* ---- Stepped motion for the retro feel ---- */
+.card-deal-anim { animation-timing-function: steps(6) !important; }
+@media (prefers-reduced-motion: reduce) {
+  body::after { display: none; }
+}
+
+/* ============================================================
+   LAYOUT FIXES (combat screen) — items A–H
+   ============================================================ */
+
+/* [H] Round journal: collapse to a thin strip when empty, expand on content.
+   :has() lets us detect the placeholder so we don't reserve big empty space. */
+#combat-center > #round-journal {
+  max-height: 16vh;
+  margin: 4px 0 2px !important;
+  padding: 4px 12px 5px !important;
+  background: var(--paper) !important;
+}
+#round-journal:has(.round-journal-empty) {
+  max-height: 26px;
+  padding: 2px 12px !important;
+  opacity: 0.6;
+}
+#round-journal:has(.round-journal-empty) .round-journal-title { font-size: 0.7rem; }
+
+/* [A] Sentence box: hug its content instead of stretching to fill the column,
+   so the giant beige void disappears. The hand area pins to the bottom. */
+#combat-center { justify-content: flex-start; }
+#combat-center > #sentence-area {
+  flex: 0 1 auto !important;
+  overflow: visible !important;
+}
+#sentence-slots-container {
+  min-height: 0 !important;
+}
+.sentence-half {
+  min-height: 0 !important;
+  padding: 4px 2px !important;
+  justify-content: flex-start;
+}
+/* Empty-state hint shrinks too */
+#sentence-slots-container:empty::after,
+#sentence-slots-container > .sentence-half:empty::after {
+  padding: 8px 0;
+}
+
+/* [B] Puppet stage: its own banded "arena" row with a hard divider, so the
+   figures never overlap the tiles below. Sentence box gets clear breathing room. */
+#puppet-stage {
+  border: 2px solid var(--ink) !important;
+  background:
+    repeating-linear-gradient(0deg, rgba(17,17,16,0.04) 0 2px, transparent 2px 6px),
+    var(--paper) !important;
+  box-shadow: var(--px-shadow-sm) !important;
+  margin: 0 auto 10px !important;
+  padding: 8px 28px !important;
+  min-height: 84px !important;
+  max-width: 420px !important;
+}
+#sentence-slots-container {
+  margin-top: 2px;
+}
+
+/* [C] Drop the "诗人" label — the big left portrait already says 李清照. */
+#puppet-player .puppet-label { display: none; }
+#puppet-enemy .puppet-label {
+  font-size: 0.6rem;
+  opacity: 0.6;
+}
+
+/* [D] Score/effect preview: always-on bar directly under the sentence box,
+   pixel-outlined so it reads as a status readout. */
+#sentence-score-preview {
+  border: 2px solid var(--ink) !important;
+  background: var(--paper) !important;
+  box-shadow: var(--px-shadow-sm) !important;
+  padding: 5px 12px !important;
+  margin-top: 6px !important;
+  min-height: 1.4em;
+  justify-content: center;
+  font-size: 0.85rem !important;
+}
+#sentence-score-preview:empty::before {
+  content: '组句中…';
+  color: var(--smoke);
+  opacity: 0.5;
+}
+
+/* [E] Portrait rail: keep the full standee visible, don't let center overlap. */
+.portrait-rail { flex-basis: clamp(130px, 15vw, 190px) !important; z-index: 1; }
+.portrait-art img { image-rendering: pixelated; }
+.rail-name {
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  padding: 1px 8px;
+  box-shadow: var(--px-shadow-sm);
+  font-size: 0.8rem !important;
+}
+
+/* [F] is handled by the global pixel skin above (palette/scanlines/font). */
+
+/* Tighten the vertical rhythm: sentence tiles were so tall they collided with
+   the hand. Shrink the in-sentence mini-cards and give the three stacked
+   bands (arena / status / hand) clear separation. */
+.sentence-mini-card {
+  width: clamp(72px, 9vw, 92px) !important;
+  height: clamp(104px, 13vw, 128px) !important;
+}
+.sentence-mini-card .card-word { font-size: clamp(1.1rem, 2.2vw, 1.45rem) !important; }
+.meaning-caption { font-size: 0.62rem; max-width: 92px; }
+
+/* Hand tiles a touch smaller so a full hand of 5–6 fits one row comfortably. */
+#hand-cards .card {
+  width: clamp(82px, 11vw, 104px) !important;
+  height: clamp(118px, 16vw, 146px) !important;
+}
+
+#player-status-bar {
+  border-top: 3px solid var(--ink) !important;
+  border-bottom: 2px solid rgba(17,17,16,0.2) !important;
+}
+#hand-area { border-top: 3px solid var(--ink) !important; }
+#combat-arena { padding-bottom: 4px; }
+
+/* Deep stage backdrop so the bright pixel panels read as foreground sprites,
+   instead of everything washing into one pale field. The animated WebGL ink
+   sits behind; this tints it toward an inky slate. */
+#combat-screen {
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.10) 0 1px, transparent 1px 4px),
+    linear-gradient(180deg, #20242e, #161a22) !important;
+}
+#combat-screen #combat-top {
+  background: rgba(28, 32, 40, 0.85) !important;
+  border-bottom: 2px solid #000 !important;
+  color: var(--paper);
+}
+#combat-screen #combat-top .combat-info span { color: #b8c2d0 !important; }
+.portrait-rail.player-rail { background: linear-gradient(90deg, rgba(74,124,107,0.18), transparent 85%) !important; }
+.portrait-rail.enemy-rail { background: linear-gradient(270deg, rgba(197,75,60,0.18), transparent 85%) !important; }
+.rail-heading { color: #e08a7d !important; }
+/* Panels keep their light paper face but now pop against the slate stage. */
+#sentence-area, #hand-area, #player-status-bar {
+  background: rgba(238, 241, 247, 0.96) !important;
+}
+
+/* [G] Enemy intent: solid chip with hard outline so the icon+number pops. */
+#enemy-portrait-rail > #enemy-area .enemy-intent {
+  border: 2px solid var(--ink) !important;
+  background: var(--paper) !important;
+  box-shadow: var(--px-shadow-sm) !important;
+  font-weight: 700;
+  padding: 3px 9px !important;
+}
+#enemy-portrait-rail > #enemy-area .enemy-intent.attack-intent { color: var(--vermillion-dark); }
