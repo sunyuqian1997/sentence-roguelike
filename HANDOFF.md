@@ -1,8 +1,72 @@
 # 词灵录 (Sentence Roguelike) — Handoff Document
 
-Status snapshot: 2026-06-12 (架构重构后) · 评估器已拆分为 `src/game/evaluator/` 规则管线
+Status snapshot: 2026-06-14 · 大量战斗/语义/UI 重构 · 评估器=`src/game/evaluator/` 规则管线
 Author of original direction: project owner (referred to below as "user")
-Author of this handoff: prior dev assistant
+Author of this handoff: Claude (4.7 session) → 交接给新 session
+
+---
+
+## ⭐ 0.5 最新进展与交接重点 (2026-06-14，新 session 先读这里)
+
+这几天围绕"判定合理性 + 视觉沉浸 + UI 可读"做了大量改动。本节是给接手者的全景，
+旧章节(§1~§11)仍大体有效但部分细节已被下列改动覆盖，以本节为准。
+
+### A. 已完成的大改 (都已 commit + 截图/单测验证)
+1. **评估器管线化**：`evaluateSentence` 拆成 `src/game/evaluator/`：
+   context → constructions → grammar → punctuation → quality(规则数组) → exclamation → cardEffects → finalize。
+   `sentence.js` 现在是 facade(re-export)。召唤独立成 `summons.js`。
+2. **多义唯一所有权**：`meanings.js` 的 `applyMeaningsToSentence` 是评估器和 UI 的共同入口。
+3. **Baba 式身份系统**(`poetics.js#detectPredicates` + `IDENTITY_TRAITS`)：
+   `A是B` 四种 kind — pun(谐音) / identity(身份赋予) / forbidden(僭越) / tautology(我是我)。
+   - 敌是X(猫/影子…) → 敌 debuff；我是X → 我 buff；皇帝是我 → 自我宣称 buff；
+   - **敌是我 = forbidden(僭越)**，已做**放卡前置拦截**(combat.js#tryAddCard / wouldBeForbidden)：
+     放会构成"敌是我"的卡时直接拒绝 + 敌方弹❌，不让事后才发现无效。
+   - **敌是敌**(纸鬼是残句怪) = identity(MIMIC trait，敌借敌属性)，合法。
+4. **句式系统(constructions)**：`evaluator/constructions.js` 一等抽象。已实现：
+   - `gei_imperative` 给我V祈使("纸鬼给我戳"=敌自伤×1.4穿透，2倍于"我戳纸鬼")
+   - `rang_jianyu` 让/叫 NP V 兼语
+5. **独立个体主语(co-actor)**：非"我"具名主语(猫/影子/初音/无名者…)在"X斩敌"这类
+   攻击句里作为**独立施动者**额外出手(自带武力值的独立攻击实例)，不再只给"我"堆数值。
+   - 关键修复：`isCopulaPredicate`(poetics.js) 排除"我是影子"里作为身份谓语B的主语
+     ——"影子斩敌"(施动)才出场，"我是影子"(属性)不出场。context/cardEffects/puppets 三处统一用。
+   - **棍人剧场体现**(puppets.js)：组句时该角色的**待命小人立即站位**(syncStandbyCoActors)，
+     吟诵时冲向敌人执行(playCoActors)——给即时组句反馈。
+6. **"敌为主语"语义**(evaluator/index.js finalize)：动词前=施事、动词后=受事。
+   "纸鬼碎我"=敌打我(伤害落玩家、无+2力补偿)；"我斩我"=自虐换+2力。
+7. **结算日志系统**(`chantLog.js` + vite 中间件)：每次吟诵记录完整快照(句子/卡序列含
+   激活多义/三分倍率/命中规则/句式/谓词/母题/effects/敌人快照)，**POST 到 dev server 落盘
+   `chantlog.ndjson`**(localStorage 跨浏览器 profile 读不到，所以用文件)。
+   控制台 `__chantLog()`/`__exportLog()`/`__clearLog()`/`__getLog()`。
+8. **整屏 UI 重构**(设计 agent 方案)：删左右边栏 → 纵向四段
+   顶栏 / 战斗舞台(左立绘|中央放大棍人对峙|右敌人) / 造句坞 / 手牌。
+   配色墨蓝灰三档(#1E2530/#2A3340/#F2EAD8)+青瓷蓝#3E7CA6(我)/朱砂红#B23A2E(敌)/赭金#D9A441。
+   像素皮肤 `src/styles/pixel.css`(最后加载，统一接管布局+配色)。Zpix 像素字体 `public/fonts/zpix.ttf`。
+9. **判定预览条**移到造句区**上方**(label 同行)，分项彩色 chip + 大倍率徽章 + 命中规则明细单行。
+10. **造句框固定宽**(min(760px,96vw) 居中，不再随卡数漂移)。
+11. **目标牌进手牌区**：我(蓝边)+各敌人(红边)做成手牌区左端的可点牌(虚线分隔)，点击选目标。
+    移除了立绘下方的固定"我"卡槽。两侧大立绘保留作视觉主体。
+12. **真 MP3 BGM**：放 `public/bgm/{ambient,combat,boss}.mp3`，audio.js 优先播 mp3、
+    缺失自动回退合成音；mp3 播放时已停掉合成 loop 不叠加。
+
+### B. 已知的未解决判定问题 (新 session 可继续，基于日志复盘)
+1. **identity 身份 buff 数值不进 effects**：如"我是皇帝→力+2"在 notes 显示了，但实际是
+   combat.js#applyEffects 里直接改 G.strength，**没写进 result.effects**，导致预览/日志看不到该数值、
+   且与倍率体系脱节。建议把 identity 的 selfEffect 写进 effects 再统一结算。
+2. **逗号分句的主语污染**："我是纸鬼，我摸鱼"里后半句"我摸鱼"该回血，但前半句的 enemy-target
+   污染了 subjectIsEnemy 判定，摸鱼被判成对敌易伤。需要按逗号分句独立判定每个分句的主语。
+3. **高倍率乘 0 伤害显虚高**：纯状态句(如只施加易伤)totalMult 可能 ×2+ 但实际伤害 0，
+   玩家觉得倍率虚标。考虑无主要数值时弱化倍率展示。
+4. **"给我V"被"是给"抢**：句中同时有"是"和"给我V"时，gei_pun(priority10) 压过 gei_imperative(8)，
+   "X是给我砍"被判成 gay 谐音而非祈使。可能需要按子句判定优先级。
+
+### C. 自测工具链 (新 session 必看 — opus 模型下可用，详见 §9)
+- `node test-eval.node.mjs` — 39 个句子评估单测(无需浏览器)
+- `node shot.mjs <out.png> <url> [waitMs]` — headless Chrome 截图(支持 SHOT_W/SHOT_H 环境变量)
+- `node probe.mjs <url> "<JS表达式>" [waitMs]` — 读真实页面运行时状态
+- URL 加 `?autocombat=1&enemy=moyao&sentence=我,斩,墨妖` 直接进战斗+预填造句区
+- 这三个工具依赖 dev 依赖 `ws`，且需先 `npm run dev`(默认 5173)
+- **重要**：执行 Bash 需安全分类器在线，`claude-fable-5` 模型下分类器常挂导致命令跑不了，
+  用 `claude-opus-4-8` 正常。
 
 ---
 
@@ -151,15 +215,20 @@ DOM 见 `index.html` `#puppet-stage`，逻辑见 `src/ui/puppets.js`（已从 re
 
 ```
 sentence-roguelike/
-├─ index.html                  # 所有 screen DOM；战斗布局 = combat-arena (左立绘 | 中央 | 右敌人)
-├─ vite.config.js / package.json / vercel.json
+├─ index.html                  # 所有 screen DOM；战斗布局=纵向四段(顶栏/combat-stage/sentence-dock/hand-area)
+├─ vite.config.js              # 含 chant-log-sink 中间件(POST /__chantlog → chantlog.ndjson)
+├─ package.json / vercel.json
+├─ test-eval.node.mjs          # 自测：39 句评估单测(node 直跑，无浏览器)
+├─ shot.mjs / probe.mjs        # 自测：headless Chrome 截图 / 读运行时状态(CDP，依赖 ws)
+├─ chantlog.ndjson             # 吟诵日志(gitignore，玩时落盘，新 session 读它做平衡复盘)
 ├─ public/
 │  ├─ lqz.png                  # 玩家立绘 (李清照)
-│  ├─ zhihui.png               # 纸鬼立绘 (filename mismatch: ENEMY_DEFS[zhigui].portrait = '/zhihui.png')
-│  └─ canjuguai.png            # 残句怪立绘
+│  ├─ zhihui.png / canjuguai.png  # 敌人立绘
+│  ├─ fonts/zpix.ttf           # Zpix 像素中文字体
+│  └─ bgm/{ambient,combat,boss}.mp3  # 真 BGM(用户放，缺失则回退合成音；目前可能未放)
 ├─ src/
-│  ├─ main.js                  # 入口；暴露 window.G / window.__renderCombat / window.__startCombat 用于调试
-│  ├─ cheats.js                # ?cheat=1 URL param + 反引号热键 + 控制台命令
+│  ├─ main.js                  # 入口；暴露 window.G/__startCombat/__chantLog 等调试钩子
+│  ├─ cheats.js                # ?cheat=1 + ?autocombat=1(直接进战斗+预填) + 热键 + prefillSentence
 │  ├─ i18n.js                  # zh/en 双语
 │  ├─ utils.js                 # showFloatingText, shuffleArray, getPosColor
 │  ├─ data/
@@ -187,13 +256,14 @@ sentence-roguelike/
 │  │  ├─ meanings.js           # resolveMeaning + applyMeaningPatch + applyMeaningsToSentence
 │  │  │                        # （多义系统唯一所有者；评估器与 UI 共用同一条解析路径）
 │  │  ├─ damage.js             # dealDamageToEnemy, dealDamageToPlayer, checkEnemies
-│  │  ├─ audio.js              # WebAudio 程序合成音效
+│  │  ├─ audio.js              # 音效 + BGM(优先 mp3，缺失回退 WebAudio 合成；playBgmTrack)
+│  │  ├─ chantLog.js           # 吟诵快照日志：logChant + POST 落盘 + printLog/exportLog/clearLog
 │  │  └─ map.js                # generateMap, renderMap, getRandomEnemies
 │  ├─ ui/
 │  │  ├─ render.js             # renderCombat 主循环；createCardElement, createSentenceWordEl;
-│  │  │                        # renderRoundJournal, renderEnemies, renderHand, showTooltip
-│  │  ├─ puppets.js            # 棍人剧场：updatePuppets, playChantPuppetAnim,
-│  │  │                        # playEnemyPuppetAnim, PUN_TO_POSE, IMPACT_MS(=420ms 撞击帧)
+│  │  │                        # renderHand+renderTargetCards(我/敌目标牌进手牌区), renderEnemies
+│  │  ├─ puppets.js            # 棍人剧场：updatePuppets, playChantPuppetAnim, playEnemyPuppetAnim,
+│  │  │                        # syncStandbyCoActors/playCoActors(独立个体待命+出击), PUN_TO_POSE, IMPACT_MS
 │  │  ├─ screens.js            # 非战斗屏：rest, event, shop, deck overlay, journal overlay, meta
 │  │  ├─ vfx.js                # VFX.shake, damageNum, inkRipple, brushStrike, ...
 │  │  ├─ svgArt.js             # getEnemyPortraitSVG (后备 emoji)
@@ -203,11 +273,13 @@ sentence-roguelike/
 │     ├─ variables.css         # 颜色/字号/缓动 CSS 变量
 │     ├─ base.css              # reset + body
 │     ├─ components.css        # 卡牌/按钮/敌人卡/诗册/puppet (主要 CSS)
-│     ├─ screens.css           # 战斗 arena 布局 + 立绘 rail + map + reward 屏
-│     ├─ overlays.css          # 评分弹层/词库/诗册 overlay
+│     ├─ screens.css           # 战斗舞台 combat-stage 三栏布局 + map + reward 屏
+│     ├─ overlays.css          # 评分横幅(顶部)/词库/诗册 overlay
 │     ├─ animations.css        # @keyframes
-│     ├─ responsive.css        # 768/600/400 三个断点
-│     └─ index.css             # @import 入口
+│     ├─ responsive.css        # 断点(部分规则引用旧结构，桌面横屏不受影响)
+│     ├─ pixel.css             # ⭐复古像素皮肤(最后 @import)：配色色板+硬边框+扫描线+
+│     │                        #   战斗布局收口+目标牌+判定预览条+棍人台。多数布局以此为准
+│     └─ index.css             # @import 入口(pixel.css 在最后)
 └─ HANDOFF.md                  # 本文件
 ```
 
@@ -473,6 +545,9 @@ strengthDelta/stunChance；selfEffect: block/heal/draw/strength/vulnerable/poeti
 ---
 
 ## 8. 已知问题 / TODO (按优先级)
+
+> 📌 2026-06-14 之后的最新进展、未解决判定问题(身份buff数值脱节/逗号分句主语污染/
+> 倍率虚高/给我V优先级)见 **§0.5 B 段**。下面是更早的记录。
 
 ### 已修复（2026-06-12 架构重构）
 1. ~~多义系统 UI/评估不同步~~ — meanings.js 现在是唯一所有者，`applyMeaningsToSentence` 被评估器
