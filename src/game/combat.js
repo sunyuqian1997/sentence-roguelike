@@ -12,7 +12,7 @@ import { CARD_PACKS } from '../data/packs.js';
 import { playStory, STORY_CHAPTERS_REF } from '../ui/storyOverlay.js';
 import STORY_CHAPTERS from '../data/story.json';
 import { detectSummon, SUMMON_EFFECTS, evaluateSentence, checkExclamationPosition, detectDuizhang } from './sentence.js';
-import { processEnemyPuns, PUN_STATUS, PUN_ON_APPLY, resolveIdentityTrait } from './poetics.js';
+import { processEnemyPuns, PUN_STATUS, PUN_ON_APPLY, resolveIdentityTrait, detectPredicates } from './poetics.js';
 import { EVENTS_BY_ACT, EVENTS_FALLBACK } from '../data/events.js';
 import { closeMetaScreen, showVictoryScreen } from '../ui/screens.js';
 import { logChant } from './chantLog.js';
@@ -226,6 +226,36 @@ export function getSentenceCost() {
 // ============================================================
 // SENTENCE BUILDING
 // ============================================================
+
+// Forbidden guard: a clause "敌人 是 我" (僭越/usurpation) is illegal — the
+// enemy can't *be* you. Reject the card that would complete it, with feedback,
+// instead of letting the player chant a dud. Returns true if `candidate` added
+// to the current sentence would create such a clause.
+function wouldBeForbidden(candidate) {
+  const preds = detectPredicates([...G.sentence, candidate]);
+  return preds.some(p => p.kind === 'forbidden');
+}
+
+function rejectForbidden() {
+  playSFX('selfharm');
+  const host = G.enemies.find(e => e.hp > 0);
+  if (host && host.element) {
+    showFloatingText(host.element, '❌ 僭越！', '#C54B3C');
+    host.element.classList.remove('puppet-impact');
+    void host.element.offsetWidth;
+    host.element.classList.add('puppet-impact');
+  } else {
+    showFloatingText(document.querySelector('#combat-top'), '❌ 僭越：敌不能「是我」', '#C54B3C');
+  }
+}
+
+// Shared insertion guard used by all entry points (hand card / 我 / enemy).
+export function tryAddCard(card) {
+  if (wouldBeForbidden(card)) { rejectForbidden(); return false; }
+  G.sentence.push(card);
+  return true;
+}
+
 export function addToSentence(handIndex) {
   const card = G.hand[handIndex];
   if (G.sentence.includes(card)) return;
@@ -233,6 +263,7 @@ export function addToSentence(handIndex) {
   if (card.pos === 'punctuation' && card.punctType === 'comma') {
     if (G.sentence.some(c => c.pos === 'punctuation' && c.punctType === 'comma')) return;
   }
+  if (wouldBeForbidden(card)) { rejectForbidden(); return; }
 
   // FLIP: capture origin card rect before mutation
   const handEls = document.querySelectorAll('#hand-cards .card');

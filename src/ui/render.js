@@ -11,7 +11,7 @@ import { updatePuppets } from './puppets.js';
 
 // Puppet animations live in ./puppets.js; re-export for legacy importers.
 export { updatePuppets, playChantPuppetAnim, playEnemyPuppetAnim } from './puppets.js';
-import { getEffectiveCost, getSentenceCost, addToSentence, removeSentenceWord, updateChantButton } from '../game/combat.js';
+import { getEffectiveCost, getSentenceCost, addToSentence, removeSentenceWord, updateChantButton, tryAddCard } from '../game/combat.js';
 
 // ============================================================
 // SCREEN
@@ -134,11 +134,12 @@ function addEnemyTarget(idx, enemy) {
   } else {
     G.sentence = G.sentence.filter(c => !c._isEnemyTarget && !c._isSelfTarget);
   }
-  G.sentence.push({
+  const card = {
     word: enemy.name, pos: 'object', cost: 0,
     _isEnemyTarget: true, _enemyIdx: idx,
     id: 'enemy_target_' + idx + '_' + Math.random().toString(36).substr(2, 5),
-  });
+  };
+  if (!tryAddCard(card)) { renderCombat(); return; }
   playSFX('card');
   renderCombat();
 }
@@ -364,7 +365,7 @@ export function renderHand() {
       ...fixedWoDef, key: 'wo', upgraded: false, cost: 0,
       _isFixedWo: true, id: 'fixed_wo_' + Math.random().toString(36).substr(2, 5),
     };
-    G.sentence.push(woSentenceCard);
+    if (!tryAddCard(woSentenceCard)) { renderCombat(); return; }
     playSFX('card');
     renderCombat();
   };

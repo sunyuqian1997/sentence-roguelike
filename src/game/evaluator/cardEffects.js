@@ -16,20 +16,22 @@ export function applySubjects(ctx) {
     const b = s.powerBonus || 0;
     const ub = s.upgraded ? Math.ceil(b * 1.5) : b;
 
-    // Co-actor: a named subject other than 我. With an attack on an enemy it
-    // acts as its OWN entity (an extra strike of its own martial value) instead
-    // of merely padding 我's damage. 我 keeps the classic buff behavior.
-    const isCoActor = s.word !== '我' && hasAttackOnEnemy
-      && (s.bonusType === 'attack' || s.bonusType === 'all' || s.powerBonus > 0);
+    // Co-actor: ANY named subject other than 我. In an attack-on-enemy sentence
+    // it takes the field as its OWN entity (its own strike) rather than merely
+    // padding 我's damage. Even non-martial subjects (影子/无名者/女侠…) show up
+    // as themselves, using a baseline strike if they have no attack stat.
+    const isCoActor = s.word !== '我' && hasAttackOnEnemy;
     if (isCoActor) {
-      const power = Math.max(3, ub || 0);
+      const martial = (s.bonusType === 'attack' || s.bonusType === 'all') ? ub : 0;
+      const power = Math.max(3, martial);
       (effects._coActors ||= []).push({ name: s.word, power });
       ctx.grammarNotes.push(`🥷 ${s.word}·助战 (独立攻击${power})`);
-      // its OTHER riders (draw/aoe/stealth…) still apply below, but skip the
-      // attack/all stat pad so we don't double-count.
+      // its non-attack contributions still count (def/heal pad, riders); only
+      // the attack stat is diverted into its own strike to avoid double-count.
       if (s.bonusType === 'defense') bonus.subjectDefense += ub;
       else if (s.bonusType === 'heal') bonus.subjectHeal += ub;
       if (s.defenseBonus) bonus.subjectDefense += (s.upgraded ? Math.ceil(s.defenseBonus * 1.5) : s.defenseBonus);
+      if (s.healBonusSub) bonus.subjectHeal += (s.upgraded ? Math.ceil(s.healBonusSub * 1.5) : s.healBonusSub);
       applySubjectRiders(ctx, s);
       return;
     }

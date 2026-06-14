@@ -306,13 +306,24 @@ body { font-family: var(--font-pixel); }
   padding: 0 !important;
   overflow-x: auto;
 }
-.sentence-card-wrap { width: 88px; }
+.sentence-card-wrap { width: 80px; }
 .sentence-mini-card {
-  width: 88px !important;
-  height: 124px !important;
+  width: 80px !important;
+  height: 104px !important;
 }
-.sentence-mini-card .card-word { font-size: 1.35rem !important; }
-.meaning-caption { font-size: 0.6rem; max-width: 88px; }
+.sentence-mini-card .card-word { font-size: 1.2rem !important; }
+.sentence-mini-card .card-effect-bar { display: none !important; }
+.meaning-caption { font-size: 0.58rem; max-width: 80px; }
+/* The sentence dock owns a fixed slice of height and never overflows into the
+   hand — its children are clamped and clip rather than push the layout down. */
+#sentence-dock { max-height: 196px !important; overflow: hidden; }
+#sentence-dock > #sentence-area {
+  max-height: 100%;
+  overflow: hidden !important;
+  display: flex;
+  flex-direction: column;
+}
+#sentence-slots-container { flex: 0 1 auto; max-height: 110px; overflow: hidden; }
 
 /* Empty hint */
 #sentence-slots-container:empty::after,
@@ -337,19 +348,22 @@ body { font-family: var(--font-pixel); }
   flex-wrap: wrap;
 }
 #sentence-topbar #sentence-label { flex: 0 1 auto; margin: 0; }
-/* Score preview: always-on readout panel — bigger, itemized, color-coded */
+/* Score preview: compact readout — capped height so a long verdict list can
+   never push the sentence tiles down into the hand area. */
 #sentence-score-preview {
   flex: 1 1 auto;
   border: 2px solid var(--line) !important;
   background: var(--paper) !important;
   box-shadow: var(--px-shadow-sm) !important;
-  padding: 6px 12px !important;
+  padding: 5px 12px !important;
   margin: 0 !important;
   min-height: 1.6em;
+  max-height: 86px;
+  overflow: hidden;
   display: flex !important;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
 }
 #sentence-score-preview:empty::before {
   content: '组句中…';
@@ -394,11 +408,15 @@ body { font-family: var(--font-pixel); }
 .sp-flavor { color: var(--ink-soft); font-size: 0.8rem; }
 .sp-rules {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 4px 8px;
-  max-width: 720px;
+  flex-wrap: nowrap;            /* one scrolling line — never stack into tall rows */
+  justify-content: flex-start;
+  gap: 4px 10px;
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding-bottom: 2px;
 }
+.sp-rule { white-space: nowrap; flex: 0 0 auto; }
 .sp-rule {
   font-size: 0.74rem;
   color: var(--ink-soft);
