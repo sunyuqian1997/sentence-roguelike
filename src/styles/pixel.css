@@ -294,9 +294,8 @@ body { font-family: var(--font-pixel); }
 #sentence-slots-container::before { display: none !important; }
 .sentence-half {
   display: grid !important;
-  grid-template-columns: repeat(auto-fit, 88px);
   grid-auto-flow: column;
-  grid-auto-columns: 88px;
+  grid-auto-columns: 80px;
   justify-content: start;
   gap: 10px !important;
   min-height: 0 !important;

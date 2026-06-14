@@ -270,9 +270,11 @@
   justify-content: center;
   padding: 6px 14px 8px;
 }
+/* Fixed width (not shrink-to-fit) so the box stays put as cards are added —
+   no more horizontal drift. Cards fill from the left inside it. */
 #sentence-dock > #sentence-area {
-  width: 100%;
-  max-width: 760px;
+  width: min(760px, 96vw);
+  flex: 0 0 auto;
 }
 
 /* --- Round journal: thin left-aligned strip --- */

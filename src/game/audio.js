@@ -2,6 +2,48 @@ import { G } from './state.js';
 
 let audioCtx = null, masterGain = null, musicInterval = null;
 
+// ---- Real MP3 BGM ----
+// Drop files in public/bgm/ and reference by the absolute "/bgm/..." path.
+// If a file is missing/unplayable we fall back to the synthesized loop, so the
+// game never breaks when a track isn't provided yet.
+//   public/bgm/ambient.mp3  地图/休息/平时
+//   public/bgm/combat.mp3   普通战斗
+//   public/bgm/boss.mp3     Boss 战
+const BGM_TRACKS = {
+  ambient: '/bgm/ambient.mp3',
+  combat: '/bgm/combat.mp3',
+  boss: '/bgm/boss.mp3',
+};
+const BGM_VOLUME = 0.4;
+let bgmEl = null;        // current <audio>
+let bgmKey = null;       // which track is playing
+
+// Play an MP3 track for `key`. If the file is missing/blocked, run `fallback`
+// (the synthesized loop) instead — so the game always has music.
+function playBgmTrack(key, fallback) {
+  const src = BGM_TRACKS[key];
+  if (bgmEl && bgmKey === key && !bgmEl.paused) return; // already on
+  // Stop the synth loop NOW so it never layers under the mp3 while it loads.
+  if (musicInterval) { clearInterval(musicInterval); musicInterval = null; }
+  stopBgmTrack();
+  const el = new Audio(src);
+  el.loop = true;
+  el.volume = G.muted ? 0 : BGM_VOLUME;
+  bgmEl = el; bgmKey = key;
+  const useFallback = () => {
+    if (bgmEl === el) { stopBgmTrack(); }
+    if (fallback) fallback();
+  };
+  el.addEventListener('error', useFallback, { once: true });
+  const p = el.play();
+  if (p && p.catch) p.catch(useFallback); // autoplay blocked → synth
+}
+
+function stopBgmTrack() {
+  if (bgmEl) { try { bgmEl.pause(); bgmEl.src = ''; } catch (e) { /* ignore */ } }
+  bgmEl = null; bgmKey = null;
+}
+
 export function initAudio() {
   if (audioCtx) return;
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -14,6 +56,7 @@ export function toggleMute() {
   G.muted = !G.muted;
   document.getElementById('mute-btn').textContent = G.muted ? '🔇' : '♪';
   if (masterGain) masterGain.gain.value = G.muted ? 0 : 0.12;
+  if (bgmEl) bgmEl.volume = G.muted ? 0 : BGM_VOLUME;
 }
 
 function playNote(freq, dur, type, t, gain) {
@@ -32,54 +75,42 @@ function playNote(freq, dur, type, t, gain) {
 
 export function stopMusic() {
   if (musicInterval) { clearInterval(musicInterval); musicInterval = null; }
+  stopBgmTrack();
+}
+
+// Synth loop helper: clears any prior interval, then ticks notes on a timer.
+function synthLoop(notes, period, perTick) {
+  if (musicInterval) { clearInterval(musicInterval); musicInterval = null; }
+  if (!audioCtx) return;
+  let i = 0;
+  function tick() {
+    if (!audioCtx || G.muted) return;
+    perTick(notes[i % notes.length], audioCtx.currentTime);
+    i++;
+  }
+  tick();
+  musicInterval = setInterval(tick, period);
 }
 
 export function playAmbientMusic() {
-  stopMusic();
-  if (!audioCtx) return;
-  const notes = [261.6, 293.7, 329.6, 392.0, 440.0];
-  let i = 0;
-  function tick() {
-    if (!audioCtx || G.muted) return;
-    const t = audioCtx.currentTime;
-    playNote(notes[i % notes.length], 3, 'sine', t, 0.06);
-    playNote(notes[i % notes.length] * 0.5, 3, 'triangle', t, 0.03);
-    i++;
-  }
-  tick();
-  musicInterval = setInterval(tick, 3500);
+  playBgmTrack('ambient', () => synthLoop(
+    [261.6, 293.7, 329.6, 392.0, 440.0], 3500,
+    (n, t) => { playNote(n, 3, 'sine', t, 0.06); playNote(n * 0.5, 3, 'triangle', t, 0.03); }
+  ));
 }
 
 export function playCombatMusic() {
-  stopMusic();
-  if (!audioCtx) return;
-  const notes = [196.0, 220.0, 261.6, 220.0, 196.0, 164.8, 196.0, 261.6];
-  let i = 0;
-  function tick() {
-    if (!audioCtx || G.muted) return;
-    const t = audioCtx.currentTime;
-    playNote(notes[i % notes.length], 0.25, 'triangle', t, 0.1);
-    playNote(98, 0.15, 'sine', t, 0.08);
-    i++;
-  }
-  tick();
-  musicInterval = setInterval(tick, 550);
+  playBgmTrack('combat', () => synthLoop(
+    [196.0, 220.0, 261.6, 220.0, 196.0, 164.8, 196.0, 261.6], 550,
+    (n, t) => { playNote(n, 0.25, 'triangle', t, 0.1); playNote(98, 0.15, 'sine', t, 0.08); }
+  ));
 }
 
 export function playBossMusic() {
-  stopMusic();
-  if (!audioCtx) return;
-  const notes = [164.8, 196.0, 220.0, 261.6, 220.0, 196.0, 164.8, 146.8];
-  let i = 0;
-  function tick() {
-    if (!audioCtx || G.muted) return;
-    const t = audioCtx.currentTime;
-    playNote(notes[i % notes.length], 0.2, 'sawtooth', t, 0.06);
-    playNote(82.4, 0.12, 'triangle', t, 0.1);
-    i++;
-  }
-  tick();
-  musicInterval = setInterval(tick, 380);
+  playBgmTrack('boss', () => synthLoop(
+    [164.8, 196.0, 220.0, 261.6, 220.0, 196.0, 164.8, 146.8], 380,
+    (n, t) => { playNote(n, 0.2, 'sawtooth', t, 0.06); playNote(82.4, 0.12, 'triangle', t, 0.1); }
+  ));
 }
 
 function playNoise(duration, t, gain) {
