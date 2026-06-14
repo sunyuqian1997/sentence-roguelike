@@ -380,9 +380,15 @@ export function detectPredicates(cards) {
 
 // ---------- STATUS DEFINITIONS ----------
 // What each pun tag does on application + pair-interaction it triggers between enemies.
+// `selfPun`: when the player declares the tag on THEMSELVES ("我是给"), the
+// wisecrack rebounds as a buff. `label` = floating text, `selfEffect` = the
+// declarative buff payload consumed by combat.js#applyEffects (same vocabulary
+// as IDENTITY_TRAITS.selfEffect: block/heal/draw/strength/poeticAuraNext +
+// charmEnemiesNext, which makes ALL enemies skip their next attack).
 export const PUN_STATUS = {
   gay: {
     label: '🌈 魅惑',
+    selfPun: { label: '🌈 自我魅惑：敌方下回合被勾引', selfEffect: { charmEnemiesNext: true, block: 4 } },
     onApply(e) { /* applied via _puns array */ },
     // When 2+ enemies share this tag, they cuddle: both skip attack
     pairEffect(enemies) {
@@ -392,6 +398,7 @@ export const PUN_STATUS = {
   },
   numb: {
     label: '😶 麻木',
+    selfPun: { label: '😶 我麻了：抗性+格挡6', selfEffect: { block: 6 } },
     // Numb enemies take 50% reduced damage but can't apply debuffs themselves
     pairEffect(enemies) {
       enemies.forEach(e => { e.weak = (e.weak || 0) + 2; });
@@ -400,6 +407,7 @@ export const PUN_STATUS = {
   },
   doomed: {
     label: '💀 寄了',
+    selfPun: { label: '💀 向死而生：力+2', selfEffect: { strength: 2 } },
     // Doomed enemies take +50% damage; if all enemies doomed → 30% instant kill chance
     pairEffect(enemies) {
       enemies.forEach(e => { e.vulnerable = (e.vulnerable || 0) + 3; });
@@ -408,6 +416,7 @@ export const PUN_STATUS = {
   },
   fleeing: {
     label: '🏃 溜了',
+    selfPun: { label: '🏃 溜了溜了：抽2', selfEffect: { draw: 2 } },
     // Fleeing enemies have a chance to skip turn; if 2+ → they flee together (50% chance miss)
     pairEffect(enemies) {
       enemies.forEach(e => { if (Math.random() < 0.5) e.stunned = true; });
@@ -416,6 +425,7 @@ export const PUN_STATUS = {
   },
   lying: {
     label: '🛌 躺平',
+    selfPun: { label: '🛌 我躺平：回血5', selfEffect: { heal: 5 } },
     // Lying enemies skip attacks
     pairEffect(enemies) {
       enemies.forEach(e => { e.stunned = true; });
@@ -424,6 +434,7 @@ export const PUN_STATUS = {
   },
   juan: {
     label: '🌀 内卷',
+    selfPun: { label: '🌀 我卷起来了：抽1+力+1', selfEffect: { draw: 1, strength: 1 } },
     // Juan enemies attack each other (self-damage)
     pairEffect(enemies) {
       const dmg = 6;
@@ -433,6 +444,7 @@ export const PUN_STATUS = {
   },
   sad: {
     label: '😞 emo',
+    selfPun: { label: '😞 我emo：下回合诗意+格挡3', selfEffect: { block: 3, poeticAuraNext: true } },
     // Sad enemies don't attack but heal each other (mixed effect)
     pairEffect(enemies) {
       enemies.forEach(e => { e.stunned = true; });
@@ -441,6 +453,7 @@ export const PUN_STATUS = {
   },
   old: {
     label: '👴 衰老',
+    selfPun: { label: '👴 我老了：回血4', selfEffect: { heal: 4 } },
     pairEffect(enemies) {
       enemies.forEach(e => { e.weak = (e.weak || 0) + 3; if (e.strength) e.strength = Math.max(0, e.strength - 2); });
       return { msg: '👴 老态龙钟 → 全员弱3，力量-2' };
@@ -448,6 +461,7 @@ export const PUN_STATUS = {
   },
   daylight: {
     label: '☀️ 日光',
+    selfPun: { label: '☀️ 我是光：力+1+格挡3', selfEffect: { strength: 1, block: 3 } },
     pairEffect(enemies) {
       // Sunlight burns ghosts: deal 4 to anyone with ghost/dark tag among the group
       let burned = 0;

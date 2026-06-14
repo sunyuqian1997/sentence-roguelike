@@ -63,6 +63,12 @@ const COACTOR_EMOJI = {
 };
 const coActorEmoji = (name) => COACTOR_EMOJI[name] || '🥷';
 
+// Where co-actors stand: in the open band BETWEEN the poet (far left) and the
+// VS marker (center), so they never overlap the poet. Each is ~62% scale.
+const COACTOR_BASE_LEFT = 30; // % from stage left — sits in the gap, poet→center
+const COACTOR_STEP = 10;      // % between successive co-actors, fanning rightward
+const COACTOR_SCALE = 0.6;
+
 // Build one standby co-actor puppet (cloned from the poet, role emoji above).
 function makeStandby(name, indexFromZero) {
   const player = document.getElementById('puppet-player');
@@ -72,14 +78,15 @@ function makeStandby(name, indexFromZero) {
   clone.dataset.pose = 'idle';
   clone.dataset.coactor = name;
   const label = clone.querySelector('.puppet-label');
-  if (label) { label.textContent = name; label.style.opacity = '0.7'; }
+  if (label) { label.textContent = name; label.style.opacity = '0.7'; label.style.display = 'block'; }
   setEmoji(clone, coActorEmoji(name));
   clone.style.position = 'absolute';
-  clone.style.left = (4 + indexFromZero * 11) + '%'; // fan out left of the poet
-  clone.style.bottom = '6%';
+  clone.style.left = (COACTOR_BASE_LEFT + indexFromZero * COACTOR_STEP) + '%';
+  clone.style.bottom = '4%';
   clone.style.zIndex = String(3 - indexFromZero);
   clone.style.opacity = '0';
-  clone.style.transform = 'scale(0.62)';
+  clone.style.transformOrigin = 'bottom center';
+  clone.style.transform = `scale(${COACTOR_SCALE - 0.1})`;
   clone.style.transition = 'opacity 0.25s, transform 0.3s cubic-bezier(0.22,1,0.36,1), left 0.3s';
   return clone;
 }
@@ -102,7 +109,7 @@ export function syncStandbyCoActors(names) {
   existing.forEach(el => {
     if (!want.includes(el.dataset.coactor)) {
       el.style.opacity = '0';
-      el.style.transform = 'scale(0.62)';
+      el.style.transform = `scale(${COACTOR_SCALE - 0.1})`;
       setTimeout(() => el.remove(), 250);
     }
   });
@@ -112,12 +119,12 @@ export function syncStandbyCoActors(names) {
     if (existing.some(el => el.dataset.coactor === name && el.isConnected)) {
       // keep position fresh in case index changed
       const el = existing.find(e => e.dataset.coactor === name);
-      el.style.left = (4 + i * 11) + '%';
+      el.style.left = (COACTOR_BASE_LEFT + i * COACTOR_STEP) + '%';
       return;
     }
     const el = makeStandby(name, i);
     stage.appendChild(el);
-    requestAnimationFrame(() => { el.style.opacity = '1'; el.style.transform = 'scale(0.82)'; });
+    requestAnimationFrame(() => { el.style.opacity = '1'; el.style.transform = `scale(${COACTOR_SCALE})`; });
   });
 }
 
@@ -133,11 +140,11 @@ export function playCoActors(coActors) {
     const dx = gapX(el, enemy);
     setTimeout(() => {
       el.dataset.pose = 'attack';
-      el.style.transform = `translateX(${Math.max(40, dx - 30)}px) scale(1)`;
+      el.style.transform = `translateX(${Math.max(40, dx - 30)}px) scale(0.95)`;
     }, 300 * i + 120);
     setTimeout(() => { enemy.dataset.pose = 'hit'; impactFlash(enemy); }, 300 * i + 400);
-    setTimeout(() => { el.dataset.pose = 'idle'; el.style.transform = 'scale(0.82)'; }, 300 * i + 620);
-    setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'scale(0.62)'; }, 300 * i + 900);
+    setTimeout(() => { el.dataset.pose = 'idle'; el.style.transform = `scale(${COACTOR_SCALE})`; }, 300 * i + 620);
+    setTimeout(() => { el.style.opacity = '0'; el.style.transform = `scale(${COACTOR_SCALE - 0.1})`; }, 300 * i + 900);
     setTimeout(() => el.remove(), 300 * i + 1200);
   });
 }
@@ -183,8 +190,14 @@ export function updatePuppets() {
   const pred = detectPredicates(sentence)[0];
   if (pred) {
     if (pred.kind === 'pun' && PUN_TO_POSE[pred.pun.tag]) {
-      enemyPose = PUN_TO_POSE[pred.pun.tag].pose;
-      enemyEmoji = PUN_TO_POSE[pred.pun.tag].emoji;
+      if (pred.target === 'self') {
+        // "我是给" — the wisecrack buffs the poet, not the enemy
+        playerPose = 'heal';
+        playerEmoji = PUN_TO_POSE[pred.pun.tag].emoji;
+      } else {
+        enemyPose = PUN_TO_POSE[pred.pun.tag].pose;
+        enemyEmoji = PUN_TO_POSE[pred.pun.tag].emoji;
+      }
     } else if (pred.kind === 'identity') {
       const trait = resolveIdentityTrait(pred.identityWord, pred.identityIsEnemyName);
       if (pred.target === 'self') { playerPose = 'heal'; playerEmoji = trait.emoji; }
@@ -250,7 +263,8 @@ export function playChantPuppetAnim(effects) {
   const isBlock = !!(effects && effects.block > 0 && !isAttack);
   const imperative = !!(effects && effects._imperative);
   const pred = (effects && effects._predicates && effects._predicates[0]) || null;
-  const punTag = pred && pred.kind === 'pun' ? pred.pun.tag : null;
+  const selfPun = pred && pred.kind === 'pun' && pred.target === 'self' ? pred.pun.tag : null;
+  const punTag = pred && pred.kind === 'pun' && pred.target !== 'self' ? pred.pun.tag : null;
   const motif = (effects && effects._motifTriggers && effects._motifTriggers.length > 0)
     ? effects._motifTriggers[0].motif.id : null;
   const coActors = (effects && effects._coActors) || [];
@@ -299,7 +313,10 @@ export function playChantPuppetAnim(effects) {
         enemy.dataset.pose = 'hit';
         impactFlash(enemy);
       }
-      if (punTag && PUN_TO_POSE[punTag]) {
+      if (selfPun && PUN_TO_POSE[selfPun]) {
+        player.dataset.pose = 'heal';
+        setEmoji(player, PUN_TO_POSE[selfPun].emoji);
+      } else if (punTag && PUN_TO_POSE[punTag]) {
         enemy.dataset.pose = PUN_TO_POSE[punTag].pose;
         setEmoji(enemy, PUN_TO_POSE[punTag].emoji);
       } else if (pred && pred.kind === 'identity') {

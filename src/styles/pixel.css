@@ -241,9 +241,9 @@ body { font-family: var(--font-pixel); }
   align-items: flex-end;
   justify-content: space-between;
   gap: 8px;
-  width: min(520px, 96%);
-  height: min(94%, 340px);
-  padding: 18px 26px 16px !important;
+  width: min(640px, 98%);
+  height: min(96%, 360px);
+  padding: 18px 22px 16px !important;
   background:
     repeating-linear-gradient(0deg, rgba(0,0,0,0.04) 0 2px, transparent 2px 7px),
     radial-gradient(ellipse 80% 50% at 50% 90%, rgba(58,47,37,0.10), transparent 70%),
@@ -426,7 +426,7 @@ body { font-family: var(--font-pixel); }
 }
 #hand-controls { padding: 6px 14px 0; }
 
-/* ---- Target cards (我 + enemies) live at the left of the hand row ---- */
+/* ---- Target cards: 我 at the LEFT, enemies at the RIGHT of the hand row ---- */
 #target-cards {
   display: flex;
   align-items: flex-end;
@@ -436,10 +436,31 @@ body { font-family: var(--font-pixel); }
   margin-right: 8px;
   border-right: 2px dashed rgba(58,47,37,0.35);
 }
-#target-cards .target-card {
+#target-cards-enemy {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+  padding-left: 12px;
+  margin-left: 8px;
+  border-left: 2px dashed rgba(178,58,46,0.4);
+}
+#target-cards .target-card,
+#target-cards-enemy .target-card {
   width: clamp(70px, 8vw, 86px) !important;
   height: clamp(100px, 13vw, 122px) !important;
 }
+#target-cards-enemy .target-card.target-enemy {
+  border-color: var(--them) !important;
+  box-shadow: 2px 2px 0 rgba(178,58,46,0.4) !important;
+}
+#target-cards-enemy .target-card.target-enemy .card-word { color: var(--them) !important; }
+#target-cards-enemy .target-card .card-pin {
+  position: absolute; top: 1px; right: 3px;
+  font-size: 0.6rem; z-index: 3;
+  background: var(--ink); color: var(--paper); padding: 0 3px;
+}
+#target-cards-enemy .target-card.in-sentence { opacity: 0.4; pointer-events: auto; }
 #target-cards .target-card.target-self {
   border-color: var(--us) !important;
   box-shadow: 2px 2px 0 rgba(62,124,166,0.4) !important;

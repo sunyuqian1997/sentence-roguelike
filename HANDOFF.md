@@ -48,6 +48,17 @@ Author of this handoff: Claude (4.7 session) → 交接给新 session
 12. **真 MP3 BGM**：放 `public/bgm/{ambient,combat,boss}.mp3`，audio.js 优先播 mp3、
     缺失自动回退合成音；mp3 播放时已停掉合成 loop 不叠加。
 
+### A-bis. 2026-06-14 第二轮 UI/语义修复
+13. **自陈 pun → 我方增益**：`我是给` 等"我是X(pun卡)"不再只飘字。`PUN_STATUS[tag].selfPun`
+    新增 `{ label, selfEffect }`，combat.js#applyEffects 的 self 分支按 selfEffect 给玩家加
+    block/heal/draw/strength/poeticAuraNext，新增 `charmEnemiesNext`(全敌 stunned 跳过下次攻击)。
+    映射：gay→敌被勾引+挡4 / numb→挡6 / doomed→力+2 / fleeing→抽2 / lying→回5 / juan→抽1力+1 /
+    sad→挡3+下回合诗意 / old→回4 / daylight→力+1挡3。puppets.js 预览/吟诵改为诗人 heal 姿态(原来误打敌人)。
+14. **目标牌分两侧**：`我`(蓝)留在手牌区左端，各敌人目标牌(红)移到手牌区**右端**(`#target-cards-enemy`，
+    左侧虚线分隔)。render.js#renderTargetCards 拆双容器，pixel.css 加镜像样式。
+15. **独立个体待命小人不再与诗人重合**：puppets.js 三个常量 `COACTOR_BASE_LEFT/STEP/SCALE`
+    (30%/10%/0.6) 统一控制站位，co-actor 站在诗人与中线之间的空档。puppet-stage 加宽到 min(640px,98%)。
+
 ### B. 已知的未解决判定问题 (新 session 可继续，基于日志复盘)
 1. **identity 身份 buff 数值不进 effects**：如"我是皇帝→力+2"在 notes 显示了，但实际是
    combat.js#applyEffects 里直接改 G.strength，**没写进 result.effects**，导致预览/日志看不到该数值、

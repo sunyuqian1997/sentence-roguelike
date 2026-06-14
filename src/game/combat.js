@@ -678,10 +678,25 @@ export function applyEffects(effects) {
           G.enemies.forEach(applyToEnemy);
           showFloatingText(document.querySelector('#combat-top'), `📢 ${p.subjectWord}${p.copulaWord}${p.srcWord}：${p.pun.label}`, '#9B59B6');
         } else {
-          // self — record on player only
+          // self ("我是给") — the wisecrack rebounds as a player buff. Each pun
+          // tag maps to a positive selfEffect (PUN_STATUS[tag].selfPun).
           if (!G._puns) G._puns = [];
           if (!G._puns.includes(tag)) G._puns.push(tag);
-          showFloatingText(document.querySelector('#combat-top'), `自陈：${p.pun.label}`, '#9B59B6');
+          const sp = (PUN_STATUS[tag] || {}).selfPun;
+          if (sp) {
+            const se = sp.selfEffect || {};
+            if (se.block) G.block += se.block;
+            if (se.heal) G.hp = Math.min(G.maxHp, G.hp + se.heal);
+            if (se.draw) drawCards(se.draw);
+            if (se.strength) G.strength += se.strength;
+            if (se.poeticAuraNext) G.poeticAuraNext = true;
+            if (se.charmEnemiesNext) {
+              G.enemies.forEach(e => { if (e && e.hp > 0) e.stunned = true; });
+            }
+            showFloatingText(document.querySelector('#combat-top'), sp.label, '#3E7CA6');
+          } else {
+            showFloatingText(document.querySelector('#combat-top'), `自陈：${p.pun.label}`, '#9B59B6');
+          }
         }
         return;
       }

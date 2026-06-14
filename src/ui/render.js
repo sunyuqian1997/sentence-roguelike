@@ -358,13 +358,16 @@ export function renderHand() {
   });
 }
 
-// Target cards live in the hand row now (not on the standees): a pinned 我 card
-// on the left, then one card per living enemy. Clicking them selects the target
-// — the same effect as the old standee clicks, but unified with playing cards.
+// Target cards live in the hand row now (not on the standees): the pinned 我
+// card sits at the LEFT of the hand, and one card per living enemy sits at the
+// RIGHT (closer to the enemy standees). Clicking them selects the target — same
+// effect as the old standee clicks, but unified with playing cards.
 function renderTargetCards() {
   const slot = document.getElementById('target-cards');
+  const enemySlot = document.getElementById('target-cards-enemy');
   if (!slot) return;
   slot.innerHTML = '';
+  if (enemySlot) enemySlot.innerHTML = '';
 
   // 我 (self target)
   const woDef = WORD_DEFS.wo;
@@ -385,7 +388,8 @@ function renderTargetCards() {
   };
   slot.appendChild(woEl);
 
-  // One card per living enemy
+  // One card per living enemy — rendered into the RIGHT-side container.
+  const enemyContainer = enemySlot || slot;
   G.enemies.forEach((enemy, idx) => {
     if (!enemy || enemy.hp <= 0) return;
     const eCard = { word: enemy.name, pos: 'object', cost: 0, _isFixedCard: true, id: 'tgt_enemy_' + idx };
@@ -397,7 +401,7 @@ function renderTargetCards() {
     if (G.sentence.some(c => c._isEnemyTarget && c._enemyIdx === idx)) eEl.classList.add('in-sentence');
     eEl.style.cursor = 'pointer';
     eEl.onclick = () => addEnemyTarget(idx, enemy);
-    slot.appendChild(eEl);
+    enemyContainer.appendChild(eEl);
   });
 }
 
