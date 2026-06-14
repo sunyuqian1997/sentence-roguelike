@@ -347,29 +347,7 @@ function reorderSentence(fromIdx, toIdx) {
 }
 
 export function renderHand() {
-  const fixedSlot = document.getElementById('fixed-card-slot');
-  fixedSlot.innerHTML = '';
-  const fixedWoDef = WORD_DEFS.wo;
-  const fixedCard = { ...fixedWoDef, key: 'wo', upgraded: false, cost: 0, _isFixedCard: true, id: 'fixed_wo' };
-  const fixedEl = createCardElement(fixedCard, null, { noClick: true });
-  const pin = document.createElement('div');
-  pin.className = 'card-pin';
-  pin.textContent = '📌';
-  fixedEl.appendChild(pin);
-  const woInSentence = G.sentence.some(c => c._isFixedWo);
-  if (woInSentence) fixedEl.classList.add('in-sentence');
-  fixedEl.style.cursor = 'pointer';
-  fixedEl.onclick = () => {
-    if (G.sentence.some(c => c._isFixedWo)) return;
-    const woSentenceCard = {
-      ...fixedWoDef, key: 'wo', upgraded: false, cost: 0,
-      _isFixedWo: true, id: 'fixed_wo_' + Math.random().toString(36).substr(2, 5),
-    };
-    if (!tryAddCard(woSentenceCard)) { renderCombat(); return; }
-    playSFX('card');
-    renderCombat();
-  };
-  fixedSlot.appendChild(fixedEl);
+  renderTargetCards();
 
   const handEl = document.getElementById('hand-cards');
   handEl.innerHTML = '';
@@ -377,6 +355,49 @@ export function renderHand() {
     const el = createCardElement(card, idx);
     if (G.sentence.includes(card)) el.classList.add('in-sentence');
     handEl.appendChild(el);
+  });
+}
+
+// Target cards live in the hand row now (not on the standees): a pinned 我 card
+// on the left, then one card per living enemy. Clicking them selects the target
+// — the same effect as the old standee clicks, but unified with playing cards.
+function renderTargetCards() {
+  const slot = document.getElementById('target-cards');
+  if (!slot) return;
+  slot.innerHTML = '';
+
+  // 我 (self target)
+  const woDef = WORD_DEFS.wo;
+  const woCard = { ...woDef, key: 'wo', upgraded: false, cost: 0, _isFixedCard: true, id: 'tgt_wo' };
+  const woEl = createCardElement(woCard, null, { noClick: true });
+  woEl.classList.add('target-card', 'target-self');
+  const woPin = document.createElement('div');
+  woPin.className = 'card-pin'; woPin.textContent = '我';
+  woEl.appendChild(woPin);
+  if (G.sentence.some(c => c._isFixedWo)) woEl.classList.add('in-sentence');
+  woEl.style.cursor = 'pointer';
+  woEl.onclick = () => {
+    if (G.sentence.some(c => c._isFixedWo)) return;
+    const card = { ...woDef, key: 'wo', upgraded: false, cost: 0, _isFixedWo: true, id: 'fixed_wo_' + Math.random().toString(36).substr(2, 5) };
+    if (!tryAddCard(card)) { renderCombat(); return; }
+    playSFX('card');
+    renderCombat();
+  };
+  slot.appendChild(woEl);
+
+  // One card per living enemy
+  G.enemies.forEach((enemy, idx) => {
+    if (!enemy || enemy.hp <= 0) return;
+    const eCard = { word: enemy.name, pos: 'object', cost: 0, _isFixedCard: true, id: 'tgt_enemy_' + idx };
+    const eEl = createCardElement(eCard, null, { noClick: true });
+    eEl.classList.add('target-card', 'target-enemy');
+    const ePin = document.createElement('div');
+    ePin.className = 'card-pin'; ePin.textContent = '敌';
+    eEl.appendChild(ePin);
+    if (G.sentence.some(c => c._isEnemyTarget && c._enemyIdx === idx)) eEl.classList.add('in-sentence');
+    eEl.style.cursor = 'pointer';
+    eEl.onclick = () => addEnemyTarget(idx, enemy);
+    slot.appendChild(eEl);
   });
 }
 
