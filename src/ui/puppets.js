@@ -218,6 +218,18 @@ export function playChantPuppetAnim(effects) {
         setEmoji(enemy, '😂');
       }
     }],
+    // Co-actors (猫/影子/初音…) pile on — each lands its own follow-up hit so
+    // the player sees the named subject acting as its own fighter.
+    ...((effects && effects._coActors) || []).map((a, i) => [
+      IMPACT_MS + 200 * (i + 1), () => {
+        enemy.style.transition = 'transform 0.12s ease-out';
+        enemy.style.transform = `translateX(${i % 2 ? -10 : 10}px) rotate(${i % 2 ? -6 : 6}deg)`;
+        enemy.dataset.pose = 'hit';
+        impactFlash(enemy);
+        // a brief "ally sigil" pops over the player to credit the co-actor
+        setEmoji(player, '🥷');
+      },
+    ]),
     // 720ms — recover positions
     [720, () => {
       player.style.transition = 'transform 0.3s cubic-bezier(0.22,1,0.36,1)';

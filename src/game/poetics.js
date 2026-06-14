@@ -294,7 +294,14 @@ export function detectPredicates(cards) {
         continue;
       }
       if (pc.pun) { predIdx = j; predType = 'pun'; break; }
-      if (isMeCard(pc)) { predIdx = j; predType = 'me'; break; }
+      if (isMeCard(pc)) {
+        // "是我" only counts as the 1st-person claim when 我 is the WHOLE
+        // predicate. "是我儿子" = a possessive subject phrase → identity, not
+        // a 僭越/tautology. Peek: is the next non-punct card another subject?
+        const nxt = cards.slice(j + 1).find(x => x && x.pos !== 'punctuation' && x.pos !== 'exclamation' && x.pos !== 'modifier');
+        if (nxt && (nxt.pos === 'subject' || nxt._isEnemyTarget)) { predIdx = j + 1 > cards.length ? j : cards.indexOf(nxt); predType = nxt._isEnemyTarget ? 'enemyName' : 'subject'; break; }
+        predIdx = j; predType = 'me'; break;
+      }
       if (pc._isEnemyTarget) { predIdx = j; predType = 'enemyName'; break; }
       if (pc.pos === 'subject') { predIdx = j; predType = 'subject'; break; }
       if (pc.pos === 'modifier' || pc.pos === 'exclamation') continue;

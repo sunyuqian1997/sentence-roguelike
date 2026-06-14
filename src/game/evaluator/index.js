@@ -131,6 +131,16 @@ function finalize(ctx) {
     ctx.grammarNotes.push(`🎯 多目标×${ctx.multiTargetIndices.length}`);
   }
 
+  // Co-actors strike as their own entities — each its own damage instance,
+  // scaled by the sentence's quality just like the main blow.
+  if (effects._coActors && effects._coActors.length) {
+    effects._coActors.forEach(a => {
+      a.damage = Math.floor(a.power * totalMult * finalExcAttack);
+      a.targetEnemyIdx = effects.targetEnemyIdx;
+      a.ignoreBlock = effects.ignoreBlock;
+    });
+  }
+
   return {
     text: ctx.text,
     grammarMult: ctx.grammarMult, grammarNotes: ctx.grammarNotes,

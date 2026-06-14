@@ -81,6 +81,22 @@ export function logChant({ result, summon } = {}) {
   }
   log.push(entry);
   save(log);
+  postToDevSink(entry);
+}
+
+// Dev-only: also ship the entry to the vite middleware so it lands in
+// chantlog.ndjson on disk (localStorage is isolated per browser profile, so a
+// file is the only thing the reviewer can read reliably). No-op in prod.
+function postToDevSink(entry) {
+  try {
+    if (typeof fetch !== 'function') return;
+    fetch('/__chantlog', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entry),
+      keepalive: true,
+    }).catch(() => {});
+  } catch (e) { /* ignore */ }
 }
 
 function round(x) { return typeof x === 'number' ? Math.round(x * 1000) / 1000 : x; }

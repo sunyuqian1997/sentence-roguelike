@@ -326,13 +326,25 @@ body { font-family: var(--font-pixel); }
   text-align: center;
 }
 
+/* Sentence-area top bar: label + always-on score readout, ABOVE the slots so
+   the verdict is never hidden behind the hand cards. */
+#sentence-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+#sentence-topbar #sentence-label { flex: 0 1 auto; margin: 0; }
 /* Score preview: always-on readout panel — bigger, itemized, color-coded */
 #sentence-score-preview {
+  flex: 1 1 auto;
   border: 2px solid var(--line) !important;
   background: var(--paper) !important;
   box-shadow: var(--px-shadow-sm) !important;
-  padding: 7px 12px !important;
-  margin-top: 6px !important;
+  padding: 6px 12px !important;
+  margin: 0 !important;
   min-height: 1.6em;
   display: flex !important;
   flex-direction: column;

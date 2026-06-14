@@ -6,34 +6,66 @@ import { G } from '../state.js';
 
 export function applySubjects(ctx) {
   const { effects, bonus } = ctx;
+
+  // Does this sentence have an attack verb aimed at an enemy? Only then do
+  // named subjects "step onto the field" as independent attackers.
+  const hasAttackOnEnemy = ctx.hasEnemyTarget
+    && ctx.realVerbs.some(v => v.combatType === 'attack' && !VERB_SPECIALS.some(([flag]) => v[flag]));
+
   ctx.subjects.forEach(s => {
     const b = s.powerBonus || 0;
     const ub = s.upgraded ? Math.ceil(b * 1.5) : b;
+
+    // Co-actor: a named subject other than 我. With an attack on an enemy it
+    // acts as its OWN entity (an extra strike of its own martial value) instead
+    // of merely padding 我's damage. 我 keeps the classic buff behavior.
+    const isCoActor = s.word !== '我' && hasAttackOnEnemy
+      && (s.bonusType === 'attack' || s.bonusType === 'all' || s.powerBonus > 0);
+    if (isCoActor) {
+      const power = Math.max(3, ub || 0);
+      (effects._coActors ||= []).push({ name: s.word, power });
+      ctx.grammarNotes.push(`🥷 ${s.word}·助战 (独立攻击${power})`);
+      // its OTHER riders (draw/aoe/stealth…) still apply below, but skip the
+      // attack/all stat pad so we don't double-count.
+      if (s.bonusType === 'defense') bonus.subjectDefense += ub;
+      else if (s.bonusType === 'heal') bonus.subjectHeal += ub;
+      if (s.defenseBonus) bonus.subjectDefense += (s.upgraded ? Math.ceil(s.defenseBonus * 1.5) : s.defenseBonus);
+      applySubjectRiders(ctx, s);
+      return;
+    }
+
     if (s.bonusType === 'attack') bonus.subjectAttack += ub;
     else if (s.bonusType === 'defense') bonus.subjectDefense += ub;
     else if (s.bonusType === 'heal') bonus.subjectHeal += ub;
     else if (s.bonusType === 'all') { bonus.subjectAttack += ub; bonus.subjectDefense += ub; bonus.subjectHeal += ub; }
     if (s.defenseBonus) bonus.subjectDefense += (s.upgraded ? Math.ceil(s.defenseBonus * 1.5) : s.defenseBonus);
-    if (s.draw) effects.draw += (s.upgraded ? s.draw + 1 : s.draw);
-    if (s.thorns) effects.thorns += s.thorns;
-    if (s.doubleStrength) effects.strengthGain += G.strength;
-    if (s.discardRandom && G.hand.length > 0) effects._discardRandom = s.discardRandom;
     if (s.healBonusSub) bonus.subjectHeal += (s.upgraded ? Math.ceil(s.healBonusSub * 1.5) : s.healBonusSub);
-    if (s.drunkRandom) {
-      const roll = Math.floor(Math.random() * 5) + 1;
-      bonus.subjectAttack += roll;
-      ctx.grammarNotes.push(`🍶 酒仙·攻击+${roll}(随机1-5)`);
-    }
-    if (s.forceAoeSub) effects.aoe = true;
-    if (s.stealthSub) effects.ignoreBlock = true;
-    if (s.halfPenetrate) effects._halfPenetrate = true;
-    if (s.randomEffect) {
-      const roll = Math.random();
-      if (roll < 0.33) { bonus.subjectAttack += 4; ctx.grammarNotes.push('🐱 猫·攻击+4'); }
-      else if (roll < 0.66) { bonus.subjectDefense += 4; ctx.grammarNotes.push('🐱 猫·格挡+4'); }
-      else { effects.draw += 1; ctx.grammarNotes.push('🐱 猫·摸鱼+1牌'); }
-    }
+    applySubjectRiders(ctx, s);
   });
+}
+
+// Non-stat subject effects (draw / thorns / aoe / stealth / random); shared by
+// both ordinary subjects and co-actors.
+function applySubjectRiders(ctx, s) {
+  const { effects, bonus } = ctx;
+  if (s.draw) effects.draw += (s.upgraded ? s.draw + 1 : s.draw);
+  if (s.thorns) effects.thorns += s.thorns;
+  if (s.doubleStrength) effects.strengthGain += G.strength;
+  if (s.discardRandom && G.hand.length > 0) effects._discardRandom = s.discardRandom;
+  if (s.drunkRandom) {
+    const roll = Math.floor(Math.random() * 5) + 1;
+    bonus.subjectAttack += roll;
+    ctx.grammarNotes.push(`🍶 酒仙·攻击+${roll}(随机1-5)`);
+  }
+  if (s.forceAoeSub) effects.aoe = true;
+  if (s.stealthSub) effects.ignoreBlock = true;
+  if (s.halfPenetrate) effects._halfPenetrate = true;
+  if (s.randomEffect) {
+    const roll = Math.random();
+    if (roll < 0.33) { bonus.subjectAttack += 4; ctx.grammarNotes.push('🐱 猫·攻击+4'); }
+    else if (roll < 0.66) { bonus.subjectDefense += 4; ctx.grammarNotes.push('🐱 猫·格挡+4'); }
+    else { effects.draw += 1; ctx.grammarNotes.push('🐱 猫·摸鱼+1牌'); }
+  }
 }
 
 export function applyObjects(ctx) {

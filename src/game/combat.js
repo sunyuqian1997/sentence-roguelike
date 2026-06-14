@@ -742,6 +742,24 @@ export function applyEffects(effects) {
       }
     }
   }
+
+  // CO-ACTORS — named subjects (猫/影子/初音未来…) strike as their own entities.
+  if (effects._coActors && effects._coActors.length) {
+    effects._coActors.forEach((a, i) => {
+      if (!a.damage) return;
+      const tIdx = a.targetEnemyIdx >= 0 ? a.targetEnemyIdx : G.enemies.findIndex(e => e.hp > 0);
+      if (tIdx < 0 || !G.enemies[tIdx] || G.enemies[tIdx].hp <= 0) return;
+      setTimeout(() => {
+        if (!G.enemies[tIdx] || G.enemies[tIdx].hp <= 0) return;
+        dealDamageToEnemy(tIdx, a.damage, a.ignoreBlock);
+        if (G.enemies[tIdx] && G.enemies[tIdx].element) {
+          showFloatingText(G.enemies[tIdx].element, `🥷 ${a.name} ${a.damage}`, '#3E7CA6');
+        }
+        checkEnemies();
+        renderCombat();
+      }, 220 * (i + 1));
+    });
+  }
 }
 
 // ============================================================
