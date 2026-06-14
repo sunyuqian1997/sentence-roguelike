@@ -96,9 +96,6 @@ body { font-family: var(--font-pixel); }
   background-image: none !important;
   padding: 6px 12px 8px !important;
 }
-/* Keep the bottom two bands compact so the STAGE gets the lion's share. */
-#hand-area { max-height: 200px; }
-#sentence-dock { max-height: 210px; }
 
 /* ---- Buttons ---- */
 .btn {
@@ -314,16 +311,14 @@ body { font-family: var(--font-pixel); }
 .sentence-mini-card .card-word { font-size: 1.2rem !important; }
 .sentence-mini-card .card-effect-bar { display: none !important; }
 .meaning-caption { font-size: 0.58rem; max-width: 80px; }
-/* The sentence dock owns a fixed slice of height and never overflows into the
-   hand — its children are clamped and clip rather than push the layout down. */
-#sentence-dock { max-height: 196px !important; overflow: hidden; }
+/* The sentence dock sizes to its content (flex column). The score-preview caps
+   its OWN height; the slots show the cards in full. The dock sits above the
+   hand via the screen's column flex — no clip needed, so cards stay visible. */
 #sentence-dock > #sentence-area {
-  max-height: 100%;
-  overflow: hidden !important;
   display: flex;
   flex-direction: column;
 }
-#sentence-slots-container { flex: 0 1 auto; max-height: 110px; overflow: hidden; }
+#sentence-slots-container { flex: 0 0 auto; overflow-x: auto; overflow-y: visible; }
 
 /* Empty hint */
 #sentence-slots-container:empty::after,

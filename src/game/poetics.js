@@ -187,6 +187,23 @@ const isSubjectish = (c) =>
 const isMeCard = (c) =>
   !!(c && (c._isSelfTarget || c._isFixedWo || (c.pos === 'subject' && c.word === '我')));
 
+// Is this subject card acting as the PREDICATE B of an "A 是 B" clause? i.e. is
+// its nearest meaningful predecessor a copula (是/为)? Such a subject ("影子"
+// in "我是影子") is an identity/attribute, NOT an independent actor — so it
+// must not become a co-actor puppet. Modifiers/exclamations may sit between.
+export function isCopulaPredicate(cards, card) {
+  const idx = cards.indexOf(card);
+  if (idx <= 0) return false;
+  for (let k = idx - 1; k >= 0; k--) {
+    const c = cards[k];
+    if (!c) continue;
+    if (c.pos === 'modifier' || c.pos === 'exclamation') continue;
+    if (c.pos === 'punctuation') return false; // clause boundary before any copula
+    return !!c.copulaConn;
+  }
+  return false;
+}
+
 // ---------- IDENTITY TRAITS (Baba-is-you style "A 是 B") ----------
 // When B is an identity word (subject card / enemy name), the copula rewrites
 // who A *is*. Direction decides flavor:

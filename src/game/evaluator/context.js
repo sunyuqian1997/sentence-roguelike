@@ -7,6 +7,7 @@
 //   - accumulators: grammarMult/literaryMult/punctMult + note arrays + effects
 import { G } from '../state.js';
 import { applyMeaningsToSentence } from '../meanings.js';
+import { isCopulaPredicate } from '../poetics.js';
 
 // Body words keep their order; exclamations float to the end, end-punctuation last.
 export function normalizeSentence(cards) {
@@ -45,10 +46,10 @@ export function buildContext(inputCards) {
   const targetEnemyIdx = hasEnemyTarget ? enemyObjCards[0]._enemyIdx : -1;
   const handObjects = objects.filter(c => !c._isEnemyTarget && !c._isSelfTarget);
 
-  // Co-actors: named subjects OTHER than 我 (猫/影子/初音未来/无名者…). When a
-  // sentence enlists them ("初音未来日文曲星，我砍"), they should act as their
-  // OWN entity rather than just buffing 我. Treated as independent attackers.
-  const coActors = subjects.filter(c => c.word !== '我');
+  // Co-actors: named subjects OTHER than 我 that act as INDEPENDENT entities
+  // ("影子斩敌" → 影子 attacks). A subject that is the predicate B of "A 是 B"
+  // ("我是影子" → 影子 is an attribute, not an actor) is excluded.
+  const coActors = subjects.filter(c => c.word !== '我' && !isCopulaPredicate(cards, c));
 
   const hasPeriod = punctCards.some(c => c.punctType === 'period');
   const hasQuestion = punctCards.some(c => c.punctType === 'question' || c.punctType === 'interrobang');

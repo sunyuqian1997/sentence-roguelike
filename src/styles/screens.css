@@ -158,10 +158,11 @@
 #combat-screen > #sentence-dock,
 #combat-screen > #hand-area { flex: 0 0 auto; width: 100%; }
 
-/* --- Battle stage: the dramatic heart, ~46% height --- */
+/* --- Battle stage: the dramatic heart. Takes the spare height but can shrink
+   (down to a floor) so the sentence dock + hand always fit below it. --- */
 #combat-stage {
   flex: 1 1 auto;
-  min-height: 0;
+  min-height: 200px;
   width: 100%;
   display: grid;
   grid-template-columns: minmax(180px, 1fr) minmax(420px, 2.2fr) minmax(180px, 1fr);

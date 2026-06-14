@@ -10,7 +10,7 @@
 //     the actual damage at the same offset so numbers pop when the hit lands.
 import { G } from '../game/state.js';
 import { applyMeaningsToSentence } from '../game/meanings.js';
-import { detectPredicates, resolveIdentityTrait } from '../game/poetics.js';
+import { detectPredicates, resolveIdentityTrait, isCopulaPredicate } from '../game/poetics.js';
 
 export const IMPACT_MS = 420;
 
@@ -229,7 +229,9 @@ export function updatePuppets() {
   const hasAttackOnEnemy = hasEnemyTarget
     && sentence.some(c => c && c.pos === 'verb' && c.combatType === 'attack');
   const standbyNames = hasAttackOnEnemy
-    ? sentence.filter(c => c && c.pos === 'subject' && c.word !== '我' && !c._isEnemyTarget && !c._isSelfTarget)
+    ? sentence.filter(c => c && c.pos === 'subject' && c.word !== '我'
+        && !c._isEnemyTarget && !c._isSelfTarget
+        && !isCopulaPredicate(sentence, c)) // exclude "我是影子" identity B
         .map(c => c.word)
     : [];
   syncStandbyCoActors(standbyNames);

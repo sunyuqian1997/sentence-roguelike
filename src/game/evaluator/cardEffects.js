@@ -16,11 +16,10 @@ export function applySubjects(ctx) {
     const b = s.powerBonus || 0;
     const ub = s.upgraded ? Math.ceil(b * 1.5) : b;
 
-    // Co-actor: ANY named subject other than 我. In an attack-on-enemy sentence
-    // it takes the field as its OWN entity (its own strike) rather than merely
-    // padding 我's damage. Even non-martial subjects (影子/无名者/女侠…) show up
-    // as themselves, using a baseline strike if they have no attack stat.
-    const isCoActor = s.word !== '我' && hasAttackOnEnemy;
+    // Co-actor: a named subject acting as its OWN entity (independent strike),
+    // not a 我-buff and not an "A 是 B" identity predicate. ctx.coActors was
+    // pre-filtered in buildContext to exclude copula-predicate subjects.
+    const isCoActor = hasAttackOnEnemy && ctx.coActors.includes(s);
     if (isCoActor) {
       const martial = (s.bonusType === 'attack' || s.bonusType === 'all') ? ub : 0;
       const power = Math.max(3, martial);
