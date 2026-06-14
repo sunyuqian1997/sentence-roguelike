@@ -63,61 +63,82 @@ const COACTOR_EMOJI = {
 };
 const coActorEmoji = (name) => COACTOR_EMOJI[name] || '🥷';
 
-// Spawn a transient puppet for a co-actor: it materializes beside the poet,
-// dashes to the enemy, strikes, then fades. Clones the player puppet's SVG so
-// it shares the ink-brush look; the role's emoji floats above its head.
-function spawnCoActor(name, indexFromZero, total) {
-  const stage = document.getElementById('puppet-stage');
+// Build one standby co-actor puppet (cloned from the poet, role emoji above).
+function makeStandby(name, indexFromZero) {
   const player = document.getElementById('puppet-player');
-  const enemy = document.getElementById('puppet-enemy');
-  if (!stage || !player || !enemy) return;
-
   const clone = player.cloneNode(true);
   clone.id = '';
-  clone.className = 'puppet puppet-coactor';
+  clone.className = 'puppet puppet-coactor standby';
   clone.dataset.pose = 'idle';
-  // Strip the player's label, set the co-actor sigil
+  clone.dataset.coactor = name;
   const label = clone.querySelector('.puppet-label');
   if (label) { label.textContent = name; label.style.opacity = '0.7'; }
   setEmoji(clone, coActorEmoji(name));
-
-  // Position it just behind/below the poet, fanned out for multiples
   clone.style.position = 'absolute';
-  clone.style.left = '6%';
-  clone.style.bottom = (8 + indexFromZero * 6) + '%';
-  clone.style.zIndex = '4';
+  clone.style.left = (4 + indexFromZero * 11) + '%'; // fan out left of the poet
+  clone.style.bottom = '6%';
+  clone.style.zIndex = String(3 - indexFromZero);
   clone.style.opacity = '0';
-  clone.style.transform = 'scale(0.7)';
-  clone.style.transition = 'opacity 0.2s, transform 0.3s cubic-bezier(0.22,1,0.36,1)';
-  stage.appendChild(clone);
-
-  const dx = gapX(clone, enemy);
-  // appear → dash → strike → retreat → remove
-  setTimeout(() => { clone.style.opacity = '1'; clone.style.transform = 'scale(1)'; }, 20);
-  setTimeout(() => {
-    clone.dataset.pose = 'attack';
-    clone.style.transform = `translateX(${Math.max(40, dx - 30)}px) scale(1)`;
-  }, 180);
-  setTimeout(() => {
-    enemy.dataset.pose = 'hit';
-    impactFlash(enemy);
-  }, 460);
-  setTimeout(() => {
-    clone.style.transform = 'translateX(0) scale(1)';
-    clone.dataset.pose = 'idle';
-  }, 640);
-  setTimeout(() => {
-    clone.style.opacity = '0';
-    clone.style.transform = 'scale(0.7)';
-  }, 900);
-  setTimeout(() => { clone.remove(); }, 1200);
+  clone.style.transform = 'scale(0.62)';
+  clone.style.transition = 'opacity 0.25s, transform 0.3s cubic-bezier(0.22,1,0.36,1), left 0.3s';
+  return clone;
 }
 
-// Public: called by chant animation when the sentence enlists co-actors.
+// Live preview: reconcile the standby co-actors on stage with the named
+// subjects currently in the sentence. Called every render while composing, so
+// summoning a subject card makes its puppet appear immediately (and removing
+// the card dismisses it) — instant feedback before chanting.
+export function syncStandbyCoActors(names) {
+  const stage = document.getElementById('puppet-stage');
+  if (!stage) return;
+  // Don't reshuffle mid-battle-animation.
+  const player = document.getElementById('puppet-player');
+  if (player && player.dataset.chanting === '1') return;
+
+  const existing = [...stage.querySelectorAll('.puppet-coactor.standby')];
+  const want = names || [];
+
+  // Remove standbys no longer present.
+  existing.forEach(el => {
+    if (!want.includes(el.dataset.coactor)) {
+      el.style.opacity = '0';
+      el.style.transform = 'scale(0.62)';
+      setTimeout(() => el.remove(), 250);
+    }
+  });
+
+  // Add missing standbys, fanned out by their order of appearance.
+  want.forEach((name, i) => {
+    if (existing.some(el => el.dataset.coactor === name && el.isConnected)) {
+      // keep position fresh in case index changed
+      const el = existing.find(e => e.dataset.coactor === name);
+      el.style.left = (4 + i * 11) + '%';
+      return;
+    }
+    const el = makeStandby(name, i);
+    stage.appendChild(el);
+    requestAnimationFrame(() => { el.style.opacity = '1'; el.style.transform = 'scale(0.82)'; });
+  });
+}
+
+// On chant: each standby co-actor dashes out, strikes the enemy, returns, then
+// the standbys are cleared (the sentence is consumed). Reuses the puppets that
+// were already standing by during composition.
 export function playCoActors(coActors) {
-  if (!coActors || !coActors.length) return;
-  coActors.forEach((a, i) => {
-    setTimeout(() => spawnCoActor(a.name, i, coActors.length), 300 * i);
+  const stage = document.getElementById('puppet-stage');
+  const enemy = document.getElementById('puppet-enemy');
+  if (!stage || !enemy) return;
+  const standbys = [...stage.querySelectorAll('.puppet-coactor.standby')];
+  standbys.forEach((el, i) => {
+    const dx = gapX(el, enemy);
+    setTimeout(() => {
+      el.dataset.pose = 'attack';
+      el.style.transform = `translateX(${Math.max(40, dx - 30)}px) scale(1)`;
+    }, 300 * i + 120);
+    setTimeout(() => { enemy.dataset.pose = 'hit'; impactFlash(enemy); }, 300 * i + 400);
+    setTimeout(() => { el.dataset.pose = 'idle'; el.style.transform = 'scale(0.82)'; }, 300 * i + 620);
+    setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'scale(0.62)'; }, 300 * i + 900);
+    setTimeout(() => el.remove(), 300 * i + 1200);
   });
 }
 
@@ -201,6 +222,17 @@ export function updatePuppets() {
   setPose(enemy, enemyPose);
   setEmoji(player, playerEmoji);
   setEmoji(enemy, enemyEmoji);
+
+  // Standby co-actors: named subjects (not 我) take the stage as soon as they
+  // join an attack-on-enemy sentence — instant "summoned ally arrived" feedback
+  // while composing. They act only on chant. Mirrors the evaluator's rule.
+  const hasAttackOnEnemy = hasEnemyTarget
+    && sentence.some(c => c && c.pos === 'verb' && c.combatType === 'attack');
+  const standbyNames = hasAttackOnEnemy
+    ? sentence.filter(c => c && c.pos === 'subject' && c.word !== '我' && !c._isEnemyTarget && !c._isSelfTarget)
+        .map(c => c.word)
+    : [];
+  syncStandbyCoActors(standbyNames);
 }
 
 // Chant sequence: anticipation → dash/pose → impact → recover.
@@ -306,8 +338,9 @@ export function playChantPuppetAnim(effects) {
   ];
   seq.forEach(([at, fn]) => setTimeout(fn, at));
 
-  // After the poet's own strike, summon each co-actor's puppet to pile on.
-  if (coActors.length) setTimeout(() => playCoActors(coActors), 900);
+  // Right after the poet's own strike, the standby co-actors (already on stage
+  // from composition) dash out and pile on.
+  if (coActors.length) setTimeout(() => playCoActors(coActors), IMPACT_MS + 150);
 }
 
 // Enemy acting: mirror of the chant sequence — enemy dashes, player reacts.
