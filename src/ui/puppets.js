@@ -55,6 +55,72 @@ function gapX(from, to) {
   return (b.left + b.width / 2) - (a.left + a.width / 2);
 }
 
+// A named subject's signature icon (shown over its summoned puppet).
+const COACTOR_EMOJI = {
+  '猫': '🐱', '影子': '🌑', '无名者': '👤', '初音未来': '🎤', '剑客': '🗡️',
+  '书生': '📚', '月兔': '🐰', '僧人': '🙏', '女侠': '⚔️', '酒仙': '🍶',
+  '狐仙': '🦊', '将军': '🎖️', '皇帝': '👑', '李清照': '📜', '日': '☀️',
+};
+const coActorEmoji = (name) => COACTOR_EMOJI[name] || '🥷';
+
+// Spawn a transient puppet for a co-actor: it materializes beside the poet,
+// dashes to the enemy, strikes, then fades. Clones the player puppet's SVG so
+// it shares the ink-brush look; the role's emoji floats above its head.
+function spawnCoActor(name, indexFromZero, total) {
+  const stage = document.getElementById('puppet-stage');
+  const player = document.getElementById('puppet-player');
+  const enemy = document.getElementById('puppet-enemy');
+  if (!stage || !player || !enemy) return;
+
+  const clone = player.cloneNode(true);
+  clone.id = '';
+  clone.className = 'puppet puppet-coactor';
+  clone.dataset.pose = 'idle';
+  // Strip the player's label, set the co-actor sigil
+  const label = clone.querySelector('.puppet-label');
+  if (label) { label.textContent = name; label.style.opacity = '0.7'; }
+  setEmoji(clone, coActorEmoji(name));
+
+  // Position it just behind/below the poet, fanned out for multiples
+  clone.style.position = 'absolute';
+  clone.style.left = '6%';
+  clone.style.bottom = (8 + indexFromZero * 6) + '%';
+  clone.style.zIndex = '4';
+  clone.style.opacity = '0';
+  clone.style.transform = 'scale(0.7)';
+  clone.style.transition = 'opacity 0.2s, transform 0.3s cubic-bezier(0.22,1,0.36,1)';
+  stage.appendChild(clone);
+
+  const dx = gapX(clone, enemy);
+  // appear → dash → strike → retreat → remove
+  setTimeout(() => { clone.style.opacity = '1'; clone.style.transform = 'scale(1)'; }, 20);
+  setTimeout(() => {
+    clone.dataset.pose = 'attack';
+    clone.style.transform = `translateX(${Math.max(40, dx - 30)}px) scale(1)`;
+  }, 180);
+  setTimeout(() => {
+    enemy.dataset.pose = 'hit';
+    impactFlash(enemy);
+  }, 460);
+  setTimeout(() => {
+    clone.style.transform = 'translateX(0) scale(1)';
+    clone.dataset.pose = 'idle';
+  }, 640);
+  setTimeout(() => {
+    clone.style.opacity = '0';
+    clone.style.transform = 'scale(0.7)';
+  }, 900);
+  setTimeout(() => { clone.remove(); }, 1200);
+}
+
+// Public: called by chant animation when the sentence enlists co-actors.
+export function playCoActors(coActors) {
+  if (!coActors || !coActors.length) return;
+  coActors.forEach((a, i) => {
+    setTimeout(() => spawnCoActor(a.name, i, coActors.length), 300 * i);
+  });
+}
+
 // Live preview: derive both puppets' poses from the sentence being composed.
 // Uses the SAME meaning-resolution as the evaluator so the preview can never
 // disagree with what chanting will do.
@@ -153,6 +219,7 @@ export function playChantPuppetAnim(effects) {
   const punTag = pred && pred.kind === 'pun' ? pred.pun.tag : null;
   const motif = (effects && effects._motifTriggers && effects._motifTriggers.length > 0)
     ? effects._motifTriggers[0].motif.id : null;
+  const coActors = (effects && effects._coActors) || [];
 
   const seq = [
     // 0ms — anticipation crouch
@@ -218,18 +285,8 @@ export function playChantPuppetAnim(effects) {
         setEmoji(enemy, '😂');
       }
     }],
-    // Co-actors (猫/影子/初音…) pile on — each lands its own follow-up hit so
-    // the player sees the named subject acting as its own fighter.
-    ...((effects && effects._coActors) || []).map((a, i) => [
-      IMPACT_MS + 200 * (i + 1), () => {
-        enemy.style.transition = 'transform 0.12s ease-out';
-        enemy.style.transform = `translateX(${i % 2 ? -10 : 10}px) rotate(${i % 2 ? -6 : 6}deg)`;
-        enemy.dataset.pose = 'hit';
-        impactFlash(enemy);
-        // a brief "ally sigil" pops over the player to credit the co-actor
-        setEmoji(player, '🥷');
-      },
-    ]),
+    // Co-actors (猫/影子/初音…) get their OWN puppets summoned onto the stage
+    // (see playCoActors below, fired right after this sequence starts).
     // 720ms — recover positions
     [720, () => {
       player.style.transition = 'transform 0.3s cubic-bezier(0.22,1,0.36,1)';
@@ -237,8 +294,8 @@ export function playChantPuppetAnim(effects) {
       enemy.style.transition = 'transform 0.3s ease-out';
       enemy.style.transform = '';
     }],
-    // 1000ms — release the stage back to updatePuppets
-    [1000, () => {
+    // release the stage back to updatePuppets — after co-actors finish too
+    [coActors.length ? 1000 + 300 * coActors.length + 1300 : 1000, () => {
       player.style.transform = '';
       enemy.style.transform = '';
       player.dataset.chanting = '';
@@ -248,6 +305,9 @@ export function playChantPuppetAnim(effects) {
     }],
   ];
   seq.forEach(([at, fn]) => setTimeout(fn, at));
+
+  // After the poet's own strike, summon each co-actor's puppet to pile on.
+  if (coActors.length) setTimeout(() => playCoActors(coActors), 900);
 }
 
 // Enemy acting: mirror of the chant sequence — enemy dashes, player reacts.
