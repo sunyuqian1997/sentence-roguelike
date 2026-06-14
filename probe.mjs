@@ -23,6 +23,11 @@ try {
   ws.on('message', buf => { const m = JSON.parse(buf.toString()); if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); } });
   const send = (method, params = {}) => new Promise((resolve, reject) => { const myId = ++id; pending.set(myId, r => r.error ? reject(new Error(JSON.stringify(r.error))) : resolve(r.result)); ws.send(JSON.stringify({ id: myId, method, params })); });
   await send('Runtime.enable'); await send('Page.enable');
+  await send('Emulation.setDeviceMetricsOverride', {
+    width: parseInt(process.env.SHOT_W || '1366', 10),
+    height: parseInt(process.env.SHOT_H || '768', 10),
+    deviceScaleFactor: 1, mobile: false,
+  });
   await send('Page.navigate', { url: URL });
   await sleep(parseInt(WAIT, 10));
   const r = await send('Runtime.evaluate', { expression: EXPR, returnByValue: true, awaitPromise: true });

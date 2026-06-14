@@ -270,81 +270,8 @@
   letter-spacing: 0.05em;
 }
 
-/* --- 11. Player Status Bar --- */
-#player-status-bar {
-  width: 100%;
-  padding: 8px 14px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: var(--panel-bg);
-  border-top: 1px solid var(--panel-border);
-  border-bottom: 1px solid var(--panel-border);
-  flex-shrink: 0;
-  flex-wrap: wrap;
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23g)' opacity='0.018'/%3E%3C/svg%3E");
-}
-.player-char-card {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
-  border: 1.5px solid var(--purple);
-  border-radius: 2px;
-  background: var(--purple-dim);
-  cursor: pointer;
-  transition: all 0.3s var(--ease-brush);
-  flex-shrink: 0;
-}
-.player-char-card:hover {
-  border-color: var(--purple-dark);
-  background: rgba(107, 76, 110, 0.18);
-  box-shadow: 2px 2px 0 rgba(107, 76, 110, 0.15);
-  transform: translateY(-1px);
-}
-.player-char-card .char-emoji { font-size: 1.4rem; }
-.player-char-card .char-name {
-  font-size: 0.85rem;
-  color: var(--purple);
-  font-weight: 700;
-  font-family: var(--font-serif);
-}
-.player-hp-display {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 1.3rem;
-  font-weight: 900;
-}
-.player-hp-display .hp-icon {
-  color: var(--vermillion);
-  font-size: 1.5rem;
-}
-.player-hp-display .hp-value {
-  color: var(--vermillion);
-  font-family: var(--font-brush);
-}
-.player-block-display {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 1.1rem;
-  font-weight: 900;
-  color: var(--blue-ink);
-  font-family: var(--font-brush);
-}
-.player-energy-display {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: auto;
-}
-.player-statuses {
-  display: flex;
-  gap: 4px;
-  font-size: 0.7rem;
-}
+/* (Old bottom status-bar styles removed in the 2026-06-13 redesign — HP/文力
+   now live on the stage standees; see screens.css/pixel.css.) */
 
 /* --- 12. Cards --- */
 .card {

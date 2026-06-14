@@ -43,29 +43,36 @@
 
   <!-- COMBAT -->
   <div id="combat-screen" class="screen">
-    <!-- Arena: left rail (player portrait+我card) | center (top bar + journal + sentence area) | right rail (enemy cards) -->
-    <div id="combat-arena">
-      <div id="player-portrait-rail" class="portrait-rail player-rail">
-        <div class="portrait-art player-art">
+    <!-- Top bar: draw/discard · turn-power · 诗册/词库 -->
+    <div id="combat-top">
+      <div class="combat-info">
+        <span style="font-size:0.7rem;opacity:0.55">抽 <span id="draw-count">0</span> · 弃 <span id="discard-count">0</span></span>
+      </div>
+      <div class="combat-info"><span id="combat-status-effects"></span></div>
+      <div class="combat-info">
+        <button class="btn-small btn btn-secondary" onclick="viewJournal()" style="font-size:0.65rem;padding:3px 8px;" id="journal-btn">诗册</button>
+        <button class="btn-small btn btn-secondary" onclick="viewDeck()" style="font-size:0.65rem;padding:3px 8px;">词库</button>
+      </div>
+    </div>
+
+    <!-- Battle stage: player standee (left) | puppet theatre (center) | enemy standee (right) -->
+    <div id="combat-stage">
+      <div id="stage-player" class="stage-side">
+        <div class="standee player-standee" id="player-char-card" title="点击选「我」为目标">
           <img id="player-portrait-img" src="/lqz.png" alt="李清照" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
           <div class="portrait-placeholder">李清照</div>
         </div>
-        <div class="rail-name" id="player-portrait-name">李清照</div>
+        <div class="standee-name" id="player-portrait-name">李清照</div>
+        <div class="standee-hp player-hp" id="player-status-bar">
+          <span class="hp-icon">♥</span><span id="combat-hp" class="hp-value">50/50</span>
+          <span class="player-block-display" id="combat-block-display"></span>
+        </div>
+        <div class="standee-statuses" id="combat-status-effects-bar"></div>
         <div id="fixed-card-slot"></div>
       </div>
 
-      <div id="combat-center">
-        <div id="combat-top">
-          <div class="combat-info">
-            <span style="font-size:0.7rem;opacity:0.45">抽: <span id="draw-count">0</span> | 弃: <span id="discard-count">0</span></span>
-          </div>
-          <div class="combat-info"><span id="combat-status-effects"></span></div>
-          <div class="combat-info">
-            <button class="btn-small btn btn-secondary" onclick="viewJournal()" style="font-size:0.65rem;padding:3px 8px;" id="journal-btn">诗册</button>
-            <button class="btn-small btn btn-secondary" onclick="viewDeck()" style="font-size:0.65rem;padding:3px 8px;">词库</button>
-          </div>
-        </div>
-        <!-- 本场诗册：累积本场战斗已吟诵的句子，战斗结束清零 -->
+      <div id="stage-center">
+        <!-- 本场诗册：贴左侧竖条，左对齐 -->
         <div id="round-journal">
           <div class="round-journal-header">
             <span class="round-journal-title">本场诗册</span>
@@ -75,12 +82,7 @@
             <div class="round-journal-empty">尚未吟诵…</div>
           </div>
         </div>
-
-        <div id="sentence-area">
-          <div id="sentence-label">
-            <span>【造句区】点击手牌入句，点立绘下方"我"/敌人卡片选目标</span>
-          </div>
-          <div id="puppet-stage">
+        <div id="puppet-stage">
             <div id="puppet-player" class="puppet" data-pose="idle">
               <svg viewBox="0 0 80 100" class="puppet-svg" xmlns="http://www.w3.org/2000/svg">
                 <ellipse class="ground" cx="40" cy="97" rx="15" ry="2.5"/>
@@ -138,39 +140,35 @@
               </svg>
               <div class="puppet-label">敌</div>
             </div>
-          </div>
-          <div id="sentence-slots-container"></div>
-          <div id="duizhang-preview"></div>
-          <div id="sentence-score-preview"></div>
         </div>
       </div>
 
-      <div id="enemy-portrait-rail" class="portrait-rail enemy-rail">
-        <div class="rail-heading">敌方</div>
+      <div id="stage-enemy" class="stage-side">
         <div id="enemy-area"></div>
       </div>
     </div>
-    <div id="player-status-bar">
-      <div class="player-char-card" id="player-char-card">
-        <img src="/lqz.png" alt="李清照" id="player-char-svg" style="width:28px;height:28px;border-radius:50%;object-fit:cover;object-position:top;">
-        <span class="char-name">李清照</span>
+
+    <!-- Sentence dock: grid of slots + duizhang note + score preview -->
+    <div id="sentence-dock">
+      <div id="sentence-area">
+        <div id="sentence-label">
+          <span>【造句区】点击手牌入句 · 点我方/敌方立绘选目标</span>
+        </div>
+        <div id="sentence-slots-container"></div>
+        <div id="duizhang-preview"></div>
+        <div id="sentence-score-preview"></div>
       </div>
-      <div class="player-hp-display">
-        <span class="hp-icon">♥</span>
-        <span id="combat-hp" class="hp-value">50/50</span>
-      </div>
-      <div class="player-block-display" id="combat-block-display"></div>
-      <div class="player-energy-display">
-        <div class="energy-orb"><span id="energy-text">3</span></div>
-        <span style="font-size:0.75rem">文力</span>
-      </div>
-      <div class="player-statuses" id="combat-status-effects-bar"></div>
     </div>
+
     <div id="hand-area">
       <div id="hand-cards-wrapper">
         <div id="hand-cards"></div>
       </div>
       <div id="hand-controls">
+        <div class="energy-display" title="文力（行动点）">
+          <div class="energy-orb"><span id="energy-text">3</span></div>
+          <span style="font-size:0.75rem">文力</span>
+        </div>
         <div style="display:flex;gap:10px;">
           <button class="btn btn-vermillion" id="chant-btn" onclick="chantSentence()" style="font-size:0.85rem;padding:0.5em 1.8em;">吟诵</button>
           <button class="btn btn-small btn-secondary" id="end-turn-btn" onclick="endPlayerTurn()" style="font-size:0.75rem;">结束</button>

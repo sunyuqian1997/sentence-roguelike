@@ -138,295 +138,191 @@
   height: 100%;
   overflow: hidden;
 }
-#combat-screen > #combat-arena {
-  flex: 1 1 0;
+/* ============================================================
+   COMBAT LAYOUT (整屏重构 2026-06-13)
+   纵向四段：顶栏 combat-top | 战斗舞台 combat-stage | 造句坞 sentence-dock | 手牌 hand-area
+   舞台横向三块：我方立绘 | 中央棍人剧场(+诗册竖条) | 敌方立绘
+   ============================================================ */
+#combat-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;       /* override .screen's center → children full width */
+  justify-content: flex-start;
+  height: 100%;
+  width: 100%;
+}
+#combat-screen > #combat-top,
+#combat-screen > #sentence-dock,
+#combat-screen > #hand-area { flex: 0 0 auto; width: 100%; }
+
+/* --- Battle stage: the dramatic heart, ~46% height --- */
+#combat-stage {
+  flex: 1 1 auto;
   min-height: 0;
   width: 100%;
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(420px, 2.2fr) minmax(180px, 1fr);
+  grid-template-rows: 100%;       /* single full-height row → side columns stretch */
   align-items: stretch;
   gap: 0;
-}
-#combat-screen > #player-status-bar,
-#combat-screen > #hand-area {
-  flex-shrink: 0;
-}
-
-/* --- Arena: left rail (portrait+我card) | center (journal + sentence) | right rail (enemy portrait + enemy cards) --- */
-#combat-center {
-  flex: 1 1 0;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  padding: 0 14px 8px;
-  gap: 6px;
-}
-#combat-center > #combat-top {
-  flex: 0 0 auto;
-  margin: 0 -14px 4px;
-}
-#combat-center > #round-journal {
-  flex: 0 0 auto;
-}
-#combat-center > #sentence-area {
-  flex: 1 1 0;
-  min-height: 0;
-  overflow-y: auto;
-}
-
-.portrait-rail {
-  flex: 0 0 clamp(150px, 18vw, 230px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0 6px 12px;
-  gap: 4px;
   position: relative;
   overflow: hidden;
 }
-.portrait-rail.player-rail {
-  background: linear-gradient(90deg, rgba(74,124,107,0.04), transparent 80%);
+.stage-side, #stage-center { min-height: 0; height: 100%; }
+
+/* The two side columns hold the big standees facing the center. */
+/* Grid rows: standee eats ALL spare height (1fr); the rest size to content. */
+#stage-player {
+  display: grid;
+  grid-template-rows: 1fr auto auto auto auto;
+  justify-items: center;
+  align-content: stretch;
+  padding: 8px 8px 10px;
+  gap: 3px;
 }
-.portrait-rail.enemy-rail {
-  background: linear-gradient(270deg, rgba(197,75,60,0.04), transparent 80%);
+#stage-enemy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
 }
-.portrait-art {
+
+/* --- Standee (大立绘) --- */
+.standee {
   width: 100%;
-  flex: 1 1 0;
+  max-width: 230px;
   min-height: 0;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   position: relative;
-  margin-bottom: -8px; /* tuck name slightly into PNG bottom */
+  cursor: pointer;
 }
-.portrait-art img {
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  object-position: bottom;
-  filter: drop-shadow(2px 4px 6px rgba(17,17,16,0.08));
-  display: block;
-}
-.portrait-placeholder {
-  display: none;
+.standee img {
   width: 100%;
   height: 100%;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-brush);
-  font-size: clamp(2.2rem, 4vw, 3.2rem);
-  color: var(--smoke);
-  letter-spacing: 0.3em;
-  opacity: 0.4;
-  border: 1px dashed rgba(17,17,16,0.1);
-  border-radius: 6px;
-  background: rgba(255,255,255,0.2);
+  object-fit: cover;        /* fill the frame, crop the PNG's transparent margins */
+  object-position: top center;
+  display: block;
 }
-.rail-name {
+.standee.targetable-self::after,
+.standee:hover::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  pointer-events: none;
+}
+.standee-name {
   font-family: var(--font-brush);
-  font-size: clamp(0.9rem, 1.4vw, 1.15rem);
   letter-spacing: 0.18em;
-  color: var(--ink);
   text-align: center;
   flex-shrink: 0;
 }
-.player-rail .rail-name { color: var(--pine); }
-.enemy-rail .rail-name { color: var(--vermillion); }
-
-/* Under-portrait card containers */
-#player-portrait-rail > #fixed-card-slot {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px 0 0;
-  margin: 0;
-  border: none;
-}
-#player-portrait-rail > #fixed-card-slot .card {
-  width: clamp(70px, 10vw, 90px) !important;
-  min-width: 64px !important;
-  height: clamp(100px, 14vw, 124px) !important;
-  margin: 0 !important;
-}
-#player-portrait-rail > #fixed-card-slot .card .card-word { font-size: clamp(1.1rem, 2.4vw, 1.5rem) !important; }
-#player-portrait-rail > #fixed-card-slot .card .card-pos-tag { font-size: 0.55rem !important; }
-#player-portrait-rail > #fixed-card-slot .card .card-effect-bar { font-size: 0.5rem !important; }
-#player-portrait-rail > #fixed-card-slot .card .card-cost { width: 18px !important; height: 18px !important; font-size: 0.62rem !important; }
-.rail-heading {
-  font-family: var(--font-brush);
-  font-size: clamp(1rem, 1.6vw, 1.3rem);
-  letter-spacing: 0.25em;
-  color: var(--vermillion);
-  text-align: center;
-  padding: 10px 0 8px;
-  border-bottom: 1px dashed rgba(197,75,60,0.25);
-  margin-bottom: 6px;
-  width: 100%;
-  flex-shrink: 0;
-}
-#enemy-portrait-rail > #enemy-area {
-  flex: 1 1 0 !important;
-  width: 100%;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: stretch !important;
-  justify-content: center !important; /* center single enemy vertically */
-  flex-wrap: nowrap !important;
-  gap: 8px !important;
-  padding: 4px 6px 0 !important;
-  min-height: 0 !important;
-  overflow-y: auto;
-}
-#enemy-portrait-rail > #enemy-area .enemy {
-  flex: 0 0 auto;
-  min-width: 0 !important;
-  width: 100%;
-  padding: 6px 8px !important;
-  gap: 4px;
-}
-#enemy-portrait-rail > #enemy-area .enemy {
-  order: 1;
-}
-#enemy-portrait-rail > #enemy-area .enemy-portrait,
-#enemy-portrait-rail > #enemy-area .enemy-portrait-img {
-  width: 88px !important;
-  height: 88px !important;
-  font-size: 2.4rem;
-  border-radius: 4px;
-  object-fit: cover;
-  object-position: top;
-  border: 1.5px solid var(--ink-faint);
-  background: var(--paper);
-}
-#enemy-portrait-rail > #enemy-area .enemy-hp-row {
+.player-standee + .standee-name,
+#stage-player .standee-name { color: var(--pine); }
+.standee-hp {
   display: flex;
   align-items: center;
   gap: 6px;
-  width: 100%;
-  justify-content: center;
-  margin-top: 4px;
+  font-weight: 900;
+  font-size: 1.15rem;
+  flex-shrink: 0;
 }
-#enemy-portrait-rail > #enemy-area .enemy-hp-bar {
-  width: 70px !important;
-  height: 8px !important;
+.standee-hp .hp-icon { color: var(--vermillion); }
+.standee-hp .hp-value { color: var(--vermillion); font-family: var(--font-brush); }
+.standee-statuses { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; min-height: 0; }
+#stage-player > #fixed-card-slot {
   flex: 0 0 auto;
-}
-#enemy-portrait-rail > #enemy-area .enemy-hp-text {
-  font-size: 0.78rem !important;
-  font-weight: 700;
-  color: var(--ink) !important;
-}
-#enemy-portrait-rail > #enemy-area .enemy-name {
-  font-size: 1rem !important;
-  font-family: var(--font-brush);
-  letter-spacing: 0.1em;
-  margin-bottom: 2px;
-}
-#enemy-portrait-rail > #enemy-area .enemy-intent {
-  font-size: 0.78rem !important;
-  padding: 2px 8px !important;
-}
-
-/* --- Round journal (per-combat累积，战斗结束清零) --- */
-#round-journal {
-  margin: 6px 0 4px;
-  padding: 6px 12px 8px;
-  background: linear-gradient(180deg, rgba(245,240,225,0.7), rgba(238,232,216,0.7));
-  border: 1px solid rgba(74,111,160,0.3);
-  border-radius: 4px;
-  box-shadow: inset 0 0 12px rgba(74,111,160,0.05);
-  max-height: 18vh;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  position: relative;
-}
-.round-journal-header {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  position: relative;
+  margin-top: 2px;
 }
+
+/* --- Center: puppet theatre over an ink stage, journal pinned left --- */
+#stage-center {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: 8px;
+}
+
+/* --- Enemy area lives in the right standee column --- */
+#stage-enemy > #enemy-area {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* --- Sentence dock: fixed-width grid of slots, centered --- */
+#sentence-dock {
+  display: flex;
+  justify-content: center;
+  padding: 6px 14px 8px;
+}
+#sentence-dock > #sentence-area {
+  width: 100%;
+  max-width: 760px;
+}
+
+/* --- Round journal: thin left-aligned strip --- */
+#round-journal {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  width: clamp(150px, 22%, 220px);
+  max-height: calc(100% - 16px);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  z-index: 3;
+}
+.round-journal-header { display: flex; align-items: center; gap: 8px; }
 .round-journal-title {
   font-family: var(--font-brush);
-  font-size: 0.85rem;
-  letter-spacing: 0.18em;
-  color: var(--ink-light);
-  padding: 0 14px;
-  position: relative;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
 }
-.round-journal-title::before,
-.round-journal-title::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  width: 18px; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(74,111,160,0.5));
-}
-.round-journal-title::before { right: 100%; }
-.round-journal-title::after { left: 100%; background: linear-gradient(90deg, rgba(74,111,160,0.5), transparent); }
 #round-journal-lines {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 2px;
   overflow-y: auto;
-  scrollbar-width: thin;
-  padding: 2px 6px;
+  text-align: left;
 }
 .round-journal-line {
   font-family: var(--font-brush);
-  font-size: 0.95rem;
-  letter-spacing: 0.06em;
-  color: var(--ink);
-  display: inline-flex;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  text-align: left;
+  display: flex;
   align-items: baseline;
-  gap: 6px;
-  line-height: 1.6;
-  animation: roundJournalFade 0.4s var(--ease-brush);
+  gap: 5px;
 }
-.rj-num {
-  font-family: var(--font-serif);
-  font-size: 0.65rem;
-  color: var(--smoke);
-  font-weight: 700;
-}
+.rj-num { font-family: var(--font-serif); font-size: 0.6rem; opacity: 0.6; }
 .round-journal-empty {
-  font-family: var(--font-brush);
   font-style: italic;
-  color: var(--smoke);
-  opacity: 0.55;
-  font-size: 0.85rem;
-  letter-spacing: 0.08em;
-  text-align: center;
-  padding: 4px 0;
-}
-@keyframes roundJournalFade {
-  0% { opacity: 0; transform: translateY(-4px); }
-  100% { opacity: 1; transform: translateY(0); }
+  font-size: 0.74rem;
+  opacity: 0.45;
+  text-align: left;
 }
 #rhyme-streak-tag {
   display: none;
   font-family: var(--font-brush);
-  font-weight: 700;
-  font-size: 0.76rem;
-  padding: 1px 9px;
-  border: 1px solid var(--gold);
-  background: var(--paper);
-  color: var(--gold);
-  border-radius: 12px;
-  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  padding: 0 7px;
   white-space: nowrap;
-  box-shadow: 0 1px 4px rgba(74,111,160,0.18);
-  position: absolute;
-  top: -10px;
-  right: 8px;
+}
+@keyframes roundJournalFade {
+  0% { opacity: 0; transform: translateY(-4px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 #combat-top {
   width: 100%; padding: 10px 18px;
