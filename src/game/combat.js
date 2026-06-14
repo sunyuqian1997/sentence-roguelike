@@ -15,6 +15,7 @@ import { detectSummon, SUMMON_EFFECTS, evaluateSentence, checkExclamationPositio
 import { processEnemyPuns, PUN_STATUS, PUN_ON_APPLY, resolveIdentityTrait } from './poetics.js';
 import { EVENTS_BY_ACT, EVENTS_FALLBACK } from '../data/events.js';
 import { closeMetaScreen, showVictoryScreen } from '../ui/screens.js';
+import { logChant } from './chantLog.js';
 
 // ============================================================
 // GAME START
@@ -345,6 +346,7 @@ export function chantSentence() {
   });
 
   if (summon) {
+    logChant({ summon });
     const effect = SUMMON_EFFECTS[summon.summonName];
     const sentText = '「' + summon.text + '」';
 
@@ -373,6 +375,7 @@ export function chantSentence() {
     }, 1200);
   } else {
     const result = evaluateSentence(sentenceCards);
+    logChant({ result });
     // Update rhyme tracking BEFORE applying effects so the next sentence sees it.
     if (result && result.effects && result.effects._rhymeInfo) {
       const r = result.effects._rhymeInfo;

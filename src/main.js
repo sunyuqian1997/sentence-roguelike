@@ -56,6 +56,15 @@ window.__renderCombat = renderCombat;
 window.__startCombat = startCombat;
 window.__ENEMY_DEFS = ENEMY_DEFS;
 
+// Chant log (for balance review): __chantLog() prints, __exportLog() downloads,
+// __clearLog() resets. Auto-recorded every chant into localStorage.
+import('./game/chantLog.js').then(m => {
+  window.__chantLog = m.printLog;
+  window.__exportLog = m.exportLog;
+  window.__clearLog = m.clearLog;
+  window.__getLog = m.getLog;
+});
+
 // Init
 (function init() {
   initInkBackground();

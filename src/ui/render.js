@@ -187,29 +187,52 @@ export function renderSentenceSlots() {
     const summonCheck = detectSummon(G.sentence);
     if (summonCheck) {
       const eff = SUMMON_EFFECTS[summonCheck.summonName];
-      sp.innerHTML = `<span>费${getSentenceCost()}</span> <span style="color:var(--neon-cyan)">${eff.emoji} 召唤·${eff.name}</span> <span style="color:var(--paper-dark)">${eff.desc}</span>`;
+      sp.innerHTML = `<span class="sp-cost">费${getSentenceCost()}</span><span class="sp-chip sp-good">${eff.emoji} 召唤·${eff.name}</span><span class="sp-flavor">${eff.desc}</span>`;
     } else {
     const eval_ = evaluateSentence(G.sentence);
     if (eval_) {
-      const parts = [];
-      if (eval_.effects.selfHarm) {
-        parts.push(`💔自伤${eval_.effects.selfHarmDmg}`);
-        if (eval_.effects.selfHarmBuff) parts.push(`+${eval_.effects.selfHarmBuff}力量`);
-      }
-      if (eval_.effects.damage > 0) parts.push(`⚔️${eval_.effects.damage}`);
-      if (eval_.effects.isQuestion) parts.push(`❓削弱${eval_.effects.applyWeak}`);
-      if (eval_.effects.block > 0) parts.push(`🛡${eval_.effects.block}`);
-      if (eval_.effects.heal > 0) parts.push(`♥${eval_.effects.heal}`);
-      if (eval_.effects.strengthGain > 0) parts.push(`↑${eval_.effects.strengthGain}力`);
-      if (eval_.effects.draw > 0) parts.push(`📜${eval_.effects.draw}牌`);
-      if (eval_.effects.multiTargetIndices && eval_.effects.multiTargetIndices.length > 1) parts.push(`🎯多目标×${eval_.effects.multiTargetIndices.length}`);
-      if (eval_.effects.aoe) parts.push('🌊全体');
-      if (eval_.effects.ignoreBlock) parts.push('🗡穿透');
-      if (eval_.effects.goldGain > 0) parts.push(`💰${eval_.effects.goldGain}`);
-      if (eval_.effects._execute) parts.push(`💀斩杀`);
+      const ef = eval_.effects;
+      // Outcome chips — one per effect, colored good/bad.
+      const chips = [];
+      const good = (t) => `<span class="sp-chip sp-good">${t}</span>`;
+      const bad = (t) => `<span class="sp-chip sp-bad">${t}</span>`;
+      if (ef.selfHarm) chips.push(bad(`💔自伤${ef.selfHarmDmg}${ef.selfHarmBuff ? ` +${ef.selfHarmBuff}力` : ''}`));
+      if (ef.damage > 0) chips.push(bad(`⚔️${ef.damage}`));
+      if (ef.isQuestion) chips.push(good(`❓削弱${ef.applyWeak}`));
+      if (ef.block > 0) chips.push(good(`🛡${ef.block}`));
+      if (ef.heal > 0) chips.push(good(`♥${ef.heal}`));
+      if (ef.strengthGain > 0) chips.push(good(`↑${ef.strengthGain}力`));
+      if (ef.draw > 0) chips.push(good(`📜${ef.draw}牌`));
+      if (ef.multiTargetIndices && ef.multiTargetIndices.length > 1) chips.push(bad(`🎯×${ef.multiTargetIndices.length}`));
+      if (ef.aoe) chips.push(bad('🌊全体'));
+      if (ef.ignoreBlock) chips.push(bad('🗡穿透'));
+      if (ef.goldGain > 0) chips.push(good(`💰${ef.goldGain}`));
+      if (ef._execute) chips.push(bad('💀斩杀'));
+      if (ef._imperative) chips.push(bad('🫵祈使'));
+
+      // Hit rules — the verdicts that produced the multiplier, so the player
+      // (and the balance reviewer) can see exactly what was recognized.
+      const hits = [
+        ...(eval_.literaryNotes || []),
+        ...(eval_.punctNotes || []),
+        ...(eval_.excNotes || []),
+      ].filter(Boolean);
+      const grammarHits = (eval_.grammarNotes || []).filter(n => !/语序正确|✓ 有谓语/.test(n));
+      const allHits = [...grammarHits, ...hits];
+
       const excPos = checkExclamationPosition(G.sentence);
-      const excWarn = excPos.note ? ` <span style="color:#e07070">${excPos.note}</span>` : '';
-      sp.innerHTML = `<span>费${getSentenceCost()}</span> ${parts.join(' ')} <span style="color:var(--gold)">✨×${eval_.totalMult.toFixed(2)}</span>${excWarn}`;
+      const excWarn = excPos.note ? `<span class="sp-chip sp-bad">${excPos.note}</span>` : '';
+
+      sp.innerHTML =
+        `<div class="sp-row">` +
+          `<span class="sp-cost">费${getSentenceCost()}</span>` +
+          chips.join('') +
+          `<span class="sp-mult">✨×${eval_.totalMult.toFixed(2)}</span>` +
+          excWarn +
+        `</div>` +
+        (allHits.length
+          ? `<div class="sp-rules">${allHits.map(n => `<span class="sp-rule">${n}</span>`).join('')}</div>`
+          : '');
     }
     } // close summon else
   } else {
