@@ -143,7 +143,10 @@
    纵向四段：顶栏 combat-top | 战斗舞台 combat-stage | 造句坞 sentence-dock | 手牌 hand-area
    舞台横向三块：我方立绘 | 中央棍人剧场(+诗册竖条) | 敌方立绘
    ============================================================ */
-#combat-screen {
+/* Only lay out as a flex column when ACTIVE — otherwise .screen's display:none
+   must win, or the absolutely-positioned combat screen covers the title and
+   eats all clicks. */
+#combat-screen.active {
   display: flex;
   flex-direction: column;
   align-items: stretch;       /* override .screen's center → children full width */
