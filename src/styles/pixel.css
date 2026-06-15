@@ -469,6 +469,52 @@ body { font-family: var(--font-pixel); }
 }
 #hand-controls { padding: 6px 14px 0; }
 
+/* ---- Target cards: 我 + each enemy, left end of the hand row ---- */
+#target-cards {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+  padding-right: 12px;
+  margin-right: 10px;
+  border-right: 2px dashed rgba(58,47,37,0.4);
+}
+#target-cards .target-card {
+  position: relative;
+  width: clamp(70px, 8vw, 88px) !important;
+  height: clamp(100px, 13vw, 124px) !important;
+}
+#target-cards .target-card.target-self  { border-color: var(--us) !important; box-shadow: 2px 2px 0 rgba(62,124,166,0.4) !important; }
+#target-cards .target-card.target-self .card-word { color: var(--us) !important; }
+#target-cards .target-card.target-enemy { border-color: var(--them) !important; box-shadow: 2px 2px 0 rgba(178,58,46,0.4) !important; }
+#target-cards .target-card.target-enemy .card-word { color: var(--them) !important; }
+#target-cards .target-card.in-sentence { opacity: 0.45; }
+#target-cards .card-pin {
+  position: absolute; top: 1px; right: 2px;
+  font-size: 0.6rem; z-index: 3;
+  background: var(--ink); color: var(--paper); padding: 0 3px;
+}
+/* status badges pinned to the bottom of a target card — travel with the card */
+.tgt-status {
+  position: absolute;
+  left: 0; right: 0; bottom: -2px;
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 2px; padding: 2px;
+  z-index: 4; pointer-events: none;
+}
+.tgt-st {
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.62rem; font-weight: 900; line-height: 1.25;
+  padding: 0 3px; border: 1px solid var(--line); color: var(--paper);
+  white-space: nowrap;
+}
+.tgt-vuln  { background: var(--them); }
+.tgt-weak  { background: #6B5BA6; }
+.tgt-str   { background: #C58A2E; }
+.tgt-block { background: var(--us); }
+.tgt-stun  { background: #555; }
+.tgt-pun   { background: #8E5BA6; }
+
 /* ---- Targets are the standees themselves ---- */
 #player-char-card.target-selected,
 #stage-enemy .enemy.targeted {

@@ -353,6 +353,7 @@ function reorderSentence(fromIdx, toIdx) {
 }
 
 export function renderHand() {
+  renderTargetCards();
   syncTargetSelectability();
 
   const handEl = document.getElementById('hand-cards');
@@ -364,9 +365,58 @@ export function renderHand() {
   });
 }
 
-// Targets are picked by clicking the big standees directly: the player portrait
-// = 我, each enemy in #enemy-area = that enemy (wired in renderEnemies). No
-// separate target cards — the standees ARE the target affordance.
+// Status badges (易伤/弱/力/盾/pun) shown ON a target card — travels with the
+// card, so the立绘 column never clips them. `obj` = G (player) or an enemy.
+function targetStatusHTML(obj) {
+  if (!obj) return '';
+  const b = [];
+  if (obj.vulnerable > 0) b.push(`<span class="tgt-st tgt-vuln">伤${obj.vulnerable}</span>`);
+  if (obj.weak > 0) b.push(`<span class="tgt-st tgt-weak">弱${obj.weak}</span>`);
+  if (obj.strength > 0) b.push(`<span class="tgt-st tgt-str">力${obj.strength}</span>`);
+  if (obj.block > 0) b.push(`<span class="tgt-st tgt-block">盾${obj.block}</span>`);
+  (obj._puns || []).forEach(t => {
+    const lbl = (PUN_STATUS[t] || {}).label || t;
+    b.push(`<span class="tgt-st tgt-pun" title="${lbl}">${lbl}</span>`);
+  });
+  if (obj.stunned) b.push(`<span class="tgt-st tgt-stun">💤</span>`);
+  return b.length ? `<div class="tgt-status">${b.join('')}</div>` : '';
+}
+
+// Target cards live at the LEFT of the hand row (我 + one per living enemy),
+// separated from the hand by a dashed divider. Click to pick that target. Each
+// carries its own status badges so the player reads状态 right where they act.
+function renderTargetCards() {
+  const slot = document.getElementById('target-cards');
+  if (!slot) return;
+  slot.innerHTML = '';
+
+  // 我
+  const woDef = WORD_DEFS.wo;
+  const woCard = { ...woDef, key: 'wo', upgraded: false, cost: 0, _isFixedCard: true, id: 'tgt_wo' };
+  const woEl = createCardElement(woCard, null, { noClick: true });
+  woEl.classList.add('target-card', 'target-self');
+  const woPin = document.createElement('div'); woPin.className = 'card-pin'; woPin.textContent = '我'; woEl.appendChild(woPin);
+  woEl.insertAdjacentHTML('beforeend', targetStatusHTML(G));
+  if (G.sentence.some(c => c._isFixedWo)) woEl.classList.add('in-sentence');
+  woEl.style.cursor = 'pointer';
+  woEl.onclick = () => addSelfTarget();
+  slot.appendChild(woEl);
+
+  // each living enemy
+  G.enemies.forEach((enemy, idx) => {
+    if (!enemy || enemy.hp <= 0) return;
+    const eCard = { word: enemy.name, pos: 'object', cost: 0, _isFixedCard: true, id: 'tgt_enemy_' + idx };
+    const eEl = createCardElement(eCard, null, { noClick: true });
+    eEl.classList.add('target-card', 'target-enemy');
+    const ePin = document.createElement('div'); ePin.className = 'card-pin'; ePin.textContent = '敌'; eEl.appendChild(ePin);
+    eEl.insertAdjacentHTML('beforeend', targetStatusHTML(enemy));
+    if (G.sentence.some(c => c._isEnemyTarget && c._enemyIdx === idx)) eEl.classList.add('in-sentence');
+    eEl.style.cursor = 'pointer';
+    eEl.onclick = () => addEnemyTarget(idx, enemy);
+    slot.appendChild(eEl);
+  });
+}
+
 export function addSelfTarget() {
   if (G.sentence.some(c => c._isFixedWo)) return;
   const woDef = WORD_DEFS.wo;
@@ -376,8 +426,8 @@ export function addSelfTarget() {
   renderCombat();
 }
 
-// Mark standees as "selected" when their target is already in the sentence, so
-// the player can see what they've picked.
+// Clicking the player portrait also still selects 我 (kept as a bonus). Mark
+// standees as "selected" when their target is in the sentence.
 function syncTargetSelectability() {
   const p = document.getElementById('player-char-card');
   if (p) p.classList.toggle('target-selected', G.sentence.some(c => c._isFixedWo));
