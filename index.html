@@ -180,19 +180,24 @@
 
   <!-- REWARD -->
   <div id="reward-screen" class="screen">
-    <div class="reward-content">
-      <h2>战胜！</h2>
-      <!-- 本场最帅一句 + 动态棍人重放 -->
-      <div id="best-verse" style="display:none;">
-        <div id="best-verse-stage"></div>
-        <div id="best-verse-text"></div>
-        <div id="best-verse-meta"></div>
+    <div class="reward-content reward-two-col">
+      <!-- 左栏：回顾（本场最帅句动态重放 + 本局诗篇） -->
+      <div class="reward-col reward-col-review">
+        <div id="best-verse" style="display:none;">
+          <div id="best-verse-stage"></div>
+          <div id="best-verse-text"></div>
+          <div id="best-verse-meta"></div>
+        </div>
+        <div id="reward-journal"></div>
       </div>
-      <div class="reward-gold" id="reward-gold-text"></div>
-      <h3 style="color:var(--paper-dark);font-size:0.95rem;margin-bottom:10px;">选择一张新词牌：</h3>
-      <div class="reward-cards" id="reward-cards"></div>
-      <div id="reward-journal"></div>
-      <button class="btn btn-small btn-secondary" onclick="skipReward()" style="margin-top:14px;">跳过</button>
+      <!-- 右栏：战利品 + 操作（金币 / 选牌 / 卡包 / 跳过） -->
+      <div class="reward-col reward-col-loot">
+        <h2>战胜！</h2>
+        <div class="reward-gold" id="reward-gold-text"></div>
+        <h3 class="reward-section-title">选择一张新词牌：</h3>
+        <div class="reward-cards" id="reward-cards"></div>
+        <button class="btn btn-small btn-secondary" onclick="skipReward()" style="margin-top:14px;">跳过</button>
+      </div>
     </div>
   </div>
 

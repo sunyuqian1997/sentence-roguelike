@@ -398,6 +398,43 @@
   font-size: clamp(1.4rem, 4vw, 1.8rem); letter-spacing: 0.25em;
 }
 .reward-cards { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin: 14px 0; }
+
+/* --- Two-column reward layout: 左回顾 | 右战利品 --- */
+.reward-content.reward-two-col {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 24px;
+  text-align: center;
+  max-width: min(1100px, 94vw);
+  width: 94vw;
+  max-height: 92vh;
+}
+.reward-col {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+}
+.reward-col-review { justify-content: center; gap: 12px; }
+.reward-col-loot { justify-content: flex-start; gap: 6px; }
+.reward-section-title { color: var(--paper-dark); font-size: 0.95rem; margin: 6px 0 4px; }
+/* Stack to single column on narrow / portrait viewports: columns size to their
+   content and the whole card scrolls (flex:1 1 0 would collapse them to 0). */
+@media (max-width: 760px), (orientation: portrait) {
+  .reward-content.reward-two-col {
+    flex-direction: column;
+    gap: 12px;
+    max-width: 96vw;
+    width: 96vw;
+    max-height: 94vh;
+    overflow-y: auto;
+    align-items: stretch;
+  }
+  .reward-col { flex: 0 0 auto; overflow: visible; }
+}
 .reward-card-wrapper { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .reward-gold {
   font-size: 1.1rem; color: var(--gold); margin-bottom: 10px;
