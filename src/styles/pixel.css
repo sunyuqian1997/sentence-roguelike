@@ -14,8 +14,8 @@
   --font-pixel: 'Zpix', 'Fusion Pixel', 'Noto Serif SC', monospace;
 
   /* Redesign palette */
-  --stage-bg: #1E2530;     /* 舞台幕布最底（墨蓝灰，非死黑） */
-  --stage-mid: #2A3340;    /* 舞台中层，棍人台 */
+  --stage-bg: #313C4C;     /* 舞台幕布最底（提亮的墨蓝灰，不压抑） */
+  --stage-mid: #455065;    /* 舞台中层，棍人台 */
   --paper: #F2EAD8;        /* 宣纸暖白 */
   --paper-2: #E0D5BC;      /* 面板次级底 */
   --ink: #26211A;          /* 墨黑（非纯黑） */
@@ -53,8 +53,8 @@ body { font-family: var(--font-pixel); }
   z-index: 2;
   pointer-events: none;
   background:
-    repeating-linear-gradient(0deg, rgba(0,0,0,0.06) 0 1px, transparent 1px 3px),
-    radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.22) 100%);
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.03) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.11) 100%);
 }
 
 /* ============================================================
@@ -62,13 +62,13 @@ body { font-family: var(--font-pixel); }
    ============================================================ */
 #combat-screen {
   background:
-    repeating-linear-gradient(0deg, rgba(0,0,0,0.05) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.025) 0 1px, transparent 1px 4px),
     linear-gradient(180deg, var(--stage-mid), var(--stage-bg)) !important;
   color: var(--ink);
 }
 #combat-top {
-  background: rgba(20, 24, 30, 0.92) !important;
-  border-bottom: 2px solid #000 !important;
+  background: rgba(46, 54, 68, 0.94) !important;
+  border-bottom: 2px solid var(--line) !important;
   color: var(--paper) !important;
 }
 #combat-top .combat-info span { color: #b8c2d0 !important; }
@@ -271,8 +271,24 @@ body { font-family: var(--font-pixel); }
   width: clamp(110px, 16%, 150px);
   opacity: 0.55;
 }
-.round-journal-title { color: var(--ink-soft); }
+/* Readable journal: pixel font, dark ink, bigger leading — it's the poem you
+   wrote, it should be legible, not decorative. */
+.round-journal-title {
+  font-family: var(--font-pixel) !important;
+  color: var(--ink) !important;
+  font-size: 0.82rem !important;
+  font-weight: 700;
+  letter-spacing: 0.04em !important;
+}
 .round-journal-title::before, .round-journal-title::after { display: none; }
+.round-journal-line {
+  font-family: var(--font-pixel) !important;
+  color: var(--ink) !important;
+  font-size: 0.86rem !important;
+  line-height: 1.6 !important;
+}
+.rj-num { font-family: var(--font-pixel) !important; color: var(--accent); opacity: 1 !important; }
+.round-journal-empty { font-family: var(--font-pixel) !important; font-style: normal !important; }
 #rhyme-streak-tag {
   border: 2px solid var(--accent);
   background: var(--paper);
@@ -426,60 +442,49 @@ body { font-family: var(--font-pixel); }
 }
 #hand-controls { padding: 6px 14px 0; }
 
-/* ---- Target cards: 我 at the LEFT, enemies at the RIGHT of the hand row ---- */
-#target-cards {
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
-  flex-shrink: 0;
-  padding-right: 12px;
-  margin-right: 8px;
-  border-right: 2px dashed rgba(58,47,37,0.35);
+/* ---- Targets are the standees themselves ---- */
+#player-char-card.target-selected,
+#stage-enemy .enemy.targeted {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
 }
-#target-cards-enemy {
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
-  flex-shrink: 0;
-  padding-left: 12px;
-  margin-left: 8px;
-  border-left: 2px dashed rgba(178,58,46,0.4);
-}
-#target-cards .target-card,
-#target-cards-enemy .target-card {
-  width: clamp(70px, 8vw, 86px) !important;
-  height: clamp(100px, 13vw, 122px) !important;
-}
-#target-cards-enemy .target-card.target-enemy {
-  border-color: var(--them) !important;
-  box-shadow: 2px 2px 0 rgba(178,58,46,0.4) !important;
-}
-#target-cards-enemy .target-card.target-enemy .card-word { color: var(--them) !important; }
-#target-cards-enemy .target-card .card-pin {
-  position: absolute; top: 1px; right: 3px;
-  font-size: 0.6rem; z-index: 3;
-  background: var(--ink); color: var(--paper); padding: 0 3px;
-}
-#target-cards-enemy .target-card.in-sentence { opacity: 0.4; pointer-events: auto; }
-#target-cards .target-card.target-self {
-  border-color: var(--us) !important;
-  box-shadow: 2px 2px 0 rgba(62,124,166,0.4) !important;
-}
-#target-cards .target-card.target-self .card-word { color: var(--us) !important; }
-#target-cards .target-card.target-enemy {
-  border-color: var(--them) !important;
-  box-shadow: 2px 2px 0 rgba(178,58,46,0.4) !important;
-}
-#target-cards .target-card.target-enemy .card-word { color: var(--them) !important; }
-#target-cards .target-card .card-pin {
-  position: absolute; top: 1px; right: 3px;
-  font-size: 0.6rem; z-index: 3;
-  background: var(--ink); color: var(--paper); padding: 0 3px;
-}
-#target-cards .target-card.in-sentence { opacity: 0.4; pointer-events: auto; }
+#player-char-card { transition: outline 0.15s; }
 
 /* ---- Stepped motion ---- */
 .card-deal-anim { animation-timing-function: steps(6) !important; }
 @media (prefers-reduced-motion: reduce) {
   #combat-stage::before { background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.22) 100%); }
+}
+
+/* ---- Reward screen: 本场最帅一句 dynamic replay ---- */
+#best-verse {
+  margin: 0 auto 14px;
+  max-width: 460px;
+  padding: 10px 14px 12px;
+  background: var(--paper) !important;
+  border: var(--px-border);
+  box-shadow: var(--px-shadow);
+}
+#best-verse-stage {
+  height: 150px;
+  margin-bottom: 6px;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 92%, rgba(58,47,37,0.10), transparent 70%),
+    var(--paper-2);
+  border: 2px solid var(--line);
+  overflow: visible;
+}
+#best-verse-stage .puppet-svg { width: 100%; height: 100%; }
+#best-verse-text {
+  font-family: var(--font-pixel) !important;
+  font-size: 1.05rem;
+  color: var(--ink);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+#best-verse-meta {
+  font-family: var(--font-pixel) !important;
+  font-size: 0.78rem;
+  color: var(--accent);
+  margin-top: 3px;
 }

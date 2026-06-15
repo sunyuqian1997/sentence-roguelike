@@ -25,6 +25,12 @@ export function showScreen(id) {
 // RENDER
 // ============================================================
 export function renderCombat() {
+  // Re-rendering destroys the card DOM the cursor may be hovering, so its
+  // mouseleave never fires and the tooltip would stick. Dismiss it up front.
+  hideTooltip();
+  // Player standee = the 我 target affordance (bound once; idempotent).
+  const pc = document.getElementById('player-char-card');
+  if (pc && !pc._selfBound) { pc._selfBound = true; pc.style.cursor = 'pointer'; pc.onclick = () => addSelfTarget(); }
   document.getElementById('combat-hp').textContent = `${G.hp}/${G.maxHp}`;
   document.getElementById('combat-block-display').innerHTML = G.block > 0 ? `🛡️ <b style="font-size:1.3em">${G.block}</b>` : '';
 
@@ -347,7 +353,7 @@ function reorderSentence(fromIdx, toIdx) {
 }
 
 export function renderHand() {
-  renderTargetCards();
+  syncTargetSelectability();
 
   const handEl = document.getElementById('hand-cards');
   handEl.innerHTML = '';
@@ -358,51 +364,23 @@ export function renderHand() {
   });
 }
 
-// Target cards live in the hand row now (not on the standees): the pinned 我
-// card sits at the LEFT of the hand, and one card per living enemy sits at the
-// RIGHT (closer to the enemy standees). Clicking them selects the target — same
-// effect as the old standee clicks, but unified with playing cards.
-function renderTargetCards() {
-  const slot = document.getElementById('target-cards');
-  const enemySlot = document.getElementById('target-cards-enemy');
-  if (!slot) return;
-  slot.innerHTML = '';
-  if (enemySlot) enemySlot.innerHTML = '';
-
-  // 我 (self target)
+// Targets are picked by clicking the big standees directly: the player portrait
+// = 我, each enemy in #enemy-area = that enemy (wired in renderEnemies). No
+// separate target cards — the standees ARE the target affordance.
+export function addSelfTarget() {
+  if (G.sentence.some(c => c._isFixedWo)) return;
   const woDef = WORD_DEFS.wo;
-  const woCard = { ...woDef, key: 'wo', upgraded: false, cost: 0, _isFixedCard: true, id: 'tgt_wo' };
-  const woEl = createCardElement(woCard, null, { noClick: true });
-  woEl.classList.add('target-card', 'target-self');
-  const woPin = document.createElement('div');
-  woPin.className = 'card-pin'; woPin.textContent = '我';
-  woEl.appendChild(woPin);
-  if (G.sentence.some(c => c._isFixedWo)) woEl.classList.add('in-sentence');
-  woEl.style.cursor = 'pointer';
-  woEl.onclick = () => {
-    if (G.sentence.some(c => c._isFixedWo)) return;
-    const card = { ...woDef, key: 'wo', upgraded: false, cost: 0, _isFixedWo: true, id: 'fixed_wo_' + Math.random().toString(36).substr(2, 5) };
-    if (!tryAddCard(card)) { renderCombat(); return; }
-    playSFX('card');
-    renderCombat();
-  };
-  slot.appendChild(woEl);
+  const card = { ...woDef, key: 'wo', upgraded: false, cost: 0, _isFixedWo: true, id: 'fixed_wo_' + Math.random().toString(36).substr(2, 5) };
+  if (!tryAddCard(card)) { renderCombat(); return; }
+  playSFX('card');
+  renderCombat();
+}
 
-  // One card per living enemy — rendered into the RIGHT-side container.
-  const enemyContainer = enemySlot || slot;
-  G.enemies.forEach((enemy, idx) => {
-    if (!enemy || enemy.hp <= 0) return;
-    const eCard = { word: enemy.name, pos: 'object', cost: 0, _isFixedCard: true, id: 'tgt_enemy_' + idx };
-    const eEl = createCardElement(eCard, null, { noClick: true });
-    eEl.classList.add('target-card', 'target-enemy');
-    const ePin = document.createElement('div');
-    ePin.className = 'card-pin'; ePin.textContent = '敌';
-    eEl.appendChild(ePin);
-    if (G.sentence.some(c => c._isEnemyTarget && c._enemyIdx === idx)) eEl.classList.add('in-sentence');
-    eEl.style.cursor = 'pointer';
-    eEl.onclick = () => addEnemyTarget(idx, enemy);
-    enemyContainer.appendChild(eEl);
-  });
+// Mark standees as "selected" when their target is already in the sentence, so
+// the player can see what they've picked.
+function syncTargetSelectability() {
+  const p = document.getElementById('player-char-card');
+  if (p) p.classList.toggle('target-selected', G.sentence.some(c => c._isFixedWo));
 }
 
 export function createCardElement(card, handIndex, opts={}) {
