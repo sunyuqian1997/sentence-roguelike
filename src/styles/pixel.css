@@ -156,7 +156,21 @@ body { font-family: var(--font-pixel); }
   font-weight: 700; padding: 3px 9px !important;
 }
 .enemy-intent.attack-intent { color: var(--them) !important; }
-.status-icon { border-width: 2px !important; font-weight: 700; }
+/* Status chips — bigger & bolder so 易伤/弱/力 read at a glance (head-badges
+   were too cramped on the short stage; status lives on the standee + enemy card). */
+.status-icon {
+  border-width: 2px !important;
+  font-weight: 900;
+  font-size: 0.82rem !important;
+  padding: 2px 8px !important;
+  color: var(--paper) !important;       /* solid fill, white text — high contrast */
+}
+.status-icon.status-vulnerable { background: var(--them) !important; border-color: var(--line) !important; }
+.status-icon.status-weak       { background: #6B5BA6 !important; border-color: var(--line) !important; }
+.status-icon.status-strength   { background: #C58A2E !important; border-color: var(--line) !important; }
+.status-icon.status-pun        { background: #8E5BA6 !important; border-color: var(--line) !important; color: var(--paper) !important; }
+.standee-statuses, .enemy-status-effects { gap: 5px !important; font-size: 0.82rem !important; }
+#stage-enemy .enemy .enemy-status-effects { justify-content: center; margin-top: 4px; }
 
 /* Enemy on the stage: scale up to mirror the player standee (big & near). */
 #stage-enemy > #enemy-area { width: 100%; height: 100%; }

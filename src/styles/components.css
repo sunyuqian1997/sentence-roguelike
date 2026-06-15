@@ -796,39 +796,6 @@
 #puppet-player .puppet-label { color: var(--pine); }
 #puppet-enemy .puppet-label { color: var(--vermillion); }
 
-/* ---- Status badges over a puppet's head ---- */
-.puppet-status {
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 2px;
-  width: max-content;
-  max-width: 150px;
-  margin-bottom: 1px;
-  pointer-events: none;
-  z-index: 6;
-}
-.pst {
-  font-family: var(--font-pixel), monospace;
-  font-size: 0.6rem;
-  font-weight: 700;
-  line-height: 1.2;
-  padding: 0 3px;
-  border: 1px solid rgba(26,21,16,0.5);
-  color: var(--paper);
-  white-space: nowrap;
-}
-.pst-vuln  { background: var(--vermillion, #B23A2E); }
-.pst-weak  { background: #6B5BA6; }
-.pst-str   { background: #C58A2E; }
-.pst-block { background: var(--pine, #3E7CA6); }
-.pst-stun  { background: #555; }
-.pst-pun   { background: #8E5BA6; }
-
 /* ---- Co-actor (independent ally) puppets: distinct silhouettes ---- */
 .puppet-coactor .puppet-label { color: var(--pine); }
 /* shared new strokes (cat/hatsune/sword/buns) */

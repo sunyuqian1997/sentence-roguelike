@@ -10,40 +10,8 @@
 //     the actual damage at the same offset so numbers pop when the hit lands.
 import { G } from '../game/state.js';
 import { applyMeaningsToSentence } from '../game/meanings.js';
-import { detectPredicates, resolveIdentityTrait, isCopulaPredicate, isYouCard, PUN_STATUS } from '../game/poetics.js';
+import { detectPredicates, resolveIdentityTrait, isCopulaPredicate, isYouCard } from '../game/poetics.js';
 import { playSFX } from '../game/audio.js';
-
-// Status badges shown above a puppet's head. `obj` is G (player) or an enemy.
-// Renders 易伤/虚弱/力量 + any pun tags as small colored chips so the player can
-// read状态 right on the figure they're looking at, not just the corner cards.
-function statusBadgeHTML(obj) {
-  if (!obj) return '';
-  const b = [];
-  if (obj.vulnerable > 0) b.push(`<span class="pst pst-vuln">伤${obj.vulnerable}</span>`);
-  if (obj.weak > 0) b.push(`<span class="pst pst-weak">弱${obj.weak}</span>`);
-  if (obj.strength > 0) b.push(`<span class="pst pst-str">力${obj.strength}</span>`);
-  if (obj.block > 0) b.push(`<span class="pst pst-block">盾${obj.block}</span>`);
-  (obj._puns || []).forEach(t => {
-    const lbl = (PUN_STATUS[t] || {}).label || t;
-    b.push(`<span class="pst pst-pun" title="${lbl}">${lbl}</span>`);
-  });
-  if (obj.stunned) b.push(`<span class="pst pst-stun">💤</span>`);
-  return b.join('');
-}
-
-// Fill the over-head badge rows for the player and the currently-targeted enemy.
-function renderPuppetStatus() {
-  const ps = document.getElementById('puppet-player-status');
-  const es = document.getElementById('puppet-enemy-status');
-  if (ps) ps.innerHTML = statusBadgeHTML(G);
-  if (es) {
-    // Which enemy does the stage's foe represent? The targeted one, else the first alive.
-    const sent = G.sentence || [];
-    const tgt = sent.find(c => c && c._isEnemyTarget);
-    const idx = tgt ? tgt._enemyIdx : (G.enemies || []).findIndex(e => e && e.hp > 0);
-    es.innerHTML = statusBadgeHTML(idx >= 0 ? G.enemies[idx] : null);
-  }
-}
 
 export const IMPACT_MS = 420;
 
@@ -399,7 +367,6 @@ export function updatePuppets() {
         .map(c => c.word)
     : [];
   syncStandbyCoActors(standbyNames);
-  renderPuppetStatus();
 }
 
 // Chant sequence: anticipation → dash/pose → impact → recover.
