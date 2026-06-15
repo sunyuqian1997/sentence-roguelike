@@ -19,6 +19,7 @@ import { applyPunctuation, detectDuizhang } from './punctuation.js';
 import { applyQuality, QUALITY_RULES } from './quality.js';
 import { applyExclamations, checkExclamationPosition } from './exclamation.js';
 import { applyCardEffects, VERB_SPECIALS } from './cardEffects.js';
+import { resolveIdentityTrait, isYouCard } from '../poetics.js';
 
 export {
   normalizeSentence, checkWordOrder, detectDuizhang,
@@ -31,16 +32,33 @@ function finalize(ctx) {
   if (bonus.modHealBonus > 0) effects.heal += bonus.modHealBonus;
   if (bonus.modSelfDmg > 0) { effects.selfHarm = true; effects.selfHarmDmg = bonus.modSelfDmg; effects.selfHarmBuff = 0; }
 
-  // Semantic roles by position: who stands before the verb is the agent,
-  // who stands after it is the patient. "纸鬼碎我" = the enemy strikes ME
+  // Semantic roles by position: who stands before the verb is the agent, who
+  // stands after it is the patient. "纸鬼碎我"/"你斩我" = the enemy strikes ME
   // (damage lands on the player, no masochism bonus); "我斩我" (explicit
   // self-target) keeps the +2 strength trade.
-  const firstVerbIdx = ctx.cards.findIndex(c => c.pos === 'verb' || c.pos === 'special');
+  //
+  // Role detection is CLAUSE-LOCAL but scans EVERY clause: a comma ends a clause,
+  // so "敌摸鱼，我斩敌" must NOT read 敌 (clause 1) as agent striking 我 (clause 2)
+  // — but "我摸鱼，敌斩我" SHOULD fire (the attack is in clause 2). We split on
+  // commas and look for any single clause with [enemy-ref … verb … 我].
   const isMe = (c) => c._isSelfTarget || c._isFixedWo || (c.pos === 'subject' && c.word === '我');
-  const enemyBeforeVerb = firstVerbIdx > 0 && ctx.cards.slice(0, firstVerbIdx).some(c => c._isEnemyTarget);
-  const meAfterVerb = firstVerbIdx >= 0 && ctx.cards.slice(firstVerbIdx + 1).some(isMe);
-  // Imperatives ("纸鬼给我戳") reassign roles — never the self-harm path.
-  const enemyStrikesMe = enemyBeforeVerb && meAfterVerb && !effects._imperative;
+  // An enemy reference as a sentence subject: a clicked enemy-target OR 你/尔/汝.
+  const isEnemyRef = (c) => c._isEnemyTarget || isYouCard(c);
+  const isComma = (c) => c.pos === 'punctuation' && c.punctType === 'comma';
+  const clauses = [];
+  { let cur = [];
+    for (const c of ctx.cards) {
+      if (isComma(c)) { clauses.push(cur); cur = []; } else cur.push(c);
+    }
+    clauses.push(cur);
+  }
+  const enemyStrikesMe = !effects._imperative && clauses.some(clause => {
+    const vIdx = clause.findIndex(c => c.pos === 'verb' || c.pos === 'special');
+    if (vIdx < 0) return false;
+    const enemyBeforeVerb = clause.slice(0, vIdx).some(isEnemyRef);
+    const meAfterVerb = clause.slice(vIdx + 1).some(isMe);
+    return enemyBeforeVerb && meAfterVerb;
+  });
 
   if ((ctx.hasSelfTarget || enemyStrikesMe) && effects.damage > 0) {
     effects.selfHarm = true;
@@ -132,13 +150,24 @@ function finalize(ctx) {
   }
 
   // Co-actors strike as their own entities — each its own damage instance,
-  // scaled by the sentence's quality just like the main blow.
+  // scaled by the sentence's quality just like the main blow. "我是皇帝" and the
+  // like (identity self-buff with a strength delta) is a全军 rally: the麾下
+  // co-actors share the leader's strength bonus (黄袍加身，将士同享).
   if (effects._coActors && effects._coActors.length) {
+    let sharedStrength = 0;
+    (effects._predicates || []).forEach(p => {
+      if (p.kind === 'identity' && p.target === 'self') {
+        const trait = resolveIdentityTrait(p.identityWord, p.identityIsEnemyName);
+        if (trait.selfEffect && trait.selfEffect.strength) sharedStrength += trait.selfEffect.strength;
+      }
+    });
     effects._coActors.forEach(a => {
-      a.damage = Math.floor(a.power * totalMult * finalExcAttack);
+      a.damage = Math.floor((a.power + sharedStrength) * totalMult * finalExcAttack);
       a.targetEnemyIdx = effects.targetEnemyIdx;
       a.ignoreBlock = effects.ignoreBlock;
+      if (sharedStrength > 0) a.rallied = sharedStrength;
     });
+    if (sharedStrength > 0) ctx.grammarNotes.push(`👑 黄袍加身：麾下独立个体攻击+${sharedStrength}`);
   }
 
   return {

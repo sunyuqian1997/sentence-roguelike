@@ -314,8 +314,33 @@ export const VERB_SPECIALS = [
   }],
 ];
 
+// Is this card an enemy-subject reference? (clicked enemy-target, the literal
+// 敌人, 你/尔/汝, or a card whose word matches a live enemy's name.)
+const isEnemySubjectCard = (c) => {
+  if (!c) return false;
+  if (c._isEnemyTarget) return true;
+  const w = c.word;
+  return w === '敌人' || w === '你' || w === '尔' || w === '汝'
+    || G.enemies.some(e => e.name === w);
+};
+
+// Split cards into comma-delimited clauses so subject roles stay clause-local
+// ("我摸鱼，你斩我": clause 1 has no enemy subject — 你 belongs to clause 2).
+function buildClauses(cards) {
+  const clauses = [];
+  let cur = [];
+  for (const c of cards) {
+    if (c.pos === 'punctuation' && c.punctType === 'comma') { clauses.push(cur); cur = []; }
+    else cur.push(c);
+  }
+  clauses.push(cur);
+  return clauses;
+}
+
 export function applyVerbs(ctx) {
   const { effects, bonus } = ctx;
+  const clauses = buildClauses(ctx.cards);
+  const clauseOf = (verb) => clauses.find(cl => cl.includes(verb)) || ctx.cards;
 
   for (const v of ctx.realVerbs) {
     let power = v.upgraded ? (v.upgPower || v.basePower) : v.basePower;
@@ -328,10 +353,14 @@ export function applyVerbs(ctx) {
       }
     }
 
-    const subjectIsEnemy = ctx.forceSubjectIsEnemy || ctx.hasEnemyTarget || ctx.subjects.some(s => {
-      const w = s.word;
-      return w === '敌人' || G.enemies.some(e => e.name === w);
-    });
+    // Clause-local subject role: an enemy is the SUBJECT only when an enemy ref
+    // stands BEFORE the verb in this verb's own clause ("纸鬼摸鱼"/"你斩我"). An
+    // enemy ref after the verb is the OBJECT ("我斩纸鬼" → subject is 我, not 敌).
+    // forceSubjectIsEnemy (imperatives) still overrides globally.
+    const clause = clauseOf(v);
+    const vIdx = clause.indexOf(v);
+    const subjectIsEnemy = ctx.forceSubjectIsEnemy
+      || (vIdx > 0 && clause.slice(0, vIdx).some(isEnemySubjectCard));
 
     const special = VERB_SPECIALS.find(([flag]) => v[flag]);
     if (special) {

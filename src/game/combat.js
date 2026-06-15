@@ -661,6 +661,12 @@ export function applyEffects(effects) {
 
   // PREDICATES — "A 是 B" clauses: puns + identity rewrites
   if (effects._predicates && effects._predicates.length > 0) {
+    // "你是X" leaves subjectEnemyIdx = -1 (poetics is state-free); resolve to the
+    // first living enemy here.
+    const resolveEnemy = (idx) => {
+      if (idx >= 0) return G.enemies[idx];
+      return G.enemies.find(e => e && e.hp > 0);
+    };
     effects._predicates.forEach(p => {
       if (p.kind === 'pun') {
         const tag = p.pun.tag;
@@ -672,7 +678,7 @@ export function applyEffects(effects) {
           if (e.element) showFloatingText(e.element, p.pun.label, '#9B59B6');
         };
         if (p.target === 'enemy') {
-          applyToEnemy(G.enemies[p.subjectEnemyIdx]);
+          applyToEnemy(resolveEnemy(p.subjectEnemyIdx));
         } else if (p.target === 'broadcast') {
           // Generic subject ("皇帝你儿子是给") — wisecrack heard by all enemies
           G.enemies.forEach(applyToEnemy);
@@ -722,7 +728,7 @@ export function applyEffects(effects) {
             if (ee.stunChance && Math.random() < ee.stunChance) e.stunned = true;
             if (e.element) showFloatingText(e.element, `${trait.emoji} ${trait.enemyLabel}`, '#9B59B6');
           };
-          if (p.target === 'enemy') applyToEnemy(G.enemies[p.subjectEnemyIdx]);
+          if (p.target === 'enemy') applyToEnemy(resolveEnemy(p.subjectEnemyIdx));
           else G.enemies.forEach(applyToEnemy);
         }
         return;

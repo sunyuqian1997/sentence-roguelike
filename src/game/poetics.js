@@ -187,6 +187,12 @@ const isSubjectish = (c) =>
 const isMeCard = (c) =>
   !!(c && (c._isSelfTarget || c._isFixedWo || (c.pos === 'subject' && c.word === '我')));
 
+// "你" addresses the enemy you're fighting. As a subject it refers to the enemy
+// — NOT a friendly actor. So "你是猫" debuffs the enemy (like "敌是猫"), and "你"
+// never becomes a友方 co-actor puppet. Shared by evaluator + UI.
+export const isYouCard = (c) =>
+  !!(c && c.pos === 'subject' && (c.word === '你' || c.word === '尔' || c.word === '汝'));
+
 // Is this subject card acting as the PREDICATE B of an "A 是 B" clause? i.e. is
 // its nearest meaningful predecessor a copula (是/为)? Such a subject ("影子"
 // in "我是影子") is an identity/attribute, NOT an independent actor — so it
@@ -336,6 +342,12 @@ export function detectPredicates(cards) {
     const sc = cards[head];
     let subjectKind, subjectEnemyIdx = -1;
     if (sc._isEnemyTarget) { subjectKind = 'enemy'; subjectEnemyIdx = sc._enemyIdx; }
+    else if (isYouCard(sc)) {
+      // "你是X" = address the enemy → debuff it. Which enemy is resolved at apply
+      // time (combat.js): -1 means "first living enemy" (keeps poetics state-free).
+      subjectKind = 'enemy';
+      subjectEnemyIdx = -1;
+    }
     else if (isMeCard(sc)) subjectKind = 'self';
     else subjectKind = 'subject';
 
