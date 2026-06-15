@@ -373,7 +373,7 @@ body { font-family: var(--font-pixel); }
   padding: 5px 12px !important;
   margin: 0 !important;
   min-height: 1.6em;
-  max-height: 86px;
+  max-height: 130px;
   overflow: hidden;
   display: flex !important;
   flex-direction: column;
@@ -413,30 +413,38 @@ body { font-family: var(--font-pixel); }
 .sp-mult {
   font-family: var(--font-pixel);
   font-weight: 900;
-  font-size: 1.25rem;
+  font-size: 1.45rem;
   color: var(--ink);
   background: var(--accent);
   border: 2px solid var(--line);
-  padding: 1px 10px;
+  padding: 2px 12px;
   box-shadow: var(--px-shadow-sm);
 }
 .sp-flavor { color: var(--ink-soft); font-size: 0.8rem; }
+/* Hit-rules: the verdicts that built the multiplier. Readable chips that wrap
+   into up to ~2 lines, darker text — this is the part players study. */
 .sp-rules {
   display: flex;
-  flex-wrap: nowrap;            /* one scrolling line — never stack into tall rows */
-  justify-content: flex-start;
-  gap: 4px 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 4px 6px;
   max-width: 100%;
-  overflow-x: auto;
-  white-space: nowrap;
-  padding-bottom: 2px;
+  max-height: 4.4em;
+  overflow-y: auto;
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px dashed rgba(58,47,37,0.3);
 }
-.sp-rule { white-space: nowrap; flex: 0 0 auto; }
 .sp-rule {
-  font-size: 0.74rem;
-  color: var(--ink-soft);
-  border-bottom: 1px dotted rgba(58,47,37,0.4);
-  padding: 0 2px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--paper-2);
+  border: 1px solid rgba(58,47,37,0.35);
+  padding: 1px 6px;
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 #duizhang-preview { font-size: 0.78rem; margin-top: 4px; }
 

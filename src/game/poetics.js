@@ -221,11 +221,29 @@ export function isCopulaPredicate(cards, card) {
 // Effect fields are declarative; combat.js#applyEffects interprets them.
 //   enemyEffect: { weak, vulnerable, strengthDelta, stunChance }
 //   selfEffect:  { block, heal, draw, strength, vulnerable, poeticAuraNext }
+// `bodyScale` (optional): multiplies the puppet's size when this identity is
+//   assumed — "我是儿子" shrinks the figure, "我是巨人" enlarges it. Purely visual,
+//   read by ui/puppets.js. Default 1.0 (no change).
 export const IDENTITY_TRAITS = {
   '猫': {
-    emoji: '🐱',
+    emoji: '🐱', bodyScale: 0.8,
     enemyLabel: '变成猫：爪软犯困', enemyEffect: { weak: 2, stunChance: 0.3 },
     selfLabel: '猫步轻盈：挡4抽1', selfEffect: { block: 4, draw: 1 },
+  },
+  '儿子': {
+    emoji: '🧒', bodyScale: 0.6,
+    enemyLabel: '沦为儿辈：力-2弱1', enemyEffect: { strengthDelta: -2, weak: 1 },
+    selfLabel: '返老还童：回4抽1', selfEffect: { heal: 4, draw: 1 },
+  },
+  '巨人': {
+    emoji: '🗿', bodyScale: 1.5,
+    enemyLabel: '虚胖：易伤2', enemyEffect: { vulnerable: 2 },
+    selfLabel: '顶天立地：力+3', selfEffect: { strength: 3 },
+  },
+  '将军': {
+    emoji: '🎖️', bodyScale: 1.25,
+    enemyLabel: '临阵脱逃：弱2', enemyEffect: { weak: 2 },
+    selfLabel: '将军百战：力+2挡4', selfEffect: { strength: 2, block: 4 },
   },
   '影子': {
     emoji: '🌑',
@@ -243,7 +261,7 @@ export const IDENTITY_TRAITS = {
     selfLabel: '词魂附体：回3+下回合诗意', selfEffect: { heal: 3, poeticAuraNext: true },
   },
   '皇帝': {
-    emoji: '👑',
+    emoji: '👑', bodyScale: 1.2,
     enemyLabel: '僭越遭谴：易伤2', enemyEffect: { vulnerable: 2 },
     selfLabel: '黄袍加身：力+2', selfEffect: { strength: 2 },
   },
