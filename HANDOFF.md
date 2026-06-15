@@ -1,8 +1,9 @@
 # 词灵录 (Sentence Roguelike) — Handoff Document
 
-Status snapshot: 2026-06-14 · 大量战斗/语义/UI 重构 · 评估器=`src/game/evaluator/` 规则管线
+Status snapshot: 2026-06-15 · 大量战斗/语义/UI 重构 · 评估器=`src/game/evaluator/` 规则管线
 Author of original direction: project owner (referred to below as "user")
-Author of this handoff: Claude (4.7 session) → 交接给新 session
+Author of this handoff: Claude (opus session) → 交接给新 session
+工作区状态：全部已 commit，最新 commit `f4d869b`；未追踪仅 chantlog.ndjson(日志) + public/bgm/。
 
 ---
 
@@ -45,6 +46,7 @@ Author of this handoff: Claude (4.7 session) → 交接给新 session
 10. **造句框固定宽**(min(760px,96vw) 居中，不再随卡数漂移)。
 11. **目标牌进手牌区**：我(蓝边)+各敌人(红边)做成手牌区左端的可点牌(虚线分隔)，点击选目标。
     移除了立绘下方的固定"我"卡槽。两侧大立绘保留作视觉主体。
+    ⚠️ 此项经历多次反复(分两侧→删卡改点立绘→又回手牌区)，**最终状态见 A-sexies #30**，以那个为准。
 12. **真 MP3 BGM**：放 `public/bgm/{ambient,combat,boss}.mp3`，audio.js 优先播 mp3、
     缺失自动回退合成音；mp3 播放时已停掉合成 loop 不叠加。
 
@@ -75,10 +77,8 @@ Author of this handoff: Claude (4.7 session) → 交接给新 session
 ### A-quater. 2026-06-14 第四轮 UI/体验大批量（设计审查 + Codex 终审）
 19. **tooltip 残留修复**：renderCombat() 开头 `hideTooltip()`——重渲销毁 hover 的 DOM 致 mouseleave 不触发。
 20. **诗册可读**：pixel.css 覆盖 .round-journal-title/line 为像素字 + `--ink` 深色 + 大字号行高。
-21. **删除目标小牌，改为直接点立绘选目标**：原先的 `#target-cards`/`#target-cards-enemy` 小牌
-    无论放手牌行还是立绘列都显得挤/溢出，已**整体删除**。现在：点玩家立绘(`#player-char-card`
-    onclick→`addSelfTarget`，加 `.target-selected` 高亮)=选我；点敌人(renderEnemies 已有 onclick，
-    `.targeted` 高亮)=选敌。render.js#renderTargetCards 删除，addSelfTarget 替代。
+21. ~~**删除目标小牌，改为直接点立绘选目标**~~ — **已被 A-sexies #30 推翻**：目标卡又回到手牌区了。
+    点立绘选我(`#player-char-card`→`addSelfTarget`)作为兼容保留，但主路径是手牌区目标卡。
 22. **背景提亮**：`--stage-bg`#1E2530→#313C4C，`--stage-mid`→#455065，扫描线/暗角透明度减半，顶栏石板色。
 23. **金币/卡包价**(sub-agent)：fight 35-50、elite 65-100、boss 90-150；最贵卡包 60→50。
 24. **棍人状态音效**：audio.js 加 charm/doom/daze/old/summon/forbidden；puppets.js POSE_SFX+cuePose
@@ -100,6 +100,25 @@ Author of this handoff: Claude (4.7 session) → 交接给新 session
     (成为唯一弹簧)，`#sentence-dock flex:0 0 auto`(随内容、不裁 slots)，棍人 floor 88px 给 stage 留压缩空间(screens.css)。
     **教训(design agent)**：纵向尺寸永远绑纵向参照系(% / fr / vh)，别用 vw。
 
+### A-sexies. 2026-06-15 第六轮 结算页两栏 + 身份变体型 + 目标卡/状态最终形态
+> 本轮经历了几次 UI 反复，**以下是当前真实状态**(覆盖前面相关条目)。
+30. **目标卡最终落点 = 手牌区左端一排**(commit f4d869b)：我(蓝)+各敌(红)目标卡回到 `#target-cards`
+    (在 `#hand-cards` 左侧、虚线分隔)，点击选目标。render.js#renderTargetCards 恢复并重写。
+    点玩家立绘选我(addSelfTarget)仍兼容保留。**A-quater #21 的"删卡改点立绘"已废弃。**
+31. **状态角标做到目标卡上**(f4d869b)：易伤/弱/力/盾/pun/💤 = 目标卡底部彩色角标(`.tgt-st`，
+    render.js#targetStatusHTML 读 G/enemy 状态)。**根因**：之前放立绘列/敌牌会被容器底边截断；
+    放卡上则"跟卡走"不会截。立绘列/敌牌里旧的 status-icon 仍在(次要展示)，可按需删。
+32. ~~**状态徽章上小人头顶**~~(commit 9c05464 加、e9ec028 撤)：试过把 `.puppet-status` 放小人头顶，
+    但舞台框矮、多状态会裁剪/重叠，**已整体回退**(DOM/JS/CSS 全删)。教训：矮容器别堆头顶徽章。
+33. **身份变体型**(9c05464，保留)：`IDENTITY_TRAITS` 加 `bodyScale`：我是儿子→0.6 / 巨人→1.5 /
+    皇帝→1.2 / 将军→1.25 / 猫→0.8。puppets.js#setBodyScale 缩放小人 `.puppet-svg`(从脚底 transform-origin)。
+    顺手新增了 儿子/巨人/将军 三个 identity 词条的 buff。
+34. **结算页改两栏**(3ac0ce5，保留)：`.reward-two-col` flex 行——左栏=回顾(best-verse 动态重放+本局诗篇)，
+    右栏=战利品(战胜/金币/选牌/跳过/卡包)。窄屏/竖屏(≤760px 或 portrait)回退单栏可滚动
+    (列 flex:0 0 auto 避免塌成 0 高)。screens.css。
+35. **结算预览命中规则可读**(9c05464，保留)：`.sp-rules` 改可换行深色描边 chip(0.82rem)、倍率徽章加大、
+    预览盒 max-height 提到 130px。修了"算攻击力那些看不清"。
+
 ### B. 已知的未解决判定问题 (新 session 可继续，基于日志复盘)
 1. **identity 身份 buff 数值不进 effects**：如"我是皇帝→力+2"在 notes 显示了，但实际是
    combat.js#applyEffects 里直接改 G.strength，**没写进 result.effects**，导致预览/日志看不到该数值、
@@ -118,6 +137,17 @@ Author of this handoff: Claude (4.7 session) → 交接给新 session
 - 这三个工具依赖 dev 依赖 `ws`，且需先 `npm run dev`(默认 5173)
 - **重要**：执行 Bash 需安全分类器在线，`claude-fable-5` 模型下分类器常挂导致命令跑不了，
   用 `claude-opus-4-8` 正常。
+- **autocombat 的坑(本 session 踩过)**：
+  - `?autocombat=1` **只 spawn 1 个敌人**，且**忽略** `enemy=a,b` 的逗号列表(只取第一个/随机)。要多敌得改 cheats。
+  - 预填 `sentence=我,锤,纸鬼` **不会**把"纸鬼"转成 `_isEnemyTarget` 卡(它只是普通名词卡)。
+    要验证 co-actor 助战/目标卡/状态，得自写 CDP 脚本手动 push `{_isEnemyTarget:true,_enemyIdx:0}` 卡 +
+    `{_isFixedWo:true}` 的我卡，再 `window.__renderCombat()`。模板见下方。
+  - 想截结算页：组句→`combat.chantSentence()`→等~2.6s→`G.enemies.forEach(e=>e.hp=0); damage.checkEnemies()`。
+    `combatVictory` 已兜底缺失 map node(autocombat 下 currentRow=-1)，所以能正常进结算屏。
+- **本 session 既定流程(用户要求，已写进记忆)**：每次改完游戏代码 → ①自己玩(headless驱动到相关界面) →
+  ②查运行时状态(probe 读 window.G / 角标 DOM / chantlog) → ③发最终截图给用户。光跑单测不够。
+- **多次 UI 反复的教训**：目标牌位置改了 4 次、状态显示改了 3 次。动 UI 布局前先问清最终形态、
+  并在多个视口(含 2000×1080 全屏 + 窄屏)截图验证，避免"在某分辨率好、换一个就崩"。
 
 ---
 
