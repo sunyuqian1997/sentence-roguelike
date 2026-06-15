@@ -4,7 +4,7 @@ import { playSFX, initAudio, playAmbientMusic, playCombatMusic, playBossMusic, s
 import { VFX } from '../ui/vfx.js';
 import { WORD_DEFS, makeCard, createStarterDeck, randomCard, randomCardWeighted } from '../data/cards.js';
 import { showScreen, renderCombat, createCardElement } from '../ui/render.js';
-import { playChantPuppetAnim, playEnemyPuppetAnim, IMPACT_MS } from '../ui/puppets.js';
+import { playChantPuppetAnim, playEnemyPuppetAnim, IMPACT_MS, playBestVerseReplay } from '../ui/puppets.js';
 import { generateCharSVG } from '../ui/svgArt.js';
 import { dealDamageToPlayer, dealDamageToEnemy, checkEnemies } from './damage.js';
 import { generateMap, renderMap } from './map.js';
@@ -76,6 +76,7 @@ export function startCombat(enemyDefs) {
   G.lastRhymeKey = null;
   G.rhymeStreak = 0;
   G.combatJournal = [];
+  G._bestLine = null;   // 本场最高倍率句，结算页动态重放用
 
   showScreen('combat-screen');
   // Player portrait is now an <img> in HTML, no need to generate SVG
@@ -407,6 +408,16 @@ export function chantSentence() {
   } else {
     const result = evaluateSentence(sentenceCards);
     logChant({ result });
+    // Track the highest-multiplier line of this combat so the reward screen can
+    // replay it as a dynamic "best verse" highlight.
+    if (result && (!G._bestLine || result.totalMult > G._bestLine.mult)) {
+      G._bestLine = {
+        text: journalText,
+        mult: result.totalMult,
+        cards: sentenceCards.map(c => ({ ...c })),
+        effects: { ...result.effects },
+      };
+    }
     // Update rhyme tracking BEFORE applying effects so the next sentence sees it.
     if (result && result.effects && result.effects._rhymeInfo) {
       const r = result.effects._rhymeInfo;
@@ -978,11 +989,14 @@ export function enemyTurn() {
 export function combatVictory() {
   playSFX('heal');
   G._thorns = 0;
-  const node = G.map[G.currentRow][G.currentNodeIndex];
+  // In normal play this is the map node we entered; under ?autocombat there's no
+  // node, so fall back to a plain fight reward instead of crashing.
+  const row = G.map && G.map[G.currentRow];
+  const node = (row && row[G.currentNodeIndex]) || { type: 'fight' };
   let gold = 0;
-  if (node.type==='fight') gold = 20+Math.floor(Math.random()*11);
-  else if (node.type==='elite') { gold = 40+Math.floor(Math.random()*26); G.elitesKilled++; }
-  else if (node.type==='boss') { gold = 75+Math.floor(Math.random()*51); G.bossesKilled++; }
+  if (node.type==='fight') gold = 35+Math.floor(Math.random()*16);
+  else if (node.type==='elite') { gold = 65+Math.floor(Math.random()*36); G.elitesKilled++; }
+  else if (node.type==='boss') { gold = 90+Math.floor(Math.random()*61); G.bossesKilled++; }
   G.gold += gold;
   G.combatRewards = { gold };
 
@@ -994,6 +1008,21 @@ export function showRewardScreen() {
   showScreen('reward-screen');
   playAmbientMusic();
   document.getElementById('reward-gold-text').textContent = `+${G.combatRewards.gold} 文银`;
+
+  // 本场最帅一句：动态重放 + 倍率徽章
+  const bvWrap = document.getElementById('best-verse');
+  const bvStage = document.getElementById('best-verse-stage');
+  const bvText = document.getElementById('best-verse-text');
+  const bvMeta = document.getElementById('best-verse-meta');
+  if (bvWrap && G._bestLine) {
+    bvWrap.style.display = 'block';
+    bvText.textContent = `「${G._bestLine.text}」`;
+    bvMeta.textContent = `本场最佳 · ✨×${G._bestLine.mult.toFixed(2)}`;
+    setTimeout(() => playBestVerseReplay(G._bestLine, bvStage), 250);
+  } else if (bvWrap) {
+    bvWrap.style.display = 'none';
+  }
+
   const container = document.getElementById('reward-cards');
   container.innerHTML = '';
 

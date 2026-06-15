@@ -793,6 +793,27 @@
 }
 #puppet-player .puppet-label { color: var(--pine); }
 #puppet-enemy .puppet-label { color: var(--vermillion); }
+
+/* ---- Co-actor (independent ally) puppets: distinct silhouettes ---- */
+.puppet-coactor .puppet-label { color: var(--pine); }
+/* shared new strokes (cat/hatsune/sword/buns) */
+.puppet-coactor .puppet-svg line,
+.puppet-coactor .puppet-svg path { stroke-linecap: round; stroke-linejoin: round; }
+/* 猫 — ears filled, whiskers + tail thin ink */
+.puppet-svg .ca-ears path { fill: var(--paper); stroke: var(--ink); stroke-width: 2; }
+.puppet-svg .ca-whisk line { stroke: var(--ink); stroke-width: 1; opacity: 0.7; }
+.puppet-svg .ca-tail { fill: none; stroke: var(--ink); stroke-width: 2.4; }
+/* 初音 — teal twin tails + headset */
+.puppet-svg .hm-tails path { fill: none; stroke: #2BBFA8; stroke-width: 3.2; opacity: 0.9; }
+.puppet-svg .hm-set path { fill: none; stroke: var(--ink); stroke-width: 1.6; }
+.puppet-svg .hm-set circle { fill: var(--ink); }
+.puppet-svg .hm-set line { stroke: var(--ink); stroke-width: 1.4; }
+/* 影子 — filled dark silhouette */
+.puppet-svg .sh-head { fill: rgba(26,21,16,0.82); stroke: var(--ink); stroke-width: 2; }
+.puppet-svg .sh-body { fill: rgba(26,21,16,0.7); stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; }
+/* 剑客/女侠/将军 — sword + topknot */
+.puppet-svg .kn-sword line { stroke: var(--ink); stroke-width: 2.4; }
+.puppet-svg .kn-bun, .puppet-svg .gn-bun { fill: var(--ink); stroke: var(--ink); }
 #puppet-vs {
   font-family: var(--font-brush);
   font-size: 1.3rem;

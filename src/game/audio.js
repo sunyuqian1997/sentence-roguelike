@@ -200,6 +200,35 @@ export function playSFX(type) {
       playNote(100, 0.08, 'triangle', t, 0.1);
       playNote(150, 0.06, 'sine', t + 0.04, 0.06);
       break;
+    // ---- AVG puppet state-change cues (subtle, short) ----
+    case 'charm': // 🌈 魅惑 — a lilting rise
+      playNote(523.3, 0.1, 'sine', t, 0.07);
+      playNote(659.3, 0.1, 'sine', t + 0.07, 0.07);
+      playNote(880, 0.14, 'sine', t + 0.14, 0.08);
+      break;
+    case 'doom': // 💀 寄了 — ominous drop
+      playNote(220, 0.14, 'sawtooth', t, 0.09);
+      playNote(165, 0.18, 'sawtooth', t + 0.1, 0.08);
+      playNote(110, 0.24, 'triangle', t + 0.22, 0.07);
+      break;
+    case 'daze': // 😵 麻木/眩晕 — wobble
+      playNote(330, 0.08, 'triangle', t, 0.07);
+      playNote(294, 0.08, 'triangle', t + 0.07, 0.06);
+      playNote(330, 0.08, 'triangle', t + 0.14, 0.06);
+      break;
+    case 'old': // 👴 衰老 — creaky descend
+      playNote(200, 0.12, 'sawtooth', t, 0.06);
+      playNote(170, 0.14, 'sawtooth', t + 0.1, 0.05);
+      break;
+    case 'summon': // 🥷 独立个体登场 — bright pop
+      playNote(440, 0.06, 'square', t, 0.06);
+      playNote(660, 0.06, 'square', t + 0.05, 0.06);
+      playNote(880, 0.1, 'sine', t + 0.1, 0.07);
+      break;
+    case 'forbidden': // 🚫 僭越 — harsh buzz
+      playNote(140, 0.12, 'sawtooth', t, 0.12);
+      playNoise(0.1, t, 0.1);
+      break;
   }
 }
 

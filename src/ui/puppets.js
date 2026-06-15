@@ -10,9 +10,26 @@
 //     the actual damage at the same offset so numbers pop when the hit lands.
 import { G } from '../game/state.js';
 import { applyMeaningsToSentence } from '../game/meanings.js';
-import { detectPredicates, resolveIdentityTrait, isCopulaPredicate } from '../game/poetics.js';
+import { detectPredicates, resolveIdentityTrait, isCopulaPredicate, isYouCard } from '../game/poetics.js';
+import { playSFX } from '../game/audio.js';
 
 export const IMPACT_MS = 420;
+
+// Enemy pose → the audio cue played ONCE when the puppet first enters it.
+// Keyed by data-pose so preview + chant share one source of truth.
+const POSE_SFX = {
+  charmed: 'charm', doomed: 'doom', dazed: 'daze', old: 'old',
+};
+// Remember the last cue we played per puppet so a state we're already in
+// doesn't re-fire on every re-render while composing.
+const _lastCue = { player: '', enemy: '' };
+function cuePose(which, pose) {
+  const sfx = POSE_SFX[pose];
+  const key = sfx || pose || '';
+  if (_lastCue[which] === key) return;
+  _lastCue[which] = key;
+  if (sfx) playSFX(sfx);
+}
 
 // How each pun tag shows on the enemy puppet (pose + floating emoji).
 export const PUN_TO_POSE = {
@@ -69,16 +86,83 @@ const COACTOR_BASE_LEFT = 30; // % from stage left — sits in the gap, poet→c
 const COACTOR_STEP = 10;      // % between successive co-actors, fanning rightward
 const COACTOR_SCALE = 0.6;
 
-// Build one standby co-actor puppet (cloned from the poet, role emoji above).
+// ---- Per-character SVG bodies ----
+// Each co-actor gets its OWN ink figure (not a recolored poet clone). They share
+// the poet's viewBox (0 0 80 100) and class names (head/body/arm-l/arm-r/leg-*)
+// so the existing [data-pose] CSS animates them for free. Distinct silhouettes:
+// 猫 has ears+tail+whiskers, 初音 twin-tails+headset, 影子 a filled shadow, etc.
+const _shared = `
+  <ellipse class="ground" cx="40" cy="97" rx="14" ry="2.5"/>
+  <g class="arm arm-l"><path d="M37,42 Q28,48 23,58"/></g>
+  <g class="arm arm-r"><path d="M43,42 Q52,48 57,58"/></g>
+  <line class="leg leg-l" x1="34" y1="86" x2="32" y2="95"/>
+  <line class="leg leg-r" x1="46" y1="86" x2="48" y2="95"/>
+  <text class="puppet-emoji" x="40" y="7" text-anchor="middle"></text>`;
+const _body = `<path class="body" d="M40,34 C33,40 30,50 28,62 C27,71 26,80 25,88 L55,88 C54,80 53,71 52,62 C50,50 47,40 40,34 Z"/>`;
+const _face = `<g class="face"><circle cx="36" cy="23" r="1.2"/><circle cx="44" cy="23" r="1.2"/></g>`;
+
+const COACTOR_SVG = {
+  // 🐱 猫 — triangle ears, whiskers, curled tail
+  '猫': `
+    <g class="ca-ears"><path d="M30,16 L27,7 L36,13 Z"/><path d="M50,16 L53,7 L44,13 Z"/></g>
+    <circle class="head" cx="40" cy="24" r="11"/>
+    ${_face}
+    <g class="ca-whisk"><line x1="30" y1="26" x2="20" y2="24"/><line x1="30" y1="28" x2="20" y2="29"/><line x1="50" y1="26" x2="60" y2="24"/><line x1="50" y1="28" x2="60" y2="29"/></g>
+    ${_body}
+    <path class="ca-tail" d="M55,80 Q66,74 64,62 Q63,54 56,56"/>
+    ${_shared}`,
+  // 🎤 初音未来 — twin tails + headset mic
+  '初音未来': `
+    <g class="hm-tails"><path d="M29,16 Q18,30 20,60 Q21,72 26,78"/><path d="M51,16 Q62,30 60,60 Q59,72 54,78"/></g>
+    <circle class="head" cx="40" cy="22" r="11"/>
+    ${_face}
+    <g class="hm-set"><path d="M29,22 Q40,12 51,22"/><circle cx="29" cy="23" r="2.2"/><line x1="29" y1="25" x2="33" y2="30"/></g>
+    ${_body}
+    ${_shared}`,
+  // 🌑 影子 — a filled dark silhouette, wispy bottom
+  '影子': `
+    <circle class="sh-head" cx="40" cy="22" r="11"/>
+    <path class="sh-body" d="M40,33 C32,39 29,50 28,62 C27,71 26,80 26,88 Q31,82 35,88 Q40,93 45,88 Q49,82 54,88 C54,80 53,71 52,62 C51,50 48,39 40,33 Z"/>
+    <g class="face"><circle cx="36" cy="22" r="1.4" fill="#F2EAD8"/><circle cx="44" cy="22" r="1.4" fill="#F2EAD8"/></g>
+    ${_shared}`,
+  // 🗡️ 剑客/女侠/将军 — topknot + a sword line
+  '剑客': `
+    <circle class="kn-bun" cx="40" cy="9" r="3.5"/>
+    <circle class="head" cx="40" cy="23" r="11"/>
+    ${_face}
+    ${_body}
+    <g class="kn-sword"><line x1="55" y1="56" x2="70" y2="34"/><line x1="66" y1="40" x2="73" y2="44"/></g>
+    ${_shared}`,
+};
+COACTOR_SVG['女侠'] = COACTOR_SVG['剑客'];
+COACTOR_SVG['将军'] = COACTOR_SVG['剑客'];
+
+// 📚 generic scholar/spirit — plain ink figure with a topknot, used for any
+// named subject without a bespoke design (无名者/书生/酒仙/月兔/狐仙/日…).
+function genericCoActorSVG() {
+  return `
+    <circle class="gn-bun" cx="40" cy="10" r="3"/>
+    <circle class="head" cx="40" cy="23" r="11"/>
+    ${_face}
+    ${_body}
+    ${_shared}`;
+}
+
+function coActorSVG(name) {
+  const inner = COACTOR_SVG[name] || genericCoActorSVG();
+  return `<svg viewBox="0 0 80 100" class="puppet-svg" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
+}
+
+// Build one standby co-actor puppet with its OWN character SVG.
 function makeStandby(name, indexFromZero) {
-  const player = document.getElementById('puppet-player');
-  const clone = player.cloneNode(true);
-  clone.id = '';
+  const clone = document.createElement('div');
   clone.className = 'puppet puppet-coactor standby';
+  clone.dataset.coactor2 = (COACTOR_SVG[name] ? name : 'generic');
   clone.dataset.pose = 'idle';
   clone.dataset.coactor = name;
+  clone.innerHTML = `${coActorSVG(name)}<div class="puppet-label">${name}</div>`;
   const label = clone.querySelector('.puppet-label');
-  if (label) { label.textContent = name; label.style.opacity = '0.7'; label.style.display = 'block'; }
+  if (label) { label.style.opacity = '0.7'; label.style.display = 'block'; }
   setEmoji(clone, coActorEmoji(name));
   clone.style.position = 'absolute';
   clone.style.left = (COACTOR_BASE_LEFT + indexFromZero * COACTOR_STEP) + '%';
@@ -105,25 +189,39 @@ export function syncStandbyCoActors(names) {
   const existing = [...stage.querySelectorAll('.puppet-coactor.standby')];
   const want = names || [];
 
-  // Remove standbys no longer present.
+  // Remove standbys no longer present. Mark them as fading and stash the pending
+  // remove timer so a quick re-add can cancel it instead of losing the node.
   existing.forEach(el => {
     if (!want.includes(el.dataset.coactor)) {
+      el.dataset.removing = '1';
       el.style.opacity = '0';
       el.style.transform = `scale(${COACTOR_SCALE - 0.1})`;
-      setTimeout(() => el.remove(), 250);
+      el._removeTimer = setTimeout(() => el.remove(), 250);
     }
   });
 
   // Add missing standbys, fanned out by their order of appearance.
   want.forEach((name, i) => {
-    if (existing.some(el => el.dataset.coactor === name && el.isConnected)) {
-      // keep position fresh in case index changed
-      const el = existing.find(e => e.dataset.coactor === name);
-      el.style.left = (COACTOR_BASE_LEFT + i * COACTOR_STEP) + '%';
+    // A still-attached node that is NOT mid-removal can be reused as-is.
+    const live = existing.find(e => e.dataset.coactor === name && e.isConnected && e.dataset.removing !== '1');
+    if (live) {
+      live.style.left = (COACTOR_BASE_LEFT + i * COACTOR_STEP) + '%';
+      return;
+    }
+    // A node that was fading out for this same name: cancel its removal and revive
+    // it (no new SFX, no flicker) instead of double-spawning.
+    const reviving = existing.find(e => e.dataset.coactor === name && e.isConnected && e.dataset.removing === '1');
+    if (reviving) {
+      clearTimeout(reviving._removeTimer);
+      reviving.dataset.removing = '';
+      reviving.style.left = (COACTOR_BASE_LEFT + i * COACTOR_STEP) + '%';
+      reviving.style.opacity = '1';
+      reviving.style.transform = `scale(${COACTOR_SCALE})`;
       return;
     }
     const el = makeStandby(name, i);
     stage.appendChild(el);
+    playSFX('summon'); // a new ally just stepped onto the stage
     requestAnimationFrame(() => { el.style.opacity = '1'; el.style.transform = `scale(${COACTOR_SCALE})`; });
   });
 }
@@ -235,6 +333,9 @@ export function updatePuppets() {
   setPose(enemy, enemyPose);
   setEmoji(player, playerEmoji);
   setEmoji(enemy, enemyEmoji);
+  // Play a one-shot cue when a puppet first enters a notable state.
+  cuePose('enemy', enemyPose);
+  cuePose('player', playerPose);
 
   // Standby co-actors: named subjects (not 我) take the stage as soon as they
   // join an attack-on-enemy sentence — instant "summoned ally arrived" feedback
@@ -244,7 +345,8 @@ export function updatePuppets() {
   const standbyNames = hasAttackOnEnemy
     ? sentence.filter(c => c && c.pos === 'subject' && c.word !== '我'
         && !c._isEnemyTarget && !c._isSelfTarget
-        && !isCopulaPredicate(sentence, c)) // exclude "我是影子" identity B
+        && !isYouCard(c)                     // "你" = the enemy, not a友方 ally
+        && !isCopulaPredicate(sentence, c))  // exclude "我是影子" identity B
         .map(c => c.word)
     : [];
   syncStandbyCoActors(standbyNames);
@@ -449,4 +551,68 @@ export function playEnemyPuppetAnim(intent, opts) {
     }],
   ];
   seq.forEach(([at, fn]) => setTimeout(fn, at));
+}
+
+// ============================================================
+// BEST-VERSE REPLAY (reward screen)
+// Builds a self-contained mini stage and re-enacts the combat's highest-mult
+// line: poet (+ any co-actors) dash at the enemy, who reacts. Pure clone of the
+// live puppet markup so it always matches the current art.
+// ============================================================
+export function playBestVerseReplay(bestLine, stageEl) {
+  if (!bestLine || !stageEl) return;
+  const livePlayer = document.getElementById('puppet-player');
+  const liveEnemy = document.getElementById('puppet-enemy');
+  if (!livePlayer || !liveEnemy) return;
+
+  // Mini stage scaffold
+  stageEl.innerHTML = '';
+  stageEl.style.position = 'relative';
+
+  const poet = livePlayer.cloneNode(true);
+  poet.id = ''; poet.dataset.chanting = ''; poet.dataset.pose = 'idle';
+  poet.style.cssText = 'position:absolute;left:8%;bottom:6%;width:22%;transform-origin:bottom center;';
+  const foe = liveEnemy.cloneNode(true);
+  foe.id = ''; foe.dataset.chanting = ''; foe.dataset.pose = 'idle';
+  foe.style.cssText = 'position:absolute;right:8%;bottom:6%;width:22%;transform-origin:bottom center;';
+  stageEl.appendChild(poet);
+  stageEl.appendChild(foe);
+
+  // Co-actors: replay the canonical list the evaluator already produced
+  // (effects._coActors), not a re-scan — so we show exactly who fought, including
+  // generic figures, and never invent actors for identity/copula lines.
+  const names = [];
+  ((bestLine.effects && bestLine.effects._coActors) || []).forEach(a => {
+    if (a && a.name && !names.includes(a.name)) names.push(a.name);
+  });
+  const extras = names.slice(0, 3).map((name, i) => {
+    const el = document.createElement('div');
+    el.className = 'puppet puppet-coactor';
+    el.dataset.pose = 'idle';
+    el.innerHTML = `${coActorSVG(name)}<div class="puppet-label">${name}</div>`;
+    el.style.cssText = `position:absolute;left:${34 + i * 12}%;bottom:5%;width:17%;transform-origin:bottom center;z-index:${3 - i};`;
+    setEmoji(el, coActorEmoji(name));
+    stageEl.appendChild(el);
+    return el;
+  });
+
+  const isAttack = !!(bestLine.effects && (bestLine.effects.damage > 0 || bestLine.effects.aoe));
+  const allies = [poet, ...extras];
+
+  // One dash → impact → recover cycle.
+  setTimeout(() => {
+    allies.forEach((a, i) => {
+      a.dataset.pose = isAttack ? 'attack' : 'heal';
+      a.style.transition = 'transform 0.35s cubic-bezier(0.22,1,0.36,1)';
+      a.style.transform = isAttack ? `translateX(${110 + i * 6}%)` : 'translateY(-4%)';
+    });
+  }, 350);
+  setTimeout(() => {
+    if (isAttack) { foe.dataset.pose = 'hit'; impactFlash(foe); foe.style.transition='transform 0.2s ease-out'; foe.style.transform = 'translateX(6%) rotate(4deg)'; }
+    playSFX(isAttack ? 'hit_heavy' : 'heal');
+  }, 720);
+  setTimeout(() => {
+    allies.forEach(a => { a.style.transform = ''; a.dataset.pose = 'idle'; });
+    foe.style.transform = ''; foe.dataset.pose = 'idle';
+  }, 1100);
 }
