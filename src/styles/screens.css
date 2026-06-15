@@ -155,14 +155,17 @@
   width: 100%;
 }
 #combat-screen > #combat-top,
-#combat-screen > #sentence-dock,
 #combat-screen > #hand-area { flex: 0 0 auto; width: 100%; }
+/* Sentence dock sizes to its content (the slots must never be clipped — that's
+   where you write). It can't grow past its content, and the stage above yields
+   the spare height, so it never pushes the 吟诵 row off-screen. */
+#combat-screen > #sentence-dock { flex: 0 0 auto; width: 100%; }
 
-/* --- Battle stage: the dramatic heart. Takes the spare height but can shrink
-   (down to a floor) so the sentence dock + hand always fit below it. --- */
+/* --- Battle stage: the dramatic heart. Takes the spare height; min-height:0 so
+   it can be compressed on short viewports (the puppets carry their own floor). --- */
 #combat-stage {
   flex: 1 1 auto;
-  min-height: 200px;
+  min-height: 0;
   width: 100%;
   display: grid;
   grid-template-columns: minmax(180px, 1fr) minmax(420px, 2.2fr) minmax(180px, 1fr);

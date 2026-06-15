@@ -59,12 +59,52 @@ Author of this handoff: Claude (4.7 session) → 交接给新 session
 15. **独立个体待命小人不再与诗人重合**：puppets.js 三个常量 `COACTOR_BASE_LEFT/STEP/SCALE`
     (30%/10%/0.6) 统一控制站位，co-actor 站在诗人与中线之间的空档。puppet-stage 加宽到 min(640px,98%)。
 
+### A-ter. 2026-06-14 第三轮 语义修复（含 Codex 二审）
+16. **「你」=敌方**：`isYouCard`(poetics.js，你/尔/汝)统一识别。`你是X`→debuff 敌人(等价敌是X，
+    detectPredicates 给 subjectKind=enemy、idx=-1 由 combat.js#resolveEnemy 解析为首个存活敌)；
+    `你` 不再作我方助战独立个体(context.js coActors / puppets.js standby 排除)；
+    `你摸鱼`等特殊动词按敌方主语处理(cardEffects.js isEnemySubjectCard)。
+17. **「我是皇帝」全军共享身份 buff**：identity self-buff 的 strength delta 同时加给同句我方
+    独立个体(index.js finalize 的 _coActors 块，note「👑 黄袍加身」，co-actor.rallied 记录)。
+18. **逗号分句角色判定彻底 clause-local**（Codex P1/P2 复审后修）：
+    - `enemyStrikesMe`(index.js)改为**遍历所有逗号分句**，任一子句出现[敌ref…动词…我]即触发；
+      敌ref 含 你/尔/汝。修了"我摸鱼，敌斩我"(攻击在后句)漏判 + "你斩我"漏判。
+    - `subjectIsEnemy`(cardEffects.js)改为**按当前动词所在子句**判定，且敌 ref 必须在动词**前**
+      (动词后是宾语，"我斩纸鬼"主语仍是我)。修了"我摸鱼，你斩我"前句摸鱼被误判敌方易伤。
+
+### A-quater. 2026-06-14 第四轮 UI/体验大批量（设计审查 + Codex 终审）
+19. **tooltip 残留修复**：renderCombat() 开头 `hideTooltip()`——重渲销毁 hover 的 DOM 致 mouseleave 不触发。
+20. **诗册可读**：pixel.css 覆盖 .round-journal-title/line 为像素字 + `--ink` 深色 + 大字号行高。
+21. **删除目标小牌，改为直接点立绘选目标**：原先的 `#target-cards`/`#target-cards-enemy` 小牌
+    无论放手牌行还是立绘列都显得挤/溢出，已**整体删除**。现在：点玩家立绘(`#player-char-card`
+    onclick→`addSelfTarget`，加 `.target-selected` 高亮)=选我；点敌人(renderEnemies 已有 onclick，
+    `.targeted` 高亮)=选敌。render.js#renderTargetCards 删除，addSelfTarget 替代。
+22. **背景提亮**：`--stage-bg`#1E2530→#313C4C，`--stage-mid`→#455065，扫描线/暗角透明度减半，顶栏石板色。
+23. **金币/卡包价**(sub-agent)：fight 35-50、elite 65-100、boss 90-150；最贵卡包 60→50。
+24. **棍人状态音效**：audio.js 加 charm/doom/daze/old/summon/forbidden；puppets.js POSE_SFX+cuePose
+    (带 _lastCue 去抖)在 updatePuppets 触发，新 standby 出场播 summon。
+25. **独立个体专属 SVG**：puppets.js COACTOR_SVG(猫=耳+尾+须 / 初音=双马尾+耳机 / 影子=填充剪影 /
+    剑客女侠将军=刀+发髻 / 通用兜底)。makeStandby 改 innerHTML 构建(不再克隆诗人)；CSS 在 components.css。
+    standby 加 removing 标记 + 取消重加竞态(Codex P2 修)。
+26. **结算页最帅句+动态重放**：combat.js 跟踪 `G._bestLine`(最高 totalMult)；showRewardScreen 调
+    `playBestVerseReplay`(puppets.js) 克隆 #puppet-player/#puppet-enemy 建迷你台重演，co-actor
+    **直接用 `effects._coActors`**(Codex P2 修，不再正则重扫)。combatVictory 兜底缺失 map node。
+
+### A-quinque. 2026-06-14 第五轮 布局崩坏修复（宽屏/全屏，design agent 审）
+27. **棍人顶出舞台**：根因 `.puppet height: clamp(170px,22vw,240px)` 用 **vw(横向)** 控纵向高度，
+    宽屏被钉死 240px 比舞台还高。改 `height: clamp(88px,86%,240px); width:auto; aspect-ratio:80/100`
+    (绑舞台高度%)，`#puppet-stage` 改 `height:100%;max-height:360px;overflow:hidden`(pixel.css)。
+28. **判定预览条压造句标题**：`#sentence-topbar flex-wrap:wrap` 致预览换行盖到 label。改 `nowrap`+
+    label/preview 都加 `min-width:0`(可收缩不换行)(pixel.css)。
+29. **吟诵行被裁出视口**：`#combat-stage min-height:200px` 抢高 + dock 无收缩契约。改 stage `min-height:0`
+    (成为唯一弹簧)，`#sentence-dock flex:0 0 auto`(随内容、不裁 slots)，棍人 floor 88px 给 stage 留压缩空间(screens.css)。
+    **教训(design agent)**：纵向尺寸永远绑纵向参照系(% / fr / vh)，别用 vw。
+
 ### B. 已知的未解决判定问题 (新 session 可继续，基于日志复盘)
 1. **identity 身份 buff 数值不进 effects**：如"我是皇帝→力+2"在 notes 显示了，但实际是
    combat.js#applyEffects 里直接改 G.strength，**没写进 result.effects**，导致预览/日志看不到该数值、
    且与倍率体系脱节。建议把 identity 的 selfEffect 写进 effects 再统一结算。
-2. **逗号分句的主语污染**："我是纸鬼，我摸鱼"里后半句"我摸鱼"该回血，但前半句的 enemy-target
-   污染了 subjectIsEnemy 判定，摸鱼被判成对敌易伤。需要按逗号分句独立判定每个分句的主语。
+2. ~~**逗号分句的主语污染**~~ — 已修(见 A-ter #18)：role/subject 判定均 clause-local。
 3. **高倍率乘 0 伤害显虚高**：纯状态句(如只施加易伤)totalMult 可能 ×2+ 但实际伤害 0，
    玩家觉得倍率虚标。考虑无主要数值时弱化倍率展示。
 4. **"给我V"被"是给"抢**：句中同时有"是"和"给我V"时，gei_pun(priority10) 压过 gei_imperative(8)，
