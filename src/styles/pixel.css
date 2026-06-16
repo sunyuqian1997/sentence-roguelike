@@ -469,8 +469,8 @@ body { font-family: var(--font-pixel); }
 
 /* ---- Hand tiles sized for a comfortable single row ---- */
 #hand-cards .card {
-  width: clamp(90px, 11vw, 116px) !important;
-  height: clamp(128px, 16.5vw, 162px) !important;
+  width: clamp(78px, 8vw, 100px) !important;
+  height: clamp(112px, 12vw, 140px) !important;
 }
 #hand-controls { padding: 6px 14px 0; }
 
@@ -567,3 +567,16 @@ body { font-family: var(--font-pixel); }
   color: var(--accent);
   margin-top: 3px;
 }
+
+/* 卡包列表在浅色奖励屏里 — 原样式是给深色背景的白字(看不见)。改深墨字 + 纸色块。 */
+.pack-item {
+  background: var(--paper-2) !important;
+  border: 2px solid var(--line) !important;
+}
+.pack-item:hover { background: var(--paper) !important; border-color: var(--accent) !important; }
+.pack-name { color: var(--ink) !important; font-weight: 900; }
+.pack-desc { color: var(--ink-soft) !important; }
+.pack-price { color: var(--accent) !important; font-weight: 900; }
+/* 买不起的卡包仍可读(原 opacity:0.5 让名字几乎消失)；只降一点点。 */
+.pack-locked { opacity: 0.82 !important; }
+.pack-locked:hover { background: var(--paper-2) !important; border-color: var(--line) !important; }
