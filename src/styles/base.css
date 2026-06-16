@@ -6,7 +6,9 @@ html, body {
   background: var(--paper);
   color: var(--ink);
   font-family: var(--font-serif);
-  font-size: clamp(16px, 2.2vw, 21px);
+  /* Root size drives all rem sizing. Capped lower so on big/high-DPI screens at
+     100% the UI doesn't max out and overflow (was 21px → everything too big). */
+  font-size: clamp(15px, 1.5vw, 18px);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   user-select: none; -webkit-user-select: none;
