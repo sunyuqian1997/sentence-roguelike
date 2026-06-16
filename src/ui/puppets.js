@@ -574,8 +574,13 @@ export function playEnemyPuppetAnim(intent, opts) {
 // BEST-VERSE REPLAY (reward screen)
 // Builds a self-contained mini stage and re-enacts the combat's highest-mult
 // line: poet (+ any co-actors) dash at the enemy, who reacts. Pure clone of the
-// live puppet markup so it always matches the current art.
+// live puppet markup so it always matches the current art. The cycle loops on an
+// interval while the reward screen is open; stopBestVerseReplay() clears it.
 // ============================================================
+let _bestVerseInterval = null;
+export function stopBestVerseReplay() {
+  if (_bestVerseInterval) { clearInterval(_bestVerseInterval); _bestVerseInterval = null; }
+}
 export function playBestVerseReplay(bestLine, stageEl) {
   if (!bestLine || !stageEl) return;
   const livePlayer = document.getElementById('puppet-player');
@@ -616,20 +621,29 @@ export function playBestVerseReplay(bestLine, stageEl) {
   const isAttack = !!(bestLine.effects && (bestLine.effects.damage > 0 || bestLine.effects.aoe));
   const allies = [poet, ...extras];
 
-  // One dash → impact → recover cycle.
-  setTimeout(() => {
-    allies.forEach((a, i) => {
-      a.dataset.pose = isAttack ? 'attack' : 'heal';
-      a.style.transition = 'transform 0.35s cubic-bezier(0.22,1,0.36,1)';
-      a.style.transform = isAttack ? `translateX(${110 + i * 6}%)` : 'translateY(-4%)';
-    });
-  }, 350);
-  setTimeout(() => {
-    if (isAttack) { foe.dataset.pose = 'hit'; impactFlash(foe); foe.style.transition='transform 0.2s ease-out'; foe.style.transform = 'translateX(6%) rotate(4deg)'; }
-    playSFX(isAttack ? 'hit_heavy' : 'heal');
-  }, 720);
-  setTimeout(() => {
-    allies.forEach(a => { a.style.transform = ''; a.dataset.pose = 'idle'; });
-    foe.style.transform = ''; foe.dataset.pose = 'idle';
-  }, 1100);
+  // One dash → impact → recover cycle, looped on an interval so the highlight
+  // keeps replaying while the reward screen is open. Timers are tracked on the
+  // stage element so a re-entry (or stopBestVerseReplay) clears them cleanly.
+  const runCycle = () => {
+    const t = [];
+    t.push(setTimeout(() => {
+      allies.forEach((a, i) => {
+        a.dataset.pose = isAttack ? 'attack' : 'heal';
+        a.style.transition = 'transform 0.35s cubic-bezier(0.22,1,0.36,1)';
+        a.style.transform = isAttack ? `translateX(${110 + i * 6}%)` : 'translateY(-4%)';
+      });
+    }, 350));
+    t.push(setTimeout(() => {
+      if (isAttack) { foe.dataset.pose = 'hit'; impactFlash(foe); foe.style.transition='transform 0.2s ease-out'; foe.style.transform = 'translateX(6%) rotate(4deg)'; }
+      playSFX(isAttack ? 'hit_heavy' : 'heal');
+    }, 720));
+    t.push(setTimeout(() => {
+      allies.forEach(a => { a.style.transform = ''; a.dataset.pose = 'idle'; });
+      foe.style.transform = ''; foe.dataset.pose = 'idle';
+    }, 1100));
+    stageEl._cycleTimers = t;
+  };
+  stopBestVerseReplay();           // clear any prior loop first
+  runCycle();
+  _bestVerseInterval = setInterval(runCycle, 2200);
 }

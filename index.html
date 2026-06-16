@@ -59,10 +59,10 @@
     <div id="combat-stage">
       <div id="stage-player" class="stage-side">
         <div class="standee player-standee" id="player-char-card" title="点击选「我」为目标">
-          <img id="player-portrait-img" src="/lqz.png" alt="李清照" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-          <div class="portrait-placeholder">李清照</div>
+          <img id="player-portrait-img" src="/lqz.png" alt="诗人" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="portrait-placeholder">诗人</div>
         </div>
-        <div class="standee-name" id="player-portrait-name">李清照</div>
+        <div class="standee-name" id="player-portrait-name">诗人</div>
         <div class="standee-hp player-hp" id="player-status-bar">
           <span class="hp-icon">♥</span><span id="combat-hp" class="hp-value">50/50</span>
           <span class="player-block-display" id="combat-block-display"></span>
@@ -150,12 +150,8 @@
     <!-- Sentence dock: grid of slots + duizhang note + score preview -->
     <div id="sentence-dock">
       <div id="sentence-area">
-        <div id="sentence-topbar">
-          <div id="sentence-label">
-            <span>【造句区】点击手牌入句 · 点我方/敌方立绘选目标</span>
-          </div>
-          <div id="sentence-score-preview"></div>
-        </div>
+        <!-- 效果区：另起一行横跨造句区上方，费用/攻击/倍率/命中规则有大空间 -->
+        <div id="sentence-score-preview"></div>
         <div id="sentence-slots-container"></div>
         <div id="duizhang-preview"></div>
       </div>
@@ -163,9 +159,10 @@
 
     <div id="hand-area">
       <div id="hand-cards-wrapper">
-        <!-- 目标卡：我 + 各敌人，放手牌区左端，虚线与手牌分隔 -->
+        <!-- 我 目标卡在左端，敌人目标卡在最右端，手牌居中 -->
         <div id="target-cards"></div>
         <div id="hand-cards"></div>
+        <div id="target-cards-enemy"></div>
       </div>
       <div id="hand-controls">
         <div class="energy-display" title="文力（行动点）">

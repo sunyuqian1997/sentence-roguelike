@@ -168,7 +168,7 @@
   min-height: 0;
   width: 100%;
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) minmax(420px, 2.2fr) minmax(180px, 1fr);
+  grid-template-columns: minmax(160px, 0.8fr) minmax(560px, 3.4fr) minmax(160px, 0.8fr);
   grid-template-rows: 100%;       /* single full-height row → side columns stretch */
   align-items: stretch;
   gap: 0;
@@ -276,7 +276,7 @@
 /* Fixed width (not shrink-to-fit) so the box stays put as cards are added —
    no more horizontal drift. Cards fill from the left inside it. */
 #sentence-dock > #sentence-area {
-  width: min(760px, 96vw);
+  width: min(1180px, 97vw);
   flex: 0 0 auto;
 }
 

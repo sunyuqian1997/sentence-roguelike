@@ -4,7 +4,7 @@ import { playSFX, initAudio, playAmbientMusic, playCombatMusic, playBossMusic, s
 import { VFX } from '../ui/vfx.js';
 import { WORD_DEFS, makeCard, createStarterDeck, randomCard, randomCardWeighted } from '../data/cards.js';
 import { showScreen, renderCombat, createCardElement } from '../ui/render.js';
-import { playChantPuppetAnim, playEnemyPuppetAnim, IMPACT_MS, playBestVerseReplay } from '../ui/puppets.js';
+import { playChantPuppetAnim, playEnemyPuppetAnim, IMPACT_MS, playBestVerseReplay, stopBestVerseReplay } from '../ui/puppets.js';
 import { generateCharSVG } from '../ui/svgArt.js';
 import { dealDamageToPlayer, dealDamageToEnemy, checkEnemies } from './damage.js';
 import { generateMap, renderMap } from './map.js';
@@ -1110,6 +1110,7 @@ function renderPackShop(container) {
 export function skipReward() { afterReward(); }
 
 export function afterReward() {
+  stopBestVerseReplay();   // stop the looping highlight before leaving the reward screen
   const node = G.map[G.currentRow][G.currentNodeIndex];
   if (node.type === 'boss') {
     G.act++; G.currentRow = -1; G.currentNodeIndex = -1;

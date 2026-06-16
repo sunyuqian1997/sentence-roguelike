@@ -382,15 +382,17 @@ function targetStatusHTML(obj) {
   return b.length ? `<div class="tgt-status">${b.join('')}</div>` : '';
 }
 
-// Target cards live at the LEFT of the hand row (我 + one per living enemy),
-// separated from the hand by a dashed divider. Click to pick that target. Each
-// carries its own status badges so the player reads状态 right where they act.
+// 我 target card sits at the LEFT of the hand row, enemy target cards at the
+// RIGHT end (#target-cards-enemy) — kept apart so they're not confused. Click to
+// pick that target. Each carries its own status badges, read right where you act.
 function renderTargetCards() {
   const slot = document.getElementById('target-cards');
+  const enemySlot = document.getElementById('target-cards-enemy');
   if (!slot) return;
   slot.innerHTML = '';
+  if (enemySlot) enemySlot.innerHTML = '';
 
-  // 我
+  // 我 (left)
   const woDef = WORD_DEFS.wo;
   const woCard = { ...woDef, key: 'wo', upgraded: false, cost: 0, _isFixedCard: true, id: 'tgt_wo' };
   const woEl = createCardElement(woCard, null, { noClick: true });
@@ -402,7 +404,8 @@ function renderTargetCards() {
   woEl.onclick = () => addSelfTarget();
   slot.appendChild(woEl);
 
-  // each living enemy
+  // each living enemy (right end)
+  const enemyContainer = enemySlot || slot;
   G.enemies.forEach((enemy, idx) => {
     if (!enemy || enemy.hp <= 0) return;
     const eCard = { word: enemy.name, pos: 'object', cost: 0, _isFixedCard: true, id: 'tgt_enemy_' + idx };
@@ -413,7 +416,7 @@ function renderTargetCards() {
     if (G.sentence.some(c => c._isEnemyTarget && c._enemyIdx === idx)) eEl.classList.add('in-sentence');
     eEl.style.cursor = 'pointer';
     eEl.onclick = () => addEnemyTarget(idx, enemy);
-    slot.appendChild(eEl);
+    enemyContainer.appendChild(eEl);
   });
 }
 
