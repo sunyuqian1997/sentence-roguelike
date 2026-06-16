@@ -173,7 +173,7 @@ body { font-family: var(--font-pixel); }
 #stage-enemy .enemy .enemy-status-effects { justify-content: center; margin-top: 4px; }
 
 /* Enemy on the stage: scale up to mirror the player standee (big & near). */
-#stage-enemy > #enemy-area { width: 100%; height: 100%; }
+#stage-enemy > #enemy-area { width: 100%; height: 100%; overflow-y: auto; }
 #stage-enemy .enemy {
   width: 100%;
   max-width: 220px;
@@ -187,6 +187,19 @@ body { font-family: var(--font-pixel); }
   height: clamp(120px, 13vw, 170px) !important;
   font-size: 4rem;
 }
+/* With 2+ enemies the column gets tight — shrink each hard & top-align so both
+   fit in the column height without clipping. */
+#stage-enemy > #enemy-area:has(.enemy:nth-child(2)) { justify-content: center !important; gap: 6px !important; }
+#stage-enemy > #enemy-area:has(.enemy:nth-child(2)) .enemy { padding: 3px 8px 5px !important; gap: 2px !important; }
+#stage-enemy > #enemy-area:has(.enemy:nth-child(2)) .enemy .enemy-portrait,
+#stage-enemy > #enemy-area:has(.enemy:nth-child(2)) .enemy .enemy-portrait-img {
+  width: clamp(56px, 6vw, 76px) !important;
+  height: clamp(56px, 6vw, 76px) !important;
+  font-size: 1.8rem;
+}
+#stage-enemy > #enemy-area:has(.enemy:nth-child(2)) .enemy .enemy-name { font-size: 0.85rem !important; }
+#stage-enemy > #enemy-area:has(.enemy:nth-child(2)) .enemy .enemy-hp-bar { width: 100px !important; }
+#stage-enemy > #enemy-area:has(.enemy:nth-child(2)) .enemy .enemy-intent { font-size: 0.72rem !important; }
 #stage-enemy .enemy .enemy-name { font-size: 1.1rem !important; }
 #stage-enemy .enemy .enemy-hp-bar { width: 130px !important; }
 #stage-enemy .enemy .enemy-intent { font-size: 0.85rem !important; }
@@ -461,8 +474,8 @@ body { font-family: var(--font-pixel); }
 }
 #hand-controls { padding: 6px 14px 0; }
 
-/* ---- Target cards: 我 at LEFT end, enemies at RIGHT end of the hand row ---- */
-#hand-cards { flex: 1 1 auto; }
+/* ---- Target cards flank the hand (slight gap), not the screen edges ---- */
+#hand-cards { flex: 0 1 auto; }
 #target-cards, #target-cards-enemy {
   display: flex;
   align-items: flex-end;

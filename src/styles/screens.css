@@ -257,11 +257,13 @@
   padding: 8px;
 }
 
-/* --- Enemy area lives in the right standee column --- */
+/* --- Enemy area lives in the right standee column: stack vertically, no wrap
+   (wrap + fixed height made a 2nd enemy spill into a new column off-screen) --- */
 #stage-enemy > #enemy-area {
   width: 100%;
   display: flex;
   flex-direction: column;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
   gap: 8px;

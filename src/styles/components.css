@@ -671,7 +671,7 @@
   gap: 12px;
   padding: 6px 28px 4px;
   margin: 0 auto 4px;
-  max-width: 360px; /* keep the duelists close — no十万八千里 */
+  max-width: 880px; /* pixel.css controls actual width; this just lifts the old 360 cap */
   min-height: 96px;
   position: relative;
 }
@@ -1112,6 +1112,7 @@
 #hand-cards-wrapper {
   display: flex;
   align-items: flex-end;
+  justify-content: center;   /* target cards hug the hand, not the screen edges */
   gap: 0;
   padding: 6px 4px;
 }
