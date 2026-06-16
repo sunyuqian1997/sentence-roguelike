@@ -7,28 +7,40 @@ import { G } from '../state.js';
 export function applySubjects(ctx) {
   const { effects, bonus } = ctx;
 
-  // Does this sentence have an attack verb aimed at an enemy? Only then do
-  // named subjects "step onto the field" as independent attackers.
-  const hasAttackOnEnemy = ctx.hasEnemyTarget
-    && ctx.realVerbs.some(v => v.combatType === 'attack' && !VERB_SPECIALS.some(([flag]) => v[flag]));
+  // A named subject "steps onto the field" as its OWN entity for ANY verb, not
+  // just attacks: 影子斩敌 = independent attack; 皇帝挡纸鬼 = independent block;
+  // 无名者守我 = blocks FOR me; 月兔治我 = heals me. The primary real verb decides
+  // what the co-actor does and at whom.
+  const primaryVerb = ctx.realVerbs.find(v => !VERB_SPECIALS.some(([flag]) => v[flag]))
+    || ctx.realVerbs[0];
+  const coActVerbType = primaryVerb ? (primaryVerb.combatType || 'attack') : null;
+  // Target side: an attack lands on the enemy; defense/heal benefit 我 (the
+  // poet), unless the verb explicitly targets the enemy.
+  const coActTargetsEnemy = coActVerbType === 'attack';
+  const canCoAct = !!primaryVerb && (ctx.hasEnemyTarget || coActVerbType !== 'attack');
 
   ctx.subjects.forEach(s => {
     const b = s.powerBonus || 0;
     const ub = s.upgraded ? Math.ceil(b * 1.5) : b;
 
-    // Co-actor: a named subject acting as its OWN entity (independent strike),
-    // not a 我-buff and not an "A 是 B" identity predicate. ctx.coActors was
-    // pre-filtered in buildContext to exclude copula-predicate subjects.
-    const isCoActor = hasAttackOnEnemy && ctx.coActors.includes(s);
+    // Co-actor: a named subject acting independently. ctx.coActors was
+    // pre-filtered in buildContext to exclude copula-predicate subjects and 你.
+    const isCoActor = canCoAct && ctx.coActors.includes(s);
     if (isCoActor) {
+      // Power from the subject's martial stat (attack) or generic, min 3.
       const martial = (s.bonusType === 'attack' || s.bonusType === 'all') ? ub : 0;
       const power = Math.max(3, martial);
-      (effects._coActors ||= []).push({ name: s.word, power });
-      ctx.grammarNotes.push(`🥷 ${s.word}·助战 (独立攻击${power})`);
-      // its non-attack contributions still count (def/heal pad, riders); only
-      // the attack stat is diverted into its own strike to avoid double-count.
-      if (s.bonusType === 'defense') bonus.subjectDefense += ub;
-      else if (s.bonusType === 'heal') bonus.subjectHeal += ub;
+      (effects._coActors ||= []).push({
+        name: s.word, power,
+        verbType: coActVerbType,
+        targetsEnemy: coActTargetsEnemy,
+      });
+      const actLabel = coActVerbType === 'attack' ? `独立攻击${power}`
+        : coActVerbType === 'defense' ? `独立格挡${power}`
+        : coActVerbType === 'heal' ? `独立治疗${power}` : `独立行动${power}`;
+      ctx.grammarNotes.push(`🥷 ${s.word}·助战 (${actLabel})`);
+      // riders (draw/thorns/etc.) still count; the main stat is the co-actor's
+      // own independent action so we do NOT also pad 我's numbers (no double-count).
       if (s.defenseBonus) bonus.subjectDefense += (s.upgraded ? Math.ceil(s.defenseBonus * 1.5) : s.defenseBonus);
       if (s.healBonusSub) bonus.subjectHeal += (s.upgraded ? Math.ceil(s.healBonusSub * 1.5) : s.healBonusSub);
       applySubjectRiders(ctx, s);

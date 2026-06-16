@@ -53,11 +53,18 @@ function finalize(ctx) {
     clauses.push(cur);
   }
   const enemyStrikesMe = !effects._imperative && clauses.some(clause => {
-    const vIdx = clause.findIndex(c => c.pos === 'verb' || c.pos === 'special');
+    // Only an ATTACK verb landing on 我 hurts me — 守我/治我 are beneficial.
+    const vIdx = clause.findIndex(c => (c.pos === 'verb' || c.pos === 'special') && c.combatType === 'attack');
     if (vIdx < 0) return false;
+    const after = clause.slice(vIdx + 1);
+    const meAfterVerb = after.some(isMe);
+    if (!meAfterVerb) return false;
     const enemyBeforeVerb = clause.slice(0, vIdx).some(isEnemyRef);
-    const meAfterVerb = clause.slice(vIdx + 1).some(isMe);
-    return enemyBeforeVerb && meAfterVerb;
+    // 我 is the patient. Either an explicit enemy agent ("纸鬼碎我"), OR the attack
+    // has no enemy object so it just lands on 我 ("碎我"). An enemy ALSO after the
+    // verb means 我 isn't the sole patient.
+    const enemyAfterVerb = after.some(isEnemyRef);
+    return (enemyBeforeVerb || !enemyAfterVerb);
   });
 
   if ((ctx.hasSelfTarget || enemyStrikesMe) && effects.damage > 0) {
@@ -154,20 +161,37 @@ function finalize(ctx) {
   // like (identity self-buff with a strength delta) is a全军 rally: the麾下
   // co-actors share the leader's strength bonus (黄袍加身，将士同享).
   if (effects._coActors && effects._coActors.length) {
-    let sharedStrength = 0;
+    const coActorNames = new Set(effects._coActors.map(a => a.name));
+    let sharedStrength = 0;       // 我是皇帝 → 全军 rally
+    const perActorStrength = {};  // 无名者是皇帝 → only 无名者 gets the buff
     (effects._predicates || []).forEach(p => {
-      if (p.kind === 'identity' && p.target === 'self') {
-        const trait = resolveIdentityTrait(p.identityWord, p.identityIsEnemyName);
-        if (trait.selfEffect && trait.selfEffect.strength) sharedStrength += trait.selfEffect.strength;
+      if (p.kind !== 'identity') return;
+      const trait = resolveIdentityTrait(p.identityWord, p.identityIsEnemyName);
+      const str = (trait.selfEffect && trait.selfEffect.strength) || 0;
+      if (!str) return;
+      if (p.target === 'self') sharedStrength += str;
+      else if (coActorNames.has(p.subjectWord)) {
+        // "无名者是皇帝": the co-actor claims the identity → that actor is buffed.
+        perActorStrength[p.subjectWord] = (perActorStrength[p.subjectWord] || 0) + str;
       }
     });
     effects._coActors.forEach(a => {
-      a.damage = Math.floor((a.power + sharedStrength) * totalMult * finalExcAttack);
-      a.targetEnemyIdx = effects.targetEnemyIdx;
-      a.ignoreBlock = effects.ignoreBlock;
-      if (sharedStrength > 0) a.rallied = sharedStrength;
+      const bonus = sharedStrength + (perActorStrength[a.name] || 0);
+      const scaled = Math.floor((a.power + bonus) * totalMult);
+      if (a.verbType === 'defense') {
+        a.block = Math.floor(scaled * finalExcDefense);     // independent block (for 我)
+      } else if (a.verbType === 'heal') {
+        a.heal = Math.floor(scaled * finalExcHeal);          // independent heal (for 我)
+      } else {
+        a.damage = Math.floor(scaled * finalExcAttack);      // independent attack (on enemy)
+        a.targetEnemyIdx = effects.targetEnemyIdx;
+        a.ignoreBlock = effects.ignoreBlock;
+      }
+      if (bonus > 0) a.rallied = bonus;
     });
-    if (sharedStrength > 0) ctx.grammarNotes.push(`👑 黄袍加身：麾下独立个体攻击+${sharedStrength}`);
+    if (sharedStrength > 0) ctx.grammarNotes.push(`👑 黄袍加身：麾下独立个体+${sharedStrength}`);
+    Object.entries(perActorStrength).forEach(([name, str]) =>
+      ctx.grammarNotes.push(`👑 ${name}称帝：独立个体+${str}`));
   }
 
   return {

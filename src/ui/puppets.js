@@ -242,13 +242,21 @@ export function playCoActors(coActors) {
   const enemy = document.getElementById('puppet-enemy');
   if (!stage || !enemy) return;
   const standbys = [...stage.querySelectorAll('.puppet-coactor.standby')];
+  const verbOf = (name) => {
+    const a = (coActors || []).find(c => c.name === name);
+    return a ? (a.verbType || 'attack') : 'attack';
+  };
   standbys.forEach((el, i) => {
+    const vt = verbOf(el.dataset.coactor);
     const dx = gapX(el, enemy);
-    setTimeout(() => {
-      el.dataset.pose = 'attack';
-      el.style.transform = `translateX(${Math.max(40, dx - 30)}px) scale(0.95)`;
-    }, 300 * i + 120);
-    setTimeout(() => { enemy.dataset.pose = 'hit'; impactFlash(enemy); }, 300 * i + 400);
+    if (vt === 'attack') {
+      setTimeout(() => { el.dataset.pose = 'attack'; el.style.transform = `translateX(${Math.max(40, dx - 30)}px) scale(0.95)`; }, 300 * i + 120);
+      setTimeout(() => { enemy.dataset.pose = 'hit'; impactFlash(enemy); }, 300 * i + 400);
+    } else {
+      // defend/heal: act in place (no dash at enemy) — 守/挡/治 are for 我.
+      const pose = vt === 'heal' ? 'heal' : 'defend';
+      setTimeout(() => { el.dataset.pose = pose; el.style.transform = `translateY(-4px) scale(0.98)`; }, 300 * i + 120);
+    }
     setTimeout(() => { el.dataset.pose = 'idle'; el.style.transform = `scale(${COACTOR_SCALE})`; }, 300 * i + 620);
     setTimeout(() => { el.style.opacity = '0'; el.style.transform = `scale(${COACTOR_SCALE - 0.1})`; }, 300 * i + 900);
     setTimeout(() => el.remove(), 300 * i + 1200);
@@ -355,11 +363,10 @@ export function updatePuppets() {
   cuePose('player', playerPose);
 
   // Standby co-actors: named subjects (not 我) take the stage as soon as they
-  // join an attack-on-enemy sentence — instant "summoned ally arrived" feedback
-  // while composing. They act only on chant. Mirrors the evaluator's rule.
-  const hasAttackOnEnemy = hasEnemyTarget
-    && sentence.some(c => c && c.pos === 'verb' && c.combatType === 'attack');
-  const standbyNames = hasAttackOnEnemy
+  // join a sentence with ANY verb (attack/defend/heal) — instant "ally arrived"
+  // feedback while composing. They act only on chant. Mirrors the evaluator's rule.
+  const hasVerb = sentence.some(c => c && c.pos === 'verb');
+  const standbyNames = hasVerb
     ? sentence.filter(c => c && c.pos === 'subject' && c.word !== '我'
         && !c._isEnemyTarget && !c._isSelfTarget
         && !isYouCard(c)                     // "你" = the enemy, not a友方 ally

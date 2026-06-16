@@ -73,6 +73,7 @@ export function applyExclamations(ctx) {
     if (c.excSkipChance) { effects._excSkipChance = (effects._excSkipChance || 0) + c.excSkipChance; ctx.excNotes.push(`😂「${c.word}」${Math.round(c.excSkipChance * 100)}%敌跳过`); }
     if (c.excDrawNext) { effects._drawNextTurn = (effects._drawNextTurn || 0) + c.excDrawNext; ctx.excNotes.push(`🧬「${c.word}」下回合抽牌+${c.excDrawNext}`); }
     if (c.excPenetrate) { effects.ignoreBlock = true; ctx.excNotes.push(`💥「${c.word}」穿透格挡`); }
+    if (c.excStripBlock) { effects._stripTargetBlock = true; ctx.excNotes.push(`🛡️💥「${c.word}」扒光目标格挡`); }
     if (c.excBlockDebuff) { effects._blockDebuffNext = c.excBlockDebuff; ctx.excNotes.push(`🔥「${c.word}」下回合格挡-50%`); }
     if (c.excReverseNeg) { effects._reverseNeg = true; ctx.excNotes.push(`🔄「${c.word}」负面变正面`); }
     if (c.excSelfDmg) { effects.selfHarm = true; effects.selfHarmDmg = (effects.selfHarmDmg || 0) + c.excSelfDmg; ctx.excNotes.push(`💀「${c.word}」自伤${c.excSelfDmg}`); }

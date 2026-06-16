@@ -351,7 +351,9 @@ export function chantSentence() {
   const summon = detectSummon(G.sentence);
   const hasVerb = G.sentence.some(c => c.pos === 'verb' || c.pos === 'special');
   const hasExcl = G.sentence.some(c => c.pos === 'exclamation');
-  const hasSubject = G.sentence.some(c => c.pos === 'subject' || c._isFixedWo);
+  // a clicked target (enemy/我) also counts as a subject for the verbless-但有感叹
+  // path, so "仓颉之影破防了" (目标 + 破防了) is chantable.
+  const hasSubject = G.sentence.some(c => c.pos === 'subject' || c._isFixedWo || c._isEnemyTarget || c._isSelfTarget);
   if (!hasVerb && !summon && !(hasSubject && hasExcl)) return;
 
   G.energy -= cost;
@@ -510,6 +512,17 @@ export function applyEffects(effects) {
 
   if (effects._reduceEnemyBlock) {
     G.enemies.forEach(e => { if (e.hp > 0) { e.block = Math.max(0, e.block - effects._reduceEnemyBlock); } });
+  }
+
+  // 破防了: strip the targeted enemy's block entirely (扒光格挡), even without a
+  // full predicate verb ("仓颉之影破防了").
+  if (effects._stripTargetBlock) {
+    const tIdx = effects.targetEnemyIdx >= 0 ? effects.targetEnemyIdx : G.enemies.findIndex(e => e.hp > 0);
+    const tgt = tIdx >= 0 ? G.enemies[tIdx] : null;
+    if (tgt && tgt.hp > 0 && tgt.block > 0) {
+      tgt.block = 0;
+      if (tgt.element) showFloatingText(tgt.element, '🛡️💥 破防！', '#C54B3C');
+    }
   }
 
   if (effects._taunt) {
@@ -806,19 +819,26 @@ export function applyEffects(effects) {
     }
   }
 
-  // CO-ACTORS — named subjects (猫/影子/初音未来…) strike as their own entities.
+  // CO-ACTORS — named subjects (猫/影子/初音未来…) act as their own entities:
+  // attack the enemy, OR block/heal FOR 我 (皇帝挡纸鬼 / 无名者守我 / 月兔治我).
   if (effects._coActors && effects._coActors.length) {
     effects._coActors.forEach((a, i) => {
-      if (!a.damage) return;
-      const tIdx = a.targetEnemyIdx >= 0 ? a.targetEnemyIdx : G.enemies.findIndex(e => e.hp > 0);
-      if (tIdx < 0 || !G.enemies[tIdx] || G.enemies[tIdx].hp <= 0) return;
       setTimeout(() => {
-        if (!G.enemies[tIdx] || G.enemies[tIdx].hp <= 0) return;
-        dealDamageToEnemy(tIdx, a.damage, a.ignoreBlock);
-        if (G.enemies[tIdx] && G.enemies[tIdx].element) {
-          showFloatingText(G.enemies[tIdx].element, `🥷 ${a.name} ${a.damage}`, '#3E7CA6');
+        if (a.damage > 0) {
+          const tIdx = a.targetEnemyIdx >= 0 ? a.targetEnemyIdx : G.enemies.findIndex(e => e.hp > 0);
+          if (tIdx < 0 || !G.enemies[tIdx] || G.enemies[tIdx].hp <= 0) return;
+          dealDamageToEnemy(tIdx, a.damage, a.ignoreBlock);
+          if (G.enemies[tIdx] && G.enemies[tIdx].element) {
+            showFloatingText(G.enemies[tIdx].element, `🥷 ${a.name} ${a.damage}`, '#3E7CA6');
+          }
+          checkEnemies();
+        } else if (a.block > 0) {
+          G.block += a.block;
+          showFloatingText(document.querySelector('#combat-top'), `🥷 ${a.name} 挡${a.block}`, '#3E7CA6');
+        } else if (a.heal > 0) {
+          G.hp = Math.min(G.maxHp, G.hp + a.heal);
+          showFloatingText(document.querySelector('#combat-top'), `🥷 ${a.name} 回${a.heal}`, '#3E7CA6');
         }
-        checkEnemies();
         renderCombat();
       }, 220 * (i + 1));
     });

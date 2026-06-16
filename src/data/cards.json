@@ -1803,14 +1803,16 @@
     "pos": "exclamation",
     "cost": 0,
     "rarity": "uncommon",
-    "desc": "感叹词·穿透×1.5",
+    "desc": "感叹词·扒挡穿透×1.5（紧跟目标即可，免标点）",
     "flavor": "破防了破防了",
     "excMult": 1.5,
     "excType": "attack",
     "excPenetrate": true,
+    "excStripBlock": true,
+    "freePos": true,
     "en": {
       "word": "Broke Through",
-      "desc": "Excl · Penetrate×1.5"
+      "desc": "Excl · Strip block + Penetrate×1.5"
     }
   },
   "shangtou": {
