@@ -1815,6 +1815,31 @@
       "desc": "Excl · Strip block + Penetrate×1.5"
     }
   },
+  "qu": {
+    "word": "去",
+    "pos": "exclamation",
+    "cost": 0,
+    "rarity": "starter",
+    "desc": "「我去！」惊叹：全效×1.25+诗意（配初音未来更强）。「我去V」：奋起，该动作攻击×1.3。",
+    "flavor": "我去！初音未来！",
+    "freePos": true,
+    "excMult": 1.25,
+    "excType": "all",
+    "excPoetry": 0.3,
+    "excHatsuneSynergy": true,
+    "meanings": [
+      {
+        "id": "qu_zeal",
+        "label": "奋起·我去V",
+        "emoji": "💢",
+        "pos": "modifier",
+        "priority": 9,
+        "when": { "meBeforeThenVerb": true },
+        "patch": { "bonusType": "attack", "multiplier": 1.3, "poetryBonus": 0.1 }
+      }
+    ],
+    "en": { "word": "Let's Go", "desc": "「Let's go!」excl all×1.25; 「I go V」zeal atk×1.3" }
+  },
   "shangtou": {
     "word": "上头了",
     "pos": "exclamation",

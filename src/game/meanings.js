@@ -69,12 +69,37 @@ function matchesMeThenVerb(ctx) {
   return false;
 }
 
+// 我 去 V — this card sits AFTER 我 and BEFORE a verb (我去斩 / 我去守).
+// Mirror of matchesMeThenVerb (which is for 给我V). Allows ≤2 modifiers either side.
+function matchesMeBeforeThisThenVerb(ctx) {
+  // previous meaningful card is 我
+  let j = ctx.idx - 1, mods = 0;
+  while (j >= 0) {
+    const c = ctx.sentence[j];
+    if (!c) return false;
+    if (c.pos === 'modifier' && mods < 2) { mods--; j--; continue; }
+    if (!isMeCard(c)) return false;
+    break;
+  }
+  if (j < 0) return false;
+  // next meaningful card is a verb
+  let k = ctx.idx + 1, m2 = 0;
+  while (k < ctx.sentence.length) {
+    const c = ctx.sentence[k];
+    if (!c) return false;
+    if (c.pos === 'modifier' && m2 < 2) { m2++; k++; continue; }
+    return c.pos === 'verb' || c.pos === 'special';
+  }
+  return false;
+}
+
 function matchesWhen(when, ctx) {
   if (!when) return true;
   // Hard exclusions first (return false if any hits)
   if (when.notAfterCopula && ctx.hasCopulaBefore) return false;
   // Inclusive matchers — true if ANY hits
   let any = false;
+  if (when.meBeforeThenVerb && matchesMeBeforeThisThenVerb(ctx)) any = true;
   if (when.afterCopulaWithin && ctx.hasCopulaBefore && ctx.distFromCopula <= when.afterCopulaWithin) any = true;
   if (when.prevSubjectOrEnemy && ctx.subjectBefore >= 0) any = true;
   if (when.prevVerb && ctx.verbBefore >= 0) any = true;
@@ -88,7 +113,7 @@ function matchesWhen(when, ctx) {
     try { if (when.custom(ctx)) any = true; } catch (e) { /* ignore */ }
   }
   // If when has no inclusive matchers at all and no hard exclusion failed, accept
-  const hasInclusive = !!(when.afterCopulaWithin || when.prevSubjectOrEnemy || when.prevVerb || when.nextIsMeThenVerb || when.nearText || when.custom);
+  const hasInclusive = !!(when.afterCopulaWithin || when.prevSubjectOrEnemy || when.prevVerb || when.nextIsMeThenVerb || when.meBeforeThenVerb || when.nearText || when.custom);
   if (!hasInclusive) return true;
   return any;
 }

@@ -72,9 +72,10 @@ export function createStarterDeck() {
   tryAdd('er');          // 而
   tryAdd('he');          // 和
   tryAdd('shi_copula', 2); // 是×2（系词，谐音梗核心，起手保证看到）
-  // 感叹 (2)
+  // 感叹 (3)
   tryAdd('oh');          // 哦
   tryAdd('ah');          // 啊
+  tryAdd('qu');          // 去（我去！惊叹 / 我去V 奋起）
   // 标点 (3)
   tryAdd('comma', 2);    // ，×2
   tryAdd('period');      // 。

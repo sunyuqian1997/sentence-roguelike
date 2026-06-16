@@ -78,6 +78,11 @@ export function applyExclamations(ctx) {
     if (c.excReverseNeg) { effects._reverseNeg = true; ctx.excNotes.push(`🔄「${c.word}」负面变正面`); }
     if (c.excSelfDmg) { effects.selfHarm = true; effects.selfHarmDmg = (effects.selfHarmDmg || 0) + c.excSelfDmg; ctx.excNotes.push(`💀「${c.word}」自伤${c.excSelfDmg}`); }
     if (c.excPoetry) { ctx.literaryMult += c.excPoetry; ctx.literaryNotes.push(`✨「${c.word}」诗意+${c.excPoetry}`); }
+    // 我去！初音未来！ — the meme combo: extra zeal when 初音未来 is present.
+    if (c.excHatsuneSynergy && ctx.cards.some(x => x.word === '初音未来')) {
+      exc.attackMult *= 1.3; ctx.literaryMult += 0.4;
+      ctx.literaryNotes.push(`🎤「${c.word}」×初音未来：双倍上头！全效×1.3+诗意`);
+    }
   });
 
   // Position legality uses the ORIGINAL card order, not the normalized one.
