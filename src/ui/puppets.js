@@ -281,6 +281,7 @@ export function updatePuppets() {
   let enemyEmoji = '';
   let playerScale = 1;   // identity body-size (我是儿子→0.6, 我是巨人→1.5…)
   let enemyScale = 1;
+  let coActorIdentity = null;  // "初音未来是皇帝" → crown on the co-actor puppet
 
   if (hasEnemyTarget) enemyPose = 'targeted';
 
@@ -316,9 +317,14 @@ export function updatePuppets() {
       }
     } else if (pred.kind === 'identity') {
       const trait = resolveIdentityTrait(pred.identityWord, pred.identityIsEnemyName);
+      const subjIsCoActor = sentence.some(c => c && c.pos === 'subject' && c.word === pred.subjectWord
+        && c.word !== '我' && !isYouCard(c) && !c._isEnemyTarget);
       if (pred.target === 'self') {
         playerPose = 'heal'; playerEmoji = trait.emoji;
         if (trait.bodyScale) playerScale = trait.bodyScale;   // 我是儿子→变小, 我是巨人→变大
+      } else if (subjIsCoActor) {
+        // "初音未来是皇帝" — the crown belongs to the co-actor, not the enemy.
+        coActorIdentity = { name: pred.subjectWord, emoji: trait.emoji, scale: trait.bodyScale || 1 };
       } else {
         enemyPose = 'dazed'; enemyEmoji = trait.emoji;
         if (trait.bodyScale) enemyScale = trait.bodyScale;
@@ -374,6 +380,15 @@ export function updatePuppets() {
         .map(c => c.word)
     : [];
   syncStandbyCoActors(standbyNames);
+
+  // "初音未来是皇帝": put the crown (+ any body-scale) on that co-actor's puppet.
+  if (coActorIdentity) {
+    const el = document.querySelector(`.puppet-coactor.standby[data-coactor="${coActorIdentity.name}"]`);
+    if (el) {
+      setEmoji(el, coActorIdentity.emoji);
+      if (coActorIdentity.scale !== 1) setBodyScale(el, coActorIdentity.scale);
+    }
+  }
 }
 
 // Chant sequence: anticipation → dash/pose → impact → recover.
