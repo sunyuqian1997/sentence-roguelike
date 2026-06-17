@@ -11,7 +11,7 @@ import { generateMap, renderMap } from './map.js';
 import { CARD_PACKS } from '../data/packs.js';
 import { playStory, STORY_CHAPTERS_REF } from '../ui/storyOverlay.js';
 import STORY_CHAPTERS from '../data/story.json';
-import { detectSummon, SUMMON_EFFECTS, evaluateSentence, checkExclamationPosition, detectDuizhang } from './sentence.js';
+import { detectSummon, SUMMON_EFFECTS, evaluateSentence, checkExclamationPosition, detectDuizhang, isWellFormed } from './sentence.js';
 import { processEnemyPuns, PUN_STATUS, PUN_ON_APPLY, resolveIdentityTrait, detectPredicates } from './poetics.js';
 import { EVENTS_BY_ACT, EVENTS_FALLBACK } from '../data/events.js';
 import { closeMetaScreen, showVictoryScreen } from '../ui/screens.js';
@@ -26,6 +26,7 @@ export function startGame() {
   G.deck = createStarterDeck();
   G.block = 0; G.strength = 0; G.vulnerable = 0; G.weak = 0;
   G.floorsCleared = 0; G.elitesKilled = 0; G.bossesKilled = 0; G.sentencesChanted = 0;
+  G.combatCount = 0;
   G.sentenceJournal = [];
   G.combatJournal = [];
   G.lastRhymeKey = null;
@@ -61,6 +62,7 @@ export function startGame() {
 // COMBAT
 // ============================================================
 export function startCombat(enemyDefs) {
+  G.combatCount = (G.combatCount || 0) + 1;
   const isBoss = enemyDefs.some(e => e.type === 'boss');
   G.enemies = enemyDefs.map(def => ({
     ...def, maxHp: def.hp, block:0, strength:0, vulnerable:0, weak:0,
@@ -117,6 +119,7 @@ export function startPlayerTurn() {
   guaranteePunctuation();
   guaranteeVerb();
   guaranteeCopula();
+  guaranteeTutorialCombo();
   renderCombat();
   requestAnimationFrame(() => {
     document.querySelectorAll('#hand-cards .card').forEach((c, i) => {
@@ -209,6 +212,36 @@ function guaranteeVerb() {
       G.hand[replaceIdx] = verbCard;
     } else {
       G.hand.push(verbCard);
+    }
+  }
+}
+
+// 开局教学组合: 第一场战斗的前两个回合, 保证手里有「是 / 给 / 猫」三张牌,
+// 让玩家一定能拼出「X 是 猫」「X 是 给」这类谐音梗判断句。
+function guaranteeTutorialCombo() {
+  if (G.combatCount !== 1 || G.turn > 2) return;
+  const wanted = ['shi_copula', 'gei', 'mao'];
+  for (const key of wanted) {
+    const def = WORD_DEFS[key];
+    if (!def) continue;
+    if (G.hand.some(c => c.key === key)) continue; // 已在手
+    // 优先从抽牌堆/弃牌堆里取已有的那张, 取不到就新造一张。
+    let idx = G.drawPile.findIndex(c => c.key === key);
+    let card;
+    if (idx >= 0) card = G.drawPile.splice(idx, 1)[0];
+    else {
+      idx = G.discardPile.findIndex(c => c.key === key);
+      if (idx >= 0) card = G.discardPile.splice(idx, 1)[0];
+      else card = makeCard({ ...def, key });
+    }
+    // 替换一张非核心牌, 不踢掉动词/系词/标点/已凑齐的教学牌。
+    const replaceIdx = G.hand.findIndex(c =>
+      c.pos !== 'verb' && c.pos !== 'punctuation' && !c.copulaConn && !wanted.includes(c.key));
+    if (replaceIdx >= 0) {
+      G.discardPile.push(G.hand[replaceIdx]);
+      G.hand[replaceIdx] = card;
+    } else {
+      G.hand.push(card);
     }
   }
 }
@@ -348,13 +381,18 @@ export function chantSentence() {
   const cost = getSentenceCost();
   if (cost > G.energy) return;
 
+  // 召唤式不是普通句子，走自己的识别路径，不受成句性门槛约束。
   const summon = detectSummon(G.sentence);
-  const hasVerb = G.sentence.some(c => c.pos === 'verb' || c.pos === 'special');
-  const hasExcl = G.sentence.some(c => c.pos === 'exclamation');
-  // a clicked target (enemy/我) also counts as a subject for the verbless-但有感叹
-  // path, so "仓颉之影破防了" (目标 + 破防了) is chantable.
-  const hasSubject = G.sentence.some(c => c.pos === 'subject' || c._isFixedWo || c._isEnemyTarget || c._isSelfTarget);
-  if (!hasVerb && !summon && !(hasSubject && hasExcl)) return;
+  if (!summon) {
+    // 成句性硬门槛：拒绝不成句的废串（纯名词/纯修饰/纯连词/悬空连词等），
+    // 给出可读原因。语序/省略/倒装等仍交给下游倍率层软性评分，不在此拦截。
+    const wf = isWellFormed(G.sentence);
+    if (!wf.ok) {
+      showFloatingText(document.querySelector('#combat-top'), `✗ 不成句：${wf.reason}`, '#C54B3C');
+      playSFX('forbidden');
+      return;
+    }
+  }
 
   G.energy -= cost;
   G.sentencesChanted++;

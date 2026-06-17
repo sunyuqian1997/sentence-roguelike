@@ -20,10 +20,12 @@ import { applyQuality, QUALITY_RULES } from './quality.js';
 import { applyExclamations, checkExclamationPosition } from './exclamation.js';
 import { applyCardEffects, VERB_SPECIALS } from './cardEffects.js';
 import { resolveIdentityTrait, isYouCard } from '../poetics.js';
+import { isWellFormed } from './wellformed.js';
 
 export {
   normalizeSentence, checkWordOrder, detectDuizhang,
   checkExclamationPosition, QUALITY_RULES, VERB_SPECIALS, CONSTRUCTIONS,
+  isWellFormed,
 };
 
 function finalize(ctx) {

@@ -10,6 +10,7 @@ export {
   detectDuizhang,
   QUALITY_RULES,
   VERB_SPECIALS,
+  isWellFormed,
 } from './evaluator/index.js';
 
 export { detectSummon, SUMMON_EFFECTS } from './summons.js';
