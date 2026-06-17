@@ -108,6 +108,13 @@ function finalize(ctx) {
   effects.damage = Math.floor(effects.damage * totalMult * finalExcAttack);
   if (effects._crit) effects.damage = Math.floor(effects.damage * 1.5);
 
+  // 「对」牌:句子构成真·工对(lushi/jueju/perfect,非凑字数的 basic)时,伤害翻倍。
+  if (ctx.realVerbs.some(v => v.duizhangDouble) && ctx.duizhangResult
+      && ctx.duizhangResult.matched && ctx.duizhangResult.type !== 'basic') {
+    effects.damage = Math.floor(effects.damage * 2);
+    ctx.grammarNotes.push('🀄「对」工对成双:伤害×2');
+  }
+
   // Imperative settlement (给我V / 让NP V): the commanded enemy hurts ITSELF.
   if (effects._imperative) {
     const imp = effects._imperative;

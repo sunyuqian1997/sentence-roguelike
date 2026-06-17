@@ -852,6 +852,21 @@ export function applyEffects(effects) {
     });
   }
 
+  // 怕某字的敌人:句中出现其 fearWord → 给该敌 weak(仿 motif 落地)。
+  if (effects._fearTriggers) {
+    effects._fearTriggers.forEach(f => {
+      const e = G.enemies[f.enemyIdx];
+      if (!e || e.hp <= 0) return;
+      e.weak = (e.weak || 0) + f.weak;
+      if (e.element) showFloatingText(e.element, `😱 怕「${f.word}」弱+${f.weak}`, '#B87333');
+    });
+  }
+
+  // 诗意暴击 banner(伤害翻倍由 finalize 的 _crit 已处理,这里只播报)。
+  if (effects._poeticCrit) {
+    showFloatingText(document.querySelector('#combat-top'), '⚡ 诗成泣鬼神！', '#c9a84c');
+  }
+
   // POETIC ATTACK FEEDBACK - 高诗意攻击回血
   if (effects.damage > 0 && effects._poetryLevel) {
     if (effects._poetryLevel >= 2.0) {

@@ -22,6 +22,7 @@ export const ENEMY_DEFS = {
   },
   canju: {
     name: '残句怪', hp: 16, act: 1, type: 'normal', emoji: '❓', portrait: '/canjuguai.png', tags: ['word','fragment'],
+    fearWord: '全', fearWeak: 2,  // 残句怕「完整」—— 句中带「全」字则虚弱
     ai(e) { e.nextIntent={type:'attack',value:9,icon:'⚔'}; },
     act_fn(e) { dealDamageToPlayer(9,e); }
   },

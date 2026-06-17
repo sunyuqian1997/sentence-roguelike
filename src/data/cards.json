@@ -454,6 +454,22 @@
       "desc": "ATK {power}, Exhaust"
     }
   },
+  "dui": {
+    "word": "对",
+    "pos": "verb",
+    "cost": 1,
+    "rarity": "rare",
+    "combatType": "attack",
+    "basePower": 8,
+    "upgPower": 12,
+    "duizhangDouble": true,
+    "flavor": "工对天成，一击成双！",
+    "desc": "攻击 {power}；若成工对则伤害翻倍",
+    "en": {
+      "word": "Couplet",
+      "desc": "ATK {power}; double dmg if perfect parallel"
+    }
+  },
   "kejin": {
     "word": "氪金",
     "pos": "verb",

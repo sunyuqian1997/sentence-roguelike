@@ -154,6 +154,34 @@ export const QUALITY_RULES = [
       if (ctx.hasQuestion) ctx.effects.applyWeak = 2;
     },
   },
+  {
+    // 必须放在 QUALITY_RULES 末尾 —— 读取其他规则累计后的 literaryMult。
+    // 阈值 3.0:明显高于 2.0 回血线,需七言/对仗类高倍才够,是真·神来之笔。
+    id: 'poetic_crit',
+    apply(ctx) {
+      if (ctx.literaryMult >= 3.0) {
+        ctx.effects._crit = true;        // finalize() 已消费 _crit → ×1.5
+        ctx.effects._poeticCrit = true;  // banner 用
+        ctx.literaryNotes.push('⚡ 诗成泣鬼神！×1.5暴击');
+      }
+    },
+  },
+  {
+    // 怕某字的敌人:句中出现敌人 fearWord → 本回合给该敌 weak。复用 motif 落地风格。
+    id: 'fear_words',
+    apply(ctx) {
+      const body = bodyText(ctx);
+      const hits = [];
+      G.enemies.forEach((e, i) => {
+        if (!e || e.hp <= 0 || !e.fearWord) return;
+        if (body.includes(e.fearWord)) {
+          hits.push({ enemyIdx: i, word: e.fearWord, weak: e.fearWeak || 2 });
+          ctx.literaryNotes.push(`😱 ${e.name}怕「${e.fearWord}」——虚弱${e.fearWeak || 2}`);
+        }
+      });
+      if (hits.length) ctx.effects._fearTriggers = hits;
+    },
+  },
 ];
 
 export function applyQuality(ctx) {
