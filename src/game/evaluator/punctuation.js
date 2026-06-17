@@ -27,22 +27,28 @@ export function detectDuizhang(cards) {
 
   result.matched = true;
 
-  if (len1 === 5 && len2 === 5) {
+  // 对仗的灵魂是「工对」—— 字数相等 + 词性对称。五言/七言的高倍率必须同时满足
+  // 词性对称(struct1===struct2),否则只是凑字数的伪对仗,降级到 ×1.5。
+  // (修复:旧版只看字数,"残句怪是给，守戳挡我猫"两边各5字就吃满 ×2.5。)
+  const symmetric = struct1 === struct2;
+
+  if (len1 === 5 && len2 === 5 && symmetric) {
     result.type = 'lushi'; result.multiplier = 2.5;
     result.label = '✓ 律诗对仗！五言工整 ×2.5';
     return result;
   }
-  if (len1 === 7 && len2 === 7) {
+  if (len1 === 7 && len2 === 7 && symmetric) {
     result.type = 'jueju'; result.multiplier = 3.0;
     result.label = '✓ 绝句对仗！七言工整 ×3.0';
     return result;
   }
-  if (struct1 === struct2) {
+  if (symmetric) {
     result.type = 'perfect'; result.multiplier = 2.0;
     result.label = '✓ 完美对仗！结构对称 ×2.0';
     return result;
   }
 
+  // 字数相等但词性不对称 —— 伪对仗, 给个基础奖励即可。
   result.type = 'basic'; result.multiplier = 1.5;
   result.label = '✓ 对仗工整（字数相同）×1.5';
   return result;

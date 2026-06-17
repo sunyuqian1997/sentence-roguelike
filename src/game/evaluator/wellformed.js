@@ -158,6 +158,11 @@ function clauseOk(clause) {
     if (preN > 1) return { ok: false, reason: '主语过多，不成句' };        // N N V…
     if (tailN > 1) return { ok: false, reason: '动词后名词堆砌，不成句' }; // …V N N (守戳挡我猫)
     if (tailHasV) return { ok: false, reason: '动词宾语交错，不成句' };     // …V N V…
+    // 纯动词堆: 动词链 ≥3 且全程无主语无宾语 → 不像人话(溜了怼内卷 / 必杀踹睡修)。
+    // 放行: 单动词祈使「斩」、双动词连动「碎砍」、有主/宾的「我去买药」「斩月」。
+    const vChainLen = j - firstV + 1;
+    if (vChainLen >= 3 && preN === 0 && tailN === 0)
+      return { ok: false, reason: '光动词堆，没有人也没有事' };
     return { ok: true }; // 我跑 / 我吃饭 / 我去买药 / 我和你走 / 跑 / 我去买
   }
 

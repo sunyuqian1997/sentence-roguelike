@@ -64,10 +64,17 @@ export function startGame() {
 export function startCombat(enemyDefs) {
   G.combatCount = (G.combatCount || 0) + 1;
   const isBoss = enemyDefs.some(e => e.type === 'boss');
-  G.enemies = enemyDefs.map(def => ({
-    ...def, maxHp: def.hp, block:0, strength:0, vulnerable:0, weak:0,
-    stunned:false, reflecting:false, nextIntent:null, element:null, tc:0,
-  }));
+  // 同一 act 内越深越强:用本 act 已深入层数(currentRow)做缩放。boss 数值手调,不缩放。
+  const depth = Math.max(0, (G.currentRow || 0) - 1);
+  G.enemies = enemyDefs.map(def => {
+    const scale = def.type === 'boss' ? 1 : 1 + depth * 0.08;   // 每层 +8% HP
+    const hp = Math.round(def.hp * scale);
+    return {
+      ...def, hp, maxHp: hp, block:0, strength:0, vulnerable:0, weak:0,
+      _dmgBonus: def.type === 'boss' ? 0 : Math.floor(depth / 2), // 每深2层 +1 固定伤害
+      stunned:false, reflecting:false, nextIntent:null, element:null, tc:0,
+    };
+  });
   G.drawPile = shuffleArray([...G.deck]);
   G.discardPile = []; G.exhaustPile = []; G.hand = [];
   G.energy = G.maxEnergy; G.block = 0;

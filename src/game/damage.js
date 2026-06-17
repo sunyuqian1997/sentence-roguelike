@@ -63,6 +63,7 @@ export function dealDamageToEnemy(idx, amount, ignoreBlock) {
 }
 
 export function dealDamageToPlayer(amount, source) {
+  if (source && source._dmgBonus) amount += source._dmgBonus; // 同act越深敌人越疼
   if (source && source.strength) amount += source.strength;
   if (source && source.weak > 0) amount = Math.floor(amount * 0.75);
   if (G.vulnerable > 0) amount = Math.floor(amount * 1.5);
