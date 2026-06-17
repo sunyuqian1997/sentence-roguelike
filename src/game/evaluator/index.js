@@ -108,11 +108,13 @@ function finalize(ctx) {
   effects.damage = Math.floor(effects.damage * totalMult * finalExcAttack);
   if (effects._crit) effects.damage = Math.floor(effects.damage * 1.5);
 
-  // 「对」牌:句子构成真·工对(lushi/jueju/perfect,非凑字数的 basic)时,伤害翻倍。
+  // 「对」牌:句子构成真·工对(lushi/jueju/perfect,非凑字数的 basic)时额外加成。
+  // 注意:对仗本身已在 punctMult 给了 ×2.0~3.0,这里只是「为对仗组牌」的小奖励,
+  // 不能再 ×2(会和对仗倍率双重计酬,act-1 一发入魂 ~258 伤 vs 敌 16-24 血)。降到 ×1.4。
   if (ctx.realVerbs.some(v => v.duizhangDouble) && ctx.duizhangResult
       && ctx.duizhangResult.matched && ctx.duizhangResult.type !== 'basic') {
-    effects.damage = Math.floor(effects.damage * 2);
-    ctx.grammarNotes.push('🀄「对」工对成双:伤害×2');
+    effects.damage = Math.floor(effects.damage * 1.4);
+    ctx.grammarNotes.push('🀄「对」工对加成:伤害×1.4');
   }
 
   // Imperative settlement (给我V / 让NP V): the commanded enemy hurts ITSELF.
