@@ -1,6 +1,6 @@
 # 词灵录 (Sentence Roguelike) — Handoff Document
 
-Status snapshot: 2026-06-15 · 大量战斗/语义/UI 重构 · 评估器=`src/game/evaluator/` 规则管线
+Status snapshot: 2026-06-17 · 成句性硬门槛(wellformed.js)+整轮状态作用域+试玩调优 loop · 评估器=`src/game/evaluator/` 规则管线
 Author of original direction: project owner (referred to below as "user")
 Author of this handoff: Claude (opus session) → 交接给新 session
 工作区状态：全部已 commit，最新 commit `f4d869b`；未追踪仅 chantlog.ndjson(日志) + public/bgm/。
@@ -119,6 +119,39 @@ Author of this handoff: Claude (opus session) → 交接给新 session
 35. **结算预览命中规则可读**(9c05464，保留)：`.sp-rules` 改可换行深色描边 chip(0.82rem)、倍率徽章加大、
     预览盒 max-height 提到 130px。修了"算攻击力那些看不清"。
 
+### A-septies. 2026-06-17 第七轮 成句性硬门槛 + 整轮状态作用域 + 试玩调优 loop
+> 本轮核心:新增一道**真·汉语句法「成句性」硬门槛**(之前只靠"有没有动词"太弱),并把战斗
+> 状态改成**整轮作用域**。全部 commit + fuzzer/探针/截图验证。
+
+36. **成句性硬门槛 `src/game/evaluator/wellformed.js`**(新文件,唯一会"拒绝"一串卡牌的地方):
+    - 下游 grammar/quality 仍是**软评分**(只降倍率、永远放行);wellformed 是**硬拒绝**不成句的废串。
+    - 按现代汉语句型建模:主谓/主谓宾/连动/省略/祈使/判断句(A是B)/兼语(让NP V)/并列主语/非主谓感叹。
+    - `connector` 细分 5 类功能角色(`roleOf`):COORD并列(和/或/而)、CAUSATIVE兼语(让/帮)、
+      COPULA系词(是/为,带 copulaConn)、ADV副词性(就/还/不/也是/倒是)、SEQUENCE顺承(然后)。
+    - **动词链骨架**校验:拒「守戳挡我猫」(V V V N N 乱堆)、纯动词堆(V链≥3无主无宾)、动宾交错;
+      并列主语「我和你走」通过折叠 `NP COORD NP→NP` 仍放行。
+    - **系词表语提升**:`A 是 B` 里紧跟系词的词(谐音"给/日"等 connector)算表语 NP,否则会被
+      "结尾连词悬空"误杀(修了"残句怪是给"被拦的 bug)。
+    - **感叹句收紧**:合法只有 纯叹词「啊!」或 单一名词主体+叹词「明月啊!」;多名词混叹词=乱堆,拒。
+    - 接入点:`combat.js#chantSentence` 在召唤判定后、扣费前调 `isWellFormed`,不成句弹红字"✗ 不成句:原因"+`forbidden` 音效。召唤式不受此门槛约束。
+    - 回归语料 `scripts/test-wellformed.mjs`(78 例,`node scripts/test-wellformed.mjs`),codex 双审 + 对抗集。
+37. **整轮状态作用域**(combat.js#`endRound`):一轮 = 我方回合 + 敌方回合。所有"按轮"衰减/清零
+    集中到 `endRound()`(敌方回合走完、下个我方回合前),不再散在两个半轮边界。
+    - 我方护甲撑过敌方回合才清;易伤/虚弱整轮**只减一次**(旧版半轮各减=减两次)。
+    - 敌方护甲仍在其回合开始清(撑过我方下回合,否则刚加的防御立刻失效)。
+    - 用户诉求:同回合出多句,前句 buff(我是猫等)持续到轮结束才复原。
+38. **开局教学组合**(combat.js#`guaranteeTutorialCombo`):第一场战斗(`G.combatCount===1`,
+    **不能**用 floorsCleared——visitNode 在进战斗前已 ++ 它)前两回合保证手牌有「是/给/猫」。
+39. **敌人随层递进**(startCombat):同 act 内按 `G.currentRow` 深度缩放——每层 +8% HP、
+    每深 2 层 +1 固定伤害(`_dmgBonus`,在 damage.js#dealDamageToPlayer 加);boss 不缩放。
+40. **新机制**(试玩 loop 产出):
+    - **诗意暴击**(quality.js#`poetic_crit`):literaryMult≥3.0 → ×1.5(复用 finalize 的 `_crit`)+ banner。
+    - **「对」卡**(cards.json#`dui`,稀有谓语):真·工对(lushi/jueju/perfect)时伤害 ×1.4(原 ×2 会与
+      对仗倍率双重计酬,已降);finalize 里实现,不侵入 cardEffects。
+    - **怕字敌人**:残句怪 `fearWord:'全'`——句中带"全"则该敌虚弱(quality.js#`fear_words` 检测、combat.js 落地)。
+    - **对仗须工对**(punctuation.js#detectDuizhang):五言/七言高倍(×2.5/×3.0)必须词性对称(struct1===struct2),
+      否则降级 ×1.5(修了"凑5字白吃×2.5"的 bug)。
+
 ### B. 已知的未解决判定问题 (新 session 可继续，基于日志复盘)
 1. **identity 身份 buff 数值不进 effects**：如"我是皇帝→力+2"在 notes 显示了，但实际是
    combat.js#applyEffects 里直接改 G.strength，**没写进 result.effects**，导致预览/日志看不到该数值、
@@ -130,6 +163,10 @@ Author of this handoff: Claude (opus session) → 交接给新 session
    "X是给我砍"被判成 gay 谐音而非祈使。可能需要按子句判定优先级。
 
 ### C. 自测工具链 (新 session 必看 — opus 模型下可用，详见 §9)
+- `node scripts/test-wellformed.mjs` — 成句性判定回归(78 例带标准答案,无需浏览器,**改 wellformed.js 必跑**)
+- `node scripts/fuzz-sentences.mjs [count] [maxLen]` — 随机组句 fuzzer:从真实卡库随机拼句跑判定,
+  统计通过率 + 抽样展示通过/拒绝,**人眼复核漏网**(需 dev server)。注意:fuzzer 通过率 ~50% 含大量
+  "结构合法但语义随机"的句子——pos 级语法门槛判不了语义,这是上限,别指望 0% 废话通过。
 - `node test-eval.node.mjs` — 39 个句子评估单测(无需浏览器)
 - `node shot.mjs <out.png> <url> [waitMs]` — headless Chrome 截图(支持 SHOT_W/SHOT_H 环境变量)
 - `node probe.mjs <url> "<JS表达式>" [waitMs]` — 读真实页面运行时状态
