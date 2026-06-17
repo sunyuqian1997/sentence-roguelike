@@ -91,21 +91,20 @@ export function startPlayerTurn() {
   if (G._skipNextPlayerTurn) {
     G._skipNextPlayerTurn = false;
     G.turn++;
-    G.block = 0;
+    // 护甲/易伤/虚弱的衰减统一在 endRound() 处理,这里不再清。
     showFloatingText(document.querySelector('#combat-top'), '💤 沉睡中...跳过回合', '#6B4C6E');
     renderCombat();
     setTimeout(enemyTurn, 600);
     return;
   }
   G.turn++;
-  G.block = 0; G.energy = G.maxEnergy + (G._bonusEnergyNext || 0);
+  G.energy = G.maxEnergy + (G._bonusEnergyNext || 0);
   G._bonusEnergyNext = 0;
   G.allCardsCostZero = false;
   G.poeticAura = G.poeticAuraNext || false;
   G.poeticAuraNext = false;
   G.sentence = [];
-  if (G.vulnerable > 0) G.vulnerable--;
-  if (G.weak > 0) G.weak--;
+  // 护甲/易伤/虚弱的衰减统一在 endRound() 处理(整轮一次),不再在回合开始清。
   let dc = META.perks.includes('extra_scroll') ? 6 : 5;
   dc -= G.drawLessNextTurn;
   dc += (G._bonusDrawNext || 0); G._bonusDrawNext = 0;
@@ -980,9 +979,9 @@ export function enemyTurn() {
   let delay = fired.length * 350;
   G.enemies.forEach((enemy) => {
     if (enemy.hp <= 0) return;
+    // 敌方护甲在自己回合开始清旧护甲, 紧接着 act_fn 可能加新护甲, 新护甲撑过我方下回合。
+    // 易伤/虚弱的衰减改由 endRound() 统一处理(整轮一次)。
     enemy.block = 0;
-    if (enemy.vulnerable > 0) enemy.vulnerable--;
-    if (enemy.weak > 0) enemy.weak--;
 
     if (enemy.poison && enemy.poison.turns > 0) {
       enemy.hp -= enemy.poison.dmg;
@@ -1038,7 +1037,31 @@ export function enemyTurn() {
     delay += 700;
   });
   G._reflectDmg = 0;
-  setTimeout(() => { if (G.hp > 0) startPlayerTurn(); }, delay + 400);
+  setTimeout(() => {
+    if (G.hp <= 0) return;
+    endRound();
+    startPlayerTurn();
+  }, delay + 400);
+}
+
+// 轮结束(我方回合 + 敌方回合都走完)统一收尾:把"按轮"衰减/清零集中在此
+// 发生一次,而不是散落在两处半轮边界。回合内出多少句,状态都持续到这里才复原。
+//
+// 注意护甲的两条不同时序:
+//   - 我方护甲在我方回合产生 → 需撑过敌方回合 → 轮结束(这里)才清。
+//   - 敌方护甲在敌方回合产生 → 需撑过我方下回合 → 在敌方回合开始时清旧护甲
+//     (见 enemyTurn),不在这里清,否则敌人刚加的护甲会被立刻抹掉。
+export function endRound() {
+  // 我方护甲撑到整轮结束才清。
+  G.block = 0;
+  // 双方易伤/虚弱整轮只减一次(旧代码在两个半轮边界各减一次,导致一轮减两次)。
+  if (G.vulnerable > 0) G.vulnerable--;
+  if (G.weak > 0) G.weak--;
+  G.enemies.forEach(enemy => {
+    if (!enemy || enemy.hp <= 0) return;
+    if (enemy.vulnerable > 0) enemy.vulnerable--;
+    if (enemy.weak > 0) enemy.weak--;
+  });
 }
 
 // ============================================================

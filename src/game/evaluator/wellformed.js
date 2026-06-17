@@ -132,7 +132,34 @@ function clauseOk(clause) {
   }
 
   // ---- 4. VP 核心句(主谓/主谓宾/祈使/连动/省略) ----
-  if (hasV) return { ok: true };
+  // 不能只看「有没有动词」—— 那样「守戳挡我猫」(V V V N N 乱堆)也会过。
+  // 用「动词链骨架」校验(codex 设计): 合法分句 = (前置主语 0~1) + 动词链(≥1) + 尾部宾语(≤1)。
+  if (hasV) {
+    // 骨架保留 NP / V / COORD, 用来区分「我和你走」(并列主语,合法)与
+    // 「守戳挡我猫」(动词后裸名词堆砌,非法)。先把 N COORD N 这类并列名词组
+    // 折叠成一个 NP, 再按动词链骨架校验。
+    let skel = roles.filter(r => r === 'NP' || r === 'V' || r === 'COORD');
+    // 折叠并列名词: NP COORD NP → NP (反复折叠 我和你和他)
+    for (let k = 1; k < skel.length - 1; ) {
+      if (skel[k] === 'COORD' && skel[k - 1] === 'NP' && skel[k + 1] === 'NP') {
+        skel.splice(k, 2); // 删掉 COORD 和其后的 NP, 合成一个主语
+      } else k++;
+    }
+    skel = skel.filter(r => r !== 'COORD'); // 残留的并列连词(已在别处校验悬空)不计入骨架
+
+    const firstV = skel.indexOf('V');
+    const preN = skel.slice(0, firstV).filter(r => r === 'NP').length;    // 动词前名词(主语)
+    let j = firstV;
+    while (j + 1 < skel.length && skel[j + 1] === 'V') j++;               // 动词链
+    const tail = skel.slice(j + 1);
+    const tailN = tail.filter(r => r === 'NP').length;
+    const tailHasV = tail.includes('V');
+
+    if (preN > 1) return { ok: false, reason: '主语过多，不成句' };        // N N V…
+    if (tailN > 1) return { ok: false, reason: '动词后名词堆砌，不成句' }; // …V N N (守戳挡我猫)
+    if (tailHasV) return { ok: false, reason: '动词宾语交错，不成句' };     // …V N V…
+    return { ok: true }; // 我跑 / 我吃饭 / 我去买药 / 我和你走 / 跑 / 我去买
+  }
 
   // ---- 5. 非主谓感叹句 ----
   if (hasExcl) {
