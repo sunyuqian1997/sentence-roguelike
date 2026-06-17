@@ -167,12 +167,25 @@ function clauseOk(clause) {
   }
 
   // ---- 5. 非主谓感叹句 ----
+  // 合法只有两种: (a) 纯叹词「啊！」「天哪！」; (b) 单一名词性主体 + 叹词「明月啊！」「你啊！」
+  // (主体可带修饰「红红的太阳啊」)。多个裸名词 / 名词里混动词宾语 = 乱堆, 不是呼告。
   if (hasExcl) {
-    // 纯叹词「啊！」, 或 NP+叹词「明月啊！」/「你啊！」。
-    // 但「红红的啊」(纯MOD+EXCL) 不是合法呼告 → 需要 NP 或纯叹词。
-    if (!has('NP') && !has('MOD') && !has('COORD') && !has('ADV')) return { ok: true }; // 纯叹词
-    if (hasNP) return { ok: true }; // NP + 叹词
-    return { ok: false, reason: '感叹句缺主体（光有修饰词）' };
+    // 去掉叹词后剩下的实词骨架: 折叠并列名词组(我和你啊)。
+    let body = roles.filter(r => r !== 'EXCL');
+    for (let k = 1; k < body.length - 1; ) {
+      if (body[k] === 'COORD' && body[k - 1] === 'NP' && body[k + 1] === 'NP') body.splice(k, 2);
+      else k++;
+    }
+    body = body.filter(r => r !== 'COORD' && r !== 'ADV'); // 副词性成分不构成主体
+    const npCount = body.filter(r => r === 'NP').length;
+    const hasVInBody = body.includes('V');
+
+    if (body.length === 0) return { ok: true };               // 纯叹词「啊！」
+    if (body.every(r => r === 'MOD'))                          // 只有修饰「红红的啊」→ 缺主体
+      return { ok: false, reason: '感叹句缺主体（光有修饰词）' };
+    if (hasVInBody) return { ok: false, reason: '不成句（叹词混动词乱堆）' }; // 狂人笑死万物
+    if (npCount === 1) return { ok: true };                    // 单一主体 + 叹词「明月啊！」
+    return { ok: false, reason: '不成句（一堆名词加叹词，不是呼告）' };       // 远方…心态…吧
   }
 
   // ---- 6. 其余: 无谓语核心、无感叹 → 纯堆砌, 拒绝 ----
