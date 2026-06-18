@@ -25,7 +25,7 @@
 // 每张卡有 .pos 与可能的运行时目标标记 _isEnemyTarget/_isSelfTarget/_isFixedWo。
 // Returns { ok: true } 或 { ok: false, reason: '<玩家可读中文原因>' }。
 
-import { applyMeaningsToSentence } from '../meanings.js';
+import { applyMeaningsToSentence } from '../../../game/meanings.js';
 
 const CAUSATIVE_SET = new Set(['让', '帮', '叫', '使', '令', '请', '派']);
 const COORD_SET = new Set(['和', '或', '而', '与', '并', '且']);

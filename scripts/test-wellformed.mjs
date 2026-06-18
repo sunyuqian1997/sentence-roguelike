@@ -4,7 +4,7 @@
 // pos 简写: s=subject v=verb o=object m=modifier c=connector
 //   x=exclamation .=period ,=comma !=exclMark ?=question sp=special
 //   T=enemy target  S=self target
-import { isWellFormed } from '../src/game/evaluator/wellformed.js';
+import { isWellFormed } from '../src/lang/zh/rules/wellformed.js';
 
 const POS = { s:'subject', v:'verb', o:'object', m:'modifier', c:'connector',
   x:'exclamation', sp:'special' };

@@ -2,7 +2,7 @@
 // turns into combat numbers. Special verb behaviors live in the VERB_SPECIALS
 // registry — to add one, define the flag in cards.json and register a handler
 // here; do NOT hardcode word checks in the pipeline.
-import { G } from '../state.js';
+import { G } from '../../../game/state.js';
 
 export function applySubjects(ctx) {
   const { effects, bonus } = ctx;

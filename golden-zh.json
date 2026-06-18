@@ -308,26 +308,26 @@
   "duizhang": "perfect:2"
  },
  {
-  "s": "@我对明月，猫对长风",
+  "s": "@我对明月，剑客对长风",
   "wf": "ok",
   "grammarMult": 1.2825,
   "literaryMult": 1.8,
-  "punctMult": 2,
-  "totalMult": 4.617,
+  "punctMult": 1.1,
+  "totalMult": 2.53935,
   "effects": {
-   "damage": 141,
+   "damage": 66,
    "block": 0,
    "heal": 0,
    "selfHarm": false,
    "selfHarmDmg": 0,
    "applyWeak": 0,
    "applyVuln": 0,
-   "draw": 1,
+   "draw": 0,
    "aoe": false,
    "ignoreBlock": true,
    "targetEnemyIdx": -1
   },
-  "duizhang": "perfect:2"
+  "duizhang": "none:1.1"
  },
  {
   "s": "@我是日",
@@ -480,28 +480,6 @@
    "aoe": false,
    "ignoreBlock": false,
    "targetEnemyIdx": -1
-  },
-  "duizhang": null
- },
- {
-  "s": "猫斩@敌",
-  "wf": "ok",
-  "grammarMult": 1,
-  "literaryMult": 1,
-  "punctMult": 1,
-  "totalMult": 1,
-  "effects": {
-   "damage": 6,
-   "block": 0,
-   "heal": 0,
-   "selfHarm": false,
-   "selfHarmDmg": 0,
-   "applyWeak": 0,
-   "applyVuln": 0,
-   "draw": 0,
-   "aoe": false,
-   "ignoreBlock": false,
-   "targetEnemyIdx": 0
   },
   "duizhang": null
  },

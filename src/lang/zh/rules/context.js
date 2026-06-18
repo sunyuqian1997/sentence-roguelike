@@ -5,9 +5,9 @@
 //   - cards:    normalized order (body → exclamations → end punctuation)
 //   - POS groups, target flags, punctuation flags
 //   - accumulators: grammarMult/literaryMult/punctMult + note arrays + effects
-import { G } from '../state.js';
-import { applyMeaningsToSentence } from '../meanings.js';
-import { isCopulaPredicate, isYouCard } from '../poetics.js';
+import { G } from '../../../game/state.js';
+import { applyMeaningsToSentence } from '../../../game/meanings.js';
+import { isCopulaPredicate, isYouCard } from '../../../game/poetics.js';
 
 // Body words keep their order; exclamations float to the end, end-punctuation last.
 export function normalizeSentence(cards) {

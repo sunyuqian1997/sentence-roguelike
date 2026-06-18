@@ -9,8 +9,8 @@
 // into QUALITY_RULES — nothing else in the pipeline needs to change. An async
 // judge should pre-compute its verdict before chantSentence and surface it
 // through G so its rule can stay synchronous.
-import { G } from '../state.js';
-import { detectMotifs, getRhymeKey, checkRhyme, detectPredicates, resolveIdentityTrait } from '../poetics.js';
+import { G } from '../../../game/state.js';
+import { detectMotifs, getRhymeKey, checkRhyme, detectPredicates, resolveIdentityTrait } from '../../../game/poetics.js';
 
 const POETIC_COMBOS = [
   { pattern: /山.*海/, bonus: 0.5, label: '🏔️ 山海意象 +0.5' },
