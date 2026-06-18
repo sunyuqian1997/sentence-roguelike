@@ -106,15 +106,22 @@ function clauseOk(clause) {
   if ((firstNonExcl === 'COORD' || firstNonExcl === 'SEQUENCE') && !hasPredicateCore)
     return { ok: false, reason: '开头连词悬空，没有谓语' };
 
-  // ---- 2. 判断句: NP + 系词 + NP核心 ----
+  // ---- 2. 判断句: NP + 系词 + NP(单个表语) ----
   if (hasCopula) {
     const ci = roles.indexOf('COPULA');
+    const before = roles.slice(0, ci).filter(r => r !== 'EXCL');
     const after = roles.slice(ci + 1).filter(r => r !== 'EXCL');
+    // 系词前必须有主语(话题):「是猫」没头不成判断句,得是「我是猫」。
+    if (!before.includes('NP'))
+      return { ok: false, reason: '判断句缺主语（“是”前面要有主体）' };
     if (after.length === 0)
       return { ok: false, reason: '判断句缺宾语（“…是”后面没词）' };
-    // 系词后必须出现一个 NP 作表语(我是猫); 仅修饰词(我是很)不成判断句。
+    // 系词后必须有 NP 作表语(我是猫); 仅修饰词(我是很)不成判断句。
     if (!after.includes('NP'))
       return { ok: false, reason: '判断句缺表语（“是”后面要有名词）' };
+    // 表语只能一个名词:「是猫纸鬼」(俩名词)是堆砌,不是判断句。
+    if (after.filter(r => r === 'NP').length > 1)
+      return { ok: false, reason: '判断句表语过多（“是”后面只能一个主体）' };
     return { ok: true };
   }
 
@@ -158,10 +165,11 @@ function clauseOk(clause) {
     if (preN > 1) return { ok: false, reason: '主语过多，不成句' };        // N N V…
     if (tailN > 1) return { ok: false, reason: '动词后名词堆砌，不成句' }; // …V N N (守戳挡我猫)
     if (tailHasV) return { ok: false, reason: '动词宾语交错，不成句' };     // …V N V…
-    // 纯动词堆: 动词链 ≥3 且全程无主语无宾语 → 不像人话(溜了怼内卷 / 必杀踹睡修)。
-    // 放行: 单动词祈使「斩」、双动词连动「碎砍」、有主/宾的「我去买药」「斩月」。
+    // 纯动词堆: 动词链 ≥2 且全程无主语无宾语 → 不像人话(砍漂 / 漂给 / 溜怼卷)。
+    // 真连动几乎总带主或宾(我去买药 / 去买药);裸 V V 没头没尾绝大多数是垃圾。
+    // 放行: 单动词祈使「斩」(链长1)、有主/宾的「我碎砍」「碎砍月」「我去买药」。
     const vChainLen = j - firstV + 1;
-    if (vChainLen >= 3 && preN === 0 && tailN === 0)
+    if (vChainLen >= 2 && preN === 0 && tailN === 0)
       return { ok: false, reason: '光动词堆，没有人也没有事' };
     return { ok: true }; // 我跑 / 我吃饭 / 我去买药 / 我和你走 / 跑 / 我去买
   }
