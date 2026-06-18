@@ -152,6 +152,30 @@ Author of this handoff: Claude (opus session) → 交接给新 session
     - **对仗须工对**(punctuation.js#detectDuizhang):五言/七言高倍(×2.5/×3.0)必须词性对称(struct1===struct2),
       否则降级 ×1.5(修了"凑5字白吃×2.5"的 bug)。
 
+### A-octies. 2026-06-17 第八轮 多语言 IR/事实引擎重构 + 英文版(分支 feat/lang-ir-engine)
+> 大重构:把评估器拆成「语言包(parse→IR) + 语言无关 core(settle)」三段式(Storyteller 式事实引擎),
+> 并新建可玩英文语言包。**在分支 feat/lang-ir-engine 上,未合并 master。**
+
+41. **三段式架构**(为多语言 + 长期迭代):
+    - `src/game/eval-core/`:`ir.js`(IR 契约)、`settle.js`(语言无关数值结算=原 finalize 数学部分)、
+      `pipeline.js`(编排:getLangPack().parse(cards)→settle(ir))。**core 不认识任何中英文字。**
+    - `src/lang/zh/`:`parse.js`(句子→IR,含原 finalize 的中文敌我语义)+ `rules/`(原 evaluator 八模块迁入,
+      import 深度改 `../../../game/`)。`src/lang/en/`:英文对应物。
+    - `src/lang/registry.js`:`getLangPack()` 按 `getLang()` 返回 zh|en pack。
+    - `src/game/evaluator/index.js` 降为 facade,re-export 自新路径,**调用方(combat/render/screens)接口零改**。
+42. **IR 形状**(eval-core/ir.js):wellFormed/clauses(agent/action/patient 抽象事实)/base/mults/flags/
+    riders/notes/poeticScore + 重构期载荷 effectsSeed+ctxSeed(语言包算好的数值/结构,settle 消费)。
+43. **英文玩法**(src/lang/en/):SVO 成句(wellformed.js,38 例测试 scripts/test-wellformed-en.mjs)、
+    英语诗意(poetics.js:头韵 alliteration / 词尾押韵 / 音节 meter / detectParallelEn 与 detectDuizhang 同形)、
+    SVO 语序评分(grammar.js)、38 张英文卡(cards.json,含 concept/rhymeKey/alliterationKey/pun/copula"is")、
+    UI_STRINGS_EN(ui.js)。cards.js 按 isEn() 选卡库,createStarterDeck 有英文起手牌。
+44. **LLM 评分预留**:pack.scoreHooks=[](pipeline 会跑钩子链乘 poetic 倍率)。LLM 评委以后作为 async 钩子
+    加入此数组,core/IR 不用改。本版留空不实现。
+45. **golden master 安全网**:`golden-zh.json`(25 句确定性,排除随机卡猫/draw)+ `scripts/golden-run.mjs`
+    (独立 CDP 跑,**不碰用户浏览器**)/`golden-verify.mjs`。改语言逻辑后比对,数值不一致即回归。
+46. **已知待办(UI 收尾,非引擎)**:部分 UI chrome 仍中文(费/吟诵/文力/抽弃)、敌人名未本地化、
+    偶有英文卡 word 未解析、英文 identity/motif/pun 深度系统未做(留扩展位)。引擎层完成。
+
 ### B. 已知的未解决判定问题 (新 session 可继续，基于日志复盘)
 1. **identity 身份 buff 数值不进 effects**：如"我是皇帝→力+2"在 notes 显示了，但实际是
    combat.js#applyEffects 里直接改 G.strength，**没写进 result.effects**，导致预览/日志看不到该数值、
