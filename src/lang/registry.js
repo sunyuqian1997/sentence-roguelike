@@ -2,11 +2,11 @@
 // 加新语言 = 在此注册一个产出同形 IR 的 pack,core 不动。
 import { getLang } from '../i18n.js';
 import { zhPack } from './zh/index.js';
-// import { enPack } from './en/index.js';  // 阶段1 接入
+import { enPack } from './en/index.js';
 
 const PACKS = {
   zh: zhPack,
-  // en: enPack,
+  en: enPack,
 };
 
 export function getLangPack() {

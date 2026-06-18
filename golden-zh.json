@@ -110,28 +110,6 @@
   "duizhang": null
  },
  {
-  "s": "@我是猫",
-  "wf": "ok",
-  "grammarMult": 0.26,
-  "literaryMult": 1.25,
-  "punctMult": 1,
-  "totalMult": 0.325,
-  "effects": {
-   "damage": 0,
-   "block": 0,
-   "heal": 0,
-   "selfHarm": false,
-   "selfHarmDmg": 0,
-   "applyWeak": 0,
-   "applyVuln": 0,
-   "draw": 0,
-   "aoe": false,
-   "ignoreBlock": false,
-   "targetEnemyIdx": -1
-  },
-  "duizhang": null
- },
- {
   "s": "皇帝是@我",
   "wf": "ok",
   "grammarMult": 0.26,

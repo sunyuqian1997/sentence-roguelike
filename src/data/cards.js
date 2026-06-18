@@ -1,6 +1,11 @@
 import { META } from '../game/state.js';
 import { isEn } from '../i18n.js';
-import rawCards from './cards.json';
+import zhCards from './cards.json';
+import enCards from '../lang/en/cards.json';
+
+// 语言切换会 reload 页面,故在模块加载期按当前语言选卡库即可。
+// 英文版用 en 卡库;卡面/句子评估都走对应语言。
+const rawCards = isEn() ? enCards : zhCards;
 
 function resolveDesc(template, def) {
   if (!template) return '';
@@ -40,6 +45,19 @@ export function createStarterDeck() {
     if (!WORD_DEFS[key]) return;
     for (let i = 0; i < n; i++) deck.push(makeCard({ ...WORD_DEFS[key], key }));
   };
+  // 英文起手牌:用 en 卡库的 key(完全不同于中文)。覆盖各词性可造句。
+  if (isEn()) {
+    ['i','knight','cat','monk'].forEach(k => tryAdd(k));            // subjects
+    ['slay','strike','smite','poke','lash'].forEach(k => tryAdd(k)); // attack
+    ['guard','block','brace'].forEach(k => tryAdd(k));               // defense
+    ['mend','patch'].forEach(k => tryAdd(k));                        // heal
+    ['enemy','moon','dragon','heavens'].forEach(k => tryAdd(k));     // objects
+    ['fiercely','silently','calmly'].forEach(k => tryAdd(k));        // modifiers
+    tryAdd('and'); tryAdd('or'); tryAdd('is', 2);                    // connectors (copula ×2)
+    ['alas','wow','oh'].forEach(k => tryAdd(k));                     // exclamations
+    tryAdd('comma', 2); tryAdd('period');                           // punctuation
+    return deck;
+  }
   // 拼贴诗起始词库 — 大幅扩种，覆盖每个词性的多种语气与功能
   // 主语 (4)
   tryAdd('wo');          // 我
