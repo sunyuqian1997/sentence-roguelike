@@ -4,6 +4,7 @@ import { t, isEn } from '../i18n.js';
 import { showFloatingText, getPosColor } from '../utils.js';
 import { playSFX } from '../game/audio.js';
 import { getEnemyPortraitSVG } from './svgArt.js';
+import { enemyName } from '../data/enemies.js';
 import { detectDuizhang, detectSummon, SUMMON_EFFECTS, evaluateSentence, checkExclamationPosition } from '../game/sentence.js';
 import { PUN_STATUS } from '../game/poetics.js';
 import { applyMeaningsToSentence } from '../game/meanings.js';
@@ -70,7 +71,7 @@ function renderRoundJournal() {
   }
   if (tag) {
     const streak = G.rhymeStreak || 0;
-    if (streak > 0) { tag.textContent = `🎵 押韵×${streak}`; tag.style.display = 'inline-flex'; }
+    if (streak > 0) { tag.textContent = `🎵 ${t('rhyme')}×${streak}`; tag.style.display = 'inline-flex'; }
     else { tag.textContent = ''; tag.style.display = 'none'; }
   }
 }
@@ -107,10 +108,10 @@ export function renderEnemies() {
     if (hasVerb) div.classList.add('targetable');
 
     const portraitHTML = enemy.portrait
-      ? `<img class="enemy-portrait-img" src="${enemy.portrait}" alt="${enemy.name}" onerror="this.outerHTML='<div class=\\'enemy-portrait\\'>${(enemy.emoji||'👾').replace(/'/g,'&#39;')}</div>'">`
+      ? `<img class="enemy-portrait-img" src="${enemy.portrait}" alt="${enemyName(enemy)}" onerror="this.outerHTML='<div class=\\'enemy-portrait\\'>${(enemy.emoji||'👾').replace(/'/g,'&#39;')}</div>'">`
       : `<div class="enemy-portrait">${typeof getEnemyPortraitSVG === 'function' ? getEnemyPortraitSVG(enemy) : (enemy.emoji||'👾')}</div>`;
     div.innerHTML = `
-      <div class="enemy-name">${enemy.name}</div>
+      <div class="enemy-name">${enemyName(enemy)}</div>
       <div class="enemy-intent ${ic}">${it}</div>
       ${portraitHTML}
       ${enemy.block>0?`<div class="enemy-block-indicator">🛡${enemy.block}</div>`:''}
@@ -141,7 +142,7 @@ function addEnemyTarget(idx, enemy) {
     G.sentence = G.sentence.filter(c => !c._isEnemyTarget && !c._isSelfTarget);
   }
   const card = {
-    word: enemy.name, pos: 'object', cost: 0,
+    word: enemyName(enemy), pos: 'object', cost: 0,
     _isEnemyTarget: true, _enemyIdx: idx,
     id: 'enemy_target_' + idx + '_' + Math.random().toString(36).substr(2, 5),
   };
@@ -183,7 +184,7 @@ export function renderSentenceSlots() {
       dzEl.textContent = dzResult.label;
     } else {
       dzEl.className = 'duizhang-bad';
-      dzEl.textContent = '逗号两侧需要词语才能判定对仗';
+      dzEl.textContent = t('needWords');
     }
   } else {
     dzEl.textContent = '';
@@ -203,19 +204,19 @@ export function renderSentenceSlots() {
       const chips = [];
       const good = (t) => `<span class="sp-chip sp-good">${t}</span>`;
       const bad = (t) => `<span class="sp-chip sp-bad">${t}</span>`;
-      if (ef.selfHarm) chips.push(bad(`💔自伤${ef.selfHarmDmg}${ef.selfHarmBuff ? ` +${ef.selfHarmBuff}力` : ''}`));
+      if (ef.selfHarm) chips.push(bad(`💔${t('selfHarm')}${ef.selfHarmDmg}${ef.selfHarmBuff ? ` +${ef.selfHarmBuff}${t('strength')}` : ''}`));
       if (ef.damage > 0) chips.push(bad(`⚔️${ef.damage}`));
-      if (ef.isQuestion) chips.push(good(`❓削弱${ef.applyWeak}`));
+      if (ef.isQuestion) chips.push(good(`❓${t('weaken')}${ef.applyWeak}`));
       if (ef.block > 0) chips.push(good(`🛡${ef.block}`));
       if (ef.heal > 0) chips.push(good(`♥${ef.heal}`));
-      if (ef.strengthGain > 0) chips.push(good(`↑${ef.strengthGain}力`));
-      if (ef.draw > 0) chips.push(good(`📜${ef.draw}牌`));
+      if (ef.strengthGain > 0) chips.push(good(`↑${ef.strengthGain}${t('strength')}`));
+      if (ef.draw > 0) chips.push(good(`📜${ef.draw}${t('cardUnit')}`));
       if (ef.multiTargetIndices && ef.multiTargetIndices.length > 1) chips.push(bad(`🎯×${ef.multiTargetIndices.length}`));
-      if (ef.aoe) chips.push(bad('🌊全体'));
-      if (ef.ignoreBlock) chips.push(bad('🗡穿透'));
+      if (ef.aoe) chips.push(bad(`🌊${t('aoe')}`));
+      if (ef.ignoreBlock) chips.push(bad(`🗡${t('pierce')}`));
       if (ef.goldGain > 0) chips.push(good(`💰${ef.goldGain}`));
-      if (ef._execute) chips.push(bad('💀斩杀'));
-      if (ef._imperative) chips.push(bad('🫵祈使'));
+      if (ef._execute) chips.push(bad(`💀${t('execute')}`));
+      if (ef._imperative) chips.push(bad(`🫵${t('imperative')}`));
 
       // Hit rules — the verdicts that produced the multiplier, so the player
       // (and the balance reviewer) can see exactly what was recognized.
@@ -289,14 +290,14 @@ export function createSentenceWordEl(card, idx) {
   const activeMeaning = card._activeMeaning || null;
   const captionText = activeMeaning
     ? `${activeMeaning.emoji || '✨'} ${activeMeaning.label}`
-    : (Array.isArray(card.meanings) && card.meanings.length > 0 ? '⚪ 默认用法' : '');
+    : (Array.isArray(card.meanings) && card.meanings.length > 0 ? `⚪ ${t('defaultUse')}` : '');
 
   // Multi-meaning badge on the mini card
   if (Array.isArray(card.meanings) && card.meanings.length > 0) {
     const badge = document.createElement('div');
     badge.className = 'meaning-badge';
     badge.textContent = '💡';
-    badge.title = '多义卡：根据上下文选用法';
+    badge.title = t('multiHint');
     el.appendChild(badge);
   }
   if (activeMeaning) {
@@ -409,7 +410,7 @@ function renderTargetCards() {
   const enemyContainer = enemySlot || slot;
   G.enemies.forEach((enemy, idx) => {
     if (!enemy || enemy.hp <= 0) return;
-    const eCard = { word: enemy.name, pos: 'object', cost: 0, _isFixedCard: true, id: 'tgt_enemy_' + idx };
+    const eCard = { word: enemyName(enemy), pos: 'object', cost: 0, _isFixedCard: true, id: 'tgt_enemy_' + idx };
     const eEl = createCardElement(eCard, null, { noClick: true });
     eEl.classList.add('target-card', 'target-enemy');
     const ePin = document.createElement('div'); ePin.className = 'card-pin'; ePin.textContent = t('enemy'); eEl.appendChild(ePin);
@@ -455,7 +456,7 @@ export function createCardElement(card, handIndex, opts={}) {
   const desc = getCardDesc(card);
 
   const multiMeaningBadge = (Array.isArray(card.meanings) && card.meanings.length > 0)
-    ? `<div class="meaning-badge" title="多义卡">💡</div>`
+    ? `<div class="meaning-badge" title="${t('multiCard')}">💡</div>`
     : '';
   div.innerHTML = `
     <div class="card-cost">${cost}</div>

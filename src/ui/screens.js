@@ -6,7 +6,7 @@ import { evaluateSentence, detectDuizhang } from '../game/sentence.js';
 import { getPosColor } from '../utils.js';
 import { EVENTS_BY_ACT, EVENTS_FALLBACK } from '../data/events.js';
 import { audioCtx, playNote } from '../game/audio.js';
-import { isEn } from '../i18n.js';
+import { isEn, t } from '../i18n.js';
 import { createCardElement } from './render.js';
 import { showScreen } from './render.js';
 import { renderMap } from '../game/map.js';
@@ -61,14 +61,17 @@ export function closeUpgrade() { document.getElementById('upgrade-overlay').clas
 export function showEventScreen() {
   const actEvents = EVENTS_BY_ACT[G.act] || EVENTS_FALLBACK;
   const ev = actEvents[Math.floor(Math.random() * actEvents.length)];
-  document.getElementById('event-title').textContent = ev.title;
-  document.getElementById('event-text').textContent = ev.text;
+  const en = isEn();
+  document.getElementById('event-title').textContent = en ? (ev.titleEn || ev.title) : ev.title;
+  document.getElementById('event-text').textContent = en ? (ev.textEn || ev.text) : ev.text;
   const el = document.getElementById('event-choices');
   el.innerHTML = '';
   ev.choices.forEach(ch => {
     const d = document.createElement('div');
     d.className = 'event-choice';
-    d.innerHTML = `<div class="choice-label">${ch.label}</div><div class="choice-effect">${ch.effect}</div>`;
+    const label = en ? (ch.labelEn || ch.label) : ch.label;
+    const effect = en ? (ch.effectEn || ch.effect) : ch.effect;
+    d.innerHTML = `<div class="choice-label">${label}</div><div class="choice-effect">${effect}</div>`;
     d.onclick = () => { ch.fn(); showScreen('map-screen'); renderMap(); };
     el.appendChild(d);
   });
@@ -148,7 +151,7 @@ export function viewJournal() {
   if (!list) return;
   document.getElementById('journal-count').textContent = G.sentenceJournal.length;
   if (G.sentenceJournal.length === 0) {
-    list.innerHTML = '<div class="journal-empty">尚无诗句…吟诵一句以开篇。</div>';
+    list.innerHTML = `<div class="journal-empty">${t('noVerseYet')}</div>`;
   } else {
     list.innerHTML = G.sentenceJournal.map((s, i) =>
       `<div class="journal-line"><span class="journal-num">${i + 1}.</span><span class="journal-text">「${s}」</span></div>`

@@ -1,5 +1,5 @@
 import { G, META, saveMeta } from './state.js';
-import { t } from '../i18n.js';
+import { t, isEn } from '../i18n.js';
 import { showFloatingText, shuffleArray } from '../utils.js';
 import { playSFX, initAudio, playAmbientMusic, playCombatMusic, playBossMusic, stopMusic } from './audio.js';
 import { VFX } from '../ui/vfx.js';
@@ -9,7 +9,7 @@ import { playChantPuppetAnim, playEnemyPuppetAnim, IMPACT_MS, playBestVerseRepla
 import { generateCharSVG } from '../ui/svgArt.js';
 import { dealDamageToPlayer, dealDamageToEnemy, checkEnemies } from './damage.js';
 import { generateMap, renderMap } from './map.js';
-import { CARD_PACKS } from '../data/packs.js';
+import { CARD_PACKS, packName, packDesc } from '../data/packs.js';
 import { playStory, STORY_CHAPTERS_REF } from '../ui/storyOverlay.js';
 import STORY_CHAPTERS from '../data/story.json';
 import { detectSummon, SUMMON_EFFECTS, evaluateSentence, checkExclamationPosition, detectDuizhang, isWellFormed } from './sentence.js';
@@ -1178,7 +1178,7 @@ function renderPackShop(container) {
   const packDiv = document.createElement('div');
   packDiv.className = 'pack-shop';
   packDiv.innerHTML = '<h3 style="color:var(--paper-dark);font-size:0.9rem;margin:14px 0 8px;">📦 购买卡包：</h3>';
-  const packs = Object.entries(CARD_PACKS).filter(([id, p]) => !p.default && !META.unlockedPacks?.includes(id));
+  const packs = Object.entries(CARD_PACKS).filter(([id, p]) => !p.default && !META.unlockedPacks?.includes(id) && !(isEn() && p.zhOnly));
   if (packs.length === 0) {
     packDiv.innerHTML += '<div style="opacity:0.5;font-size:0.8rem;">已全部解锁！</div>';
   } else {
@@ -1188,8 +1188,8 @@ function renderPackShop(container) {
       btn.className = 'pack-item' + (canAfford ? '' : ' pack-locked');
       btn.innerHTML = `
         <span class="pack-icon">${pack.icon}</span>
-        <span class="pack-name">${pack.name}</span>
-        <span class="pack-desc">${pack.desc}</span>
+        <span class="pack-name">${packName(pack)}</span>
+        <span class="pack-desc">${packDesc(pack)}</span>
         <span class="pack-price">${canAfford ? '' : '🔒'} ${pack.price}⬡</span>
       `;
       if (canAfford) {
@@ -1198,7 +1198,7 @@ function renderPackShop(container) {
           if (!META.unlockedPacks) META.unlockedPacks = [];
           META.unlockedPacks.push(id);
           saveMeta();
-          btn.innerHTML = `<span class="pack-icon">${pack.icon}</span><span class="pack-name">${pack.name} ✓ 已解锁！</span>`;
+          btn.innerHTML = `<span class="pack-icon">${pack.icon}</span><span class="pack-name">${packName(pack)} ${isEn() ? '✓ Unlocked!' : '✓ 已解锁！'}</span>`;
           btn.onclick = null;
           btn.className = 'pack-item pack-bought';
           const goldEl = document.getElementById('reward-gold-text');
