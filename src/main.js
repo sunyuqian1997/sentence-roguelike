@@ -3,7 +3,7 @@ import './styles/index.css';
 import { G, META } from './game/state.js';
 import { toggleMute } from './game/audio.js';
 import { initInkBackground } from './ui/inkShader.js';
-import { getLang, setLang } from './i18n.js';
+import { getLang, setLang, applyStaticI18n } from './i18n.js';
 import { initCheats } from './cheats.js';
 import { startGame, startCombat, endPlayerTurn, chantSentence, addToSentence, removeSentenceWord, skipReward } from './game/combat.js';
 import { renderCombat } from './ui/render.js';
@@ -70,13 +70,11 @@ import('./game/chantLog.js').then(m => {
   initInkBackground();
   initCheats();
 
+  applyStaticI18n();
+
   const currentLang = getLang();
   const langBtn = document.getElementById('lang-btn');
   if (langBtn) langBtn.textContent = currentLang === 'zh' ? 'EN / 中文' : '中文 / EN';
-  if (currentLang === 'en') {
-    document.querySelector('#title-screen h1').textContent = 'Ink & Verse';
-    document.querySelector('#title-screen .subtitle').textContent = 'I write what my heart speaks';
-  }
 
   const el = document.getElementById('title-ink-display');
   if (el && META.totalInk > 0) el.textContent = `文气: ${META.ink} | 冒险: ${META.runs}`;

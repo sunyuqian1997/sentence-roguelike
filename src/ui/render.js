@@ -1,5 +1,5 @@
 import { G } from '../game/state.js';
-import { WORD_DEFS, getCardWord, getCardDesc } from '../data/cards.js';
+import { WORD_DEFS, getCardWord, getCardDesc, getSelfCardKey } from '../data/cards.js';
 import { t, isEn } from '../i18n.js';
 import { showFloatingText, getPosColor } from '../utils.js';
 import { playSFX } from '../game/audio.js';
@@ -35,9 +35,9 @@ export function renderCombat() {
   document.getElementById('combat-block-display').innerHTML = G.block > 0 ? `🛡️ <b style="font-size:1.3em">${G.block}</b>` : '';
 
   let st = '';
-  if (G.strength>0) st += `<span class="status-icon status-strength">力${G.strength}</span>`;
-  if (G.vulnerable>0) st += `<span class="status-icon status-vulnerable">伤${G.vulnerable}</span>`;
-  if (G.weak>0) st += `<span class="status-icon status-weak">弱${G.weak}</span>`;
+  if (G.strength>0) st += `<span class="status-icon status-strength">${t('status_str')}${G.strength}</span>`;
+  if (G.vulnerable>0) st += `<span class="status-icon status-vulnerable">${t('status_vuln')}${G.vulnerable}</span>`;
+  if (G.weak>0) st += `<span class="status-icon status-weak">${t('status_weak')}${G.weak}</span>`;
   const stBar = document.getElementById('combat-status-effects-bar');
   if (stBar) stBar.innerHTML = st;
   const stOld = document.getElementById('combat-status-effects');
@@ -61,7 +61,7 @@ function renderRoundJournal() {
   if (!list) return;
   const lines = G.combatJournal || [];
   if (lines.length === 0) {
-    list.innerHTML = '<div class="round-journal-empty">尚未吟诵…</div>';
+    list.innerHTML = `<div class="round-journal-empty">${t('notChanted')}</div>`;
   } else {
     list.innerHTML = lines.map((s, i) =>
       `<div class="round-journal-line"><span class="rj-num">${i + 1}.</span>「${s}」</div>`
@@ -79,7 +79,7 @@ function renderJournalBtnBadge() {
   const btn = document.getElementById('journal-btn');
   if (!btn) return;
   const n = (G.sentenceJournal || []).length;
-  btn.textContent = n > 0 ? `诗册·${n}` : '诗册';
+  btn.textContent = n > 0 ? `${t('poemBook')}·${n}` : t('poemBook');
 }
 
 export function renderEnemies() {
@@ -119,10 +119,10 @@ export function renderEnemies() {
         <div class="enemy-hp-text">${enemy.hp}/${enemy.maxHp}</div>
       </div>
       <div class="enemy-status-effects">
-        ${enemy.vulnerable>0?'<span class="status-icon status-vulnerable">伤'+enemy.vulnerable+'</span>':''}
-        ${enemy.weak>0?'<span class="status-icon status-weak">弱'+enemy.weak+'</span>':''}
-        ${(enemy.strength||0)>0?'<span class="status-icon status-strength">力'+enemy.strength+'</span>':''}
-        ${(enemy._puns||[]).map(t => `<span class="status-icon status-pun" title="${(PUN_STATUS[t]||{}).label||t}">${(PUN_STATUS[t]||{}).label||t}</span>`).join('')}
+        ${enemy.vulnerable>0?'<span class="status-icon status-vulnerable">'+t('status_vuln')+enemy.vulnerable+'</span>':''}
+        ${enemy.weak>0?'<span class="status-icon status-weak">'+t('status_weak')+enemy.weak+'</span>':''}
+        ${(enemy.strength||0)>0?'<span class="status-icon status-strength">'+t('status_str')+enemy.strength+'</span>':''}
+        ${(enemy._puns||[]).map(pn => `<span class="status-icon status-pun" title="${(PUN_STATUS[pn]||{}).label||pn}">${(PUN_STATUS[pn]||{}).label||pn}</span>`).join('')}
       </div>
     `;
     div.onclick = () => addEnemyTarget(idx, enemy);
@@ -194,7 +194,7 @@ export function renderSentenceSlots() {
     const summonCheck = detectSummon(G.sentence);
     if (summonCheck) {
       const eff = SUMMON_EFFECTS[summonCheck.summonName];
-      sp.innerHTML = `<span class="sp-cost">费${getSentenceCost()}</span><span class="sp-chip sp-good">${eff.emoji} 召唤·${eff.name}</span><span class="sp-flavor">${eff.desc}</span>`;
+      sp.innerHTML = `<span class="sp-cost">${t('cost')}${getSentenceCost()}</span><span class="sp-chip sp-good">${eff.emoji} ${t('summon')}·${eff.name}</span><span class="sp-flavor">${eff.desc}</span>`;
     } else {
     const eval_ = evaluateSentence(G.sentence);
     if (eval_) {
@@ -232,7 +232,7 @@ export function renderSentenceSlots() {
 
       sp.innerHTML =
         `<div class="sp-row">` +
-          `<span class="sp-cost">费${getSentenceCost()}</span>` +
+          `<span class="sp-cost">${t('cost')}${getSentenceCost()}</span>` +
           chips.join('') +
           `<span class="sp-mult">✨×${eval_.totalMult.toFixed(2)}</span>` +
           excWarn +
@@ -250,7 +250,7 @@ export function renderSentenceSlots() {
 export function createSentenceWordEl(card, idx) {
   const wrap = document.createElement('div');
   wrap.className = 'sentence-card-wrap';
-  wrap.title = '点击取消 · 拖动排序';
+  wrap.title = isEn() ? 'Tap to remove · drag to sort' : '点击取消·拖排序';
   wrap.dataset.sentenceIdx = String(idx);
   wrap.draggable = true;
   wrap.onclick = (e) => { e.stopPropagation(); removeSentenceWord(idx); };
@@ -274,7 +274,7 @@ export function createSentenceWordEl(card, idx) {
       <div class="card pos-subject sentence-mini-card self-target-card">
         <div class="card-cost">⊙</div>
         <div class="card-pos-tag">主语</div>
-        <div class="card-word">我</div>
+        <div class="card-word">${t('me')}</div>
         <div class="card-effect-bar">自身</div>
       </div>
       <div class="meaning-caption">作主语</div>`;
@@ -370,12 +370,12 @@ export function renderHand() {
 function targetStatusHTML(obj) {
   if (!obj) return '';
   const b = [];
-  if (obj.vulnerable > 0) b.push(`<span class="tgt-st tgt-vuln">伤${obj.vulnerable}</span>`);
-  if (obj.weak > 0) b.push(`<span class="tgt-st tgt-weak">弱${obj.weak}</span>`);
-  if (obj.strength > 0) b.push(`<span class="tgt-st tgt-str">力${obj.strength}</span>`);
-  if (obj.block > 0) b.push(`<span class="tgt-st tgt-block">盾${obj.block}</span>`);
-  (obj._puns || []).forEach(t => {
-    const lbl = (PUN_STATUS[t] || {}).label || t;
+  if (obj.vulnerable > 0) b.push(`<span class="tgt-st tgt-vuln">${t('status_vuln')}${obj.vulnerable}</span>`);
+  if (obj.weak > 0) b.push(`<span class="tgt-st tgt-weak">${t('status_weak')}${obj.weak}</span>`);
+  if (obj.strength > 0) b.push(`<span class="tgt-st tgt-str">${t('status_str')}${obj.strength}</span>`);
+  if (obj.block > 0) b.push(`<span class="tgt-st tgt-block">${t('status_block')}${obj.block}</span>`);
+  (obj._puns || []).forEach(pn => {
+    const lbl = (PUN_STATUS[pn] || {}).label || pn;
     b.push(`<span class="tgt-st tgt-pun" title="${lbl}">${lbl}</span>`);
   });
   if (obj.stunned) b.push(`<span class="tgt-st tgt-stun">💤</span>`);
@@ -392,12 +392,13 @@ function renderTargetCards() {
   slot.innerHTML = '';
   if (enemySlot) enemySlot.innerHTML = '';
 
-  // 我 (left)
-  const woDef = WORD_DEFS.wo;
-  const woCard = { ...woDef, key: 'wo', upgraded: false, cost: 0, _isFixedCard: true, id: 'tgt_wo' };
+  // 我 / I (left)
+  const woKey = getSelfCardKey();
+  const woDef = WORD_DEFS[woKey];
+  const woCard = { ...woDef, key: woKey, upgraded: false, cost: 0, _isFixedCard: true, id: 'tgt_wo' };
   const woEl = createCardElement(woCard, null, { noClick: true });
   woEl.classList.add('target-card', 'target-self');
-  const woPin = document.createElement('div'); woPin.className = 'card-pin'; woPin.textContent = '我'; woEl.appendChild(woPin);
+  const woPin = document.createElement('div'); woPin.className = 'card-pin'; woPin.textContent = t('me'); woEl.appendChild(woPin);
   woEl.insertAdjacentHTML('beforeend', targetStatusHTML(G));
   if (G.sentence.some(c => c._isFixedWo)) woEl.classList.add('in-sentence');
   woEl.style.cursor = 'pointer';
@@ -411,7 +412,7 @@ function renderTargetCards() {
     const eCard = { word: enemy.name, pos: 'object', cost: 0, _isFixedCard: true, id: 'tgt_enemy_' + idx };
     const eEl = createCardElement(eCard, null, { noClick: true });
     eEl.classList.add('target-card', 'target-enemy');
-    const ePin = document.createElement('div'); ePin.className = 'card-pin'; ePin.textContent = '敌'; eEl.appendChild(ePin);
+    const ePin = document.createElement('div'); ePin.className = 'card-pin'; ePin.textContent = t('enemy'); eEl.appendChild(ePin);
     eEl.insertAdjacentHTML('beforeend', targetStatusHTML(enemy));
     if (G.sentence.some(c => c._isEnemyTarget && c._enemyIdx === idx)) eEl.classList.add('in-sentence');
     eEl.style.cursor = 'pointer';
@@ -422,8 +423,9 @@ function renderTargetCards() {
 
 export function addSelfTarget() {
   if (G.sentence.some(c => c._isFixedWo)) return;
-  const woDef = WORD_DEFS.wo;
-  const card = { ...woDef, key: 'wo', upgraded: false, cost: 0, _isFixedWo: true, id: 'fixed_wo_' + Math.random().toString(36).substr(2, 5) };
+  const woKey = getSelfCardKey();
+  const woDef = WORD_DEFS[woKey];
+  const card = { ...woDef, key: woKey, upgraded: false, cost: 0, _isFixedWo: true, id: 'fixed_wo_' + Math.random().toString(36).substr(2, 5) };
   if (!tryAddCard(card)) { renderCombat(); return; }
   playSFX('card');
   renderCombat();
@@ -488,7 +490,7 @@ export function showTooltip(e, card) {
   const posNames = t('posNames');
   const rarityNames = t('rarityNames');
   tt.querySelector('.tt-name').textContent = getCardWord(card) + (card.upgraded ? '+' : '');
-  tt.querySelector('.tt-type').textContent = `${posNames[card.pos]} · ${rarityNames[card.rarity] || card.rarity} · ${isEn() ? 'Cost' : '费用'}${getEffectiveCost(card)}`;
+  tt.querySelector('.tt-type').textContent = `${posNames[card.pos]} · ${rarityNames[card.rarity] || card.rarity} · ${t('cost')}${getEffectiveCost(card)}`;
   let d = getCardDesc(card);
   tt.querySelector('.tt-desc').textContent = d;
   tt.querySelector('.tt-flavor').textContent = card.flavor ? `"${card.flavor}"` : '';
@@ -514,7 +516,7 @@ function showTooltipMobile(card) {
   const posNames = t('posNames');
   const rarityNames = t('rarityNames');
   tt.querySelector('.tt-name').textContent = getCardWord(card) + (card.upgraded ? '+' : '');
-  tt.querySelector('.tt-type').textContent = `${posNames[card.pos]} · ${rarityNames[card.rarity] || card.rarity} · ${isEn() ? 'Cost' : '费用'}${getEffectiveCost(card)}`;
+  tt.querySelector('.tt-type').textContent = `${posNames[card.pos]} · ${rarityNames[card.rarity] || card.rarity} · ${t('cost')}${getEffectiveCost(card)}`;
   let d = getCardDesc(card);
   tt.querySelector('.tt-desc').textContent = d;
   tt.querySelector('.tt-flavor').textContent = card.flavor ? `"${card.flavor}"` : '';

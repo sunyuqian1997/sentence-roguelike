@@ -39,6 +39,13 @@ export function makeCard(def) {
   return { ...def, upgraded: false, id: Math.random().toString(36).substr(2, 9) };
 }
 
+// 自指主语卡(我/I)的 key,按语言查 —— zh 用 'wo',en 用 concept 'subject_self'。
+export function getSelfCardKey() {
+  if (WORD_DEFS.wo) return 'wo';
+  const k = Object.keys(WORD_DEFS).find(key => WORD_DEFS[key].concept === 'subject_self');
+  return k || 'i';
+}
+
 export function createStarterDeck() {
   const deck = [];
   const tryAdd = (key, n = 1) => {

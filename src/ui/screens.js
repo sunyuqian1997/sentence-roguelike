@@ -6,6 +6,7 @@ import { evaluateSentence, detectDuizhang } from '../game/sentence.js';
 import { getPosColor } from '../utils.js';
 import { EVENTS_BY_ACT, EVENTS_FALLBACK } from '../data/events.js';
 import { audioCtx, playNote } from '../game/audio.js';
+import { isEn } from '../i18n.js';
 import { createCardElement } from './render.js';
 import { showScreen } from './render.js';
 import { renderMap } from '../game/map.js';
@@ -15,7 +16,11 @@ import { renderMap } from '../game/map.js';
 // ============================================================
 export function showRestScreen() {
   showScreen('rest-screen');
-  const restThemes = [
+  const restThemes = isEn() ? [
+    { title: 'Starlit Garden', flavor: 'Glowing word-flowers bloom. Hold one to your ear and hear a faint verse.' },
+    { title: 'Word Spring', flavor: 'Letters drift in the warm spring. Soaking here, you feel strength return.' },
+    { title: 'Library Nook', flavor: 'A cozy corner. The books murmur softly, like a lullaby.' },
+  ] : [
     { title: '星空花园', flavor: '花园里开满了会发光的文字花。摘一朵放在耳边，能听到很轻很轻的诗。' },
     { title: '词语温泉', flavor: '热腾腾的温泉里漂浮着各种文字。泡在里面，感觉力量在慢慢恢复。' },
     { title: '图书馆角落', flavor: '找到了一个舒服的角落。书架上的书在轻轻低语，像催眠曲一样。' },
@@ -24,7 +29,8 @@ export function showRestScreen() {
   document.getElementById('rest-title').textContent = theme.title;
   document.getElementById('rest-flavor').textContent = theme.flavor;
   const h = Math.floor(G.maxHp * 0.3);
-  document.getElementById('rest-heal-desc').textContent = `恢复${h}生命 (${G.hp}/${G.maxHp})`;
+  document.getElementById('rest-heal-desc').textContent = isEn()
+    ? `Heal ${h} HP (${G.hp}/${G.maxHp})` : `恢复${h}生命 (${G.hp}/${G.maxHp})`;
 }
 export function restHeal() {
   G.hp = Math.min(G.maxHp, G.hp + Math.floor(G.maxHp * 0.3));
@@ -301,7 +307,11 @@ let poetrySelected = [];
 export function showPoetryScreen() {
   poetrySelected = [];
   showScreen('poetry-screen');
-  const themes = [
+  const themes = isEn() ? [
+    { title: 'Inscribe', flavor: 'Stone walls like paper. Leave a verse, gain power.' },
+    { title: 'Wind Terrace', flavor: 'Atop the peak, wind sings. Chant a line and the world stirs.' },
+    { title: 'Ink Pool', flavor: 'A pool of ink mirrors the stars. Your verse becomes strength.' },
+  ] : [
     { title: '题壁', flavor: '古亭之中，石壁如纸。留下你的诗句，换取灵感与力量。' },
     { title: '临风台', flavor: '山巅之上，风声如歌。在此吟一句，天地为之动容。' },
     { title: '墨池', flavor: '一池墨水，映出星辰。你的诗句将化为力量。' },

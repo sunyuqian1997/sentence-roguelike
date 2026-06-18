@@ -1,4 +1,5 @@
 import { G, META, saveMeta } from './state.js';
+import { t } from '../i18n.js';
 import { showFloatingText, shuffleArray } from '../utils.js';
 import { playSFX, initAudio, playAmbientMusic, playCombatMusic, playBossMusic, stopMusic } from './audio.js';
 import { VFX } from '../ui/vfx.js';
@@ -375,8 +376,8 @@ export function updateChantButton() {
   const canChant = hasVerb || isSummon || isDeclaration;
   btn.disabled = G.sentence.length === 0 || cost > G.energy || !canChant;
   btn.style.opacity = btn.disabled ? '0.35' : '1';
-  const label = isSummon ? '召唤' : isDeclaration && !hasVerb ? '宣言' : '吟诵';
-  btn.textContent = G.sentence.length > 0 ? `${label} (${cost}文力)` : '吟诵';
+  const label = isSummon ? t('summon') : isDeclaration && !hasVerb ? t('declare') : t('chant');
+  btn.textContent = G.sentence.length > 0 ? `${label} (${cost} ${t('energy')})` : t('chant');
 }
 
 // ============================================================
