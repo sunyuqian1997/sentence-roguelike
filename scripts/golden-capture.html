@@ -1,0 +1,71 @@
+<!doctype html>
+<!-- Golden master capture: 跑当前评估器对一组「确定性」句子,dump 完整 result。
+     重构前后各跑一次,逐句比对数值必须一致。在 vite dev 下打开,结果在 #out(JSON)。 -->
+<html><head><meta charset="utf-8"><title>golden</title></head>
+<body><pre id="out">running…</pre>
+<script type="module">
+import { WORD_DEFS } from '/src/data/cards.js';
+import { evaluateSentence, isWellFormed } from '/src/game/sentence.js';
+
+// 确定性卡选取:按 word 取真实卡,缺则跳过。固定句表(覆盖各句型 + 诗意 + 特殊)。
+const byWord = {};
+for (const k in WORD_DEFS) { const d = WORD_DEFS[k]; if (d && d.word && !(d.word in byWord)) byWord[d.word] = d; }
+let uid = 0;
+function mk(w) { const d = byWord[w]; if (!d) return null; return { ...d, id: 'g' + (uid++) }; }
+function S(...ws) {
+  return ws.map(w => {
+    if (w === '，') return { word:'，', pos:'punctuation', punctType:'comma', id:'g'+(uid++) };
+    if (w === '。') return { word:'。', pos:'punctuation', punctType:'period', id:'g'+(uid++) };
+    if (w === '！') return { word:'！', pos:'punctuation', punctType:'exclamation', id:'g'+(uid++) };
+    if (w === '？') return { word:'？', pos:'punctuation', punctType:'question', id:'g'+(uid++) };
+    if (w === '@我') return { ...mk('我'), _isFixedWo:true };
+    if (w === '@敌') return { word:'敌人', pos:'object', _isEnemyTarget:true, _enemyIdx:0, id:'g'+(uid++) };
+    return mk(w);
+  });
+}
+
+// 固定句库 — 覆盖:主谓/主谓宾/连动/判断/兼语/对仗/押韵/感叹/谐音/特殊/废句。
+const SENTENCES = [
+  ['@我','斩'], ['@我','斩','@敌'], ['@我','锤','月亮'],
+  ['@我','猛烈地','斩','@敌'], ['明月','高悬'],
+  ['@我','是','猫'], ['皇帝','是','@我'],
+  ['@我','守'], ['@我','挡'], ['@我','斩','，','@敌','戳'],
+  ['明月','啊'], ['啊'], ['@我','啊'],
+  ['@我','斩','月亮','，','@我','守','长风'],   // 对仗候选(各5字)
+  ['@我','对','明月','，','猫','对','长风'],     // 对牌工对
+  ['@我','是','日'],
+  ['@我','锤','@敌','。'],
+  ['@我','斩','@敌','！'], ['@我','戳','@敌','？'],
+  ['影子','斩','@敌'], ['@我','摸鱼'],
+  ['@我','吟诗'], ['猫','斩','@敌'], ['@我','揍','@敌'],
+  ['@我','怒吼'], ['剑客','砍','@敌'], ['@我','喷','@敌'],
+];
+
+// 需要 G.enemies 给 _isEnemyTarget 解析:伪造一个敌人。
+import { G } from '/src/game/state.js';
+if (!G.enemies || !G.enemies.length) G.enemies = [{ name:'纸鬼', hp:24, maxHp:24, block:0, strength:0, vulnerable:0, weak:0 }];
+
+const results = [];
+for (const ws of SENTENCES) {
+  const cards = S(...ws);
+  if (cards.some(c => !c)) { results.push({ s: ws.join(''), skip: true }); continue; }
+  const wf = isWellFormed(cards);
+  let r = null;
+  try { r = evaluateSentence(cards.map(c => ({ ...c }))); } catch (e) { r = { error: String(e) }; }
+  results.push({
+    s: ws.join(''),
+    wf: wf.ok ? 'ok' : wf.reason,
+    grammarMult: r?.grammarMult, literaryMult: r?.literaryMult, punctMult: r?.punctMult, totalMult: r?.totalMult,
+    effects: r?.effects ? {
+      damage: r.effects.damage, block: r.effects.block, heal: r.effects.heal,
+      selfHarm: r.effects.selfHarm, selfHarmDmg: r.effects.selfHarmDmg,
+      applyWeak: r.effects.applyWeak, applyVuln: r.effects.applyVuln, draw: r.effects.draw,
+      aoe: r.effects.aoe, ignoreBlock: r.effects.ignoreBlock, targetEnemyIdx: r.effects.targetEnemyIdx,
+    } : null,
+    duizhang: r?.duizhangResult ? r.duizhangResult.type + ':' + r.duizhangResult.multiplier : null,
+  });
+}
+const json = JSON.stringify(results, null, 1);
+document.getElementById('out').textContent = json;
+window.__GOLDEN__ = json;
+</script></body></html>
