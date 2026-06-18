@@ -205,6 +205,7 @@
   "zhan": {
     "word": "斩",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "starter",
     "combatType": "attack",
@@ -220,6 +221,7 @@
   "zou": {
     "word": "揍",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "common",
     "combatType": "attack",
@@ -235,6 +237,7 @@
   "dui": {
     "word": "怼",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "common",
     "combatType": "attack",
@@ -251,6 +254,7 @@
   "chuai": {
     "word": "踹",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "common",
     "combatType": "attack",
@@ -267,6 +271,7 @@
   "kan": {
     "word": "砍",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "common",
     "combatType": "attack",
@@ -282,6 +287,7 @@
   "cu": {
     "word": "戳",
     "pos": "verb",
+    "valence": "trans",
     "cost": 0,
     "rarity": "common",
     "combatType": "attack",
@@ -297,6 +303,7 @@
   "chou": {
     "word": "抽",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "common",
     "combatType": "attack",
@@ -313,6 +320,7 @@
   "pen": {
     "word": "喷",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "common",
     "combatType": "attack",
@@ -329,6 +337,7 @@
   "chong": {
     "word": "冲",
     "pos": "verb",
+    "valence": "trans",
     "cost": 2,
     "rarity": "uncommon",
     "combatType": "attack",
@@ -345,6 +354,7 @@
   "chui": {
     "word": "锤",
     "pos": "verb",
+    "valence": "trans",
     "cost": 2,
     "rarity": "uncommon",
     "combatType": "attack",
@@ -360,6 +370,7 @@
   "nuhou": {
     "word": "怒吼",
     "pos": "verb",
+    "valence": "intrans",
     "cost": 2,
     "rarity": "uncommon",
     "combatType": "attack",
@@ -376,6 +387,7 @@
   "tan": {
     "word": "弹",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "uncommon",
     "combatType": "attack",
@@ -392,6 +404,7 @@
   "chaofen": {
     "word": "嘲讽",
     "pos": "verb",
+    "valence": "trans",
     "cost": 0,
     "rarity": "uncommon",
     "combatType": "attack",
@@ -408,6 +421,7 @@
   "huyou": {
     "word": "忽悠",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "uncommon",
     "combatType": "attack",
@@ -424,6 +438,7 @@
   "bao": {
     "word": "爆",
     "pos": "verb",
+    "valence": "trans",
     "cost": 2,
     "rarity": "rare",
     "combatType": "attack",
@@ -440,6 +455,7 @@
   "zhu": {
     "word": "诛",
     "pos": "verb",
+    "valence": "trans",
     "cost": 2,
     "rarity": "rare",
     "unlockable": true,
@@ -457,6 +473,7 @@
   "dui": {
     "word": "对",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "rare",
     "combatType": "attack",
@@ -490,6 +507,7 @@
   "shou": {
     "word": "守",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "starter",
     "combatType": "defense",
@@ -505,6 +523,7 @@
   "dang": {
     "word": "挡",
     "pos": "verb",
+    "valence": "trans",
     "cost": 0,
     "rarity": "common",
     "combatType": "defense",
@@ -520,6 +539,7 @@
   "tangping": {
     "word": "躺平",
     "pos": "verb",
+    "valence": "intrans",
     "cost": 1,
     "rarity": "common",
     "combatType": "defense",
@@ -557,6 +577,7 @@
   "bailan": {
     "word": "摆烂",
     "pos": "verb",
+    "valence": "intrans",
     "cost": 1,
     "rarity": "uncommon",
     "combatType": "defense",
@@ -634,6 +655,7 @@
   "yingkang": {
     "word": "硬扛",
     "pos": "verb",
+    "valence": "trans",
     "cost": 2,
     "rarity": "uncommon",
     "combatType": "defense",
@@ -650,6 +672,7 @@
   "liule": {
     "word": "溜了",
     "pos": "verb",
+    "valence": "intrans",
     "cost": 1,
     "rarity": "uncommon",
     "combatType": "defense",
@@ -666,6 +689,7 @@
   "moyu": {
     "word": "摸鱼",
     "pos": "verb",
+    "valence": "intrans",
     "cost": 1,
     "rarity": "common",
     "combatType": "heal",
@@ -682,6 +706,7 @@
   "kua": {
     "word": "夸",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "uncommon",
     "combatType": "buff",
@@ -697,6 +722,7 @@
   "xiu": {
     "word": "修",
     "pos": "verb",
+    "valence": "trans",
     "cost": 2,
     "rarity": "uncommon",
     "combatType": "heal",
@@ -712,6 +738,7 @@
   "bu": {
     "word": "补",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "common",
     "combatType": "heal",
@@ -1410,6 +1437,7 @@
   "huashui": {
     "word": "划水",
     "pos": "verb",
+    "valence": "intrans",
     "cost": 1,
     "rarity": "uncommon",
     "combatType": "heal",
@@ -1426,6 +1454,7 @@
   "pengci": {
     "word": "碰瓷",
     "pos": "verb",
+    "valence": "intrans",
     "cost": 1,
     "rarity": "uncommon",
     "combatType": "defense",
@@ -1458,6 +1487,7 @@
   "neijuan": {
     "word": "内卷",
     "pos": "verb",
+    "valence": "intrans",
     "cost": 1,
     "rarity": "uncommon",
     "combatType": "attack",
@@ -1474,6 +1504,7 @@
   "tangying": {
     "word": "躺赢",
     "pos": "verb",
+    "valence": "intrans",
     "cost": 0,
     "rarity": "uncommon",
     "combatType": "defense",
@@ -1506,6 +1537,7 @@
   "zhongcao": {
     "word": "种草",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "uncommon",
     "combatType": "attack",
@@ -1539,6 +1571,7 @@
   "kaibai": {
     "word": "开摆",
     "pos": "verb",
+    "valence": "intrans",
     "cost": 2,
     "rarity": "rare",
     "combatType": "defense",
@@ -1555,6 +1588,7 @@
   "lacai": {
     "word": "拉踩",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "uncommon",
     "combatType": "attack",
@@ -1571,6 +1605,7 @@
   "diss": {
     "word": "diss",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "uncommon",
     "combatType": "attack",
@@ -2202,6 +2237,7 @@
   "leile": {
     "word": "累了",
     "pos": "verb",
+    "valence": "intrans",
     "cost": 1,
     "rarity": "uncommon",
     "combatType": "debuff",
@@ -2234,6 +2270,7 @@
   "mishi": {
     "word": "迷失",
     "pos": "verb",
+    "valence": "intrans",
     "cost": 1,
     "rarity": "uncommon",
     "combatType": "debuff",
@@ -2250,6 +2287,7 @@
   "duoluo": {
     "word": "堕落",
     "pos": "verb",
+    "valence": "intrans",
     "cost": 1,
     "rarity": "uncommon",
     "combatType": "debuff",
@@ -2314,6 +2352,7 @@
   "cd_chumai": {
     "word": "出卖",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "uncommon",
     "pack": "caodong",
@@ -2340,6 +2379,7 @@
   "cd_taopao": {
     "word": "逃跑",
     "pos": "verb",
+    "valence": "intrans",
     "cost": 1,
     "rarity": "uncommon",
     "pack": "caodong",
@@ -2491,6 +2531,7 @@
   "lx_nahan": {
     "word": "呐喊",
     "pos": "verb",
+    "valence": "intrans",
     "cost": 2,
     "rarity": "rare",
     "pack": "luxun",
@@ -2505,6 +2546,7 @@
   "lx_fankang": {
     "word": "反抗",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "uncommon",
     "pack": "luxun",
@@ -2517,6 +2559,7 @@
   "lx_panghuang": {
     "word": "彷徨",
     "pos": "verb",
+    "valence": "intrans",
     "cost": 1,
     "rarity": "common",
     "pack": "luxun",
@@ -2530,6 +2573,7 @@
   "lx_jianbi": {
     "word": "剪辫",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "uncommon",
     "pack": "luxun",
@@ -2790,6 +2834,7 @@
   "ss_kuangge": {
     "word": "狂歌",
     "pos": "verb",
+    "valence": "intrans",
     "cost": 0,
     "rarity": "uncommon",
     "pack": "sushi",
@@ -3111,6 +3156,7 @@
   "gei": {
     "word": "给",
     "pos": "verb",
+    "valence": "ditrans",
     "cost": 1,
     "rarity": "common",
     "combatType": "defense",
@@ -3144,6 +3190,7 @@
   "zhao": {
     "word": "罩",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "uncommon",
     "combatType": "defense",
@@ -3155,6 +3202,7 @@
   "tui": {
     "word": "推",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "common",
     "combatType": "attack",
@@ -3167,6 +3215,7 @@
   "gang": {
     "word": "扛",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "common",
     "combatType": "defense",
@@ -3178,6 +3227,7 @@
   "pao": {
     "word": "跑",
     "pos": "verb",
+    "valence": "intrans",
     "cost": 1,
     "rarity": "common",
     "combatType": "defense",
@@ -3190,6 +3240,7 @@
   "qiu": {
     "word": "求",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "common",
     "combatType": "heal",
@@ -3201,6 +3252,7 @@
   "ken": {
     "word": "啃",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "common",
     "combatType": "attack",
@@ -3212,6 +3264,7 @@
   "cai": {
     "word": "踩",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "common",
     "combatType": "attack",
@@ -3224,6 +3277,7 @@
   "qiang": {
     "word": "抢",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "uncommon",
     "combatType": "attack",
@@ -3236,6 +3290,7 @@
   "wan": {
     "word": "玩",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "common",
     "combatType": "buff",
@@ -3248,6 +3303,7 @@
   "zan": {
     "word": "赞",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "common",
     "combatType": "buff",
@@ -3385,6 +3441,7 @@
   "chenni": {
     "word": "沉溺",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "common",
     "combatType": "attack",
@@ -3582,6 +3639,7 @@
   "chen": {
     "word": "沉",
     "pos": "verb",
+    "valence": "intrans",
     "cost": 1,
     "rarity": "starter",
     "combatType": "defense",
@@ -3597,6 +3655,7 @@
   "piaofu": {
     "word": "漂",
     "pos": "verb",
+    "valence": "intrans",
     "cost": 1,
     "rarity": "starter",
     "combatType": "heal",

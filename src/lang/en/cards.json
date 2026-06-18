@@ -72,6 +72,7 @@
   "slay": {
     "word": "slay",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "starter",
     "concept": "attack_cut",
@@ -86,6 +87,7 @@
   "strike": {
     "word": "strike",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "common",
     "concept": "attack_blunt",
@@ -100,6 +102,7 @@
   "smite": {
     "word": "smite",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "common",
     "concept": "attack_holy",
@@ -114,6 +117,7 @@
   "poke": {
     "word": "poke",
     "pos": "verb",
+    "valence": "trans",
     "cost": 0,
     "rarity": "common",
     "concept": "attack_poke",
@@ -128,6 +132,7 @@
   "lash": {
     "word": "lash",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "common",
     "concept": "attack_draw",
@@ -143,6 +148,7 @@
   "charge": {
     "word": "charge",
     "pos": "verb",
+    "valence": "trans",
     "cost": 2,
     "rarity": "uncommon",
     "concept": "attack_pierce",
@@ -158,6 +164,7 @@
   "guard": {
     "word": "guard",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "starter",
     "concept": "defense_block",
@@ -172,6 +179,7 @@
   "block": {
     "word": "block",
     "pos": "verb",
+    "valence": "trans",
     "cost": 0,
     "rarity": "common",
     "concept": "defense_small",
@@ -186,6 +194,7 @@
   "brace": {
     "word": "brace",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "common",
     "concept": "defense_draw",
@@ -201,6 +210,7 @@
   "mend": {
     "word": "mend",
     "pos": "verb",
+    "valence": "trans",
     "cost": 2,
     "rarity": "uncommon",
     "concept": "heal_big",
@@ -215,6 +225,7 @@
   "patch": {
     "word": "patch",
     "pos": "verb",
+    "valence": "trans",
     "cost": 1,
     "rarity": "common",
     "concept": "heal_small",

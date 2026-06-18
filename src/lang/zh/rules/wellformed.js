@@ -171,6 +171,25 @@ function clauseOk(clause) {
     const vChainLen = j - firstV + 1;
     if (vChainLen >= 2 && preN === 0 && tailN === 0)
       return { ok: false, reason: '光动词堆，没有人也没有事' };
+
+    // 及物性(valence)校验 —— 纯语法,不碰语义:
+    //   - 不及物动词(摸鱼/躺平/逃跑)后面不能带宾语:「摸鱼猫」「我躺平敌」拒。
+    //   - 有宾语时,动词链里紧挨宾语的那个动词必须能带宾(及物/双宾)。
+    // 取分句里的实义动词(按出现序),与骨架动词链对应。
+    const clauseVerbs = words.filter(c => (c.pos === 'verb' || c.pos === 'special'));
+    if (tailN === 1 && clauseVerbs.length > 0) {
+      const lastVerb = clauseVerbs[clauseVerbs.length - 1];   // 紧挨宾语的动词
+      if (lastVerb.valence === 'intrans')
+        return { ok: false, reason: `「${lastVerb.word}」不及物，后面不能带宾语` };
+    }
+    // 连动里:除最后一个动词外,若有不及物动词后面又接动词,不是合法连动(摸鱼给猫:摸鱼不及物却接给)。
+    // 合法连动首动词多为趋向/能愿(去/来/想),不会标 intrans;故 intrans 在链中非末位即病句。
+    if (clauseVerbs.length >= 2) {
+      for (let k = 0; k < clauseVerbs.length - 1; k++) {
+        if (clauseVerbs[k].valence === 'intrans')
+          return { ok: false, reason: `「${clauseVerbs[k].word}」不及物，不能再接动词` };
+      }
+    }
     return { ok: true }; // 我跑 / 我吃饭 / 我去买药 / 我和你走 / 跑 / 我去买
   }
 
