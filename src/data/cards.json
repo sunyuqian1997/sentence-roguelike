@@ -3607,6 +3607,18 @@
     "flavor": "让我来",
     "grammarBonus": 0.05
   },
+  "yong": {
+    "word": "用",
+    "pos": "connector",
+    "cost": 0,
+    "rarity": "common",
+    "desc": "状语·「用X动」任何名词皆可为器,越怪越妙",
+    "flavor": "万物皆兵",
+    "en": {
+      "word": "with",
+      "desc": "Adverbial · wield ANY noun as a weapon"
+    }
+  },
   "yingzi": {
     "word": "影子",
     "pos": "subject",

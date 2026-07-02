@@ -93,10 +93,11 @@ export function createStarterDeck() {
   tryAdd('chaoshide');   // 潮湿地
   tryAdd('shuaiqide');   // 帅气地
   tryAdd('menglie');     // 猛烈地
-  // 连接 (3)
+  // 连接 (4)
   tryAdd('er');          // 而
   tryAdd('he');          // 和
   tryAdd('shi_copula', 2); // 是×2（系词，谐音梗核心，起手保证看到）
+  tryAdd('yong');        // 用（工具格：用X戳,万物皆兵）
   // 感叹 (3)
   tryAdd('oh');          // 哦
   tryAdd('ah');          // 啊

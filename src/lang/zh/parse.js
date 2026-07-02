@@ -54,6 +54,12 @@ function buildClauses(cards) {
 // 原 finalize 前半段:敌我角色判定(中文语义),写进 effects.selfHarm 等。语言专属,留在 zh。
 function detectRoles(ctx) {
   const { effects } = ctx;
+  // 器物之利(yong_instrumental):cardEffects 算完基础伤害后加平斩加成。
+  // 放在敌我转移之前——"纸鬼用椅子碎我"也吃器物加成,物理一致。
+  if (effects._instrument && effects.damage > 0) {
+    effects.damage += effects._instrument.dmg;
+    ctx.grammarNotes.push(`🔧 器物之利 +${effects._instrument.dmg}`);
+  }
   if (ctx.bonus.modHealBonus > 0) effects.heal += ctx.bonus.modHealBonus;
   if (ctx.bonus.modSelfDmg > 0) { effects.selfHarm = true; effects.selfHarmDmg = ctx.bonus.modSelfDmg; effects.selfHarmBuff = 0; }
 

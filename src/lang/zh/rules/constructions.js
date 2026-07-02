@@ -108,7 +108,59 @@ export const CONSTRUCTIONS = [
       ctx.grammarNotes.push('🪢 兼语句·委婉号令 ×1.1 — 敌自受 ×1.2');
     },
   },
+  {
+    // 工具格状语: 用 + 器物NP + [修饰≤2] V — "我用猫戳纸鬼"。
+    // 器物 = 用后第一个非修饰的名词卡(主/宾词性,非敌方目标、非我)。
+    // 成句性无需改动:未知连词「用」按 COORD 折叠 NP-用-NP → NP,天然放行。
+    id: 'yong_instrumental',
+    label: '🔧 状语·用X',
+    detect(ctx) {
+      const cards = ctx.cards;
+      for (let i = 0; i < cards.length; i++) {
+        const c = cards[i];
+        if (!c || c.pos !== 'connector' || c.word !== '用') continue;
+        let instrIdx = -1, mods = 0;
+        for (let k = i + 1; k < cards.length; k++) {
+          const kc = cards[k];
+          if (!kc) break;
+          if (kc.pos === 'modifier' && mods < 2) { mods++; continue; }
+          if ((kc.pos === 'subject' || kc.pos === 'object')
+              && !kc._isEnemyTarget && !isMeCard(kc)) instrIdx = k;
+          break;
+        }
+        if (instrIdx < 0) continue;
+        const verbIdx = verbAfter(cards, instrIdx + 1);
+        if (verbIdx < 0) continue;
+        return { word: cards[instrIdx].word, instrIdx, verbIdx };
+      }
+      return null;
+    },
+    apply(ctx, m) {
+      const trait = resolveInstrumentTrait(m.word);
+      ctx.constructionGrammarMult *= 1.15;
+      ctx.grammarNotes.push(`🔧 状语·用「${m.word}」×1.15`);
+      ctx.literaryMult += trait.poetic;
+      ctx.literaryNotes.push(`🔧 ${trait.note} +${trait.poetic}`);
+      ctx.effects._instrument = { word: m.word, dmg: trait.dmg, note: trait.note };
+    },
+  },
 ];
+
+// 用X做V — 什么都能当武器,越怪越妙。表内词有专属味道,表外走「万物皆兵」兜底
+// (保证任意名词都有意义,与 IDENTITY_TRAITS 的 DEFAULT 兜底同哲学)。
+// dmg 由 parse.js#detectRoles 在 cardEffects 之后加进 effects.damage(器物之利);
+// poetic 在 apply() 立即进 literaryMult(quality 的 poetic_crit 在其后,能吃到)。
+const INSTRUMENT_TRAITS = {
+  '猫': { dmg: 3, poetic: 0.4, note: '猫爪乱挠——猫对此很不满' },
+  '明月': { dmg: 2, poetic: 0.5, note: '月光为刃' },
+  '椅子': { dmg: 4, poetic: 0.2, note: '抡起家具' },
+  '影子': { dmg: 2, poetic: 0.4, note: '以影缚敌' },
+  '骨': { dmg: 3, poetic: 0.3, note: '以骨为刀' },
+  '灰烬': { dmg: 2, poetic: 0.4, note: '扬灰迷眼' },
+};
+const DEFAULT_INSTRUMENT_TRAIT = { dmg: 2, poetic: 0.3, note: '万物皆兵·无理而妙' };
+export const resolveInstrumentTrait = (word) =>
+  INSTRUMENT_TRAITS[word] || DEFAULT_INSTRUMENT_TRAIT;
 
 export function applyConstructions(ctx) {
   ctx.constructions = [];
