@@ -297,6 +297,30 @@ export function tryAddCard(card) {
   return true;
 }
 
+// Same guards as addToSentence but inserts at a chosen position and skips the
+// hand→dock FLIP (the drag ghost IS the animation). Returns success so the
+// drag layer knows whether to land the ghost or bounce it home.
+export function addToSentenceAt(handIndex, insertIdx) {
+  const card = G.hand[handIndex];
+  if (!card || G.sentence.includes(card)) return false;
+  if (card.pos === 'punctuation' && card.punctType === 'comma') {
+    if (G.sentence.some(c => c.pos === 'punctuation' && c.punctType === 'comma')) return false;
+  }
+  if (wouldBeForbidden(card)) { rejectForbidden(); return false; }
+  const idx = Math.max(0, Math.min(insertIdx, G.sentence.length));
+  G.sentence.splice(idx, 0, card);
+  playSFX('card');
+  renderCombat();
+  requestAnimationFrame(syncSentenceComplete);
+  return true;
+}
+
+function syncSentenceComplete() {
+  const hasVerb = G.sentence.some(c => c.pos === 'verb');
+  const hasTarget = G.sentence.some(c => c._isEnemyTarget || c._isSelfTarget);
+  document.getElementById('sentence-area').classList.toggle('sentence-complete', hasVerb && hasTarget);
+}
+
 export function addToSentence(handIndex) {
   const card = G.hand[handIndex];
   if (G.sentence.includes(card)) return;
@@ -316,9 +340,7 @@ export function addToSentence(handIndex) {
   playSFX('card');
   renderCombat();
   requestAnimationFrame(() => {
-    const hasVerb = G.sentence.some(c => c.pos === 'verb');
-    const hasTarget = G.sentence.some(c => c._isEnemyTarget || c._isSelfTarget);
-    document.getElementById('sentence-area').classList.toggle('sentence-complete', hasVerb && hasTarget);
+    syncSentenceComplete();
 
     // FLIP: animate clone from source to destination
     if (sourceRect && sourceClone) {

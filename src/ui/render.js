@@ -9,6 +9,7 @@ import { detectDuizhang, detectSummon, SUMMON_EFFECTS, evaluateSentence, checkEx
 import { PUN_STATUS } from '../game/poetics.js';
 import { applyMeaningsToSentence } from '../game/meanings.js';
 import { updatePuppets } from './puppets.js';
+import { attachSentenceDrag, attachHandDrag } from './dragSort.js';
 
 // Puppet animations live in ./puppets.js; re-export for legacy importers.
 export { updatePuppets, playChantPuppetAnim, playEnemyPuppetAnim } from './puppets.js';
@@ -268,9 +269,8 @@ export function createSentenceWordEl(card, idx) {
   wrap.className = 'sentence-card-wrap';
   wrap.title = isEn() ? 'Tap to remove · drag to sort' : '点击取消·拖排序';
   wrap.dataset.sentenceIdx = String(idx);
-  wrap.draggable = true;
   wrap.onclick = (e) => { e.stopPropagation(); removeSentenceWord(idx); };
-  attachSentenceDragHandlers(wrap);
+  attachSentenceDrag(wrap);
 
   if (card._isEnemyTarget) {
     wrap.classList.add('target-enemy');
@@ -329,45 +329,6 @@ export function createSentenceWordEl(card, idx) {
   return wrap;
 }
 
-function attachSentenceDragHandlers(wrap) {
-  wrap.addEventListener('dragstart', (e) => {
-    wrap.classList.add('dragging');
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', wrap.dataset.sentenceIdx);
-  });
-  wrap.addEventListener('dragend', () => {
-    wrap.classList.remove('dragging');
-    document.querySelectorAll('.sentence-card-wrap.drag-over').forEach(el => el.classList.remove('drag-over'));
-  });
-  wrap.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    wrap.classList.add('drag-over');
-  });
-  wrap.addEventListener('dragleave', () => {
-    wrap.classList.remove('drag-over');
-  });
-  wrap.addEventListener('drop', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const fromIdx = parseInt(e.dataTransfer.getData('text/plain'), 10);
-    const toIdx = parseInt(wrap.dataset.sentenceIdx, 10);
-    wrap.classList.remove('drag-over');
-    if (Number.isInteger(fromIdx) && Number.isInteger(toIdx) && fromIdx !== toIdx) {
-      reorderSentence(fromIdx, toIdx);
-    }
-  });
-}
-
-function reorderSentence(fromIdx, toIdx) {
-  if (fromIdx < 0 || fromIdx >= G.sentence.length) return;
-  if (toIdx < 0 || toIdx >= G.sentence.length) return;
-  const moved = G.sentence.splice(fromIdx, 1)[0];
-  G.sentence.splice(toIdx, 0, moved);
-  playSFX('card');
-  renderCombat();
-}
-
 export function renderHand() {
   renderTargetCards();
   syncTargetSelectability();
@@ -377,6 +338,7 @@ export function renderHand() {
   G.hand.forEach((card, idx) => {
     const el = createCardElement(card, idx);
     if (G.sentence.includes(card)) el.classList.add('in-sentence');
+    attachHandDrag(el, idx);
     handEl.appendChild(el);
   });
 }
