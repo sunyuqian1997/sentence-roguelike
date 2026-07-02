@@ -40,6 +40,21 @@
       "desc": "Subject · ATK+2"
     }
   },
+  "dage": {
+    "word": "大哥",
+    "pos": "subject",
+    "cost": 0,
+    "rarity": "common",
+    "desc": "主语·攻击+3,格挡+2",
+    "flavor": "罩着你",
+    "powerBonus": 3,
+    "bonusType": "attack",
+    "defenseBonus": 2,
+    "en": {
+      "word": "Big Bro",
+      "desc": "Subject · ATK+3, DEF+2"
+    }
+  },
   "shusheng": {
     "word": "书生",
     "pos": "subject",

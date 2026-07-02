@@ -248,6 +248,21 @@ export function renderSentenceSlots() {
   }
 }
 
+// On chant (施法): the build area stops being a card rack and becomes the
+// finished line — the cards "fuse" into the spoken sentence while the chant
+// animation plays. cards is the consumed sentence (G.sentence snapshot, taken
+// before it was cleared). Replaced by the next renderSentenceSlots() once the
+// score animation resolves and renderCombat() runs.
+export function renderChantedSentence(cards) {
+  const container = document.getElementById('sentence-slots-container');
+  if (!container) return;
+  const text = (cards || [])
+    .map(c => c._isEnemyTarget ? getCardWord(c) : (c._isSelfTarget ? t('me') : getCardWord(c)))
+    .join('');
+  if (!text) return;
+  container.innerHTML = `<div class="chanted-line">「${text}」</div>`;
+}
+
 export function createSentenceWordEl(card, idx) {
   const wrap = document.createElement('div');
   wrap.className = 'sentence-card-wrap';

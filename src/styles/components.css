@@ -590,6 +590,28 @@
   letter-spacing: 0.08em;
 }
 
+/* The chanted line: cards fused into the spoken sentence during settle. */
+.chanted-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 50px;
+  padding: 4px 10px;
+  font-family: var(--font-serif);
+  font-size: clamp(1.05rem, 4.4vw, 1.6rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  text-align: center;
+  animation: chantedLineIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  text-shadow: 0 1px 0 rgba(245, 242, 235, 0.6);
+}
+@keyframes chantedLineIn {
+  0% { opacity: 0; transform: scale(0.92) translateY(4px); letter-spacing: 0.2em; }
+  100% { opacity: 1; transform: scale(1) translateY(0); letter-spacing: 0.06em; }
+}
+
 .sentence-half {
   display: flex;
   gap: 8px;
@@ -801,10 +823,17 @@
 /* shared new strokes (cat/hatsune/sword/buns) */
 .puppet-coactor .puppet-svg line,
 .puppet-coactor .puppet-svg path { stroke-linecap: round; stroke-linejoin: round; }
-/* 猫 — ears filled, whiskers + tail thin ink */
+/* 猫 — a sitting cat: body/tail/head are paper fills outlined in ink so it
+   reads as a solid little creature, not a stick figure. */
+.puppet-svg .ca-cbody { fill: var(--paper); stroke: var(--ink); stroke-width: 2; }
+.puppet-svg .ca-chead { fill: var(--paper); stroke: var(--ink); stroke-width: 2; }
+.puppet-svg .ca-tail { fill: var(--paper); stroke: var(--ink); stroke-width: 2; }
 .puppet-svg .ca-ears path { fill: var(--paper); stroke: var(--ink); stroke-width: 2; }
+.puppet-svg .ca-paws ellipse { fill: var(--paper); stroke: var(--ink); stroke-width: 1.6; }
+.puppet-svg .ca-eyes path { fill: none; stroke: var(--ink); stroke-width: 1.6; }
+.puppet-svg .ca-nose { fill: var(--ink); stroke: none; }
+.puppet-svg .ca-mouth { fill: none; stroke: var(--ink); stroke-width: 1.2; opacity: 0.8; }
 .puppet-svg .ca-whisk line { stroke: var(--ink); stroke-width: 1; opacity: 0.7; }
-.puppet-svg .ca-tail { fill: none; stroke: var(--ink); stroke-width: 2.4; }
 /* 初音 — teal twin tails + headset */
 .puppet-svg .hm-tails path { fill: none; stroke: #2BBFA8; stroke-width: 3.2; opacity: 0.9; }
 .puppet-svg .hm-set path { fill: none; stroke: var(--ink); stroke-width: 1.6; }
@@ -853,6 +882,16 @@
 .puppet[data-pose="heal"] .arm-r { transform: rotate(-35deg); }
 .puppet[data-pose="heal"] .head { fill: rgba(74, 124, 107, 0.2); }
 .puppet[data-pose="heal"] { filter: drop-shadow(0 0 6px rgba(74, 124, 107, 0.5)); }
+
+/* ---- Aiming: transitive verb + enemy target chosen → poet steps toward the
+   foe, telegraphing "I'm about to do this TO you" while composing. Outranks the
+   plain attack-pose transform so the forward lean reads clearly. Never applied
+   mid-chant (puppets.js gates on dataset.chanting). ---- */
+#puppet-player.puppet-aiming {
+  transform: translateX(16px) rotate(3deg) !important;
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  filter: drop-shadow(0 0 6px var(--vermillion-glow));
+}
 
 /* ---- Pose: targeted — nervous bob, vermillion glow ---- */
 .puppet[data-pose="targeted"] {

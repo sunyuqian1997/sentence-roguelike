@@ -275,6 +275,13 @@ export const IDENTITY_TRAITS = {
     enemyLabel: '缴械：力-2', enemyEffect: { strengthDelta: -2 },
     selfLabel: '剑心通明：力+2', selfEffect: { strength: 2 },
   },
+  '大哥': {
+    // 双刃剑:认敌作大哥 → 敌人反而气场全开、越发凶悍(力+3挡5)。
+    // 与「我是大哥」(给我 buff)互为镜像 —— 大哥永远站在「主语」那一边。
+    emoji: '🕶️', bodyScale: 1.15, enemyBuff: true,
+    enemyLabel: '气场全开：力+3挡5', enemyEffect: { strengthDelta: 3, block: 5 },
+    selfLabel: '大哥罩你：力+2挡3', selfEffect: { strength: 2, block: 3 },
+  },
   '书生': {
     emoji: '📚',
     enemyLabel: '手无缚鸡之力：弱2', enemyEffect: { weak: 2 },

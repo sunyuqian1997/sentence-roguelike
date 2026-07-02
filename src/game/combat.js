@@ -4,7 +4,7 @@ import { showFloatingText, shuffleArray } from '../utils.js';
 import { playSFX, initAudio, playAmbientMusic, playCombatMusic, playBossMusic, stopMusic } from './audio.js';
 import { VFX } from '../ui/vfx.js';
 import { WORD_DEFS, makeCard, createStarterDeck, randomCard, randomCardWeighted } from '../data/cards.js';
-import { showScreen, renderCombat, createCardElement } from '../ui/render.js';
+import { showScreen, renderCombat, createCardElement, renderChantedSentence } from '../ui/render.js';
 import { playChantPuppetAnim, playEnemyPuppetAnim, IMPACT_MS, playBestVerseReplay, stopBestVerseReplay } from '../ui/puppets.js';
 import { generateCharSVG } from '../ui/svgArt.js';
 import { dealDamageToPlayer, dealDamageToEnemy, checkEnemies } from './damage.js';
@@ -412,6 +412,9 @@ export function chantSentence() {
 
   const sentenceCards = [...G.sentence];
   G.sentence = [];
+  // 施法瞬间:造句区从「卡牌排列」融为「完整句子」,直到结算动画结束后
+  // renderCombat() 自然清空。让玩家看到自己念出的那句诗,而非空槽。
+  renderChantedSentence(sentenceCards);
   sentenceCards.forEach(card => {
     if (card._isEnemyTarget || card._isSelfTarget) return;
     if (card._isFixedWo) return;
@@ -794,6 +797,7 @@ export function applyEffects(effects) {
             if (ee.weak) e.weak = (e.weak || 0) + ee.weak;
             if (ee.vulnerable) e.vulnerable = (e.vulnerable || 0) + ee.vulnerable;
             if (ee.strengthDelta) e.strength = (e.strength || 0) + ee.strengthDelta;
+            if (ee.block) e.block = (e.block || 0) + ee.block;
             if (ee.stunChance && Math.random() < ee.stunChance) e.stunned = true;
             if (e.element) showFloatingText(e.element, `${trait.emoji} ${trait.enemyLabel}`, '#9B59B6');
           };

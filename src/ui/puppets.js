@@ -85,6 +85,7 @@ const COACTOR_EMOJI = {
   '猫': '🐱', '影子': '🌑', '无名者': '👤', '初音未来': '🎤', '剑客': '🗡️',
   '书生': '📚', '月兔': '🐰', '僧人': '🙏', '女侠': '⚔️', '酒仙': '🍶',
   '狐仙': '🦊', '将军': '🎖️', '皇帝': '👑', '李清照': '📜', '日': '☀️',
+  '大哥': '🕶️',
 };
 const coActorEmoji = (name) => COACTOR_EMOJI[name] || '🥷';
 
@@ -110,15 +111,22 @@ const _body = `<path class="body" d="M40,34 C33,40 30,50 28,62 C27,71 26,80 25,8
 const _face = `<g class="face"><circle cx="36" cy="23" r="1.2"/><circle cx="44" cy="23" r="1.2"/></g>`;
 
 const COACTOR_SVG = {
-  // 🐱 猫 — triangle ears, whiskers, curled tail
+  // 🐱 猫 — a real SITTING cat (not a human in ears). Big round head low on a
+  // crouched oval body, upright triangle ears, whiskers, two front paws and a
+  // fat curling tail. Deliberately skips _body/_shared limbs so it doesn't read
+  // as a person. Pose transforms (attack/heal lean) still apply to the whole svg.
   '猫': `
-    <g class="ca-ears"><path d="M30,16 L27,7 L36,13 Z"/><path d="M50,16 L53,7 L44,13 Z"/></g>
-    <circle class="head" cx="40" cy="24" r="11"/>
-    ${_face}
-    <g class="ca-whisk"><line x1="30" y1="26" x2="20" y2="24"/><line x1="30" y1="28" x2="20" y2="29"/><line x1="50" y1="26" x2="60" y2="24"/><line x1="50" y1="28" x2="60" y2="29"/></g>
-    ${_body}
-    <path class="ca-tail" d="M55,80 Q66,74 64,62 Q63,54 56,56"/>
-    ${_shared}`,
+    <ellipse class="ground" cx="40" cy="95" rx="18" ry="3"/>
+    <path class="ca-tail" d="M58,86 Q74,82 72,66 Q71,54 60,56 Q67,60 66,68 Q65,77 58,80 Z"/>
+    <path class="ca-cbody body" d="M26,92 Q22,66 40,58 Q58,66 54,92 Z"/>
+    <g class="ca-ears"><path d="M27,40 L22,24 L37,35 Z"/><path d="M53,40 L58,24 L43,35 Z"/></g>
+    <circle class="head ca-chead" cx="40" cy="44" r="17"/>
+    <g class="ca-eyes"><path d="M30,43 Q33,39 36,43"/><path d="M44,43 Q47,39 50,43"/></g>
+    <path class="ca-nose" d="M38,49 L42,49 L40,52 Z"/>
+    <path class="ca-mouth" d="M40,52 Q37,55 34,53 M40,52 Q43,55 46,53"/>
+    <g class="ca-whisk"><line x1="33" y1="50" x2="16" y2="46"/><line x1="33" y1="52" x2="16" y2="53"/><line x1="47" y1="50" x2="64" y2="46"/><line x1="47" y1="52" x2="64" y2="53"/></g>
+    <g class="ca-paws"><ellipse cx="34" cy="91" rx="4" ry="3"/><ellipse cx="46" cy="91" rx="4" ry="3"/></g>
+    <text class="puppet-emoji" x="40" y="18" text-anchor="middle"></text>`,
   // 🎤 初音未来 — twin tails + headset mic
   '初音未来': `
     <g class="hm-tails"><path d="M29,16 Q18,30 20,60 Q21,72 26,78"/><path d="M51,16 Q62,30 60,60 Q59,72 54,78"/></g>
@@ -144,6 +152,14 @@ const COACTOR_SVG = {
 };
 COACTOR_SVG['女侠'] = COACTOR_SVG['剑客'];
 COACTOR_SVG['将军'] = COACTOR_SVG['剑客'];
+
+// 🕶️ 大哥 — broad shoulders, slicked hair, dark shades. The streetwise protector.
+COACTOR_SVG['大哥'] = `
+    <path class="dg-hair" d="M29,18 Q40,6 51,18 Q48,14 40,13 Q32,14 29,18 Z"/>
+    <circle class="head" cx="40" cy="23" r="11"/>
+    <g class="dg-shades"><rect x="30" y="20" width="8" height="4" rx="1"/><rect x="42" y="20" width="8" height="4" rx="1"/><line x1="38" y1="22" x2="42" y2="22"/></g>
+    <path class="body" d="M40,34 C30,40 26,50 24,62 C23,71 22,80 22,88 L58,88 C58,80 57,71 56,62 C54,50 50,40 40,34 Z"/>
+    ${_shared}`;
 
 // 📚 generic scholar/spirit — plain ink figure with a topknot, used for any
 // named subject without a bespoke design (无名者/书生/酒仙/月兔/狐仙/日…).
@@ -282,6 +298,7 @@ export function updatePuppets() {
   let playerScale = 1;   // identity body-size (我是儿子→0.6, 我是巨人→1.5…)
   let enemyScale = 1;
   let coActorIdentity = null;  // "初音未来是皇帝" → crown on the co-actor puppet
+  let playerAiming = false;    // transitive verb + target → step toward the foe
 
   if (hasEnemyTarget) enemyPose = 'targeted';
 
@@ -293,6 +310,12 @@ export function updatePuppets() {
       playerPose = 'defend';
     } else if (lastVerb.combatType === 'heal') {
       playerPose = 'heal';
+    }
+    // 及物动词(valence trans/ditrans)+ 已选敌方目标 ⇒ 我方向前逼近,预告"即将把
+    // 这个动作施加到目标身上"。不及物动词(摸鱼/逃)只在原地摆姿势,不前压。
+    const isTransitive = lastVerb.valence === 'trans' || lastVerb.valence === 'ditrans';
+    if (isTransitive && hasEnemyTarget && lastVerb.combatType !== 'defense' && lastVerb.combatType !== 'heal') {
+      playerAiming = true;
     }
   }
 
@@ -326,7 +349,10 @@ export function updatePuppets() {
         // "初音未来是皇帝" — the crown belongs to the co-actor, not the enemy.
         coActorIdentity = { name: pred.subjectWord, emoji: trait.emoji, scale: trait.bodyScale || 1 };
       } else {
-        enemyPose = 'dazed'; enemyEmoji = trait.emoji;
+        // "敌人是大哥" 这类 enemyBuff 身份:敌人不是被削,而是气场全开 → 用攻击姿势
+        // (前压)而非眩晕脸,免得视觉上误导成"敌人倒霉"。
+        enemyPose = trait.enemyBuff ? 'attack' : 'dazed';
+        enemyEmoji = trait.emoji;
         if (trait.bodyScale) enemyScale = trait.bodyScale;
       }
     } else if (pred.kind === 'forbidden') {
@@ -360,6 +386,7 @@ export function updatePuppets() {
   if (player.dataset.chanting === '1') return;
   setPose(player, playerPose);
   setPose(enemy, enemyPose);
+  player.classList.toggle('puppet-aiming', playerAiming);
   setEmoji(player, playerEmoji);
   setEmoji(enemy, enemyEmoji);
   setBodyScale(player, playerScale);   // identity-driven size (我是儿子→小, 巨人→大)
@@ -398,6 +425,9 @@ export function playChantPuppetAnim(effects) {
   if (!player || !enemy) return;
   player.dataset.chanting = '1';
   enemy.dataset.chanting = '1';
+  // Drop the compose-time aim lean so the chant's own inline transform (a full
+  // dash) isn't overridden by the !important aiming class.
+  player.classList.remove('puppet-aiming');
 
   const isAttack = !!(effects && (effects.damage > 0 || effects.aoe));
   const isHeal = !!(effects && effects.heal > 0 && !isAttack);
@@ -466,7 +496,7 @@ export function playChantPuppetAnim(effects) {
           player.dataset.pose = 'heal';
           setEmoji(player, trait.emoji);
         } else {
-          enemy.dataset.pose = 'dazed';
+          enemy.dataset.pose = trait.enemyBuff ? 'attack' : 'dazed';
           setEmoji(enemy, trait.emoji);
         }
       } else if (pred && pred.kind === 'forbidden') {
