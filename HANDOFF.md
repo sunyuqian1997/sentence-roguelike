@@ -176,7 +176,25 @@ Author of this handoff: Claude (opus session) → 交接给新 session
 46. **已知待办(UI 收尾,非引擎)**:部分 UI chrome 仍中文(费/吟诵/文力/抽弃)、敌人名未本地化、
     偶有英文卡 word 未解析、英文 identity/motif/pun 深度系统未做(留扩展位)。引擎层完成。
 
-### B. 已知的未解决判定问题 (新 session 可继续，基于日志复盘)
+### A-nonies. 2026-07-02 第九轮 pointer 拖拽 juice + CDP 交互验证器
+> 循环工程式推进(状态文件 JUICE-LOOP.md):每改一轮过三道门 A=逻辑单测 B=interact.mjs
+> 真拖真放断言 C=多视口(1280×720/1920×1080/812×375,全部 deviceScaleFactor=1 即 100% 缩放)截图肉眼审。
+
+47. **拖拽全面重写**(`src/ui/dragSort.js`,替换 HTML5 DnD):统一 press→drag 引擎,
+    6px 阈值内仍是点击(移除/入句行为不变)。四种手势:
+    - 造句区拖排序:兄弟卡实时让位开口(transform ±1 slot,gap 算法=「去源后插入」),拖影抬起态
+      (scale1.07+rotate2.5°+投影,内层 card 过渡=拾起缓入而拖影零延迟跟手)
+    - 手牌拖入造句区:落点即插入位(`combat.js#addToSentenceAt`,复用 forbidden/逗号守卫),
+      dock 金色虚线呼吸高亮(`drop-ready`,components.css 需 !important 盖 pixel.css 背景)
+    - 造句区卡拖出 dock = 移除(拖影灰化预告,飞回对应手牌)
+    - 无效拖拽 260ms 回弹原位;落下 squash&stretch(`drop-pop`);全程 transform 无 reflow
+    - 触屏就绪:pointer events + `touch-action:none`;drop 后吞一次 click 防误触移除
+    - **坑**:ghost 克隆要剥掉 `drag-source` 类(先加类后克隆会把"变灰"克隆走)+ `animation:none`
+      (否则 slot 入场 fade 在拖影上重播)
+48. **CDP 交互验证器**(`scripts/interact.mjs`):合成真实鼠标序列(mousePressed→moved×N→released,
+    Chrome 自动派生 pointer 事件,setPointerCapture 兼容)。动作:drag/click/down/move/up(可暂停
+    中途 eval+截图)/eval/assert/shot。端口 9223 不与 shot.mjs 冲突。拖拽行为从此可自动化回归:
+    `node scripts/interact.mjs <url> '[{"a":"down",...},...]'`,assert 失败/页面报错 exit 1。
 1. **identity 身份 buff 数值不进 effects**：如"我是皇帝→力+2"在 notes 显示了，但实际是
    combat.js#applyEffects 里直接改 G.strength，**没写进 result.effects**，导致预览/日志看不到该数值、
    且与倍率体系脱节。建议把 identity 的 selfEffect 写进 effects 再统一结算。
