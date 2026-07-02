@@ -502,6 +502,10 @@ export function chantSentence() {
       else G.rhymeStreak = 0;
       if (r.key) G.lastRhymeKey = r.key;
     }
+    // Continuity chain — same pattern as rhyme: the streak the evaluator saw
+    // becomes the baseline for the next sentence.
+    G._continuityStreak = (result && result.effects && result.effects._continuity)
+      ? result.effects._continuity.streak : 0;
     playChantPuppetAnim(result.effects);
     showScoreAnimation(result, () => {
       applyEffects(result.effects);

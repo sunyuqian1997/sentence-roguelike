@@ -93,5 +93,27 @@ resetCreativity();
 const rReset = evalOnly(s1());
 ok(!rReset.effects._repetition, '重置后无衰减');
 
+console.log('— 承接链(P2) —');
+resetG();
+const rC0 = evalOnly([card('mao'), card('zhan'), enemyTarget(0)]);   // 猫斩纸鬼(首句)
+ok(!rC0.effects._continuity, '首句无承接');
+chant([card('mao'), card('zhan'), enemyTarget(0)]);
+const rC1 = evalOnly([card('mao'), card('shou')]);                    // 猫守 — 承上「猫」
+ok((rC1.effects._continuity || {}).words?.includes('猫'), '承上词=猫');
+ok(rC1.effects._continuity.streak === 1, '链=1');
+ok(rC1.literaryNotes.some(n => n.includes('承上')), '承上提示');
+// 模拟 chantSentence 的链推进
+G._continuityStreak = rC1.effects._continuity.streak;
+recordChantCreativity(rC1.cards);
+const rC2 = evalOnly([card('mao'), card('chui'), enemyTarget(1)]);    // 猫锤残句怪 — 链2
+ok((rC2.effects._continuity || {}).streak === 2, '链=2', JSON.stringify(rC2.effects._continuity));
+ok(rC2.effects._continuity.bonus > rC1.effects._continuity.bonus, '链越长加成越高');
+const rNoLink = (() => {                                              // 我/你不算承接锚
+  resetG();
+  chant([card('wo'), card('zhan'), enemyTarget(0)]);
+  return evalOnly([card('wo'), card('shou')]);
+})();
+ok(!rNoLink.effects._continuity, '「我」不作承接锚点');
+
 console.log(`\n${pass} pass, ${fail} fail`);
 process.exit(fail ? 1 : 0);

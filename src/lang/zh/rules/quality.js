@@ -11,7 +11,7 @@
 // through G so its rule can stay synchronous.
 import { G } from '../../../game/state.js';
 import { detectMotifs, getRhymeKey, checkRhyme, detectPredicates, resolveIdentityTrait } from '../../../game/poetics.js';
-import { textRepeatCount, skeletonRepeatCount, newWordsIn } from '../../../game/creativity.js';
+import { textRepeatCount, skeletonRepeatCount, newWordsIn, continuityLinks } from '../../../game/creativity.js';
 
 const POETIC_COMBOS = [
   { pattern: /山.*海/, bonus: 0.5, label: '🏔️ 山海意象 +0.5' },
@@ -153,6 +153,21 @@ export const QUALITY_RULES = [
     id: 'question_weaken',
     apply(ctx) {
       if (ctx.hasQuestion) ctx.effects.applyWeak = 2;
+    },
+  },
+  {
+    // 承接链(P2):上一句的内容词(主/宾,除我你)在本句复现 → 上下文延续。
+    // 链式 streak 存 G._continuityStreak(chantSentence 在吟诵后按 _continuity 更新,
+    // 与押韵连击同一模式)。与新意奖励天然互斥形成取舍:承上=沿用旧词,新意=全新词。
+    id: 'continuity',
+    apply(ctx) {
+      const links = continuityLinks(ctx.cards);
+      if (!links.length) return;
+      const streak = (G._continuityStreak || 0) + 1;
+      const bonus = streak >= 3 ? 0.4 : streak >= 2 ? 0.3 : 0.2;
+      ctx.literaryMult += bonus;
+      ctx.literaryNotes.push(`🔗 承上「${links[0]}」+${bonus.toFixed(1)}${streak > 1 ? ` (×${streak})` : ''}`);
+      ctx.effects._continuity = { words: links, streak, bonus };
     },
   },
   {

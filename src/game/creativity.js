@@ -30,6 +30,17 @@ export function resetCreativity() {
   G._chantTextCounts = {};
   G._skeletonCounts = {};
   G._usedWords = new Set();
+  G._prevContentWords = [];
+  G._continuityStreak = 0;
+}
+
+// "Content words" anchor sentence-to-sentence continuity: subjects and objects
+// (incl. enemy-target cards, whose pos is object after normalization). 我/你
+// are excluded — chaining on ubiquitous pronouns would be free money.
+export function contentWordsOf(cards) {
+  return [...new Set((cards || [])
+    .filter(c => (c.pos === 'subject' || c.pos === 'object') && !/^[我你尔汝]$/.test(c.word))
+    .map(c => c.word))];
 }
 
 export function recordChantCreativity(cards) {
@@ -40,6 +51,15 @@ export function recordChantCreativity(cards) {
   G._chantTextCounts[text] = (G._chantTextCounts[text] || 0) + 1;
   G._skeletonCounts[sk] = (G._skeletonCounts[sk] || 0) + 1;
   cards.forEach(c => { if (c.pos !== 'punctuation') G._usedWords.add(c.word); });
+  G._prevContentWords = contentWordsOf(cards);
+}
+
+// Which of the previous sentence's content words this sentence carries on.
+export function continuityLinks(cards) {
+  const prev = G._prevContentWords;
+  if (!prev || !prev.length) return [];
+  const cur = new Set((cards || []).filter(c => c.pos !== 'punctuation').map(c => c.word));
+  return prev.filter(w => cur.has(w));
 }
 
 export const textRepeatCount = (cards) =>
