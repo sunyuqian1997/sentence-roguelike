@@ -11,6 +11,7 @@
 // through G so its rule can stay synchronous.
 import { G } from '../../../game/state.js';
 import { detectMotifs, getRhymeKey, checkRhyme, detectPredicates, resolveIdentityTrait } from '../../../game/poetics.js';
+import { textRepeatCount, skeletonRepeatCount, newWordsIn } from '../../../game/creativity.js';
 
 const POETIC_COMBOS = [
   { pattern: /山.*海/, bonus: 0.5, label: '🏔️ 山海意象 +0.5' },
@@ -152,6 +153,42 @@ export const QUALITY_RULES = [
     id: 'question_weaken',
     apply(ctx) {
       if (ctx.hasQuestion) ctx.effects.applyWeak = 2;
+    },
+  },
+  {
+    // 创造力经济·衰减半边:本场原句重复 ×0.6^n(词穷),同骨架(词性序列+动词)
+    // 重复 ×0.85^n(句式疲劳)。计数只在真吟诵后推进(creativity.js 时序契约),
+    // 所以预览实时显示"再念一遍会掉到多少"。
+    id: 'repetition_decay',
+    apply(ctx) {
+      const n = textRepeatCount(ctx.cards);
+      if (n > 0) {
+        const f = Math.pow(0.6, n);
+        ctx.literaryMult = Math.max(0.1, ctx.literaryMult * f);
+        ctx.literaryNotes.push(`😮‍💨 词穷:原句已念${n}遍 ×${f.toFixed(2)}`);
+        ctx.effects._repetition = { kind: 'exact', n };
+        return;
+      }
+      const m = skeletonRepeatCount(ctx.cards);
+      if (m > 0) {
+        const f = Math.pow(0.85, m);
+        ctx.literaryMult = Math.max(0.1, ctx.literaryMult * f);
+        ctx.literaryNotes.push(`🥱 句式重复×${m} ×${f.toFixed(2)}`);
+        ctx.effects._repetition = { kind: 'skeleton', n: m };
+      }
+    },
+  },
+  {
+    // 创造力经济·奖励半边:本场首次使用的词 +0.06/个,封顶 +0.3。
+    // 首句没有"新"的基准,不给(否则开局白送膨胀基线)。
+    id: 'novelty',
+    apply(ctx) {
+      const fresh = newWordsIn(ctx.cards);
+      if (!fresh.length) return;
+      const bonus = Math.min(0.3, fresh.length * 0.06);
+      ctx.literaryMult += bonus;
+      ctx.literaryNotes.push(`✨ 新词「${fresh.slice(0, 3).join('、')}${fresh.length > 3 ? '…' : ''}」+${bonus.toFixed(2)}`);
+      ctx.effects._novelty = { words: fresh, bonus };
     },
   },
   {

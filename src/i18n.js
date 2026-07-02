@@ -72,6 +72,7 @@ const UI_STRINGS = {
     defaultUse: '默认用法',
     multiCard: '多义卡',
     multiHint: '多义卡：看上下文',
+    rhymeHint: '与上句押韵：用它结尾可续韵',
     noVerseYet: '尚无诗句…吟诵一句以开篇。',
   },
   en: {
@@ -132,6 +133,7 @@ const UI_STRINGS = {
     defaultUse: 'Default use',
     multiCard: 'Multi-use card',
     multiHint: 'Multi-use: depends on context',
+    rhymeHint: 'Rhymes with your last line — end with it to keep the streak',
     noVerseYet: 'No verse yet… chant one to begin.',
   },
 };

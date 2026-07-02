@@ -8,6 +8,7 @@ import { showScreen, renderCombat, createCardElement, renderChantedSentence } fr
 import { playChantPuppetAnim, playEnemyPuppetAnim, IMPACT_MS, playBestVerseReplay, stopBestVerseReplay } from '../ui/puppets.js';
 import { generateCharSVG } from '../ui/svgArt.js';
 import { dealDamageToPlayer, dealDamageToEnemy, checkEnemies } from './damage.js';
+import { resetCreativity, recordChantCreativity } from './creativity.js';
 import { generateMap, renderMap } from './map.js';
 import { CARD_PACKS, packName, packDesc } from '../data/packs.js';
 import { playStory, STORY_CHAPTERS_REF } from '../ui/storyOverlay.js';
@@ -87,6 +88,7 @@ export function startCombat(enemyDefs) {
   G.rhymeStreak = 0;
   G.combatJournal = [];
   G._bestLine = null;   // 本场最高倍率句，结算页动态重放用
+  resetCreativity();    // 词穷/新意计数,整场作用域
 
   showScreen('combat-screen');
   // Player portrait is now an <img> in HTML, no need to generate SVG
@@ -480,6 +482,9 @@ export function chantSentence() {
   } else {
     const result = evaluateSentence(sentenceCards);
     logChant({ result });
+    // Creativity ledger advances only on a REAL chant (after evaluation, so a
+    // sentence never counts as its own repeat). Previews read, never write.
+    recordChantCreativity((result && result.cards) || sentenceCards);
     // Track the highest-multiplier line of this combat so the reward screen can
     // replay it as a dynamic "best verse" highlight.
     if (result && (!G._bestLine || result.totalMult > G._bestLine.mult)) {
