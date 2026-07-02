@@ -11,7 +11,9 @@
 import { G } from '../game/state.js';
 import { applyMeaningsToSentence } from '../game/meanings.js';
 import { detectPredicates, resolveIdentityTrait, isCopulaPredicate, isYouCard } from '../game/poetics.js';
+import { detectSummon } from '../game/sentence.js';
 import { playSFX } from '../game/audio.js';
+import { isEn } from '../i18n.js';
 
 export const IMPACT_MS = 420;
 
@@ -279,6 +281,169 @@ export function playCoActors(coActors) {
   });
 }
 
+// ============================================================
+// REACTION BUBBLES (吐槽气泡) — presentation-only quips that pop over the
+// puppets' heads WHILE COMPOSING (never during chant resolution).
+//
+// Anti-flicker contract (renderCombat runs on every card click):
+//   - A bubble is keyed by a "signature" (trigger id + sentence text / actor).
+//     Same signature on a re-render → the existing DOM node is left untouched.
+//   - A bubble fades out after BUBBLE_TTL and its signature is marked spent —
+//     it never replays for the same sentence state.
+//   - playChantPuppetAnim() clears the stage; bubbles read preview state only.
+// ============================================================
+const BUBBLE_TTL = 2200;
+const BUBBLE_FADE_MS = 300;
+
+// Data-driven trigger table. ctx = { sentence(G.sentence), eval(G._previewEval,
+// may be null), targetEnemy, standbyNames, newStandby }. For each side
+// (player/enemy/coactor) the highest-priority hit wins; sides are independent
+// so poet and foe may quip at the same time, but never two per side.
+const BUBBLE_TRIGGERS = [
+  { id: 'lethal', who: 'enemy', priority: 100,
+    when: (ctx) => {
+      const ef = ctx.eval && ctx.eval.effects;
+      return !!(ef && ef.damage > 0 && ctx.targetEnemy && ef.damage >= ctx.targetEnemy.hp);
+    },
+    pool: { zh: ['等等！', '有话好说'], en: ['Wait!!', "Let's talk!"] } },
+  { id: 'self_harm', who: 'player', priority: 95,
+    when: (ctx) => !!(ctx.eval && ctx.eval.effects && ctx.eval.effects.selfHarm),
+    pool: { zh: ['这不好吧……'], en: ['Maybe not…'] } },
+  { id: 'high_mult', who: 'player', priority: 90,
+    when: (ctx) => !!(ctx.eval && ctx.eval.totalMult >= 3),
+    pool: { zh: ['这也行？', '妙啊——'], en: ['That works??', 'Now THAT sings—'] } },
+  { id: 'pun_hit', who: 'enemy', priority: 70,
+    when: (ctx) => {
+      const preds = ctx.eval && ctx.eval.effects && ctx.eval.effects._predicates;
+      return !!(preds && preds.some(p => p && p.subjectKind === 'enemy' && p.pun));
+    },
+    pool: { zh: ['你礼貌吗'], en: ['How rude!'] } },
+  { id: 'high_mult_enemy', who: 'enemy', priority: 60,
+    when: (ctx) => !!(ctx.eval && ctx.eval.totalMult >= 3),
+    pool: { zh: ['？？'], en: ['??'] } },
+  { id: 'targeted_no_verb', who: 'enemy', priority: 50,
+    when: (ctx) => ctx.sentence.some(c => c && c._isEnemyTarget)
+      && !ctx.sentence.some(c => c && c.pos === 'verb'),
+    pool: { zh: ['要干嘛'], en: ['What now?'] } },
+  // Fires only the render a standby co-actor STEPS ON stage (newStandby) —
+  // the spent-signature set keeps it from re-firing on every re-render.
+  { id: 'coactor_ready', who: 'coactor', priority: 40,
+    when: (ctx) => ctx.newStandby.length > 0,
+    pool: { zh: ['我来！', '交给我'], en: ["I'm on it!", 'Leave it to me'] } },
+];
+
+const _bubbles = { player: null, enemy: null, coactor: null }; // who → {sig, el, timers}
+const _spentBubbleSigs = new Set();  // faded once → never replay
+let _lastStandbyNames = [];
+
+function removeBubbleNow(who) {
+  const b = _bubbles[who];
+  if (!b) return;
+  clearTimeout(b.fadeTimer);
+  clearTimeout(b.removeTimer);
+  if (b.el) b.el.remove();
+  _bubbles[who] = null;
+}
+
+export function clearPuppetBubbles() {
+  ['player', 'enemy', 'coactor'].forEach(removeBubbleNow);
+}
+
+// Keep the bubble over the anchor's head and clamped inside the stage box
+// (the stage has overflow:hidden, so clamping = never clipped/off-viewport).
+function positionBubble(el, anchor, stage) {
+  const sr = stage.getBoundingClientRect();
+  const ar = anchor.getBoundingClientRect();
+  if (!sr.width || !ar.width) return;
+  const bw = el.offsetWidth, bh = el.offsetHeight;
+  let left = ar.left + ar.width / 2 - sr.left - bw / 2;
+  left = Math.max(2, Math.min(left, sr.width - bw - 2));
+  let top = ar.top - sr.top - bh - 8;
+  if (top < 2) top = 2;
+  el.style.left = Math.round(left) + 'px';
+  el.style.top = Math.round(top) + 'px';
+}
+
+function showBubble(who, anchor, trig, sig, stage) {
+  const cur = _bubbles[who];
+  if (cur && cur.sig === sig) {                 // same signature → keep node
+    positionBubble(cur.el, anchor, stage);      // (just track the puppet)
+    return;
+  }
+  if (_spentBubbleSigs.has(sig)) return;        // already played once
+  removeBubbleNow(who);
+  const pool = trig.pool[isEn() ? 'en' : 'zh'] || trig.pool.zh;
+  const el = document.createElement('div');
+  el.className = 'puppet-bubble';
+  el.dataset.bubbleWho = who;
+  el.dataset.bubbleTrigger = trig.id;
+  el.dataset.bubbleSig = sig;
+  el.textContent = pool[Math.floor(Math.random() * pool.length)];
+  stage.appendChild(el);
+  positionBubble(el, anchor, stage);
+  const rec = { sig, el, fadeTimer: null, removeTimer: null };
+  rec.fadeTimer = setTimeout(() => {
+    _spentBubbleSigs.add(sig);
+    el.classList.add('bubble-out');
+    rec.removeTimer = setTimeout(() => { if (_bubbles[who] === rec) removeBubbleNow(who); }, BUBBLE_FADE_MS);
+  }, BUBBLE_TTL);
+  _bubbles[who] = rec;
+}
+
+// Called at the end of every updatePuppets() (i.e. every renderCombat while
+// composing). Purely additive juice: reads preview state, never mutates game.
+function maybeShowBubbles() {
+  const stage = document.getElementById('puppet-stage');
+  const { player, enemy } = els();
+  if (!stage || !player || !enemy) return;
+
+  const sentence = G.sentence || [];
+  // The preview eval is only trustworthy for a non-empty, non-summon sentence
+  // (render.js writes it in exactly that branch, so anything else is stale).
+  const eval_ = (sentence.length > 0 && !detectSummon(sentence)) ? (G._previewEval || null) : null;
+
+  const tCard = sentence.find(c => c && c._isEnemyTarget);
+  const targetEnemy = (tCard && G.enemies && G.enemies[tCard._enemyIdx]
+    && G.enemies[tCard._enemyIdx].hp > 0) ? G.enemies[tCard._enemyIdx] : null;
+
+  const standbyNames = [...stage.querySelectorAll('.puppet-coactor.standby')]
+    .filter(e => e.dataset.removing !== '1')
+    .map(e => e.dataset.coactor);
+  const newStandby = standbyNames.filter(n => !_lastStandbyNames.includes(n));
+  _lastStandbyNames = standbyNames;
+
+  if (sentence.length === 0) return; // empty rack: keep any live bubble's TTL, add nothing
+
+  const sentText = sentence.map(c => (c && c.word) || '').join('');
+  const ctx = { sentence, eval: eval_, targetEnemy, standbyNames, newStandby };
+
+  const anchors = { player, enemy };
+  ['player', 'enemy', 'coactor'].forEach(who => {
+    let hit = null;
+    for (const trig of BUBBLE_TRIGGERS) {
+      if (trig.who !== who) continue;
+      if (!hit || trig.priority > hit.priority) {
+        try { if (trig.when(ctx)) hit = trig; } catch (e) { /* juice must never throw */ }
+      }
+    }
+    if (!hit) return; // no new hit: an existing bubble simply lives out its TTL
+    if (who === 'coactor') {
+      // Keyed by actor name (not sentence) so growing the sentence never re-pops it.
+      const name = newStandby[0];
+      const anchor = stage.querySelector(`.puppet-coactor.standby[data-coactor="${name}"]`);
+      if (!anchor) return;
+      const sig = `${hit.id}|${name}`;
+      if (!_spentBubbleSigs.has(sig) && !_bubbles.coactor && Math.random() < 0.55) {
+        _spentBubbleSigs.add(sig); // low-frequency: silently spend the chance
+        return;
+      }
+      showBubble(who, anchor, hit, sig, stage);
+    } else {
+      showBubble(who, anchors[who], hit, `${hit.id}|${sentText}`, stage);
+    }
+  });
+}
+
 // Live preview: derive both puppets' poses from the sentence being composed.
 // Uses the SAME meaning-resolution as the evaluator so the preview can never
 // disagree with what chanting will do.
@@ -416,6 +581,9 @@ export function updatePuppets() {
       if (coActorIdentity.scale !== 1) setBodyScale(el, coActorIdentity.scale);
     }
   }
+
+  // Reaction bubbles — after standbys are synced so a co-actor can quip on entry.
+  maybeShowBubbles();
 }
 
 // Chant sequence: anticipation → dash/pose → impact → recover.
@@ -423,6 +591,7 @@ export function updatePuppets() {
 export function playChantPuppetAnim(effects) {
   const { player, enemy } = els();
   if (!player || !enemy) return;
+  clearPuppetBubbles(); // compose-time quips must not linger over the chant
   player.dataset.chanting = '1';
   enemy.dataset.chanting = '1';
   // Drop the compose-time aim lean so the chant's own inline transform (a full

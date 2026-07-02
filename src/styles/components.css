@@ -698,6 +698,17 @@ body.dragging-card * { cursor: grabbing !important; }
   0%, 100% { transform: scale(1); opacity: 0.9; }
   50% { transform: scale(1.15); opacity: 1; }
 }
+/* 韵脚预告 — 手牌右上角:用这张收尾就能接上上一句的韵 */
+.rhyme-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 0.8rem;
+  z-index: 4;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 2px rgba(17,17,16,0.3));
+  animation: meaningBadgePulse 1.6s ease-in-out infinite;
+}
 .meaning-caption {
   font-family: var(--font-brush);
   font-size: 0.72rem;
@@ -1270,3 +1281,54 @@ body.dragging-card * { cursor: grabbing !important; }
 .pack-name { font-weight: 600; color: var(--paper); min-width: 60px; }
 .pack-desc { color: var(--paper-dark); flex: 1; font-size: 0.75rem; }
 .pack-price { color: var(--gold); font-weight: 600; white-space: nowrap; }
+
+/* ============================================================
+   Reaction bubbles (吐槽气泡) — pixel-style speech bubbles that pop over a
+   puppet's head while composing. Created/keyed by src/ui/puppets.js
+   (signature-cached: same trigger+sentence never rebuilds the node).
+   Positioned absolutely INSIDE #puppet-stage (position:relative,
+   overflow:hidden) — puppets.js clamps left/top so nothing ever clips.
+   ============================================================ */
+.puppet-bubble {
+  position: absolute;
+  z-index: 60;              /* over the stage art; #score-overlay lives at 2000 */
+  padding: 3px 8px 4px;
+  background: var(--paper, #F7F3E8);
+  color: var(--ink, #111110);
+  border: 2px solid var(--ink, #111110);
+  font-size: 0.7rem;
+  line-height: 1.3;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 2px 2px 0 rgba(17, 17, 16, 0.25);   /* hard pixel drop */
+  animation: bubble-pop-in 0.18s ease-out;
+}
+/* tail: two stacked triangles = 2px-bordered pixel wedge pointing at the head */
+.puppet-bubble::after {
+  content: '';
+  position: absolute;
+  left: 50%; bottom: -7px;
+  margin-left: -6px;
+  border: 6px solid transparent;
+  border-bottom: none;
+  border-top-color: var(--ink, #111110);
+}
+.puppet-bubble::before {
+  content: '';
+  position: absolute;
+  left: 50%; bottom: -3px;
+  margin-left: -3px;
+  border: 3px solid transparent;
+  border-bottom: none;
+  border-top-color: var(--paper, #F7F3E8);
+  z-index: 1;
+}
+.puppet-bubble.bubble-out {
+  opacity: 0;
+  transition: opacity 0.3s ease-out;   /* matches BUBBLE_FADE_MS in puppets.js */
+}
+@keyframes bubble-pop-in {
+  from { opacity: 0; transform: translateY(5px) scale(0.85); }
+  to   { opacity: 1; transform: none; }
+}

@@ -6,7 +6,7 @@ import { playSFX } from '../game/audio.js';
 import { getEnemyPortraitSVG } from './svgArt.js';
 import { enemyName } from '../data/enemies.js';
 import { detectDuizhang, detectSummon, SUMMON_EFFECTS, evaluateSentence, checkExclamationPosition } from '../game/sentence.js';
-import { PUN_STATUS } from '../game/poetics.js';
+import { PUN_STATUS, getRhymeKey, checkRhyme } from '../game/poetics.js';
 import { applyMeaningsToSentence } from '../game/meanings.js';
 import { updatePuppets } from './puppets.js';
 import { attachSentenceDrag, attachHandDrag } from './dragSort.js';
@@ -199,6 +199,7 @@ export function renderSentenceSlots() {
       sp.innerHTML = `<span class="sp-cost">${t('cost')}${getSentenceCost()}</span><span class="sp-chip sp-good">${eff.emoji} ${t('summon')}·${eff.name}</span><span class="sp-flavor">${eff.desc}</span>`;
     } else {
     const eval_ = evaluateSentence(G.sentence);
+    G._previewEval = eval_ || null; // cache for puppets.js bubbles (stale during summon/empty — puppets guards those itself)
     if (eval_) {
       const ef = eval_.effects;
       // Outcome chips — one per effect, colored good/bad.
@@ -338,6 +339,18 @@ export function renderHand() {
   G.hand.forEach((card, idx) => {
     const el = createCardElement(card, idx);
     if (G.sentence.includes(card)) el.classList.add('in-sentence');
+    // 韵脚预告:上一句有韵脚时,把"结尾用它就押上"的卡亮出 🎵 角标,
+    // 让押韵从事后惊喜变成可主动追的策略。
+    if (G.lastRhymeKey) {
+      const k = getRhymeKey(getCardWord(card));
+      if (k && checkRhyme(k, G.lastRhymeKey).rhymes) {
+        const badge = document.createElement('div');
+        badge.className = 'rhyme-badge';
+        badge.textContent = '🎵';
+        badge.title = t('rhymeHint');
+        el.appendChild(badge);
+      }
+    }
     attachHandDrag(el, idx);
     handEl.appendChild(el);
   });
