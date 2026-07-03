@@ -1,9 +1,10 @@
 # 词灵录 (Sentence Roguelike) — Handoff Document
 
-Status snapshot: 2026-06-17 · 成句性硬门槛(wellformed.js)+整轮状态作用域+试玩调优 loop · 评估器=`src/game/evaluator/` 规则管线
+Status snapshot: 2026-07-02 · 创造力经济+句式扩展+吐槽气泡+数值校准+拖拽引擎 · 循环状态见 GAME-LOOP.md/BALANCE.md
 Author of original direction: project owner (referred to below as "user")
-Author of this handoff: Claude (opus session) → 交接给新 session
-工作区状态：全部已 commit，最新 commit `f4d869b`；未追踪仅 chantlog.ndjson(日志) + public/bgm/。
+Author of this handoff: Claude (fable session) → 交接给新 session
+工作区状态：见 git log(分支 feat/lang-ir-engine)；未追踪仅 chantlog.ndjson(日志,已 gitignore) + public/bgm/。
+**新 session 先读:本文件 §A-decies(最新一轮) + GAME-LOOP.md(backlog/教训) + BALANCE.md(数值目标与现状)。**
 
 ---
 
@@ -195,6 +196,52 @@ Author of this handoff: Claude (opus session) → 交接给新 session
     Chrome 自动派生 pointer 事件,setPointerCapture 兼容)。动作:drag/click/down/move/up(可暂停
     中途 eval+截图)/eval/assert/shot。端口 9223 不与 shot.mjs 冲突。拖拽行为从此可自动化回归:
     `node scripts/interact.mjs <url> '[{"a":"down",...},...]'`,assert 失败/页面报错 exit 1。
+
+### A-decies. 2026-07-02 第十轮 创造力经济 + 句式/表现扩展 + 数值校准 + 拖拽防死锁(多 agent 并行)
+> 用户给了九个 idea(韵律鼓励/连续句上下文/结算短篇/换场景/景物词/连环画/道具/用X戳/吐槽气泡),
+> 按 GAME-LOOP.md 的 P0-P7 分期推进。本轮完成 P0-P4 + 补强;P5 场景系统进行中;P6/P7 待做。
+> 方法论:四道门(A逻辑单测/B interact.mjs 真交互断言/C 三视口100%缩放截图/D balance-sim 曲线),
+> subagent 并行(P0 数值/P4 气泡/P5 场景),主线 P1→P2→P3。用户已定向:语义评判纯规则(scoreHooks 留LLM位)/
+> 衰减+新意/STS 正常难度/连环画程序化 SVG。
+
+49. **创造力经济**(`src/game/creativity.js` 语言无关台账 + zh/en quality 规则):
+    - 重复衰减:本场原句重复 ×0.6^n(词穷)、同骨架(词性序列+动词) ×0.85^n;换宾语=温和衰减,换动词=全新句
+    - 新意奖励:本场首用词 +0.06/个封顶 +0.3(首句无基准不给)
+    - 承接链:上句内容词(主/宾,我你I/you/me 除外)在本句复现 → 🔗+0.2/0.3/0.4 链式(G._continuityStreak)
+    - **时序契约(重要)**:台账只在真吟诵后推进(combat.js#chantSentence 评估后 recordChantCreativity),
+      预览永远纯读 → 预览条实时显示"再念一遍会掉到多少"。journals 在评估前 push,不能用它做重复计数!
+    - 回归:`node scripts/test-economy.mjs`(21 例)。en 包同规则(en/parse.js#applyCreativityEn)。
+50. **「用X戳」工具格句式**(constructions.js#yong_instrumental + 新卡「用」进起手):
+    任何名词皆可为器,INSTRUMENT_TRAITS 表(猫/明月/椅子/影子/骨/灰烬)+「万物皆兵」兜底;
+    器物之利伤害在 zh/parse.js#detectRoles 于 cardEffects 后追加。意外好联动:用猫戳时猫 co-actor
+    自动上台助战("猫对此很不满")。回归:`node scripts/test-instrument.mjs`(12 例)。
+51. **吐槽气泡**(puppets.js#BUBBLE_TRIGGERS,subagent 产出):组句未结算时棍人头顶冒话——
+    斩杀预告(敌"等等!")/自伤("这不好吧……")/高倍率("这也行?")/谐音命中("你礼貌吗")/
+    co-actor 登场("交给我")。签名去抖(重渲不重建 DOM)、2.2s 淡出不重播、吟诵时清场、zh/en 双语。
+    气泡读 `G._previewEval`(render.js#renderSentenceSlots 缓存)。
+52. **数值地基与第一刀校准**(subagent 产出 + 主线校准):
+    - `BALANCE.md`:STS 口径目标(普通2-4回合/掉血8-15%/精英/boss)+创造力平价判据+两轮测量记录
+    - `scripts/balance-sim.mjs`:headless 模拟器,import 真实评估器,4 策略 bot(greedy-mult/
+      greedy-damage/spam/diverse),SEED 复现;已接创造力台账。`scripts/chant-stats.mjs` 日志统计
+    - act1 校准(enemies.js):墨妖 20→32/纸鬼 24→36/残句怪 16→28/文曲星 48→78/仓颉 95→115,攻击同步上调
+    - **结果:普通战/boss 进靶区;diverse 全面 ≥ spam(boss 胜率 93% vs 85%)——"鼓励创造"成为可量化事实**
+    - 未解决:倍率表演分(纯状态句高倍无收益,greedy-mult 胜率垫底)、act2/3 整幕校准、对仗门槛过高
+53. **拖拽引擎防死锁(用户实机踩到的严重bug)**:延时 renderCombat(吟诵结算/敌人回合)中途销毁
+    被拖元素 → pointerup 永久丢失 → active 卡死 → 后续所有拖拽失灵。修法(dragSort.js):
+    监听挂 window 而非元素 + finish try/finally + buttons===0 僵尸检测 + window blur 取消 +
+    forceCleanupDrag 每次按压前兜底。headless 合成事件测不出此 bug(不会中途撞结算重渲)。
+54. **韵表扩充**(poetics.js#RHYME_GROUPS):卡库尾字覆盖 38%→100%(补 113 字,新增 üe/ie 组)。
+    之前"我/鬼/月/海"都查不到韵。配套:手牌韵脚预告角标🎵(renderHand,上句韵脚可续的卡亮标)。
+55. **短视口紧凑档**(pixel.css @media max-height:430px):修 812×375 棍人剧场被压 0 高——
+    stage 硬地板+侧立绘列隐藏+卡牌/预览/顶栏瘦身,iPhone 横屏全 UI 可见可点。
+56. **按压反馈**:手牌/目标卡/造句卡 :active 下沉缩小,禁用按钮 not-allowed 光标。
+57. **taptap-maker MCP** 已装(~/.claude.json),工具需新 session 才加载,尚未使用。用户希望用它优化游戏。
+58. **P5 场景系统(进行中,subagent)**:地点卡(月下/海边/酒馆/战场)+qu_verb 动词卡+
+    qu_movement 句式(去/到/入+地点→effects._sceneChange)+`src/game/scenes.js`(场景buff/景物注册表)+
+    舞台变景(data-scene)+景物词上台(G.sceneryProps,上限3)。G.scenesVisited 为 P6 连环画攒原料。
+    **若本条无后续完成标记,git status 未 commit 的改动即 agent 半成品,验收流程见 GAME-LOOP.md 四道门。**
+
+### B. 已知的未解决判定问题 (新 session 可继续，基于日志复盘)
 1. **identity 身份 buff 数值不进 effects**：如"我是皇帝→力+2"在 notes 显示了，但实际是
    combat.js#applyEffects 里直接改 G.strength，**没写进 result.effects**，导致预览/日志看不到该数值、
    且与倍率体系脱节。建议把 identity 的 selfEffect 写进 effects 再统一结算。
@@ -205,7 +252,14 @@ Author of this handoff: Claude (opus session) → 交接给新 session
    "X是给我砍"被判成 gay 谐音而非祈使。可能需要按子句判定优先级。
 
 ### C. 自测工具链 (新 session 必看 — opus 模型下可用，详见 §9)
-- `node scripts/test-wellformed.mjs` — 成句性判定回归(78 例带标准答案,无需浏览器,**改 wellformed.js 必跑**)
+- `node scripts/test-economy.mjs` — 创造力经济回归(21 例:衰减/骨架/新意/承接/预览纯读)
+- `node scripts/test-instrument.mjs` — 「用X戳」工具格回归(12 例)
+- `node scripts/balance-sim.mjs [act] [runs] [--boss]` — headless 数值模拟(4 策略 bot,SEED 复现,对照 BALANCE.md)
+- `node scripts/chant-stats.mjs` — chantlog.ndjson 统计(句频/倍率分桶/规则命中)
+- `node scripts/interact.mjs <url> '<actions json>'` — CDP 真实交互驱动(drag/click/down/move/up/eval/assert/shot,
+  env CDP_PORT 避免并行冲突);**改拖拽/交互必跑**
+- `node scripts/golden-verify.mjs` — golden master(25 句确定性数值);改评估逻辑必跑,机制性全局改动则重生成+review
+- `node scripts/test-wellformed.mjs` — 成句性判定回归(83 例带标准答案,无需浏览器,**改 wellformed.js 必跑**)
 - `node scripts/fuzz-sentences.mjs [count] [maxLen]` — 随机组句 fuzzer:从真实卡库随机拼句跑判定,
   统计通过率 + 抽样展示通过/拒绝,**人眼复核漏网**(需 dev server)。注意:fuzzer 通过率 ~50% 含大量
   "结构合法但语义随机"的句子——pos 级语法门槛判不了语义,这是上限,别指望 0% 废话通过。
