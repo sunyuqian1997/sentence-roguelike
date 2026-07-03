@@ -582,6 +582,65 @@ body { font-family: var(--font-pixel); }
 .pack-locked:hover { background: var(--paper-2) !important; border-color: var(--line) !important; }
 
 /* ============================================================
+   P5 场景系统 — data-scene 舞台变景(只动 CSS 变量与背景色调,不动布局)
+   + .scenery-layer 景物道具层(z-index 0, 棍人在 2, 气泡在 60)。
+   ============================================================ */
+.scenery-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+#puppet-player, #puppet-enemy { z-index: 2; }
+.scenery-prop {
+  position: absolute;
+  opacity: 0;
+  animation: scenery-in 0.6s ease-out forwards;
+}
+.scenery-prop svg { width: 100%; height: 100%; display: block; overflow: visible; }
+@keyframes scenery-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 0.85; transform: none; }
+}
+
+/* 月下 — 深蓝紫幕布,纸面偏冷 */
+#combat-screen[data-scene="yuexia"] { --stage-bg: #232337; --stage-mid: #383A5E; }
+#combat-screen[data-scene="yuexia"] #puppet-stage {
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.04) 0 2px, transparent 2px 7px),
+    radial-gradient(ellipse 80% 50% at 50% 90%, rgba(47,49,84,0.16), transparent 70%),
+    #E2E4EF !important;
+}
+/* 海边 — 青蓝 */
+#combat-screen[data-scene="haibian"] { --stage-bg: #1F3A44; --stage-mid: #2E5560; }
+#combat-screen[data-scene="haibian"] #puppet-stage {
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.04) 0 2px, transparent 2px 7px),
+    radial-gradient(ellipse 80% 50% at 50% 90%, rgba(46,85,96,0.14), transparent 70%),
+    #DFEBE8 !important;
+}
+/* 酒馆 — 暖褐 */
+#combat-screen[data-scene="jiuguan"] { --stage-bg: #3A2B1E; --stage-mid: #55402C; }
+#combat-screen[data-scene="jiuguan"] #puppet-stage {
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.04) 0 2px, transparent 2px 7px),
+    radial-gradient(ellipse 80% 50% at 50% 90%, rgba(85,64,44,0.16), transparent 70%),
+    #F1E2C4 !important;
+}
+/* 战场 — 铁灰偏红 */
+#combat-screen[data-scene="zhanchang"] { --stage-bg: #3A2E30; --stage-mid: #514244; }
+#combat-screen[data-scene="zhanchang"] #puppet-stage {
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.05) 0 2px, transparent 2px 7px),
+    radial-gradient(ellipse 80% 50% at 50% 90%, rgba(120,58,50,0.14), transparent 70%),
+    #EADCD6 !important;
+}
+/* 矮屏(与下方紧凑档同阈值):道具是固定像素尺寸,52px 舞台里太大 — 整层缩小贴地。 */
+@media (max-height: 430px) {
+  .scenery-layer { transform: scale(0.5); transform-origin: 50% 100%; }
+}
+
+/* ============================================================
    短视口紧凑档 (iPhone 横屏 812×375 等) — 修「棍人剧场被压成 0 高」。
    诉求排序:手牌能点 > 造句区能读 > 棍人剧场必须可见(它是气泡/姿态反馈的家)。
    给 stage 硬地板,其余各段按比例瘦身,总账 ≤375 时依然成立。

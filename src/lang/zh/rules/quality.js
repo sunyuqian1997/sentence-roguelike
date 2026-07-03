@@ -12,6 +12,8 @@
 import { G } from '../../../game/state.js';
 import { detectMotifs, getRhymeKey, checkRhyme, detectPredicates, resolveIdentityTrait } from '../../../game/poetics.js';
 import { textRepeatCount, skeletonRepeatCount, newWordsIn, continuityLinks } from '../../../game/creativity.js';
+import { SCENES, SCENERY, detectSceneryWords } from '../../../game/scenes.js';
+import { isEn } from '../../../i18n.js';
 
 const POETIC_COMBOS = [
   { pattern: /山.*海/, bonus: 0.5, label: '🏔️ 山海意象 +0.5' },
@@ -204,6 +206,42 @@ export const QUALITY_RULES = [
       ctx.literaryMult += bonus;
       ctx.literaryNotes.push(`✨ 新词「${fresh.slice(0, 3).join('、')}${fresh.length > 3 ? '…' : ''}」+${bonus.toFixed(2)}`);
       ctx.effects._novelty = { words: fresh, bonus };
+    },
+  },
+  {
+    // 场景光环(P5): G.currentScene 的逐句全局 buff——月下诗意+0.2 / 战场攻击句+2伤。
+    // 回合类(海边/酒馆)在 combat.js#startPlayerTurn 走 scenes.js#sceneTurnStartEffects。
+    // G.currentScene 为空时零效果(golden 安全)。
+    id: 'scene_aura',
+    apply(ctx) {
+      const sc = G.currentScene && SCENES[G.currentScene.id];
+      if (!sc) return;
+      if (sc.literaryBonus) {
+        ctx.literaryMult += sc.literaryBonus;
+        ctx.literaryNotes.push(isEn() ? (sc.auraNoteEn || sc.auraNote) : sc.auraNote);
+      }
+      if (sc.attackBonus && ctx.realVerbs.some(v => v.combatType === 'attack')) {
+        // 平伤走 _flatAttackBonus(settle 既有管道,与器物之利同为倍率前平加)。
+        ctx.effects._flatAttackBonus = (ctx.effects._flatAttackBonus || 0) + sc.attackBonus;
+        ctx.literaryNotes.push(isEn() ? (sc.auraNoteEn || sc.auraNote) : sc.auraNote);
+      }
+    },
+  },
+  {
+    // 景物道具(P5): 句中景物词(明月/椅子…,非敌方目标)→ effects._sceneryAdd
+    // (combat.js#applyEffects 消费,上限3/重复不叠加);已在场的景物给小光环。
+    // blockPerTurn 类光环在 startPlayerTurn 生效,这里只算 literary。
+    id: 'scenery_detect',
+    apply(ctx) {
+      const words = detectSceneryWords(ctx.cards);
+      if (words.length) ctx.effects._sceneryAdd = words;
+      (G.sceneryProps || []).forEach(p => {
+        const def = SCENERY[p.id];
+        if (def && def.aura && def.aura.literary) {
+          ctx.literaryMult += def.aura.literary;
+          ctx.literaryNotes.push(isEn() ? (def.noteEn || def.note) : def.note);
+        }
+      });
     },
   },
   {

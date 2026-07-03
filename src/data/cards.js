@@ -84,6 +84,8 @@ export function createStarterDeck() {
   // 动词 - 治疗/回血 (2)
   tryAdd('piaofu');      // 漂
   tryAdd('moyu');        // 摸鱼
+  // 动词 - 移动 (1, P5)
+  tryAdd('qu_verb');     // 去（动词位:去地点=换场景。地点卡在奖励池）
   // 宾语 (4)
   tryAdd('hai');         // 海
   tryAdd('huijin');      // 灰烬

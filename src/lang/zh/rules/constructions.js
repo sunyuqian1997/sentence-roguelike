@@ -144,7 +144,42 @@ export const CONSTRUCTIONS = [
       ctx.effects._instrument = { word: m.word, dmg: trait.dmg, note: trait.note };
     },
   },
+  {
+    // 移步换景(P5): [主语NP]? + 去/到/入(verb) + [修饰≤2] + 地点卡(place:true)。
+    // 锚点是动词位的「去」(qu_verb 卡)——感叹卡「去」(我去!/我去V)有自己的
+    // meanings 裁决,且 normalizeSentence 会把感叹浮到句尾,天然不与本句式抢。
+    // 结算: effects._sceneChange 由 combat.js#applyEffects 消费,场景整场持续。
+    id: 'qu_movement',
+    label: '🗺 移步·去地点',
+    detect(ctx) {
+      const cards = ctx.cards;
+      for (let i = 0; i < cards.length; i++) {
+        const c = cards[i];
+        if (!c || (c.pos !== 'verb' && c.pos !== 'special')) continue;
+        if (!MOVE_VERB_WORDS.has(c.word)) continue;
+        let mods = 0, placeIdx = -1;
+        for (let k = i + 1; k < cards.length; k++) {
+          const kc = cards[k];
+          if (!kc) break;
+          if (kc.pos === 'modifier' && mods < 2) { mods++; continue; }
+          if (kc.place && kc.sceneId) placeIdx = k;
+          break;
+        }
+        if (placeIdx < 0) continue;
+        return { word: cards[placeIdx].word, sceneId: cards[placeIdx].sceneId, verbIdx: i, placeIdx };
+      }
+      return null;
+    },
+    apply(ctx, m) {
+      ctx.constructionGrammarMult *= 1.1;
+      ctx.effects._sceneChange = { place: m.word, sceneId: m.sceneId };
+      ctx.grammarNotes.push(`🗺 移步换景 ×1.1 — 去「${m.word}」`);
+    },
+  },
 ];
+
+// qu_movement 认的趋向动词词面(动词位)。目前只有 qu_verb 一张,列表留给未来 到/入/赴。
+const MOVE_VERB_WORDS = new Set(['去', '到', '入', '赴', '归']);
 
 // 用X做V — 什么都能当武器,越怪越妙。表内词有专属味道,表外走「万物皆兵」兜底
 // (保证任意名词都有意义,与 IDENTITY_TRAITS 的 DEFAULT 兜底同哲学)。

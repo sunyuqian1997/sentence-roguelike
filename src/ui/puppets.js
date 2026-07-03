@@ -13,6 +13,7 @@ import { applyMeaningsToSentence } from '../game/meanings.js';
 import { detectPredicates, resolveIdentityTrait, isCopulaPredicate, isYouCard } from '../game/poetics.js';
 import { detectSummon } from '../game/sentence.js';
 import { playSFX } from '../game/audio.js';
+import { SCENERY } from '../game/scenes.js';
 import { isEn } from '../i18n.js';
 
 export const IMPACT_MS = 420;
@@ -444,12 +445,48 @@ function maybeShowBubbles() {
   });
 }
 
+// ============================================================
+// SCENERY PROPS (P5) — 景物词化作舞台简笔道具。挂在 #puppet-stage 的
+// .scenery-layer(首个子节点,z-index 0),摆两侧/背景位,不挡棍人与气泡。
+// 按 prop id reconcile:重复渲染不闪,消失的移除,新增的淡入(CSS animation)。
+// ============================================================
+export function syncScenery(props) {
+  const stage = document.getElementById('puppet-stage');
+  if (!stage) return;
+  let layer = stage.querySelector('.scenery-layer');
+  const want = props || [];
+  if (!want.length) { if (layer) layer.remove(); return; }
+  if (!layer) {
+    layer = document.createElement('div');
+    layer.className = 'scenery-layer';
+    stage.insertBefore(layer, stage.firstChild);
+  }
+  [...layer.children].forEach(el => {
+    if (!want.some(p => p.id === el.dataset.scenery)) el.remove();
+  });
+  want.forEach(p => {
+    const def = SCENERY[p.id];
+    if (!def) return;
+    if (layer.querySelector(`[data-scenery="${p.id}"]`)) return;
+    const el = document.createElement('div');
+    el.className = 'scenery-prop';
+    el.dataset.scenery = p.id;
+    el.style.cssText = def.style;
+    el.innerHTML = def.svg;
+    el.title = isEn() ? def.en : def.label;
+    layer.appendChild(el);
+  });
+}
+
 // Live preview: derive both puppets' poses from the sentence being composed.
 // Uses the SAME meaning-resolution as the evaluator so the preview can never
 // disagree with what chanting will do.
 export function updatePuppets() {
   const { player, enemy } = els();
   if (!player || !enemy) return;
+
+  // 景物道具是持久布景,与姿态动画无关 — 放在 chanting 早退之前,吟诵中也同步。
+  syncScenery(G.sceneryProps);
 
   const sentence = applyMeaningsToSentence(G.sentence || []);
   const hasEnemyTarget = sentence.some(c => c && c._isEnemyTarget);

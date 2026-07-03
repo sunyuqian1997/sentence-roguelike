@@ -2173,6 +2173,75 @@
       "desc": "Object · Heal+4, Quality+0.3"
     }
   },
+  "qu_verb": {
+    "word": "去",
+    "pos": "verb",
+    "valence": "trans",
+    "cost": 1,
+    "rarity": "common",
+    "desc": "移动·去地点=换场景（整场持续）",
+    "flavor": "走，换个地方吟诗。",
+    "en": {
+      "word": "Go To",
+      "desc": "Move · go to a Place = change scene"
+    }
+  },
+  "yuexia": {
+    "word": "月下",
+    "pos": "object",
+    "cost": 1,
+    "rarity": "uncommon",
+    "place": true,
+    "sceneId": "yuexia",
+    "desc": "地点·「去月下」→月下场景：每句诗意+0.2",
+    "flavor": "举杯邀明月，对影成三人。",
+    "en": {
+      "word": "Moonlight",
+      "desc": "Place · go there → Moonlight: +0.2 poetry per line"
+    }
+  },
+  "haibian": {
+    "word": "海边",
+    "pos": "object",
+    "cost": 1,
+    "rarity": "uncommon",
+    "place": true,
+    "sceneId": "haibian",
+    "desc": "地点·「去海边」→海边场景：每回合+2格挡",
+    "flavor": "面朝大海，潮声替你挡刀。",
+    "en": {
+      "word": "Seaside",
+      "desc": "Place · go there → Seaside: +2 block per turn"
+    }
+  },
+  "jiuguan": {
+    "word": "酒馆",
+    "pos": "object",
+    "cost": 1,
+    "rarity": "uncommon",
+    "place": true,
+    "sceneId": "jiuguan",
+    "desc": "地点·「去酒馆」→酒馆场景：每回合多抽1张",
+    "flavor": "酒酣耳热，词不择路。",
+    "en": {
+      "word": "Tavern",
+      "desc": "Place · go there → Tavern: draw +1 per turn"
+    }
+  },
+  "zhanchang": {
+    "word": "战场",
+    "pos": "object",
+    "cost": 1,
+    "rarity": "common",
+    "place": true,
+    "sceneId": "zhanchang",
+    "desc": "地点·「去战场」→战场场景：攻击句伤害+2",
+    "flavor": "醉卧沙场君莫笑。",
+    "en": {
+      "word": "Battlefield",
+      "desc": "Place · go there → Battlefield: attack lines +2 dmg"
+    }
+  },
   "changfeng": {
     "word": "长风",
     "pos": "object",

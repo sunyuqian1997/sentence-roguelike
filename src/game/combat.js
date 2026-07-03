@@ -16,6 +16,7 @@ import STORY_CHAPTERS from '../data/story.json';
 import { detectSummon, SUMMON_EFFECTS, evaluateSentence, checkExclamationPosition, detectDuizhang, isWellFormed } from './sentence.js';
 import { processEnemyPuns, PUN_STATUS, PUN_ON_APPLY, resolveIdentityTrait, detectPredicates } from './poetics.js';
 import { EVENTS_BY_ACT, EVENTS_FALLBACK } from '../data/events.js';
+import { SCENES, sceneName, addSceneryWords, sceneTurnStartEffects } from './scenes.js';
 import { closeMetaScreen, showVictoryScreen } from '../ui/screens.js';
 import { logChant } from './chantLog.js';
 
@@ -37,6 +38,7 @@ export function startGame() {
   G.sentence = []; G.enemyTargets = [];
   G.allCardsCostZero = false; G.poeticAura = false;
   G.shopInventory = null; G.drawLessNextTurn = 0;
+  G.scenesVisited = [];   // 本局到过的场景(P5,连环画 P6 的原料)
 
   if (META.perks.includes('thick_paper')) { G.maxHp += 5; G.hp += 5; }
   if (META.perks.includes('ink_pot')) { G.gold += 15; }
@@ -88,6 +90,8 @@ export function startCombat(enemyDefs) {
   G.rhymeStreak = 0;
   G.combatJournal = [];
   G._bestLine = null;   // 本场最高倍率句，结算页动态重放用
+  G.currentScene = null;   // 场景(P5)整场持续直到再换,新战斗回到无场景
+  G.sceneryProps = [];     // 舞台景物道具(P5),整场持续,新战斗清空
   resetCreativity();    // 词穷/新意计数,整场作用域
 
   showScreen('combat-screen');
@@ -122,6 +126,12 @@ export function startPlayerTurn() {
   G.drawLessNextTurn = 0;
   if (G._blockDebuffNext) { G._blockMult = 1 - G._blockDebuffNext; G._blockDebuffNext = 0; }
   else { G._blockMult = 1; }
+  // 场景/景物回合 buff(P5): 海边+2挡 / 酒馆+1抽 / 椅子·山 blockPerTurn。
+  const sceneFx = sceneTurnStartEffects(G.currentScene, G.sceneryProps);
+  if (sceneFx.block > 0) G.block += sceneFx.block;
+  if (sceneFx.draw > 0) dc += sceneFx.draw;
+  sceneFx.notes.forEach((n, i) => setTimeout(() =>
+    showFloatingText(document.querySelector('#combat-top'), n, '#3A7B8C'), 300 + i * 300));
   if (G.turn === 1) VFX.spawnInkParticles();
   VFX.turnCircle();
   drawCards(dc);
@@ -912,6 +922,29 @@ export function applyEffects(effects) {
         showFloatingText(document.querySelector('#combat-top'), `✨ 诗意回响 +${poetHeal}♥`, '#c9a84c');
       }
     }
+  }
+
+  // SCENE CHANGE (P5) — 「去月下」移步换景:场景整场持续直到再换。
+  if (effects._sceneChange) {
+    const sc = SCENES[effects._sceneChange.sceneId];
+    if (sc && (!G.currentScene || G.currentScene.id !== sc.id)) {
+      G.currentScene = { id: sc.id, name: sceneName(sc), sinceTurn: G.turn };
+      if (!G.scenesVisited) G.scenesVisited = [];
+      if (!G.scenesVisited.some(v => v.id === sc.id)) {
+        G.scenesVisited.push({ id: sc.id, turn: G.turn, combatCount: G.combatCount || 0 });
+      }
+      showFloatingText(document.querySelector('#combat-top'),
+        `🗺 ${isEn() ? 'Enter · ' + sc.en : '移步·' + sc.name}`, '#3E7CA6');
+    }
+  }
+
+  // SCENERY PROPS (P5) — 句中景物词上台(上限3,重复不叠加,新的顶掉最老的)。
+  if (effects._sceneryAdd && effects._sceneryAdd.length) {
+    const r = addSceneryWords(G.sceneryProps, effects._sceneryAdd, G.turn);
+    G.sceneryProps = r.props;
+    r.added.forEach((def, i) => setTimeout(() =>
+      showFloatingText(document.querySelector('#combat-top'),
+        `${def.emoji} ${isEn() ? def.en + ' takes the stage' : def.label + '·上台'}`, '#6B5BA6'), i * 280));
   }
 
   // CO-ACTORS — named subjects (猫/影子/初音未来…) act as their own entities:

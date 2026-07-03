@@ -30,6 +30,9 @@ export function renderCombat() {
   // Re-rendering destroys the card DOM the cursor may be hovering, so its
   // mouseleave never fires and the tooltip would stick. Dismiss it up front.
   hideTooltip();
+  // 场景(P5): data-scene 驱动 pixel.css 的舞台变景。
+  const combatScreen = document.getElementById('combat-screen');
+  if (combatScreen) combatScreen.dataset.scene = (G.currentScene && G.currentScene.id) || '';
   // Player standee = the 我 target affordance (bound once; idempotent).
   const pc = document.getElementById('player-char-card');
   if (pc && !pc._selfBound) { pc._selfBound = true; pc.style.cursor = 'pointer'; pc.onclick = () => addSelfTarget(); }
