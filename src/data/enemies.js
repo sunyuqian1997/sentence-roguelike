@@ -11,37 +11,37 @@ export function enemyName(def) {
 
 export const ENEMY_DEFS = {
   moyao: {
-    name: '墨妖', nameEn: 'Ink Sprite', hp: 20, act: 1, type: 'normal', emoji: '🖤', tags: ['ink','spirit'],
-    ai(e) { e.nextIntent = { type:'attack', value: 6+Math.floor(Math.random()*3), icon:'⚔' }; },
+    name: '墨妖', nameEn: 'Ink Sprite', hp: 32, act: 1, type: 'normal', emoji: '🖤', tags: ['ink','spirit'],
+    ai(e) { e.nextIntent = { type:'attack', value: 8+Math.floor(Math.random()*3), icon:'⚔' }; },
     act_fn(e) { dealDamageToPlayer(e.nextIntent.value, e); }
   },
   zhigui: {
-    name: '纸鬼', nameEn: 'Paper Ghost', hp: 24, act: 1, type: 'normal', emoji: '📜', portrait: '/zhihui.png', tags: ['paper','ghost'],
+    name: '纸鬼', nameEn: 'Paper Ghost', hp: 36, act: 1, type: 'normal', emoji: '📜', portrait: '/zhihui.png', tags: ['paper','ghost'],
     ai(e) {
       if(!e.tc) e.tc=0; e.tc++;
-      if(e.tc%2===1) e.nextIntent={type:'attack',value:3,hits:3,icon:'⚔'};
+      if(e.tc%2===1) e.nextIntent={type:'attack',value:4,hits:3,icon:'⚔'};
       else e.nextIntent={type:'defend',value:6,icon:'🛡',label:'挡6'};
     },
     act_fn(e) {
-      if(e.nextIntent.type==='attack') { for(let i=0;i<3;i++){if(e.hp<=0)break;dealDamageToPlayer(3,e);} }
+      if(e.nextIntent.type==='attack') { for(let i=0;i<3;i++){if(e.hp<=0)break;dealDamageToPlayer(4,e);} }
       else { e.block+=6; }
     }
   },
   canju: {
-    name: '残句怪', nameEn: 'Fragment Fiend', hp: 16, act: 1, type: 'normal', emoji: '❓', portrait: '/canjuguai.png', tags: ['word','fragment'],
+    name: '残句怪', nameEn: 'Fragment Fiend', hp: 28, act: 1, type: 'normal', emoji: '❓', portrait: '/canjuguai.png', tags: ['word','fragment'],
     fearWord: '全', fearWeak: 2,  // 残句怕「完整」—— 句中带「全」字则虚弱
-    ai(e) { e.nextIntent={type:'attack',value:9,icon:'⚔'}; },
-    act_fn(e) { dealDamageToPlayer(9,e); }
+    ai(e) { e.nextIntent={type:'attack',value:11,icon:'⚔'}; },
+    act_fn(e) { dealDamageToPlayer(11,e); }
   },
   wenqu: {
-    name: '文曲星', nameEn: 'Star of Letters', hp: 48, act: 1, type: 'elite', emoji: '⭐', tags: ['celestial','scholar'],
+    name: '文曲星', nameEn: 'Star of Letters', hp: 78, act: 1, type: 'elite', emoji: '⭐', tags: ['celestial','scholar'],
     ai(e) {
       if(!e.tc)e.tc=0; e.tc++;
       if(e.tc%3===0) e.nextIntent={type:'special',value:0,icon:'✂',label:'消耗'};
-      else e.nextIntent={type:'attack',value:11,icon:'⚔'};
+      else e.nextIntent={type:'attack',value:13,icon:'⚔'};
     },
     act_fn(e) {
-      if(e.nextIntent.type==='attack') dealDamageToPlayer(11,e);
+      if(e.nextIntent.type==='attack') dealDamageToPlayer(13,e);
       else {
         if(G.hand.length>0) {
           const idx=Math.floor(Math.random()*G.hand.length);
@@ -64,7 +64,7 @@ export const ENEMY_DEFS = {
     }
   },
   cangjie: {
-    name: '仓颉之影', nameEn: 'Shadow of Cangjie', hp: 95, act: 1, type: 'boss', emoji: '👁️', tags: ['celestial','scholar'],
+    name: '仓颉之影', nameEn: 'Shadow of Cangjie', hp: 115, act: 1, type: 'boss', emoji: '👁️', tags: ['celestial','scholar'],
     ai(e) {
       if(!e.tc)e.tc=0; e.tc++;
       if(!e.phase2&&e.hp<=47){e.phase2=true;e.tc=1;}
