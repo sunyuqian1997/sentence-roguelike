@@ -205,6 +205,13 @@ export function attachSentenceDrag(wrap) {
           flyBack(ghost, active.sourceEl);
           return;
         }
+        // A mid-drag re-render (chant resolution / enemy turn) may have changed
+        // the sentence under us — indices from drag-start are then meaningless.
+        if (sourceIdx >= G.sentence.length || insertIdx > G.sentence.length - 1) {
+          ghost.remove();
+          renderCombat();
+          return;
+        }
         const moved = G.sentence.splice(sourceIdx, 1)[0];
         G.sentence.splice(insertIdx, 0, moved);
         playSFX('card');
@@ -295,47 +302,91 @@ export function attachHandDrag(cardEl, handIndex) {
 }
 
 // ------------------------------------------- shared press → drag engine
+//
+// Robustness contract (learned the hard way — a chant resolution or enemy turn
+// can call renderCombat MID-DRAG and destroy the pressed element):
+//   · move/up/cancel listeners live on WINDOW, not the element — they survive
+//     the element being re-rendered away (pointer capture alone dies with it).
+//   · finish() runs in try/finally — `active` and the body chrome ALWAYS reset,
+//     even if a drop hook throws. A stuck `active` used to brick all dragging.
+//   · ev.buttons === 0 mid-move ⇒ the real mouseup was lost somewhere; treat as
+//     cancel instead of dragging a ghost with no button held.
+//   · forceCleanupDrag() sweeps stray ghosts/classes; runs before every new
+//     press as a belt-and-braces failsafe.
+
+function forceCleanupDrag() {
+  document.querySelectorAll('.drag-ghost').forEach(g => g.remove());
+  document.querySelectorAll('.drag-source').forEach(el => el.classList.remove('drag-source'));
+  document.querySelectorAll('.sentence-card-wrap.drag-shift, #hand-cards .drag-shift')
+    .forEach(el => { el.style.transform = ''; el.classList.remove('drag-shift'); });
+  const dock = document.getElementById('sentence-dock');
+  if (dock) dock.classList.remove('drop-ready');
+  endDragChrome();
+  active = null;
+}
 
 function startPress(e, el, hooks) {
+  if (active) forceCleanupDrag();   // a stale drag must never block the next one
   const pointerId = e.pointerId;
   active = {
     kind: hooks.kind, el, pointerId,
     start: { x: e.clientX, y: e.clientY },
     dragging: false,
   };
-  el.setPointerCapture(pointerId);
+  try { el.setPointerCapture(pointerId); } catch { /* capture is best-effort */ }
 
   const onMove = (ev) => {
-    if (ev.pointerId !== pointerId) return;
-    if (!active.dragging) {
-      const dx = ev.clientX - active.start.x;
-      const dy = ev.clientY - active.start.y;
-      if (dx * dx + dy * dy < THRESHOLD * THRESHOLD) return;
-      active.dragging = true;
-      beginDragChrome();
-      hooks.onStart();
+    if (!active || ev.pointerId !== pointerId) return;
+    // The browser lost our pointerup (release outside window / element torn
+    // down mid-capture). A drag with no button held is a zombie — cancel it.
+    if (active.dragging && ev.pointerType === 'mouse' && ev.buttons === 0) {
+      finish(ev, true);
+      return;
     }
-    hooks.onMove(ev);
+    try {
+      if (!active.dragging) {
+        const dx = ev.clientX - active.start.x;
+        const dy = ev.clientY - active.start.y;
+        if (dx * dx + dy * dy < THRESHOLD * THRESHOLD) return;
+        active.dragging = true;
+        beginDragChrome();
+        hooks.onStart();
+      }
+      hooks.onMove(ev);
+    } catch (err) {
+      console.error('[dragSort] mid-drag error, cancelling:', err);
+      finish(ev, true);
+    }
   };
   const finish = (ev, cancelled) => {
-    if (ev.pointerId !== pointerId) return;
-    el.removeEventListener('pointermove', onMove);
-    el.removeEventListener('pointerup', onUp);
-    el.removeEventListener('pointercancel', onCancel);
+    if (!active || ev.pointerId !== pointerId) return;
+    window.removeEventListener('pointermove', onMove);
+    window.removeEventListener('pointerup', onUp);
+    window.removeEventListener('pointercancel', onCancel);
+    window.removeEventListener('blur', onBlur);
     try { el.releasePointerCapture(pointerId); } catch { /* already released */ }
-    if (active.dragging) {
-      swallowNextClick();
+    const wasDragging = active.dragging;
+    try {
+      if (wasDragging) {
+        swallowNextClick();
+        if (cancelled) hooks.onCancel();
+        else hooks.onDrop();
+      }
+    } catch (err) {
+      console.error('[dragSort] drop error, force-cleaning:', err);
+      forceCleanupDrag();
+    } finally {
       endDragChrome();
-      if (cancelled) hooks.onCancel();
-      else hooks.onDrop();
+      active = null;
     }
-    active = null;
     // Not a drag → fall through: the browser fires the normal click next.
   };
   const onUp = (ev) => finish(ev, false);
   const onCancel = (ev) => finish(ev, true);
+  const onBlur = () => finish({ pointerId }, true);   // window lost focus mid-drag
 
-  el.addEventListener('pointermove', onMove);
-  el.addEventListener('pointerup', onUp);
-  el.addEventListener('pointercancel', onCancel);
+  window.addEventListener('pointermove', onMove);
+  window.addEventListener('pointerup', onUp);
+  window.addEventListener('pointercancel', onCancel);
+  window.addEventListener('blur', onBlur);
 }
