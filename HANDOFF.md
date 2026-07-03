@@ -236,10 +236,14 @@ Author of this handoff: Claude (fable session) → 交接给新 session
     stage 硬地板+侧立绘列隐藏+卡牌/预览/顶栏瘦身,iPhone 横屏全 UI 可见可点。
 56. **按压反馈**:手牌/目标卡/造句卡 :active 下沉缩小,禁用按钮 not-allowed 光标。
 57. **taptap-maker MCP** 已装(~/.claude.json),工具需新 session 才加载,尚未使用。用户希望用它优化游戏。
-58. **P5 场景系统(进行中,subagent)**:地点卡(月下/海边/酒馆/战场)+qu_verb 动词卡+
-    qu_movement 句式(去/到/入+地点→effects._sceneChange)+`src/game/scenes.js`(场景buff/景物注册表)+
-    舞台变景(data-scene)+景物词上台(G.sceneryProps,上限3)。G.scenesVisited 为 P6 连环画攒原料。
-    **若本条无后续完成标记,git status 未 commit 的改动即 agent 半成品,验收流程见 GAME-LOOP.md 四道门。**
+58. **P5 场景系统(✅ 完成,commit 03939f9)**:地点卡(月下/海边/酒馆/战场)+qu_verb 动词卡(进起手,
+    是地点卡唯一触发器)+qu_movement 句式(去/到/入+地点→effects._sceneChange,感叹「去」浮句尾不冲突)+
+    `src/game/scenes.js`(SCENES 场景buff:月下诗意+0.2/海边回合+2挡/酒馆+1抽/战场攻击+2走
+    _flatAttackBonus;SCENERY 景物注册表:明月/椅子/枯藤/灯/山/海→SVG 道具+小光环,上限3顶老)+
+    舞台变景(#combat-screen[data-scene] 换 --stage 色调)+`.scenery-layer` 按 id reconcile 不闪。
+    场景整场持续直到再换;G.scenesVisited 去重记录=P6 连环画原料。零影响契约:无场景状态时
+    新规则零改动(golden 零回归)。回归:`node scripts/test-scenes.mjs`(29 例)。
+    en 包场景规则未做(文案已备好),与 en 补 P1-P3 同列 backlog。
 
 ### B. 已知的未解决判定问题 (新 session 可继续，基于日志复盘)
 1. **identity 身份 buff 数值不进 effects**：如"我是皇帝→力+2"在 notes 显示了，但实际是

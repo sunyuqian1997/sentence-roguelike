@@ -17,9 +17,11 @@
 - [x] P2 连续句承接链 3a4807d
 - [x] P3 「用X戳」工具格 c9d9c58 — 意外联动:猫既是武器又自动 co-actor 助战,保留
 - [x] P4 吐槽气泡 87fd5f3 + 812×375 紧凑档修复 e54940d
-- [ ] P5 场景系统 【agent 后台跑:地点卡+qu_verb 句式+scenes.js+舞台变景+景物道具】
-- [ ] P6 结算短篇选句奖励 + 通关连环画 (程序化 SVG) — 依赖 P5 的 scenesVisited
+- [x] P5 场景系统 03939f9 — 去哪里换景+景物上台,scenesVisited 已为 P6 备料
+- [ ] P6 结算短篇选句奖励 + 通关连环画 (程序化 SVG) — 原料就绪(G.scenesVisited/combatJournal)
 - [ ] P7 文房道具 (小丑牌式遗物) + 终局平衡大循环(act2/3 校准 + 大 N 细磨)
+- [ ] 补: en 包场景规则(scenes.js 的 en 文案已备好)
+- [ ] 试: taptap-maker MCP(已装,新 session 加载后探索其工具用于优化/发布)
 - [x] 补: 韵表扩充 86b3b3b(尾字覆盖 38%→100%,新增 üe/ie 组)
 - [x] 补: en 包经济规则对齐 09c62c8(instrument 句式 en 版留待后续)
 - [ ] 补(P0 发现): 倍率表演分 — 纯状态句高倍率无收益,考虑 totalMult 缩放状态量(vuln/weak)
