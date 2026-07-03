@@ -6,6 +6,43 @@ import { buildContextEn, isSelfRefEn, isEnemyRefEn } from './context.js';
 import { applyGrammarEn } from './grammar.js';
 import { applyQualityEn, detectParallelEn } from './poetics.js';
 import { isWellFormed as enWellFormed } from './wellformed.js';
+import { textRepeatCount, skeletonRepeatCount, newWordsIn, continuityLinks } from '../../game/creativity.js';
+
+// Creativity economy — mirrors the zh rules (repetition_decay/novelty/continuity
+// in src/lang/zh/rules/quality.js) with English notes. Ledger is language-neutral
+// (creativity.js); combat.js advances it on every real chant regardless of lang.
+function applyCreativityEn(ctx) {
+  const links = continuityLinks(ctx.cards);
+  if (links.length) {
+    const streak = (G._continuityStreak || 0) + 1;
+    const bonus = streak >= 3 ? 0.4 : streak >= 2 ? 0.3 : 0.2;
+    ctx.literaryMult += bonus;
+    ctx.literaryNotes.push(`🔗 Callback "${links[0]}" +${bonus.toFixed(1)}${streak > 1 ? ` (×${streak})` : ''}`);
+    ctx.effects._continuity = { words: links, streak, bonus };
+  }
+  const n = textRepeatCount(ctx.cards);
+  if (n > 0) {
+    const f = Math.pow(0.6, n);
+    ctx.literaryMult = Math.max(0.1, ctx.literaryMult * f);
+    ctx.literaryNotes.push(`😮‍💨 Same line again ×${f.toFixed(2)}`);
+    ctx.effects._repetition = { kind: 'exact', n };
+  } else {
+    const m = skeletonRepeatCount(ctx.cards);
+    if (m > 0) {
+      const f = Math.pow(0.85, m);
+      ctx.literaryMult = Math.max(0.1, ctx.literaryMult * f);
+      ctx.literaryNotes.push(`🥱 Same shape ×${f.toFixed(2)}`);
+      ctx.effects._repetition = { kind: 'skeleton', n: m };
+    }
+  }
+  const fresh = newWordsIn(ctx.cards);
+  if (fresh.length) {
+    const bonus = Math.min(0.3, fresh.length * 0.06);
+    ctx.literaryMult += bonus;
+    ctx.literaryNotes.push(`✨ Fresh: ${fresh.slice(0, 3).join(', ')}${fresh.length > 3 ? '…' : ''} +${bonus.toFixed(2)}`);
+    ctx.effects._novelty = { words: fresh, bonus };
+  }
+}
 
 export { enWellFormed as isWellFormed };
 
@@ -135,6 +172,7 @@ export function parse(rawCards) {
   applyGrammarEn(ctx);
   applyPunctuationEn(ctx);
   applyQualityEn(ctx);
+  applyCreativityEn(ctx);
   applyExclamationsEn(ctx);
   applyCardEffectsEn(ctx);
   detectRolesEn(ctx);

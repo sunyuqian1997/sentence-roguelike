@@ -35,11 +35,12 @@ export function resetCreativity() {
 }
 
 // "Content words" anchor sentence-to-sentence continuity: subjects and objects
-// (incl. enemy-target cards, whose pos is object after normalization). 我/你
-// are excluded — chaining on ubiquitous pronouns would be free money.
+// (incl. enemy-target cards, whose pos is object after normalization). Pronouns
+// (我/你 · I/you/me) are excluded — chaining on them would be free money.
 export function contentWordsOf(cards) {
   return [...new Set((cards || [])
-    .filter(c => (c.pos === 'subject' || c.pos === 'object') && !/^[我你尔汝]$/.test(c.word))
+    .filter(c => (c.pos === 'subject' || c.pos === 'object')
+      && !/^([我你尔汝]|[Ii]|[Yy]ou|[Mm]e)$/.test(c.word))
     .map(c => c.word))];
 }
 
