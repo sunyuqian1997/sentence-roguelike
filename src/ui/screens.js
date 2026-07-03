@@ -100,17 +100,25 @@ export function renderShop() {
   G.shopInventory.forEach((item, idx) => {
     if (item.sold) return;
     const w = document.createElement('div');
-    w.className = 'shop-card-slot';
+    const affordable = G.gold >= item.price;
+    w.className = 'shop-card-slot' + (affordable ? '' : ' cannot-afford-slot');
     const el = createCardElement(item.card, null, { noClick: true });
-    el.style.cursor = 'pointer';
+    el.style.cursor = affordable ? 'pointer' : 'not-allowed';
     el.onclick = () => {
-      if (G.gold >= item.price && !item.sold) {
-        G.gold -= item.price; G.deck.push(item.card); item.sold = true;
-        playSFX('card'); renderShop();
+      if (item.sold) return;
+      if (G.gold < item.price) {
+        // 买不起也要有回应:说清缺多少, 别让玩家怀疑"为什么点不动"。
+        showFloatingText(w, `✗ 缺 ${item.price - G.gold} 文银`, '#C54B3C');
+        playSFX('denied');
+        return;
       }
+      G.gold -= item.price; G.deck.push(item.card); item.sold = true;
+      showFloatingText(w, `-${item.price} 文银`, '#B8862B');
+      playSFX('card_insert');
+      renderShop();
     };
     const p = document.createElement('div');
-    p.className = `shop-price ${G.gold<item.price?'cannot-afford':''}`;
+    p.className = `shop-price ${affordable?'':'cannot-afford'}`;
     p.textContent = `${item.price}文银`;
     w.appendChild(el); w.appendChild(p); c.appendChild(w);
   });

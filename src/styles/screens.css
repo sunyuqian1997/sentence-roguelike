@@ -98,9 +98,14 @@
   background: var(--paper);
 }
 .map-node.visited { opacity: 0.25; }
+/* 当前位置是地图上最重要的信息——金色呼吸光晕, 一眼锁定"我在哪"。 */
 .map-node.current {
   border-color: var(--gold);
-  box-shadow: 0 0 0 3px var(--gold-dim), 0 2px 12px rgba(74,111,160,0.12);
+  animation: currentNodeGlow 1.8s ease-in-out infinite;
+}
+@keyframes currentNodeGlow {
+  0%, 100% { box-shadow: 0 0 0 3px var(--gold-dim), 0 2px 12px rgba(184,134,46,0.25); }
+  50% { box-shadow: 0 0 0 6px rgba(217,164,65,0.45), 0 4px 20px rgba(184,134,46,0.5); }
 }
 .map-node.boss-node { border-color: var(--vermillion); }
 .map-node.boss-node.available {
@@ -648,3 +653,19 @@
   box-shadow: 0 2px 8px rgba(74,111,160,0.1);
 }
 .meta-item .buy-btn:disabled { opacity: 0.3; cursor: default; }
+
+/* ---- R1 game-feel:商店买不起 = 灰化 + 锁标, 一眼读出"还差钱" ---- */
+.shop-card-slot.cannot-afford-slot .card {
+  opacity: 0.55;
+  filter: grayscale(0.55);
+}
+.shop-card-slot.cannot-afford-slot .shop-price::before { content: '🔒 '; }
+
+/* ---- R1 game-feel:标题「开始」按钮金色呼吸, 视觉焦点落在行动入口 ---- */
+#title-screen .btn:not(.btn-small):not(.btn-secondary) {
+  animation: titleBtnPulse 2.4s ease-in-out infinite;
+}
+@keyframes titleBtnPulse {
+  0%, 100% { box-shadow: 1px 1px 0 var(--ink-faint), 0 0 0 0 rgba(184,134,46,0.0); transform: scale(1); }
+  50% { box-shadow: 2px 2px 0 var(--ink-light), 0 0 18px 6px rgba(184,134,46,0.18); transform: scale(1.02); }
+}

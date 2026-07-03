@@ -65,7 +65,11 @@ function playNote(freq, dur, type, t, gain) {
   const g = audioCtx.createGain();
   o.type = type || 'sine';
   o.frequency.value = freq;
-  g.gain.setValueAtTime(gain || 0.2, t);
+  // 短促的线性 attack 让每个音有"音头"——直接从峰值起跳的包络听起来
+  // 像廉价 MIDI。极短音符按时长比例缩短 attack, 不吃掉主体。
+  const atk = Math.min(0.015, dur * 0.25);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(gain || 0.2, t + atk);
   g.gain.exponentialRampToValueAtTime(0.001, t + dur);
   o.connect(g);
   g.connect(masterGain);
@@ -228,6 +232,60 @@ export function playSFX(type) {
     case 'forbidden': // 🚫 僭越 — harsh buzz
       playNote(140, 0.12, 'sawtooth', t, 0.12);
       playNoise(0.1, t, 0.1);
+      break;
+    // ---- 交互反馈层(轻, 0.07-0.13):每个玩家动作都要有声音回应 ----
+    case 'pickup': // 拖拽拾起 — 竖琴般的"叮", 预示"拿起来了"
+      playNote(392, 0.07, 'triangle', t, 0.11);
+      playNote(784, 0.05, 'sine', t + 0.02, 0.05);
+      break;
+    case 'card_land': // 拖拽落下 — 双音下行, 对应视觉落地
+      playNote(330, 0.05, 'sine', t, 0.1);
+      playNote(261.6, 0.07, 'sine', t + 0.04, 0.09);
+      break;
+    case 'card_insert': // 点卡入句 — 钟声感双频
+      playNote(523.3, 0.1, 'sine', t, 0.12);
+      playNote(1046.5, 0.08, 'sine', t + 0.01, 0.05);
+      break;
+    case 'card_remove': // 移出造句区 — 轻微 pop-off
+      playNote(196, 0.07, 'triangle', t, 0.08);
+      break;
+    case 'invalid_drop': // 无效拖放 — 低沉的"不行"
+      playNote(146.8, 0.12, 'sawtooth', t, 0.07);
+      playNote(130.8, 0.1, 'triangle', t + 0.06, 0.05);
+      break;
+    case 'denied': // 按钮拒绝 — 比 forbidden 轻的双跳嗡
+      playNote(165, 0.08, 'triangle', t, 0.09);
+      playNote(165, 0.08, 'triangle', t + 0.1, 0.07);
+      break;
+    // ---- 玩家受击(0.15-0.18, 醒目但不扎心):与打敌人的 hit 区分开 ----
+    case 'impact_player': // 钝重闷响
+      playNote(90, 0.12, 'sawtooth', t, 0.15);
+      playNote(60, 0.18, 'sine', t + 0.02, 0.14);
+      playNoise(0.1, t, 0.1);
+      break;
+    case 'impact_player_heavy': // 挨了大的 — 更低更长 + 余震
+      playNote(65, 0.16, 'sawtooth', t, 0.18);
+      playNote(45, 0.26, 'sine', t + 0.03, 0.16);
+      playNoise(0.16, t, 0.14);
+      playNote(35, 0.3, 'sine', t + 0.1, 0.1);
+      break;
+    // ---- 节拍层:回合与抽卡 ----
+    case 'turn_start': // 五声音阶三连上行, 温暖的"该你了"
+      playNote(261.6, 0.12, 'sine', t, 0.09);
+      playNote(329.6, 0.12, 'sine', t + 0.06, 0.09);
+      playNote(392, 0.16, 'sine', t + 0.12, 0.1);
+      break;
+    case 'card_draw': // 洗牌般的快速上行
+      playNote(330, 0.04, 'triangle', t, 0.08);
+      playNote(392, 0.04, 'triangle', t + 0.035, 0.08);
+      playNote(440, 0.05, 'triangle', t + 0.07, 0.09);
+      break;
+    // ---- 爆点(0.15+):高倍率句的专属声音 ----
+    case 'combo_break': // 扫弦感 — 升腾 + 墨刷
+      playNote(523.3, 0.08, 'sine', t, 0.12);
+      playNote(659.3, 0.08, 'sine', t + 0.05, 0.13);
+      playNote(880, 0.18, 'sine', t + 0.1, 0.15);
+      playNoise(0.12, t + 0.08, 0.1);
       break;
   }
 }

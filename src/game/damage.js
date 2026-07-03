@@ -93,9 +93,10 @@ export function dealDamageToPlayer(amount, source) {
   if (G.hp < 0) G.hp = 0;
 
   const isBig = amount >= 15;
-  playSFX(isBig ? 'hit_heavy' : 'hit');
+  playSFX(isBig ? 'impact_player_heavy' : 'impact_player');
   VFX.damageNum(document.getElementById('player-status-bar'), `-${amount}`, 'var(--vermillion)', isBig ? 3 : 2.2);
   VFX.shake(isBig ? 'md' : 'sm');
+  VFX.hurtVignette(isBig);
   VFX.rollHp(document.getElementById('combat-hp'));
 
   if (isBig) {

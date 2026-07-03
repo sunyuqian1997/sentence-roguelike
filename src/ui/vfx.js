@@ -90,6 +90,14 @@ export const VFX = {
     }, delay);
   },
 
+  // 玩家受伤的"体感":屏幕边缘红晕呼吸一次。伤害越大越浓。
+  hurtVignette(heavy) {
+    const v = document.createElement('div');
+    v.className = 'hurt-vignette' + (heavy ? ' hurt-vignette-heavy' : '');
+    document.body.appendChild(v);
+    setTimeout(() => v.remove(), heavy ? 700 : 500);
+  },
+
   rollHp(element) {
     if (!element) return;
     element.classList.remove('hp-rolling');

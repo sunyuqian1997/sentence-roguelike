@@ -103,7 +103,8 @@ export function renderMap() {
             const line = document.createElementNS('http://www.w3.org/2000/svg','line');
             line.setAttribute('x1',fx); line.setAttribute('y1',fy);
             line.setAttribute('x2',tr.left+tr.width/2-cr.left); line.setAttribute('y2',tr.top+tr.height/2-cr.top);
-            line.setAttribute('stroke','rgba(201,168,76,0.15)'); line.setAttribute('stroke-width','1.5');
+            line.setAttribute('stroke','rgba(201,168,76,0.4)'); line.setAttribute('stroke-width','2');
+            line.setAttribute('stroke-linecap','round');
             svg.appendChild(line);
           }
         });

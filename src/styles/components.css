@@ -125,6 +125,13 @@
     0 0 0 2px var(--vermillion-dim),
     3px 3px 0 rgba(197, 75, 60, 0.2),
     0 0 16px var(--vermillion-glow);
+  animation: targetAcquire 0.35s var(--ease-out-back);
+}
+/* 切换目标的"啪"一下锁定感 */
+@keyframes targetAcquire {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.06); box-shadow: 0 0 0 5px var(--vermillion-glow), 3px 3px 0 rgba(197, 75, 60, 0.25); }
+  100% { transform: scale(1); }
 }
 .enemy.targetable { animation: enemy-glow 2s ease-in-out infinite; }
 .enemy.boss {
@@ -656,9 +663,11 @@ body.dragging-card * { cursor: grabbing !important; }
 .drag-ghost { will-change: transform; }
 .drag-ghost .card.ghost-lift,
 .drag-ghost.ghost-lift {
-  transform: scale(1.07) rotate(2.5deg);
-  box-shadow: 0 14px 32px rgba(17, 17, 16, 0.42), 0 0 18px var(--gold-dim, rgba(217, 164, 65, 0.35));
-  transition: transform 0.15s var(--ease-brush), box-shadow 0.15s var(--ease-brush);
+  /* 拾起要"有分量":放大 13% + 提亮, 在灰暗舞台背景上也读得出"拿起来了" */
+  transform: scale(1.13) rotate(3deg);
+  box-shadow: 0 16px 38px rgba(17, 17, 16, 0.5), 0 0 22px var(--gold-dim, rgba(217, 164, 65, 0.45));
+  filter: brightness(1.06);
+  transition: transform 0.15s var(--ease-brush), box-shadow 0.15s var(--ease-brush), filter 0.15s ease;
 }
 /* siblings glide aside to open the gap */
 .sentence-card-wrap.drag-shift { transition: transform 0.18s var(--ease-brush); }
@@ -670,8 +679,8 @@ body.dragging-card * { cursor: grabbing !important; }
 /* ...then pops with a squash & stretch */
 .drop-pop { animation: dropPop 0.34s cubic-bezier(0.3, 1.4, 0.4, 1); }
 @keyframes dropPop {
-  0%   { transform: scale(0.94, 0.82); }
-  45%  { transform: scale(1.05, 1.1); }
+  0%   { transform: scale(0.9, 0.74); }
+  45%  { transform: scale(1.08, 1.16); }
   100% { transform: scale(1, 1); }
 }
 /* dock invites the card while a hand-drag hovers it */
@@ -933,19 +942,20 @@ body.dragging-card * { cursor: grabbing !important; }
 #puppet-enemy[data-pose="attack"] .arm-l { transform: rotate(60deg); }
 #puppet-enemy[data-pose="attack"] .arm-r { transform: none; }
 
-/* ---- Pose: defend — scroll-shield up, crouch ---- */
-.puppet[data-pose="defend"] { transform: translateY(2px) scaleY(0.95); }
+/* ---- Pose: defend — 明显下蹲 + 双臂张开架盾:一眼读出"防御" ---- */
+.puppet[data-pose="defend"] { transform: translateY(5px) scaleY(0.88); }
+.puppet[data-pose="defend"] .arm-l { transform: rotate(-32deg); }
 .puppet[data-pose="defend"] .arm-r { transform: rotate(-12deg); }
-.puppet[data-pose="defend"] .shield { opacity: 1; transform: translate(0, -3px); }
-#puppet-enemy[data-pose="defend"] { transform: translateY(2px) scaleY(0.93); }
+.puppet[data-pose="defend"] .shield { opacity: 1; transform: translate(-2px, -5px) scale(1.08); }
+#puppet-enemy[data-pose="defend"] { transform: translateY(5px) scaleY(0.88); }
 #puppet-enemy[data-pose="defend"] .arm-l { transform: rotate(-18deg); }
 #puppet-enemy[data-pose="defend"] .arm-r { transform: rotate(18deg); }
 
-/* ---- Pose: heal — hands gathered at the heart, pine glow ---- */
+/* ---- Pose: heal — 身体升起 + 双手合拢 + 松绿光:攻(前压)防(下蹲)疗(升起)三态分明 ---- */
+.puppet[data-pose="heal"] { transform: translateY(-5px); filter: drop-shadow(0 0 10px rgba(74, 124, 107, 0.7)); }
 .puppet[data-pose="heal"] .arm-l { transform: rotate(35deg); }
 .puppet[data-pose="heal"] .arm-r { transform: rotate(-35deg); }
 .puppet[data-pose="heal"] .head { fill: rgba(74, 124, 107, 0.2); }
-.puppet[data-pose="heal"] { filter: drop-shadow(0 0 6px rgba(74, 124, 107, 0.5)); }
 
 /* ---- Aiming: transitive verb + enemy target chosen → poet steps toward the
    foe, telegraphing "I'm about to do this TO you" while composing. Outranks the
@@ -967,15 +977,22 @@ body.dragging-card * { cursor: grabbing !important; }
   50% { transform: translateY(-3px); }
 }
 
-/* ---- Pose: hit — flash red + recoil shake ---- */
-.puppet[data-pose="hit"] { animation: puppetHit 0.3s ease; }
+/* ---- Pose: hit — 缩身 + 大幅摇晃 + 痛苦表情(眯眼 + 头泛红) ---- */
+.puppet[data-pose="hit"] { animation: puppetHit 0.32s ease; }
 .puppet[data-pose="hit"] .body,
 .puppet[data-pose="hit"] .arm,
 .puppet[data-pose="hit"] .leg { stroke: var(--vermillion); }
+.puppet[data-pose="hit"] .head { fill: rgba(178, 58, 46, 0.28); }
+.puppet[data-pose="hit"] .face {
+  transform: scaleY(0.25);
+  transform-box: fill-box;
+  transform-origin: center;
+}
 @keyframes puppetHit {
   0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-3px) rotate(-2deg); }
-  75% { transform: translateX(3px) rotate(2deg); }
+  18% { transform: translateX(-7px) rotate(-4deg) scaleY(0.92); }
+  55% { transform: translateX(5px) rotate(3deg); }
+  80% { transform: translateX(-3px) rotate(-1.5deg); }
 }
 
 /* ---- Pose: charmed (🌈 pun) — lovesick sway ---- */
@@ -1341,4 +1358,103 @@ body.dragging-card * { cursor: grabbing !important; }
 @keyframes bubble-pop-in {
   from { opacity: 0; transform: translateY(5px) scale(0.85); }
   to   { opacity: 1; transform: none; }
+}
+
+/* ============================================================
+   R1 game-feel — 生命感与反馈层(UX loop 2026-07)
+   ============================================================ */
+
+/* ---- 眨眼:静止的棍人也是活的。敌我错开相位, 不同步眨 ---- */
+.puppet[data-pose="idle"] .face circle,
+.puppet[data-pose="targeted"] .face circle {
+  animation: eyeBlink 3.4s infinite;
+}
+#puppet-enemy .face circle { animation-delay: 1.6s; }
+@keyframes eyeBlink {
+  0%, 90%, 100% { opacity: 1; }
+  93%, 96% { opacity: 0.08; }
+}
+
+/* ---- 死亡:缓缓翻倒 + 褪墨, 不再是"突然消失" ---- */
+.puppet[data-pose="dying"] {
+  animation: puppetDie 0.9s cubic-bezier(0.35, 0, 0.55, 1) forwards;
+  filter: grayscale(0.85) brightness(0.75);
+  transform-origin: center 85%;
+}
+@keyframes puppetDie {
+  0%   { transform: rotate(0) translateY(0); opacity: 1; }
+  30%  { transform: rotate(-14deg) translateY(-5px); }
+  70%  { transform: rotate(-80deg) translateY(12px); opacity: 0.8; }
+  100% { transform: rotate(-88deg) translateY(16px); opacity: 0.3; }
+}
+
+/* ---- 濒死(HP≤30%):持续细颤 + 冒汗。挂在内层 svg 上, 与姿态位移叠加 ---- */
+.puppet.puppet-critical .puppet-svg {
+  animation: criticalTremble 0.35s ease-in-out infinite;
+}
+.puppet.puppet-critical::after {
+  content: '💦';
+  position: absolute;
+  top: 2%; right: 6%;
+  font-size: 11px;
+  animation: sweatDrop 1.7s ease-in infinite;
+  pointer-events: none;
+}
+@keyframes criticalTremble {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(-1.2px, 0.6px) rotate(-0.6deg); }
+  50% { transform: translate(0.9px, -0.5px); }
+  75% { transform: translate(-0.6px, -0.9px) rotate(0.5deg); }
+}
+@keyframes sweatDrop {
+  0%   { opacity: 0; transform: translateY(0); }
+  25%  { opacity: 0.9; }
+  85%  { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 0; }
+}
+
+/* ---- 寄了(doomed):不只褪色, 还要"泄气"下沉 + 头垂 ---- */
+.puppet[data-pose="doomed"] { animation: puppetDrain 2s ease-in-out infinite; }
+@keyframes puppetDrain {
+  0%, 100% { transform: translateY(1px) rotate(-1.5deg); }
+  50% { transform: translateY(3px) rotate(-2.5deg) scaleY(0.97); }
+}
+
+/* ---- 玩家受伤体感:屏幕边缘红晕呼吸一次, 大额伤害更浓更久 ---- */
+.hurt-vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9600;
+  background: radial-gradient(ellipse at center, transparent 58%, rgba(178, 58, 46, 0.3) 100%);
+  animation: hurtVignette 0.5s ease-out forwards;
+}
+.hurt-vignette-heavy {
+  background: radial-gradient(ellipse at center, transparent 46%, rgba(178, 58, 46, 0.5) 100%);
+  animation-duration: 0.7s;
+}
+@keyframes hurtVignette {
+  0%   { opacity: 0; }
+  15%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ---- 吟诵按钮:可用时呼吸吸引视线;被拒时抖头说"不" ---- */
+#chant-btn:not(.btn-blocked) { animation: chantBreath 2.2s ease-in-out infinite; }
+#chant-btn:active:not(.btn-blocked) { animation: none; transform: translate(3px, 3px); }
+@keyframes chantBreath {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+}
+.btn.btn-blocked {
+  cursor: not-allowed;
+  filter: grayscale(0.45);
+}
+.btn.btn-blocked:active { transform: none; }
+.btn-denied { animation: btnDenied 0.28s ease !important; }
+@keyframes btnDenied {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  45% { transform: translateX(4px); }
+  70% { transform: translateX(-3px); }
 }

@@ -584,6 +584,14 @@ export function updatePuppets() {
     enemyEmoji = '😂';
   }
 
+  // 身体状态覆盖句子驱动的姿态:全灭 → 倒地;濒死(≤30%) → 持续颤抖。
+  // critical 类在 chanting 门之前同步——它是持续体征, 不该被吟诵动画冻结。
+  const aliveEnemies = (G.enemies || []).filter(e => e && e.hp > 0);
+  const stageEnemy = aliveEnemies[0];
+  if ((G.enemies || []).length > 0 && aliveEnemies.length === 0) enemyPose = 'dying';
+  enemy.classList.toggle('puppet-critical', !!(stageEnemy && stageEnemy.hp <= stageEnemy.maxHp * 0.3));
+  player.classList.toggle('puppet-critical', G.hp > 0 && G.hp <= G.maxHp * 0.3);
+
   // Never override a running battle animation
   if (player.dataset.chanting === '1') return;
   setPose(player, playerPose);
@@ -663,7 +671,9 @@ export function playChantPuppetAnim(effects) {
         player.dataset.pose = 'attack';
         setEmoji(player, '🫵');
       } else if (isAttack) {
-        player.style.transform = `translateX(${Math.max(40, dx - 36)}px)`;
+        // 落点停在守方身前(留一个身位), 攻方冲、守方退、中间有缝——
+        // 命中帧谁打谁一目了然, 不再叠成一团。
+        player.style.transform = `translateX(${Math.max(40, dx - 72)}px)`;
         player.dataset.pose = 'attack';
       } else if (isBlock) {
         player.style.transform = 'translateY(0)';
@@ -685,8 +695,9 @@ export function playChantPuppetAnim(effects) {
         enemy.dataset.pose = 'juan';
         impactFlash(enemy);
       } else if (isAttack) {
+        // 守方后仰要接得住攻方的冲势(攻冲 40px+, 守退 18px 才有作用力感)。
         enemy.style.transition = 'transform 0.25s ease-out';
-        enemy.style.transform = 'translateX(8px) rotate(4deg)';
+        enemy.style.transform = 'translateX(18px) rotate(6deg) scale(0.97)';
         enemy.dataset.pose = 'hit';
         impactFlash(enemy);
       }
@@ -768,14 +779,17 @@ export function playEnemyPuppetAnim(intent, opts) {
 
   const seq = [
     [0, () => {
-      enemy.style.transition = 'transform 0.15s ease-out';
-      enemy.style.transform = 'translateY(2px) scaleY(0.94)';
+      // 蓄力前摇:蜷缩 + 朱红光晕预告"要挨打了", 给玩家一拍紧张感。
+      enemy.style.transition = 'transform 0.15s ease-out, filter 0.15s ease-out';
+      enemy.style.transform = 'translateY(2px) scaleY(0.9) scale(0.96)';
+      if (t === 'attack') enemy.style.filter = 'drop-shadow(0 0 12px var(--vermillion-glow))';
     }],
     [120, () => {
       enemy.style.transition = 'transform 0.3s cubic-bezier(0.22,1,0.36,1)';
       const dx = gapX(enemy, player); // negative: player is to the left
       if (t === 'attack') {
-        enemy.style.transform = `translateX(${Math.min(-40, dx + 36)}px)`;
+        // 同 chant 侧:停在玩家身前一个身位, 不盖住守方本体。
+        enemy.style.transform = `translateX(${Math.min(-40, dx + 72)}px)`;
         enemy.dataset.pose = 'attack';
       } else if (t === 'defend') {
         enemy.style.transform = 'translateY(0)';
@@ -796,10 +810,11 @@ export function playEnemyPuppetAnim(intent, opts) {
     }],
     [IMPACT_MS, () => {
       if (t === 'attack') {
+        // 击退幅度要"看得见疼": 轻击退半步, 重击退一大步 + 身体收缩。
         player.style.transition = 'transform 0.25s ease-out';
         player.style.transform = heavy
-          ? 'translateX(-14px) rotate(-7deg) scale(0.96)'
-          : 'translateX(-8px) rotate(-4deg)';
+          ? 'translateX(-26px) rotate(-9deg) scale(0.94)'
+          : 'translateX(-14px) rotate(-5deg) scale(0.97)';
         player.dataset.pose = 'hit';
         impactFlash(player);
       } else if (t === 'debuff') {

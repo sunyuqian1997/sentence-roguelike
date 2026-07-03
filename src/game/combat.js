@@ -134,6 +134,7 @@ export function startPlayerTurn() {
     showFloatingText(document.querySelector('#combat-top'), n, '#3A7B8C'), 300 + i * 300));
   if (G.turn === 1) VFX.spawnInkParticles();
   VFX.turnCircle();
+  playSFX('turn_start');
   drawCards(dc);
   guaranteePunctuation();
   guaranteeVerb();
@@ -321,7 +322,7 @@ export function addToSentenceAt(handIndex, insertIdx) {
   if (wouldBeForbidden(card)) { rejectForbidden(); return false; }
   const idx = Math.max(0, Math.min(insertIdx, G.sentence.length));
   G.sentence.splice(idx, 0, card);
-  playSFX('card');
+  // 音效由拖拽层负责(pickup→card_land), 这里不再叠一声 'card'。
   renderCombat();
   requestAnimationFrame(syncSentenceComplete);
   return true;
@@ -349,7 +350,7 @@ export function addToSentence(handIndex) {
   const sourceClone = sourceEl ? sourceEl.cloneNode(true) : null;
 
   G.sentence.push(card);
-  playSFX('card');
+  playSFX('card_insert');
   renderCombat();
   requestAnimationFrame(() => {
     syncSentenceComplete();
@@ -395,6 +396,7 @@ export function addToSentence(handIndex) {
 export function removeSentenceWord(idx) {
   if (idx >= 0 && idx < G.sentence.length) {
     G.sentence.splice(idx, 1);
+    playSFX('card_remove');
   }
   renderCombat();
 }
@@ -408,19 +410,36 @@ export function updateChantButton() {
   const hasSubject = G.sentence.some(c => c.pos === 'subject' || c._isFixedWo);
   const isDeclaration = hasSubject && hasExcl;
   const canChant = hasVerb || isSummon || isDeclaration;
-  btn.disabled = G.sentence.length === 0 || cost > G.energy || !canChant;
-  btn.style.opacity = btn.disabled ? '0.35' : '1';
+  const blocked = G.sentence.length === 0 || cost > G.energy || !canChant;
+  // 不用真 disabled——死按钮会吞掉点击, 玩家得不到"为什么不行"的回应。
+  // .btn-blocked 负责禁用观感, chantSentence 的守卫负责拒绝反馈。
+  btn.disabled = false;
+  btn.classList.toggle('btn-blocked', blocked);
+  btn.style.opacity = blocked ? '0.35' : '1';
   const label = isSummon ? t('summon') : isDeclaration && !hasVerb ? t('declare') : t('chant');
   btn.textContent = G.sentence.length > 0 ? `${label} (${cost} ${t('energy')})` : t('chant');
+}
+
+// 点了不能用的吟诵按钮:抖一下 + 低嗡 + 说清原因。拒绝要"被感觉到"。
+function denyChant(reason) {
+  const btn = document.getElementById('chant-btn');
+  if (btn) {
+    btn.classList.remove('btn-denied');
+    void btn.offsetWidth;
+    btn.classList.add('btn-denied');
+    setTimeout(() => btn.classList.remove('btn-denied'), 280);
+  }
+  if (reason) showFloatingText(document.querySelector('#combat-top'), `✗ ${reason}`, '#C54B3C');
+  playSFX('denied');
 }
 
 // ============================================================
 // CHANT
 // ============================================================
 export function chantSentence() {
-  if (G.sentence.length === 0) return;
+  if (G.sentence.length === 0) { denyChant(); return; }
   const cost = getSentenceCost();
-  if (cost > G.energy) return;
+  if (cost > G.energy) { denyChant(`缺 ${cost - G.energy} 文力`); return; }
 
   // 召唤式不是普通句子，走自己的识别路径，不受成句性门槛约束。
   const summon = detectSummon(G.sentence);
@@ -517,8 +536,15 @@ export function chantSentence() {
     G._continuityStreak = (result && result.effects && result.effects._continuity)
       ? result.effects._continuity.streak : 0;
     playChantPuppetAnim(result.effects);
-    showScoreAnimation(result, () => {
+    // 伤害与木偶命中帧同拍落地(和敌方回合同一契约, 见 puppets.js 顶部注释):
+    // 飘字/屏震/泼墨在"戳中"那一帧爆发, 浮层只负责文字解说, 关闭时才判胜负。
+    setTimeout(() => {
+      // 高倍率句的"爆点"音效与命中同帧, 大招听起来就是不一样。
+      if (result.totalMult >= 2) playSFX('combo_break');
       applyEffects(result.effects);
+      renderCombat();
+    }, IMPACT_MS);
+    showScoreAnimation(result, () => {
       checkEnemies();
       renderCombat();
     });
@@ -580,7 +606,7 @@ export function applyEffects(effects) {
     showFloatingText(document.querySelector('#combat-top'), `+${effects.strengthGain}力量`, '#4A7C6B');
   }
 
-  if (effects.draw > 0) drawCards(effects.draw);
+  if (effects.draw > 0) { drawCards(effects.draw); playSFX('card_draw'); }
 
   if (effects.goldGain > 0) {
     G.gold += effects.goldGain;
@@ -1096,6 +1122,10 @@ export function enemyTurn() {
       return;
     }
 
+    // 多段攻击的节拍在调度时就读意图(ai 只会在本敌自己的 finishAct 里改它,
+    // 调度→执行之间不会变), 这样敌间间隔与轮收尾能同步伸长。
+    const intent = enemy.nextIntent;
+    const multiHits = (intent && intent.type === 'attack' && (intent.hits | 0) > 1) ? (intent.hits | 0) : 0;
     setTimeout(() => {
       if (enemy.hp <= 0) return;
       const intentForAnim = enemy.nextIntent ? { ...enemy.nextIntent } : null;
@@ -1113,19 +1143,36 @@ export function enemyTurn() {
       setTimeout(() => {
         if (enemy.hp <= 0) return;
         const hpBefore = G.hp;
-        enemy.act_fn(enemy);
-        if (G._reflectDmg && G._reflectDmg > 0 && G.hp < hpBefore) {
-          const reflected = Math.floor((hpBefore - G.hp) * G._reflectDmg);
-          if (reflected > 0) {
-            enemy.hp -= reflected;
-            if (enemy.element) showFloatingText(enemy.element, `反弹${reflected}`, '#B87333');
+        const finishAct = () => {
+          if (G._reflectDmg && G._reflectDmg > 0 && G.hp < hpBefore) {
+            const reflected = Math.floor((hpBefore - G.hp) * G._reflectDmg);
+            if (reflected > 0) {
+              enemy.hp -= reflected;
+              if (enemy.element) showFloatingText(enemy.element, `反弹${reflected}`, '#B87333');
+            }
           }
+          enemy.ai(enemy);
+          renderCombat();
+        };
+        if (multiHits) {
+          // 多段攻击逐拍出数字("4×3"打成 -4 -4 -4 而不是一坨 -12),
+          // 玩家读得出连击, 也学得会用护甲拆多段。act_fn 的攻击分支等价于
+          // 这个循环(见 enemies.js), 这里代它执行以插入节拍。
+          for (let i = 0; i < multiHits; i++) {
+            setTimeout(() => {
+              if (enemy.hp <= 0 || G.hp <= 0) return;
+              dealDamageToPlayer(intent.value, enemy);
+              renderCombat();
+            }, i * 180);
+          }
+          setTimeout(finishAct, (multiHits - 1) * 180 + 60);
+        } else {
+          enemy.act_fn(enemy);
+          finishAct();
         }
-        enemy.ai(enemy);
-        renderCombat();
       }, IMPACT_MS);
     }, delay);
-    delay += 700;
+    delay += 700 + (multiHits ? (multiHits - 1) * 180 : 0);
   });
   G._reflectDmg = 0;
   setTimeout(() => {

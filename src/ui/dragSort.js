@@ -68,6 +68,7 @@ function makeGhost(sourceEl) {
   // while the ghost itself tracks the pointer with zero lag.
   const inner = ghost.querySelector('.card') || ghost;
   requestAnimationFrame(() => inner.classList.add('ghost-lift'));
+  playSFX('pickup');
   return ghost;
 }
 
@@ -95,12 +96,14 @@ function landGhost(ghost, targetRect, revealEl, done) {
       card.classList.add('drop-pop');
       setTimeout(() => card.classList.remove('drop-pop'), 400);
     }
+    playSFX('card_land');
     if (done) done();
   }, LAND_MS + 10);
 }
 
 // No valid drop — snap home with a little overshoot so it reads as a bounce.
 function flyBack(ghost, sourceEl, done) {
+  playSFX('invalid_drop');
   ghost.style.transition = `transform 260ms cubic-bezier(0.3, 1.4, 0.4, 1)`;
   ghost.style.transform = 'translate(0px, 0px)';
   const inner = ghost.querySelector('.card');

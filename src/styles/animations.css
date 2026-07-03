@@ -4,9 +4,11 @@
 
 /* --- Screen & overlay transitions --- */
 
+/* 换屏要有"进场"的空间感:下方滑入 + 轻微缩放展开, 不再是原地淡入。 */
 @keyframes screenFadeIn {
-  0%   { opacity: 0; transform: translateY(12px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0%   { opacity: 0; transform: translateY(26px) scale(0.985); }
+  60%  { opacity: 1; }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 @keyframes overlaySlideUp {
