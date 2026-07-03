@@ -580,3 +580,47 @@ body { font-family: var(--font-pixel); }
 /* 买不起的卡包仍可读(原 opacity:0.5 让名字几乎消失)；只降一点点。 */
 .pack-locked { opacity: 0.82 !important; }
 .pack-locked:hover { background: var(--paper-2) !important; border-color: var(--line) !important; }
+
+/* ============================================================
+   短视口紧凑档 (iPhone 横屏 812×375 等) — 修「棍人剧场被压成 0 高」。
+   诉求排序:手牌能点 > 造句区能读 > 棍人剧场必须可见(它是气泡/姿态反馈的家)。
+   给 stage 硬地板,其余各段按比例瘦身,总账 ≤375 时依然成立。
+   ============================================================ */
+@media (max-height: 430px) {
+  #combat-stage { min-height: 70px !important; }
+  .puppet { height: clamp(52px, 86%, 240px) !important; }
+  #puppet-stage { min-height: 52px; padding: 2px 20px 2px !important; }
+  /* 两侧大立绘列在矮屏没有立足空间(会压成色条),整列让位给中央棍人台 */
+  .stage-side { display: none !important; }
+  #combat-stage { grid-template-columns: 1fr !important; }
+  /* 造句坞瘦身:卡再小一号,说明字幕让位 */
+  .sentence-half { grid-auto-columns: 62px !important; min-height: 72px !important; }
+  .sentence-card-wrap { width: 62px; }
+  .sentence-mini-card {
+    width: 62px !important;
+    height: 70px !important;
+    min-width: 62px !important;
+  }
+  .sentence-mini-card .card-word { font-size: 0.95rem !important; }
+  .meaning-caption { display: none !important; }
+  #sentence-area { padding: 2px 8px !important; min-height: 0 !important; }
+  #sentence-slots-container { padding: 3px !important; }
+  /* 手牌瘦身 */
+  #hand-cards .card, #target-cards .card, #target-cards-enemy .card {
+    width: 58px !important;
+    height: 72px !important;
+    min-width: 58px !important;
+  }
+  #hand-cards .card .card-word { font-size: 0.9rem !important; }
+  #hand-cards .card .card-effect-bar { display: none !important; }
+  #hand-area { padding: 2px 8px 3px !important; }
+  #hand-controls { padding: 2px 8px 0 !important; }
+  /* 预览条只留结论行(chips+倍率),规则明细/对仗预览让位给手牌 */
+  #sentence-score-preview .sp-rules { display: none !important; }
+  #sentence-score-preview { font-size: 0.72rem; }
+  #duizhang-preview { display: none !important; }
+  #sentence-topbar { margin: 0 !important; }
+  #sentence-dock { padding: 1px 0 !important; }
+  /* 顶栏压扁 */
+  #combat-top { padding: 2px 10px !important; min-height: 0 !important; }
+}
