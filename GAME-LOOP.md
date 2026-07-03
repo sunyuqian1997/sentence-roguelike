@@ -33,6 +33,12 @@
 
 ## 教训 (承袭 JUICE-LOOP)
 
+- **拖拽死锁(用户实机踩到)**:延时 renderCombat(吟诵结算/敌人回合)会中途销毁被拖元素,
+  监听挂元素上=pointerup 永久丢失=active 卡死。修法:监听挂 window + finish try/finally +
+  buttons===0 僵尸检测 + forceCleanupDrag 兜底。headless 合成事件复现不了这个,
+  因为合成流程不会在拖拽中途触发结算重渲——真人节奏才会。
+- taptap-maker MCP 装在 ~/.claude.json,工具需重启会话才加载。
+
 - shot/interact 均 100% 缩放; interact.mjs 支持 CDP_PORT。
 - 盖 pixel.css 要 !important。测试句必须语法合法否则撞成句性门槛。
 - 改按轮状态记得 startCombat/endRound 两处作用域 (HANDOFF A-septies #37)。
