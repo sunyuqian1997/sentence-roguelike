@@ -634,6 +634,16 @@
 .sentence-card-wrap { touch-action: none; }
 #hand-cards .card { touch-action: none; }
 
+/* ---- press feedback: 手指按下的瞬间就有回应,不等拖拽/点击结算 ---- */
+#hand-cards .card:active:not(.in-sentence),
+#target-cards .card:active,
+#target-cards-enemy .card:active {
+  transform: translateY(-6px) scale(0.96);
+  transition-duration: 0.08s;
+}
+.sentence-card-wrap:active { transform: translateY(-1px) scale(0.97); }
+.btn:disabled { cursor: not-allowed; }
+
 /* ---- pointer-drag juice (dragSort.js) ---- */
 body.dragging-card { user-select: none; -webkit-user-select: none; }
 body.dragging-card * { cursor: grabbing !important; }
