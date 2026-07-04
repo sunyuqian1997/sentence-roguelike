@@ -3,6 +3,7 @@ node_modules
 dist
 index.html.bak
 *.png
+!public/**/*.png
 shot.png
 smoke-shot.png
 chantlog.ndjson

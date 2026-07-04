@@ -609,6 +609,8 @@ body { font-family: var(--font-pixel); }
   background:
     repeating-linear-gradient(0deg, rgba(0,0,0,0.04) 0 2px, transparent 2px 7px),
     radial-gradient(ellipse 80% 50% at 50% 90%, rgba(47,49,84,0.16), transparent 70%),
+    linear-gradient(rgba(226,228,239,0.55), rgba(226,228,239,0.55)),
+    url('/scenes/yuexia.jpg') center 35% / cover no-repeat,
     #E2E4EF !important;
 }
 /* 海边 — 青蓝 */
@@ -617,6 +619,8 @@ body { font-family: var(--font-pixel); }
   background:
     repeating-linear-gradient(0deg, rgba(0,0,0,0.04) 0 2px, transparent 2px 7px),
     radial-gradient(ellipse 80% 50% at 50% 90%, rgba(46,85,96,0.14), transparent 70%),
+    linear-gradient(rgba(223,235,232,0.55), rgba(223,235,232,0.55)),
+    url('/scenes/haibian.jpg') center 40% / cover no-repeat,
     #DFEBE8 !important;
 }
 /* 酒馆 — 暖褐 */
@@ -625,6 +629,8 @@ body { font-family: var(--font-pixel); }
   background:
     repeating-linear-gradient(0deg, rgba(0,0,0,0.04) 0 2px, transparent 2px 7px),
     radial-gradient(ellipse 80% 50% at 50% 90%, rgba(85,64,44,0.16), transparent 70%),
+    linear-gradient(rgba(241,226,196,0.55), rgba(241,226,196,0.55)),
+    url('/scenes/jiuguan.jpg') center 45% / cover no-repeat,
     #F1E2C4 !important;
 }
 /* 战场 — 铁灰偏红 */
@@ -633,6 +639,8 @@ body { font-family: var(--font-pixel); }
   background:
     repeating-linear-gradient(0deg, rgba(0,0,0,0.05) 0 2px, transparent 2px 7px),
     radial-gradient(ellipse 80% 50% at 50% 90%, rgba(120,58,50,0.14), transparent 70%),
+    linear-gradient(rgba(234,220,214,0.55), rgba(234,220,214,0.55)),
+    url('/scenes/zhanchang.jpg') center 40% / cover no-repeat,
     #EADCD6 !important;
 }
 /* 矮屏(与下方紧凑档同阈值):道具是固定像素尺寸,52px 舞台里太大 — 整层缩小贴地。 */

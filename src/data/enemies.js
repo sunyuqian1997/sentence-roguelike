@@ -11,7 +11,7 @@ export function enemyName(def) {
 
 export const ENEMY_DEFS = {
   moyao: {
-    name: '墨妖', nameEn: 'Ink Sprite', hp: 32, act: 1, type: 'normal', emoji: '🖤', tags: ['ink','spirit'],
+    name: '墨妖', nameEn: 'Ink Sprite', hp: 32, act: 1, type: 'normal', emoji: '🖤', portrait: '/enemies/moyao.png', tags: ['ink','spirit'],
     ai(e) { e.nextIntent = { type:'attack', value: 8+Math.floor(Math.random()*3), icon:'⚔' }; },
     act_fn(e) { dealDamageToPlayer(e.nextIntent.value, e); }
   },
@@ -34,7 +34,7 @@ export const ENEMY_DEFS = {
     act_fn(e) { dealDamageToPlayer(11,e); }
   },
   wenqu: {
-    name: '文曲星', nameEn: 'Star of Letters', hp: 78, act: 1, type: 'elite', emoji: '⭐', tags: ['celestial','scholar'],
+    name: '文曲星', nameEn: 'Star of Letters', hp: 78, act: 1, type: 'elite', emoji: '⭐', portrait: '/enemies/wenquxing.png', tags: ['celestial','scholar'],
     ai(e) {
       if(!e.tc)e.tc=0; e.tc++;
       if(e.tc%3===0) e.nextIntent={type:'special',value:0,icon:'✂',label:'消耗'};
@@ -52,7 +52,7 @@ export const ENEMY_DEFS = {
     }
   },
   bijing: {
-    name: '笔精', nameEn: 'Brush Spirit', hp: 55, act: 2, type: 'elite', emoji: '🖊️', tags: ['ink','spirit'],
+    name: '笔精', nameEn: 'Brush Spirit', hp: 55, act: 2, type: 'elite', emoji: '🖊️', portrait: '/enemies/bijing.png', tags: ['ink','spirit'],
     ai(e) {
       if(!e.tc)e.tc=0; e.tc++;
       if(e.tc%3===0) e.nextIntent={type:'debuff',value:0,icon:'↓',label:'易伤2'};
@@ -64,7 +64,7 @@ export const ENEMY_DEFS = {
     }
   },
   cangjie: {
-    name: '仓颉之影', nameEn: 'Shadow of Cangjie', hp: 115, act: 1, type: 'boss', emoji: '👁️', tags: ['celestial','scholar'],
+    name: '仓颉之影', nameEn: 'Shadow of Cangjie', hp: 115, act: 1, type: 'boss', emoji: '👁️', portrait: '/enemies/cangjie.png', tags: ['celestial','scholar'],
     ai(e) {
       if(!e.tc)e.tc=0; e.tc++;
       if(!e.phase2&&e.hp<=47){e.phase2=true;e.tc=1;}
@@ -84,7 +84,7 @@ export const ENEMY_DEFS = {
     }
   },
   mohun: {
-    name: '墨魂', nameEn: 'Ink Soul', hp: 28, act: 2, type: 'normal', emoji: '💀', tags: ['ink','ghost'],
+    name: '墨魂', nameEn: 'Ink Soul', hp: 28, act: 2, type: 'normal', emoji: '💀', portrait: '/enemies/mohun.png', tags: ['ink','ghost'],
     ai(e) {
       if(!e.tc)e.tc=0; e.tc++;
       if(e.tc%2===1) e.nextIntent={type:'attack',value:8,icon:'⚔'};
@@ -96,12 +96,12 @@ export const ENEMY_DEFS = {
     }
   },
   luoren: {
-    name: '落人', nameEn: 'Fallen One', hp: 36, act: 2, type: 'normal', emoji: '👤', tags: ['human','ghost'],
+    name: '落人', nameEn: 'Fallen One', hp: 36, act: 2, type: 'normal', emoji: '👤', portrait: '/enemies/luoren.png', tags: ['human','ghost'],
     ai(e) { e.nextIntent={type:'attack',value:14+Math.floor(Math.random()*4),icon:'⚔'}; },
     act_fn(e) { dealDamageToPlayer(e.nextIntent.value,e); }
   },
   jingmo: {
-    name: '镜墨', nameEn: 'Mirror Ink', hp: 32, act: 2, type: 'normal', emoji: '🪞', tags: ['ink','mirror'],
+    name: '镜墨', nameEn: 'Mirror Ink', hp: 32, act: 2, type: 'normal', emoji: '🪞', portrait: '/enemies/jingmo.png', tags: ['ink','mirror'],
     ai(e) {
       if(!e.tc)e.tc=0; e.tc++;
       if(e.tc%2===1) e.nextIntent={type:'attack',value:7,icon:'⚔'};
@@ -114,7 +114,7 @@ export const ENEMY_DEFS = {
     }
   },
   shisheng: {
-    name: '诗圣残魂', nameEn: "Sage's Remnant", hp: 115, act: 2, type: 'boss', emoji: '📖', tags: ['scholar','ghost'],
+    name: '诗圣残魂', nameEn: "Sage's Remnant", hp: 115, act: 2, type: 'boss', emoji: '📖', portrait: '/enemies/shisheng.png', tags: ['scholar','ghost'],
     ai(e) {
       if(!e.tc)e.tc=0; e.tc++;
       const p=[
@@ -133,7 +133,7 @@ export const ENEMY_DEFS = {
     }
   },
   xuwen: {
-    name: '虚文', nameEn: 'Hollow Word', hp: 34, act: 3, type: 'normal', emoji: '🌀', tags: ['word','wind'],
+    name: '虚文', nameEn: 'Hollow Word', hp: 34, act: 3, type: 'normal', emoji: '🌀', portrait: '/enemies/xuwen.png', tags: ['word','wind'],
     ai(e) {
       if(!e.tc)e.tc=0; e.tc++;
       e.nextIntent={type:'attack',value:6+(e.strength||0),icon:'⚔'};
@@ -145,7 +145,7 @@ export const ENEMY_DEFS = {
     }
   },
   mojie: {
-    name: '墨劫', nameEn: 'Ink Calamity', hp: 65, act: 3, type: 'elite', emoji: '🌑', tags: ['ink','dark'],
+    name: '墨劫', nameEn: 'Ink Calamity', hp: 65, act: 3, type: 'elite', emoji: '🌑', portrait: '/enemies/mojie.png', tags: ['ink','dark'],
     ai(e) {
       if(!e.tc)e.tc=0; e.tc++;
       if(e.tc%3===1) e.nextIntent={type:'debuff',value:0,icon:'↓',label:'虚弱+易伤'};
@@ -157,7 +157,7 @@ export const ENEMY_DEFS = {
     }
   },
   cidi: {
-    name: '词帝幽灵', nameEn: 'Ghost Emperor of Words', hp: 135, act: 3, type: 'boss', emoji: '👑', tags: ['word','scholar','ghost'],
+    name: '词帝幽灵', nameEn: 'Ghost Emperor of Words', hp: 135, act: 3, type: 'boss', emoji: '👑', portrait: '/enemies/cidi.png', tags: ['word','scholar','ghost'],
     ai(e) {
       if(!e.tc)e.tc=0; e.tc++;
       if(!e.phase)e.phase=1;
