@@ -646,7 +646,8 @@ export function playChantPuppetAnim(effects) {
   const isAttack = !!(effects && (effects.damage > 0 || effects.aoe));
   const isHeal = !!(effects && effects.heal > 0 && !isAttack);
   const isBlock = !!(effects && effects.block > 0 && !isAttack);
-  const imperative = !!(effects && effects._imperative);
+  // 祈使/驱虎吞狼:动手的不是诗人 —— 诗人只上前一步点将,不冲锋。
+  const imperative = !!(effects && (effects._imperative || effects._enemyVsEnemy));
   const pred = (effects && effects._predicates && effects._predicates[0]) || null;
   const selfPun = pred && pred.kind === 'pun' && pred.target === 'self' ? pred.pun.tag : null;
   const punTag = pred && pred.kind === 'pun' && pred.target !== 'self' ? pred.pun.tag : null;
@@ -688,7 +689,14 @@ export function playChantPuppetAnim(effects) {
     }],
     // IMPACT — enemy reacts
     [IMPACT_MS, () => {
-      if (imperative) {
+      if (effects && effects._enemyVsEnemy) {
+        // 驱虎吞狼:主敌人棍人(=被打的宾语敌)吃冲撞后仰;
+        // 出手的"倒戈敌人"由 playEnemyVsEnemyAnim 的临时棍人演。
+        enemy.style.transition = 'transform 0.25s ease-out';
+        enemy.style.transform = 'translateX(18px) rotate(6deg) scale(0.97)';
+        enemy.dataset.pose = 'hit';
+        impactFlash(enemy);
+      } else if (imperative) {
         // The enemy obeys and strikes itself
         enemy.style.transition = 'transform 0.2s ease-out';
         enemy.style.transform = 'rotate(8deg) scale(0.94)';
@@ -748,6 +756,55 @@ export function playChantPuppetAnim(effects) {
   // Right after the poet's own strike, the standby co-actors (already on stage
   // from composition) dash out and pile on.
   if (coActors.length) setTimeout(() => playCoActors(coActors), IMPACT_MS + 150);
+}
+
+// 驱虎吞狼小剧场:克隆一个临时"倒戈敌人"棍人(标注敌名),从主敌人棍人
+// 侧后方现身、冲撞过去;命中与 IMPACT_MS 同拍(主敌人的受击后仰由
+// playChantPuppetAnim 的 _enemyVsEnemy 分支负责),演完自行淡出移除。
+export function playEnemyVsEnemyAnim(eve) {
+  const { enemy } = els();
+  const stage = document.getElementById('puppet-stage');
+  if (!enemy || !stage || !eve) return;
+  const er = enemy.getBoundingClientRect();
+  const sr = stage.getBoundingClientRect();
+  if (!er.width || !sr.width) return;
+  const tmp = enemy.cloneNode(true);
+  tmp.removeAttribute('id');
+  tmp.classList.add('puppet-eve-src');
+  tmp.dataset.pose = 'idle';
+  tmp.dataset.chanting = '';
+  Object.assign(tmp.style, {
+    position: 'absolute',
+    left: (er.left - sr.left - Math.min(130, er.width + 44)) + 'px',
+    top: (er.top - sr.top + 4) + 'px',
+    width: er.width + 'px',
+    height: er.height + 'px',
+    opacity: '0',
+    zIndex: 3,
+    pointerEvents: 'none',
+    transform: 'scale(0.82) translateX(-16px)',
+    transition: 'transform 0.25s ease-out, opacity 0.2s ease-out',
+  });
+  const label = tmp.querySelector('.puppet-label');
+  if (label && eve.srcWord) label.textContent = eve.srcWord;
+  stage.appendChild(tmp);
+  playSFX('summon');
+  const seq = [
+    [30, () => { tmp.style.opacity = '1'; tmp.style.transform = 'scale(0.82)'; }],
+    [200, () => {
+      tmp.style.transition = 'transform 0.22s cubic-bezier(0.22,1,0.36,1)';
+      tmp.style.transform = 'scale(0.82) translateX(88px)';
+      tmp.dataset.pose = 'attack';
+    }],
+    [IMPACT_MS, () => { impactFlash(tmp); }],
+    [700, () => {
+      tmp.style.transition = 'transform 0.3s ease-out, opacity 0.35s ease-out';
+      tmp.style.transform = 'scale(0.82) translateX(-6px)';
+      tmp.style.opacity = '0';
+    }],
+    [1080, () => tmp.remove()],
+  ];
+  seq.forEach(([at, fn]) => setTimeout(fn, at));
 }
 
 // Enemy acting: mirror of the chant sequence — enemy dashes, player reacts.

@@ -700,3 +700,101 @@ body { font-family: var(--font-pixel); }
 #game, .screen {
   cursor: url('/cursor_brush.png') 5 27, auto;
 }
+
+/* ============================================================
+   中间档 431–649px 高(如 Mac 笔记本 100% 缩放的浏览器视口)。
+   紧凑档(≤430)整列隐藏立绘,全尺寸档需要 ≥650;这个区间此前无人管,
+   立绘卡被压塌成色条、敌卡溢出裁切。策略:两侧立绘列保留但按高度瘦身,
+   给舞台行一个能装下瘦身立绘卡的硬地板,造句/手牌相应让位。
+   ============================================================ */
+@media (min-height: 431px) and (max-height: 579px) {
+  #combat-stage { min-height: 156px !important; }
+  /* 顶栏压薄 */
+  #combat-top { padding: 3px 10px !important; min-height: 0 !important; }
+  /* 玩家 standee:立绘有底线高度,超出部分裁切而不是把图压扁 */
+  #player-char-card { min-height: 88px; width: 86%; overflow: hidden; }
+  #player-char-card img {
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: top;
+  }
+  .standee-name { font-size: 0.72rem !important; padding: 0 8px; margin-top: 2px; }
+  .standee-hp { padding: 1px 8px; font-size: 0.8rem; }
+  /* 敌人卡:立绘缩到 64px,压内边距,保证 名字/意图/血条 完整可见 */
+  #stage-enemy .enemy { max-width: 150px; padding: 3px 6px 5px !important; gap: 2px; }
+  #stage-enemy .enemy .enemy-portrait,
+  #stage-enemy .enemy .enemy-portrait-img {
+    width: 58px !important;
+    height: 58px !important;
+  }
+  .enemy-name { font-size: 0.76rem !important; }
+  .enemy-intent { font-size: 0.7rem !important; padding: 1px 6px !important; }
+  .enemy-hp-bar { height: 8px; }
+  .enemy-hp-text { font-size: 0.66rem !important; line-height: 1.1 !important; }
+  /* 造句区让位:空态不用摆那么大;预览条压薄 */
+  #sentence-area { padding: 3px 10px !important; min-height: 0 !important; }
+  #sentence-topbar { margin: 0 0 2px !important; }
+  #sentence-label { font-size: 0.72rem !important; padding: 2px 0 !important; }
+  #sentence-slots-container { min-height: 64px !important; padding: 3px !important; }
+  .sentence-half { min-height: 64px !important; }
+  /* 预览面板(费/伤/倍率 chips + 规则行)是把手牌顶出屏幕的元凶:整体压扁 */
+  #sentence-score-preview {
+    padding: 2px 8px !important;
+    margin: 0 0 3px !important;
+    gap: 2px !important;
+    max-height: 64px !important;
+  }
+  .sp-chip, .sp-cost { font-size: 0.72rem !important; }
+  .sp-mult { font-size: 0.85rem !important; padding: 0 6px !important; }
+  .sp-rules { margin-top: 1px !important; padding-top: 2px !important; max-height: 2.2em !important; }
+  .sp-rule { font-size: 0.7rem !important; }
+  #duizhang-preview { font-size: 0.64rem !important; margin-top: 1px !important; }
+  /* 句区迷你卡矮一号,和手牌卡同比例 */
+  .sentence-card-wrap { width: 70px; }
+  .sentence-mini-card {
+    width: 70px !important;
+    height: 74px !important;
+    min-width: 70px !important;
+  }
+  .sentence-mini-card .card-word { font-size: 1.05rem !important; }
+  .meaning-caption { display: none !important; }
+  /* 坞外壳与按钮行也收一格 */
+  #sentence-dock { padding: 2px 0 !important; }
+  #hand-controls .btn { padding: 5px 16px !important; font-size: 0.85rem !important; }
+  #combat-top .btn { padding: 2px 8px !important; font-size: 0.8rem !important; }
+  /* 手牌:矮一号,保证吟诵/结束按钮完整可见 */
+  #hand-cards .card, #target-cards .card, #target-cards-enemy .card {
+    height: clamp(80px, 15.5vh, 108px) !important;
+  }
+  #hand-area { padding: 2px 8px 4px !important; }
+  #hand-controls { padding: 1px 8px 0 !important; }
+}
+
+/* ============================================================
+   次中间档 580–767px 高:同样的"预览条撑开造句坞→舞台被饿死"病,
+   但空间余量更大,用更宽松的尺寸,保住接近全尺寸的观感。
+   ============================================================ */
+@media (min-height: 580px) and (max-height: 767px) {
+  #combat-stage { min-height: 232px !important; }
+  #player-char-card { min-height: 140px; overflow: hidden; }
+  #player-char-card img {
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: top;
+  }
+  #stage-enemy .enemy { max-width: 180px; padding: 5px 8px 7px !important; gap: 3px; }
+  #stage-enemy .enemy .enemy-portrait,
+  #stage-enemy .enemy .enemy-portrait-img {
+    width: 108px !important;
+    height: 108px !important;
+  }
+  /* 预览面板与句卡适度收紧 */
+  #sentence-score-preview { padding: 4px 10px !important; margin: 0 0 4px !important; max-height: 84px !important; }
+  .sp-rules { max-height: 3em !important; }
+  #sentence-slots-container { min-height: 92px !important; padding: 4px !important; }
+  .sentence-half { min-height: 92px !important; }
+  .sentence-mini-card { height: 92px !important; }
+  #sentence-area { padding: 4px 10px !important; }
+  #hand-cards .card, #target-cards .card, #target-cards-enemy .card {
+    height: clamp(85px, 16vh, 115px) !important;
+  }
+  #hand-area { padding: 3px 8px 5px !important; }
+}

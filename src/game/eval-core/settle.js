@@ -46,6 +46,17 @@ export function settle(ir) {
     }
     effects.aoe = false;
   }
+  // 驱虎吞狼:敌 A 打敌 B —— 伤害重定向到宾语敌人 B(默认 targetEnemyIdx 取
+  // 句中第一个敌卡=主语 A,会打错人)。祈使句优先级更高,不覆盖它的重定向。
+  if (effects._enemyVsEnemy && !effects._imperative) {
+    const eve = effects._enemyVsEnemy;
+    const dst = G.enemies[eve.dstIdx];
+    if (dst && dst.hp > 0) {
+      effects.targetEnemyIdx = eve.dstIdx;
+      effects.aoe = false;
+      effects.multiTargetIndices = null;
+    }
+  }
   effects.block = Math.floor(effects.block * totalMult * finalExcDefense);
   effects.heal = Math.floor(effects.heal * totalMult * finalExcHeal);
   if (effects.selfHarm) effects.selfHarmDmg = Math.floor(effects.selfHarmDmg * totalMult);

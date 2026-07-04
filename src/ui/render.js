@@ -140,7 +140,12 @@ function addEnemyTarget(idx, enemy) {
   if (G.sentence.some(c => c._isEnemyTarget && c._enemyIdx === idx)) return;
   const hasHeConn = G.sentence.some(c => c.multiTarget);
   const hasComma = G.sentence.some(c => c.pos === 'punctuation' && c.punctType === 'comma');
-  if (hasHeConn || hasComma) {
+  // 驱虎吞狼:句中已有敌名卡且它在谓语之前(= 它是主语),此时点第二个敌人
+  // 是在组「敌A V 敌B」——追加为宾语,不再互斥替换。
+  const vIdx = G.sentence.findIndex(c => c.pos === 'verb' || c.pos === 'special');
+  const firstEnemyAt = G.sentence.findIndex(c => c._isEnemyTarget);
+  const eveBuilding = vIdx >= 0 && firstEnemyAt >= 0 && firstEnemyAt < vIdx;
+  if (hasHeConn || hasComma || eveBuilding) {
     G.sentence = G.sentence.filter(c => !c._isSelfTarget);
   } else {
     G.sentence = G.sentence.filter(c => !c._isEnemyTarget && !c._isSelfTarget);

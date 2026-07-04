@@ -5,9 +5,9 @@ import { playSFX, initAudio, playAmbientMusic, playAmbientMusicDeferred, playCom
 import { VFX } from '../ui/vfx.js';
 import { WORD_DEFS, makeCard, createStarterDeck, randomCard, randomCardWeighted } from '../data/cards.js';
 import { showScreen, renderCombat, createCardElement, renderChantedSentence } from '../ui/render.js';
-import { playChantPuppetAnim, playEnemyPuppetAnim, IMPACT_MS, playBestVerseReplay, stopBestVerseReplay } from '../ui/puppets.js';
+import { playChantPuppetAnim, playEnemyPuppetAnim, playEnemyVsEnemyAnim, IMPACT_MS, playBestVerseReplay, stopBestVerseReplay } from '../ui/puppets.js';
 import { generateCharSVG } from '../ui/svgArt.js';
-import { dealDamageToPlayer, dealDamageToEnemy, checkEnemies } from './damage.js';
+import { dealDamageToPlayer, dealDamageToEnemy, checkEnemies, resetVictoryGuard } from './damage.js';
 import { resetCreativity, recordChantCreativity } from './creativity.js';
 import { generateMap, renderMap } from './map.js';
 import { CARD_PACKS, packName, packDesc } from '../data/packs.js';
@@ -66,6 +66,7 @@ export function startGame() {
 // COMBAT
 // ============================================================
 export function startCombat(enemyDefs) {
+  resetVictoryGuard();
   G.combatCount = (G.combatCount || 0) + 1;
   const isBoss = enemyDefs.some(e => e.type === 'boss');
   // 同一 act 内越深越强:用本 act 已深入层数(currentRow)做缩放。boss 数值手调,不缩放。
@@ -536,6 +537,8 @@ export function chantSentence() {
     G._continuityStreak = (result && result.effects && result.effects._continuity)
       ? result.effects._continuity.streak : 0;
     playChantPuppetAnim(result.effects);
+    // 驱虎吞狼:倒戈敌人的冲撞小剧场与主动画并行,命中帧同拍。
+    if (result.effects._enemyVsEnemy) playEnemyVsEnemyAnim(result.effects._enemyVsEnemy);
     // 伤害与木偶命中帧同拍落地(和敌方回合同一契约, 见 puppets.js 顶部注释):
     // 飘字/屏震/泼墨在"戳中"那一帧爆发, 浮层只负责文字解说, 关闭时才判胜负。
     setTimeout(() => {

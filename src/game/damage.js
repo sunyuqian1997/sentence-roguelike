@@ -106,6 +106,16 @@ export function dealDamageToPlayer(amount, source) {
   if (G.hp <= 0) setTimeout(gameOver, 500);
 }
 
+// 防重入:多段伤害/co-actor 补刀会在同一次胜利里多次调 checkEnemies,
+// 每次都 setTimeout(combatVictory) → 胜利结算(含小调)重复触发。
+// 只调度一次;新战斗开始时由 resetVictoryGuard 复位。
+let _victoryScheduled = false;
+export function resetVictoryGuard() { _victoryScheduled = false; }
+
 export function checkEnemies() {
-  if (G.enemies.every(e => e.hp <= 0)) setTimeout(combatVictory, 600);
+  if (_victoryScheduled) return;
+  if (G.enemies.every(e => e.hp <= 0)) {
+    _victoryScheduled = true;
+    setTimeout(combatVictory, 600);
+  }
 }

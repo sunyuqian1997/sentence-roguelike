@@ -109,6 +109,44 @@ export const CONSTRUCTIONS = [
     },
   },
   {
+    // 驱虎吞狼: [敌A NP] + [修饰≤2] V(攻击) + [敌B NP],A≠B —— 敌名卡当主语,
+    // 驱使敌人 A 去打敌人 B("纸鬼碎残句怪")。伤害重定向到宾语 B(settle 消费
+    // _enemyVsEnemy),A 只负责出手的小剧场(puppets.playEnemyVsEnemyAnim)。
+    // 检测在 gei_imperative 之后:「纸鬼给我戳」由祈使句先接走,互不抢。
+    id: 'enemy_vs_enemy',
+    label: '🐯 驱虎吞狼',
+    detect(ctx) {
+      const cards = ctx.cards;
+      for (let i = 0; i < cards.length; i++) {
+        const c = cards[i];
+        if (!c || !c._isEnemyTarget) continue;
+        const verbIdx = verbAfter(cards, i + 1);
+        if (verbIdx < 0) continue;
+        // 谓语后第一个实词若是另一个敌人 → 命中句式
+        let mods = 0;
+        for (let a = verbIdx + 1; a < cards.length; a++) {
+          const ac = cards[a];
+          if (!ac) break;
+          if (ac.pos === 'modifier' && mods < 2) { mods++; continue; }
+          if (ac.pos === 'punctuation' || ac.pos === 'exclamation') continue;
+          if (ac._isEnemyTarget && ac._enemyIdx !== c._enemyIdx) {
+            return { srcIdx: c._enemyIdx, dstIdx: ac._enemyIdx,
+                     srcWord: c.word, dstWord: ac.word, verbIdx };
+          }
+          break;
+        }
+      }
+      return null;
+    },
+    apply(ctx, m) {
+      ctx.constructionGrammarMult *= 1.15;
+      ctx.effects._enemyVsEnemy = {
+        srcIdx: m.srcIdx, dstIdx: m.dstIdx, srcWord: m.srcWord, dstWord: m.dstWord,
+      };
+      ctx.grammarNotes.push(`🐯 驱虎吞狼 ×1.15 — ${m.srcWord}倒戈打${m.dstWord}`);
+    },
+  },
+  {
     // 工具格状语: 用 + 器物NP + [修饰≤2] V — "我用猫戳纸鬼"。
     // 器物 = 用后第一个非修饰的名词卡(主/宾词性,非敌方目标、非我)。
     // 成句性无需改动:未知连词「用」按 COORD 折叠 NP-用-NP → NP,天然放行。
