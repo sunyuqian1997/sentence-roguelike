@@ -717,8 +717,10 @@ body { font-family: var(--font-pixel); }
     width: 100%; height: 100%;
     object-fit: cover; object-position: top;
   }
-  .standee-name { font-size: 0.72rem !important; padding: 0 8px; margin-top: 2px; }
+  .standee-name { font-size: 0.72rem !important; padding: 0 8px; margin-top: 5px; }
   .standee-hp { padding: 1px 8px; font-size: 0.8rem; }
+  /* 卡牌说明在矮卡里放不下三行:字再小半号,能多读一行 */
+  #hand-cards .card .card-effect-bar { font-size: 0.6rem !important; line-height: 1.3 !important; }
   /* 敌人卡:立绘缩到 64px,压内边距,保证 名字/意图/血条 完整可见 */
   #stage-enemy .enemy { max-width: 150px; padding: 3px 6px 5px !important; gap: 2px; }
   #stage-enemy .enemy .enemy-portrait,
