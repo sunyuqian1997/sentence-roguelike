@@ -800,3 +800,46 @@ body { font-family: var(--font-pixel); }
   }
   #hand-area { padding: 3px 8px 5px !important; }
 }
+
+/* ============================================================
+   中间档构图收口(431–767 通用):100% 缩放时舞台纸面和造句区
+   横向拉满、棍人被扯到两端,构图松散难受。给两者 vw 上限并居中,
+   对齐用户 76% 缩放时的"居中留白"构图(造句区 ≈ 舞台纸面宽)。
+   ============================================================ */
+@media (min-height: 431px) and (max-height: 767px) {
+  #puppet-stage {
+    max-width: 62vw;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  #sentence-area {
+    max-width: 72vw;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  /* 双敌及以上:敌卡列高度装不下两张全尺寸卡 —— 信息优先于立绘:
+     portrait 缩到 36px、藏血量数字(血条保留)、列改顶部对齐防滚动错位 */
+  #enemy-area:has(.enemy:nth-child(2)) { justify-content: flex-start !important; align-content: flex-start !important; }
+  #enemy-area:has(.enemy:nth-child(2)) .enemy { padding: 2px 5px 4px !important; gap: 1px; }
+  #stage-enemy #enemy-area:has(.enemy:nth-child(2)) .enemy .enemy-portrait,
+  #stage-enemy #enemy-area:has(.enemy:nth-child(2)) .enemy .enemy-portrait-img {
+    width: 30px !important;
+    height: 30px !important;
+  }
+  #stage-enemy #enemy-area:has(.enemy:nth-child(2)) { gap: 4px !important; }
+  #enemy-area:has(.enemy:nth-child(2)) .enemy-name { line-height: 1.15 !important; }
+  #enemy-area:has(.enemy:nth-child(2)) .enemy-intent { font-size: 0.6rem !important; padding: 0 4px !important; }
+  #enemy-area:has(.enemy:nth-child(2)) .enemy-name { font-size: 0.68rem !important; }
+  #enemy-area:has(.enemy:nth-child(2)) .enemy-hp-text { display: none !important; }
+}
+@media (min-height: 580px) and (max-height: 767px) {
+  #stage-enemy #enemy-area:has(.enemy:nth-child(2)) .enemy .enemy-portrait,
+  #stage-enemy #enemy-area:has(.enemy:nth-child(2)) .enemy .enemy-portrait-img {
+    width: 50px !important;
+    height: 50px !important;
+  }
+  #stage-enemy #enemy-area:has(.enemy:nth-child(2)) { gap: 4px !important; }
+  #enemy-area:has(.enemy:nth-child(2)) { justify-content: flex-start !important; }
+  #enemy-area:has(.enemy:nth-child(2)) .enemy { padding: 3px 6px 5px !important; gap: 2px; }
+  #enemy-area:has(.enemy:nth-child(2)) .enemy-hp-text { display: none !important; }
+}
