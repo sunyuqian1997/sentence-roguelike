@@ -14,6 +14,7 @@ import { attachSentenceDrag, attachHandDrag } from './dragSort.js';
 // Puppet animations live in ./puppets.js; re-export for legacy importers.
 export { updatePuppets, playChantPuppetAnim, playEnemyPuppetAnim } from './puppets.js';
 import { getEffectiveCost, getSentenceCost, addToSentence, removeSentenceWord, updateChantButton, tryAddCard } from '../game/combat.js';
+import { uiScale, toGameRect, DESIGN_W, DESIGN_H } from './uiScale.js';
 
 // ============================================================
 // SCREEN
@@ -371,12 +372,14 @@ export function renderHand() {
   });
   // FLIP play 阶段:有旧位置的卡先钉回旧位,下一帧滑到新位。
   // in-sentence 卡有自己的 transform(淡出翻转),不参与,避免打架。
+  // 位移量 ÷uiScale:屏幕量出的距离要换算成缩放画布内的 transform 值。
+  const kScale = uiScale();
   handEl.querySelectorAll('.card').forEach(el => {
     if (el.classList.contains('in-sentence')) return;
     const old = el._card && prevRects.get(el._card);
     if (!old) return; // 新抽的卡走原有入场动画
     const now = el.getBoundingClientRect();
-    const dx = old.left - now.left, dy = old.top - now.top;
+    const dx = (old.left - now.left) / kScale, dy = (old.top - now.top) / kScale;
     if (Math.abs(dx) < 2 && Math.abs(dy) < 2) return;
     el.style.transition = 'none';
     el.style.transform = `translate(${dx}px, ${dy}px)`;
@@ -520,16 +523,18 @@ export function showTooltip(e, card) {
   tt.querySelector('.tt-flavor').textContent = card.flavor ? `"${card.flavor}"` : '';
   tt.style.display = 'block';
   tt.style.transform = '';
-  // Measure after content is set so height is accurate
-  const ttRect = tt.getBoundingClientRect();
-  const r = e.currentTarget.getBoundingClientRect();
+  // Measure after content is set so height is accurate.
+  // tooltip 在 #game 缩放画布内(fixed 锚定到画布)→ 全程用设计坐标,
+  // 边界钳制用 DESIGN_W/H 而不是窗口尺寸。
+  const ttRect = toGameRect(tt.getBoundingClientRect());
+  const r = toGameRect(e.currentTarget.getBoundingClientRect());
   // Default: above the card, horizontally centered on it
   let left = r.left + r.width / 2 - ttRect.width / 2;
   let top = r.top - ttRect.height - 10;
   // If above would clip, fall back to below
-  if (top < 5) top = r.bottom + 10;
+  if (top < 5) top = r.top + r.height + 10;
   // Clamp horizontal
-  if (left + ttRect.width > window.innerWidth - 5) left = window.innerWidth - ttRect.width - 5;
+  if (left + ttRect.width > DESIGN_W - 5) left = DESIGN_W - ttRect.width - 5;
   if (left < 5) left = 5;
   tt.style.left = left + 'px';
   tt.style.top = top + 'px';

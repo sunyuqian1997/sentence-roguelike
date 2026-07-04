@@ -1,3 +1,9 @@
+import { toGameRect } from './uiScale.js';
+
+// 挂"跟随游戏元素"的浮层进 #game(缩放画布内,设计坐标),
+// 全屏氛围类特效(涟漪/闪光/红晕)仍挂 body 盖满真实窗口。
+const gameLayer = () => document.getElementById('game') || document.body;
+
 export const VFX = {
   shake(intensity = 'sm') {
     const el = document.getElementById('game');
@@ -10,7 +16,7 @@ export const VFX = {
 
   damageNum(element, text, color, size = 2.2) {
     if (!element) return;
-    const rect = element.getBoundingClientRect();
+    const rect = toGameRect(element.getBoundingClientRect());
     const d = document.createElement('div');
     d.className = 'dmg-num-v2';
     d.textContent = text;
@@ -18,7 +24,7 @@ export const VFX = {
     d.style.fontSize = size + 'rem';
     d.style.left = (rect.left + rect.width / 2) + 'px';
     d.style.top = (rect.top + rect.height / 2) + 'px';
-    document.body.appendChild(d);
+    gameLayer().appendChild(d);
     setTimeout(() => d.remove(), 950);
   },
 
@@ -52,7 +58,7 @@ export const VFX = {
     setTimeout(() => el.remove(), 600);
   },
 
-  // 落卡墨渍(Maker 生成贴图):在 (x,y) 溅开一朵墨花,随机旋转防重复感。
+  // 落卡墨渍(Maker 生成贴图):在设计坐标 (x,y) 溅开一朵墨花,随机旋转防重复感。
   inkSplat(x, y, size = 90) {
     const el = document.createElement('div');
     el.className = 'ink-splat-fx';
@@ -60,7 +66,7 @@ export const VFX = {
     el.style.left = (x - size / 2) + 'px';
     el.style.top = (y - size / 2) + 'px';
     el.style.setProperty('--splat-rot', Math.floor(Math.random() * 360) + 'deg');
-    document.body.appendChild(el);
+    gameLayer().appendChild(el);
     setTimeout(() => el.remove(), 550);
   },
 

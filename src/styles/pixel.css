@@ -183,8 +183,8 @@ body { font-family: var(--font-pixel); }
 }
 #stage-enemy .enemy .enemy-portrait,
 #stage-enemy .enemy .enemy-portrait-img {
-  width: clamp(120px, 13vw, 170px) !important;
-  height: clamp(120px, 13vw, 170px) !important;
+  width: 161.2px !important;
+  height: 161.2px !important;
   font-size: 4rem;
 }
 /* With 2+ enemies the column gets tight — shrink each hard & top-align so both
@@ -193,8 +193,8 @@ body { font-family: var(--font-pixel); }
 #stage-enemy > #enemy-area:has(.enemy:nth-child(2)) .enemy { padding: 3px 8px 5px !important; gap: 2px !important; }
 #stage-enemy > #enemy-area:has(.enemy:nth-child(2)) .enemy .enemy-portrait,
 #stage-enemy > #enemy-area:has(.enemy:nth-child(2)) .enemy .enemy-portrait-img {
-  width: clamp(56px, 6vw, 76px) !important;
-  height: clamp(56px, 6vw, 76px) !important;
+  width: 74.4px !important;
+  height: 74.4px !important;
   font-size: 1.8rem;
 }
 #stage-enemy > #enemy-area:has(.enemy:nth-child(2)) .enemy .enemy-name { font-size: 0.85rem !important; }
@@ -469,8 +469,8 @@ body { font-family: var(--font-pixel); }
 
 /* ---- Hand tiles sized for a comfortable single row ---- */
 #hand-cards .card {
-  width: clamp(78px, 8vw, 100px) !important;
-  height: clamp(112px, 12vw, 140px) !important;
+  width: 99.2px !important;
+  height: 140px !important;
 }
 #hand-controls { padding: 6px 14px 0; }
 
@@ -487,8 +487,8 @@ body { font-family: var(--font-pixel); }
 #target-cards .target-card,
 #target-cards-enemy .target-card {
   position: relative;
-  width: clamp(70px, 8vw, 88px) !important;
-  height: clamp(100px, 13vw, 124px) !important;
+  width: 88px !important;
+  height: 124px !important;
 }
 .target-card.target-self  { border-color: var(--us) !important; box-shadow: 2px 2px 0 rgba(62,124,166,0.4) !important; }
 .target-card.target-self .card-word { color: var(--us) !important; }
@@ -643,54 +643,7 @@ body { font-family: var(--font-pixel); }
     url('/scenes/zhanchang.jpg') center 40% / cover no-repeat,
     #EADCD6 !important;
 }
-/* 矮屏(与下方紧凑档同阈值):道具是固定像素尺寸,52px 舞台里太大 — 整层缩小贴地。 */
-@media (max-height: 430px) {
-  .scenery-layer { transform: scale(0.5); transform-origin: 50% 100%; }
-}
 
-/* ============================================================
-   短视口紧凑档 (iPhone 横屏 812×375 等) — 修「棍人剧场被压成 0 高」。
-   诉求排序:手牌能点 > 造句区能读 > 棍人剧场必须可见(它是气泡/姿态反馈的家)。
-   给 stage 硬地板,其余各段按比例瘦身,总账 ≤375 时依然成立。
-   ============================================================ */
-@media (max-height: 430px) {
-  #combat-stage { min-height: 70px !important; }
-  .puppet { height: clamp(52px, 86%, 240px) !important; }
-  #puppet-stage { min-height: 52px; padding: 2px 20px 2px !important; }
-  /* 两侧大立绘列在矮屏没有立足空间(会压成色条),整列让位给中央棍人台 */
-  .stage-side { display: none !important; }
-  #combat-stage { grid-template-columns: 1fr !important; }
-  /* 造句坞瘦身:卡再小一号,说明字幕让位 */
-  .sentence-half { grid-auto-columns: 62px !important; min-height: 72px !important; }
-  .sentence-card-wrap { width: 62px; }
-  .sentence-mini-card {
-    width: 62px !important;
-    height: 70px !important;
-    min-width: 62px !important;
-  }
-  .sentence-mini-card .card-word { font-size: 0.95rem !important; }
-  .meaning-caption { display: none !important; }
-  #sentence-area { padding: 2px 8px !important; min-height: 0 !important; }
-  #sentence-slots-container { padding: 3px !important; }
-  /* 手牌瘦身 */
-  #hand-cards .card, #target-cards .card, #target-cards-enemy .card {
-    width: 58px !important;
-    height: 72px !important;
-    min-width: 58px !important;
-  }
-  #hand-cards .card .card-word { font-size: 0.9rem !important; }
-  #hand-cards .card .card-effect-bar { display: none !important; }
-  #hand-area { padding: 2px 8px 3px !important; }
-  #hand-controls { padding: 2px 8px 0 !important; }
-  /* 预览条只留结论行(chips+倍率),规则明细/对仗预览让位给手牌 */
-  #sentence-score-preview .sp-rules { display: none !important; }
-  #sentence-score-preview { font-size: 0.72rem; }
-  #duizhang-preview { display: none !important; }
-  #sentence-topbar { margin: 0 !important; }
-  #sentence-dock { padding: 1px 0 !important; }
-  /* 顶栏压扁 */
-  #combat-top { padding: 2px 10px !important; min-height: 0 !important; }
-}
 
 /* ============================================================
    毛笔光标(Maker 生成) — 默认指针换成蘸墨毛笔,笔尖为热点。
@@ -701,145 +654,80 @@ body { font-family: var(--font-pixel); }
   cursor: url('/cursor_brush.png') 5 27, auto;
 }
 
-/* ============================================================
-   中间档 431–649px 高(如 Mac 笔记本 100% 缩放的浏览器视口)。
-   紧凑档(≤430)整列隐藏立绘,全尺寸档需要 ≥650;这个区间此前无人管,
-   立绘卡被压塌成色条、敌卡溢出裁切。策略:两侧立绘列保留但按高度瘦身,
-   给舞台行一个能装下瘦身立绘卡的硬地板,造句/手牌相应让位。
-   ============================================================ */
-@media (min-height: 431px) and (max-height: 579px) {
-  #combat-stage { min-height: 156px !important; }
-  /* 顶栏压薄 */
-  #combat-top { padding: 3px 10px !important; min-height: 0 !important; }
-  /* 玩家 standee:立绘有底线高度,超出部分裁切而不是把图压扁 */
-  #player-char-card { min-height: 88px; width: 86%; overflow: hidden; }
-  #player-char-card img {
-    width: 100%; height: 100%;
-    object-fit: cover; object-position: top;
-  }
-  .standee-name { font-size: 0.72rem !important; padding: 0 8px; margin-top: 5px; }
-  .standee-hp { padding: 1px 8px; font-size: 0.8rem; }
-  /* 卡牌说明在矮卡里放不下三行:字再小半号,能多读一行 */
-  #hand-cards .card .card-effect-bar { font-size: 0.6rem !important; line-height: 1.3 !important; }
-  /* 敌人卡:立绘缩到 64px,压内边距,保证 名字/意图/血条 完整可见 */
-  #stage-enemy .enemy { max-width: 150px; padding: 3px 6px 5px !important; gap: 2px; }
-  #stage-enemy .enemy .enemy-portrait,
-  #stage-enemy .enemy .enemy-portrait-img {
-    width: 58px !important;
-    height: 58px !important;
-  }
-  .enemy-name { font-size: 0.76rem !important; }
-  .enemy-intent { font-size: 0.7rem !important; padding: 1px 6px !important; }
-  .enemy-hp-bar { height: 8px; }
-  .enemy-hp-text { font-size: 0.66rem !important; line-height: 1.1 !important; }
-  /* 造句区让位:空态不用摆那么大;预览条压薄 */
-  #sentence-area { padding: 3px 10px !important; min-height: 0 !important; }
-  #sentence-topbar { margin: 0 0 2px !important; }
-  #sentence-label { font-size: 0.72rem !important; padding: 2px 0 !important; }
-  #sentence-slots-container { min-height: 64px !important; padding: 3px !important; }
-  .sentence-half { min-height: 64px !important; }
-  /* 预览面板(费/伤/倍率 chips + 规则行)是把手牌顶出屏幕的元凶:整体压扁 */
-  #sentence-score-preview {
-    padding: 2px 8px !important;
-    margin: 0 0 3px !important;
-    gap: 2px !important;
-    max-height: 64px !important;
-  }
-  .sp-chip, .sp-cost { font-size: 0.72rem !important; }
-  .sp-mult { font-size: 0.85rem !important; padding: 0 6px !important; }
-  .sp-rules { margin-top: 1px !important; padding-top: 2px !important; max-height: 2.2em !important; }
-  .sp-rule { font-size: 0.7rem !important; }
-  #duizhang-preview { font-size: 0.64rem !important; margin-top: 1px !important; }
-  /* 句区迷你卡矮一号,和手牌卡同比例 */
-  .sentence-card-wrap { width: 70px; }
-  .sentence-mini-card {
-    width: 70px !important;
-    height: 74px !important;
-    min-width: 70px !important;
-  }
-  .sentence-mini-card .card-word { font-size: 1.05rem !important; }
-  .meaning-caption { display: none !important; }
-  /* 坞外壳与按钮行也收一格 */
-  #sentence-dock { padding: 2px 0 !important; }
-  #hand-controls .btn { padding: 5px 16px !important; font-size: 0.85rem !important; }
-  #combat-top .btn { padding: 2px 8px !important; font-size: 0.8rem !important; }
-  /* 手牌:矮一号,保证吟诵/结束按钮完整可见 */
-  #hand-cards .card, #target-cards .card, #target-cards-enemy .card {
-    height: clamp(80px, 15.5vh, 108px) !important;
-  }
-  #hand-area { padding: 2px 8px 4px !important; }
-  #hand-controls { padding: 1px 8px 0 !important; }
-}
+
+
 
 /* ============================================================
-   次中间档 580–767px 高:同样的"预览条撑开造句坞→舞台被饿死"病,
-   但空间余量更大,用更宽松的尺寸,保住接近全尺寸的观感。
+   双敌及以上:敌卡列装不下两张全尺寸卡 —— 信息优先于立绘。
+   固定设计分辨率下常驻生效(uiScale.js),无需媒体查询。
    ============================================================ */
-@media (min-height: 580px) and (max-height: 767px) {
-  #combat-stage { min-height: 232px !important; }
-  #player-char-card { min-height: 140px; overflow: hidden; }
-  #player-char-card img {
-    width: 100%; height: 100%;
-    object-fit: cover; object-position: top;
-  }
-  #stage-enemy .enemy { max-width: 180px; padding: 5px 8px 7px !important; gap: 3px; }
-  #stage-enemy .enemy .enemy-portrait,
-  #stage-enemy .enemy .enemy-portrait-img {
-    width: 108px !important;
-    height: 108px !important;
-  }
-  /* 预览面板与句卡适度收紧 */
-  #sentence-score-preview { padding: 4px 10px !important; margin: 0 0 4px !important; max-height: 84px !important; }
-  .sp-rules { max-height: 3em !important; }
-  #sentence-slots-container { min-height: 92px !important; padding: 4px !important; }
-  .sentence-half { min-height: 92px !important; }
-  .sentence-mini-card { height: 92px !important; }
-  #sentence-area { padding: 4px 10px !important; }
-  #hand-cards .card, #target-cards .card, #target-cards-enemy .card {
-    height: clamp(85px, 16vh, 115px) !important;
-  }
-  #hand-area { padding: 3px 8px 5px !important; }
+#stage-enemy #enemy-area:has(.enemy:nth-child(2)) { gap: 4px !important; justify-content: flex-start !important; }
+#enemy-area:has(.enemy:nth-child(2)) .enemy { padding: 2px 6px 3px !important; gap: 1px; }
+#stage-enemy #enemy-area:has(.enemy:nth-child(2)) .enemy .enemy-portrait,
+#stage-enemy #enemy-area:has(.enemy:nth-child(2)) .enemy .enemy-portrait-img {
+  width: 46px !important;
+  height: 46px !important;
 }
+#enemy-area:has(.enemy:nth-child(2)) .enemy-intent { font-size: 0.66rem !important; padding: 0 4px !important; }
+#enemy-area:has(.enemy:nth-child(2)) .enemy-name { font-size: 0.72rem !important; line-height: 1.15 !important; }
+#enemy-area:has(.enemy:nth-child(2)) .enemy-hp-text { display: none !important; }
 
 /* ============================================================
-   中间档构图收口(431–767 通用):100% 缩放时舞台纸面和造句区
-   横向拉满、棍人被扯到两端,构图松散难受。给两者 vw 上限并居中,
-   对齐用户 76% 缩放时的"居中留白"构图(造句区 ≈ 舞台纸面宽)。
+   固定画布战斗布局定稿(uiScale.js 设计分辨率 1240×640)。
+   纵向预算:顶栏40 + 舞台244 + 造句坞askr176 + 手牌180 = 640。
+   各段高度定死:预览 chips 再多也只在自己的格子里滚动,
+   永远顶不走吟诵按钮;舞台永远装得下立绘卡。
    ============================================================ */
-@media (min-height: 431px) and (max-height: 767px) {
-  #puppet-stage {
-    max-width: 62vw;
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
-  #sentence-area {
-    max-width: 72vw;
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
-  /* 双敌及以上:敌卡列高度装不下两张全尺寸卡 —— 信息优先于立绘:
-     portrait 缩到 36px、藏血量数字(血条保留)、列改顶部对齐防滚动错位 */
-  #enemy-area:has(.enemy:nth-child(2)) { justify-content: flex-start !important; align-content: flex-start !important; }
-  #enemy-area:has(.enemy:nth-child(2)) .enemy { padding: 2px 5px 4px !important; gap: 1px; }
-  #stage-enemy #enemy-area:has(.enemy:nth-child(2)) .enemy .enemy-portrait,
-  #stage-enemy #enemy-area:has(.enemy:nth-child(2)) .enemy .enemy-portrait-img {
-    width: 30px !important;
-    height: 30px !important;
-  }
-  #stage-enemy #enemy-area:has(.enemy:nth-child(2)) { gap: 4px !important; }
-  #enemy-area:has(.enemy:nth-child(2)) .enemy-name { line-height: 1.15 !important; }
-  #enemy-area:has(.enemy:nth-child(2)) .enemy-intent { font-size: 0.6rem !important; padding: 0 4px !important; }
-  #enemy-area:has(.enemy:nth-child(2)) .enemy-name { font-size: 0.68rem !important; }
-  #enemy-area:has(.enemy:nth-child(2)) .enemy-hp-text { display: none !important; }
+#combat-top { height: 40px; min-height: 40px !important; padding: 4px 56px 4px 12px !important; }
+#combat-stage { flex: 0 0 244px !important; min-height: 244px !important; max-height: 244px !important; }
+#puppet-stage { max-width: 760px; margin-left: auto !important; margin-right: auto !important; }
+#stage-enemy .enemy { max-width: 172px; padding: 5px 8px 7px !important; gap: 3px; }
+#stage-enemy .enemy .enemy-portrait,
+#stage-enemy .enemy .enemy-portrait-img { width: 112px !important; height: 112px !important; }
+#player-char-card { min-height: 120px; overflow: hidden; }
+#player-char-card img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+
+#combat-screen > #sentence-dock { flex: 0 0 176px !important; height: 176px; overflow: hidden; padding: 4px 0 !important; }
+#sentence-area {
+  width: 920px; max-width: 920px;
+  margin: 0 auto !important;
+  height: 168px;
+  padding: 4px 10px !important; min-height: 0 !important;
+  display: flex; flex-direction: column;
 }
-@media (min-height: 580px) and (max-height: 767px) {
-  #stage-enemy #enemy-area:has(.enemy:nth-child(2)) .enemy .enemy-portrait,
-  #stage-enemy #enemy-area:has(.enemy:nth-child(2)) .enemy .enemy-portrait-img {
-    width: 50px !important;
-    height: 50px !important;
-  }
-  #stage-enemy #enemy-area:has(.enemy:nth-child(2)) { gap: 4px !important; }
-  #enemy-area:has(.enemy:nth-child(2)) { justify-content: flex-start !important; }
-  #enemy-area:has(.enemy:nth-child(2)) .enemy { padding: 3px 6px 5px !important; gap: 2px; }
-  #enemy-area:has(.enemy:nth-child(2)) .enemy-hp-text { display: none !important; }
+#sentence-topbar { margin: 0 0 3px !important; flex: 0 0 auto; }
+#sentence-score-preview {
+  max-height: 58px !important;
+  overflow-y: auto !important;
+  margin: 0 0 3px !important;
+  padding: 2px 8px !important;
+  gap: 2px !important;
 }
+#sentence-slots-container { flex: 1 1 auto; min-height: 0 !important; padding: 4px !important; }
+.sentence-half { min-height: 0 !important; }
+.sentence-card-wrap { width: 84px; }
+.sentence-mini-card { width: 84px !important; height: 92px !important; min-width: 84px !important; }
+.sentence-mini-card .card-word { font-size: 1.15rem !important; }
+.meaning-caption { display: none !important; }
+
+#hand-area { flex: 0 0 180px !important; height: 180px; padding: 4px 10px 6px !important; overflow: hidden; }
+#hand-cards .card, #target-cards .card, #target-cards-enemy .card {
+  width: 104px !important; height: 128px !important; min-width: 104px !important;
+}
+#hand-cards .card .card-effect-bar { font-size: 0.62rem !important; line-height: 1.3 !important; }
+#hand-controls { padding: 2px 10px 0 !important; }
+#hand-controls .btn { padding: 5px 18px !important; font-size: 0.9rem !important; }
+
+/* 手牌区 flex 列:按钮行永远钉在 180px 预算内,卡牌区吃剩余高度 */
+#hand-area { display: flex !important; flex-direction: column !important; }
+#hand-area > * { flex: 0 0 auto; }
+#hand-cards { flex: 1 1 auto !important; min-height: 0 !important; align-items: flex-start !important; overflow: visible; }
+#hand-cards .card, #target-cards .card, #target-cards-enemy .card {
+  height: 122px !important;
+}
+#hand-controls { flex: 0 0 auto !important; }
+
+/* 手牌预算最终对账:4 + 卡116 + 控制行38 + 余量 = 180 内 */
+#hand-cards .card, #target-cards .card, #target-cards-enemy .card { height: 116px !important; }
+#hand-controls { padding: 1px 10px 0 !important; }
+#hand-controls .btn { padding: 4px 16px !important; font-size: 0.88rem !important; min-height: 0 !important; }

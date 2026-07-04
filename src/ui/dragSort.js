@@ -11,6 +11,7 @@ import { playSFX } from '../game/audio.js';
 import { renderCombat, hideTooltip } from './render.js';
 import { addToSentenceAt, removeSentenceWord } from '../game/combat.js';
 import { VFX } from './vfx.js';
+import { uiScale, toGameRect } from './uiScale.js';
 
 const THRESHOLD = 6;          // px of travel before a press becomes a drag
 const LAND_MS = 170;          // ghost → slot landing flight
@@ -24,14 +25,17 @@ const wrapsIn = () =>
   [...document.querySelectorAll('#sentence-slots-container .sentence-card-wrap')];
 
 // Distance between adjacent slot left-edges = card width + flex gap.
+// 返回"设计坐标"距离(uiScale 固定画布):量出的屏幕距离要 ÷ 缩放系数,
+// 因为它会被用作 #game 内部的 transform 值。
 function slotPitch(wraps, fallbackEl) {
+  const k = uiScale();
   if (wraps.length >= 2) {
     const a = wraps[0].getBoundingClientRect();
     const b = wraps[1].getBoundingClientRect();
-    if (b.left > a.left) return b.left - a.left;
+    if (b.left > a.left) return (b.left - a.left) / k;
   }
   const el = wraps[0] || fallbackEl;
-  return el ? el.getBoundingClientRect().width + 10 : 90;
+  return el ? el.getBoundingClientRect().width / k + 10 : 90;
 }
 
 // Is point p "after" element center c, reading order (handles a wrapped row).
@@ -52,7 +56,9 @@ function insertIndexAt(p, els) {
 }
 
 function makeGhost(sourceEl) {
-  const rect = sourceEl.getBoundingClientRect();
+  // 幽灵挂进 #game(而非 body):它在缩放画布内,坐标/尺寸全用设计单位,
+  // 字号与源卡天然一致,不需要任何缩放补偿。
+  const rect = toGameRect(sourceEl.getBoundingClientRect());
   const ghost = sourceEl.cloneNode(true);
   // the source just got its stay-behind fade — don't clone that onto the ghost
   ghost.classList.remove('drag-source', 'in-sentence', 'await-land');
@@ -63,7 +69,7 @@ function makeGhost(sourceEl) {
     margin: '0', zIndex: 9500, pointerEvents: 'none', transformOrigin: 'top left',
     animation: 'none', // don't replay the slot-enter fade on the ghost
   });
-  document.body.appendChild(ghost);
+  (document.getElementById('game') || document.body).appendChild(ghost);
   ghost._base = rect;
   // Lift happens on the inner card with its own transition so pickup eases in
   // while the ghost itself tracks the pointer with zero lag.
@@ -74,15 +80,18 @@ function makeGhost(sourceEl) {
 }
 
 function moveGhost(ghost, e) {
-  const dx = e.clientX - active.start.x;
-  const dy = e.clientY - active.start.y;
+  // 指针位移是屏幕单位,幽灵在设计坐标系里 → ÷ 缩放系数保持跟手
+  const k = uiScale();
+  const dx = (e.clientX - active.start.x) / k;
+  const dy = (e.clientY - active.start.y) / k;
   ghost.style.transform = `translate(${dx}px, ${dy}px)`;
 }
 
 // Fly the ghost onto targetRect (scaling if sizes differ), then reveal the
 // real card underneath with a squash-&-stretch pop.
-function landGhost(ghost, targetRect, revealEl, done) {
-  const base = ghost._base;
+function landGhost(ghost, targetScreenRect, revealEl, done) {
+  const base = ghost._base;                      // 设计坐标
+  const targetRect = toGameRect(targetScreenRect); // 屏幕 → 设计
   const k = targetRect.width / base.width;
   ghost.style.transition = `transform ${LAND_MS}ms cubic-bezier(0.2, 0.8, 0.3, 1)`;
   ghost.style.transform =

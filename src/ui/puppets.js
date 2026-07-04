@@ -13,6 +13,7 @@ import { applyMeaningsToSentence } from '../game/meanings.js';
 import { detectPredicates, resolveIdentityTrait, isCopulaPredicate, isYouCard } from '../game/poetics.js';
 import { detectSummon } from '../game/sentence.js';
 import { playSFX } from '../game/audio.js';
+import { uiScale, toGameRect } from './uiScale.js';
 import { SCENERY } from '../game/scenes.js';
 import { isEn } from '../i18n.js';
 
@@ -77,10 +78,11 @@ function impactFlash(el) {
 
 // Horizontal center-to-center distance, so the dash actually reaches the
 // opponent regardless of stage width.
+// 返回设计坐标距离(÷uiScale):它被用作缩放画布内的 transform 值。
 function gapX(from, to) {
   const a = from.getBoundingClientRect();
   const b = to.getBoundingClientRect();
-  return (b.left + b.width / 2) - (a.left + a.width / 2);
+  return ((b.left + b.width / 2) - (a.left + a.width / 2)) / uiScale();
 }
 
 // A named subject's signature icon (shown over its summoned puppet).
@@ -765,8 +767,9 @@ export function playEnemyVsEnemyAnim(eve) {
   const { enemy } = els();
   const stage = document.getElementById('puppet-stage');
   if (!enemy || !stage || !eve) return;
-  const er = enemy.getBoundingClientRect();
-  const sr = stage.getBoundingClientRect();
+  // 全部转设计坐标(uiScale 固定画布):tmp 是 stage 内的 absolute 元素。
+  const er = toGameRect(enemy.getBoundingClientRect());
+  const sr = toGameRect(stage.getBoundingClientRect());
   if (!er.width || !sr.width) return;
   const tmp = enemy.cloneNode(true);
   tmp.removeAttribute('id');

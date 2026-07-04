@@ -6,7 +6,7 @@
 .btn {
   font-family: var(--font-serif);
   font-weight: 700;
-  font-size: clamp(0.95rem, 2.5vw, 1.2rem);
+  font-size: 1.2rem;
   padding: 0.7em 2.5em;
   min-height: 44px;
   border: 1.5px solid var(--ink-light);
@@ -88,7 +88,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(14px, 3vw, 28px);
+  gap: 28px;
   padding: 12px;
   flex-wrap: wrap;
   min-height: 160px;
@@ -282,9 +282,9 @@
 
 /* --- 12. Cards --- */
 .card {
-  width: clamp(95px, 14vw, 120px);
+  width: 120px;
   min-width: 80px;
-  height: clamp(140px, 20vw, 170px);
+  height: 170px;
   border-radius: 3px;
   padding: 0;
   cursor: pointer;
@@ -428,7 +428,7 @@
 
 /* Central word — brush calligraphy */
 .card-word {
-  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-size: 2rem;
   font-weight: 900;
   color: var(--ink);
   line-height: 1.1;
@@ -461,7 +461,7 @@
 /* Punctuation — plum ink */
 .card.pos-punctuation .card-word {
   color: var(--purple);
-  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  font-size: 2.5rem;
 }
 .card.pos-punctuation.rarity-uncommon {
   box-shadow: 2px 2px 0 rgba(107, 76, 110, 0.15), 0 0 8px rgba(107, 76, 110, 0.1);
@@ -608,7 +608,7 @@
   min-height: 50px;
   padding: 4px 10px;
   font-family: var(--font-serif);
-  font-size: clamp(1.05rem, 4.4vw, 1.6rem);
+  font-size: 1.6rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   color: var(--ink);
@@ -1079,15 +1079,15 @@ body.dragging-card * { cursor: grabbing !important; }
   pointer-events: none;
 }
 .sentence-mini-card {
-  width: clamp(90px, 12vw, 115px) !important;
+  width: 115px !important;
   min-width: 80px !important;
-  height: clamp(130px, 18vw, 160px) !important;
+  height: 160px !important;
   margin: 0 !important;
   cursor: pointer !important;
   transform: none !important;
   pointer-events: none;
 }
-.sentence-mini-card .card-word { font-size: clamp(1.3rem, 2.8vw, 1.7rem) !important; }
+.sentence-mini-card .card-word { font-size: 1.7rem !important; }
 .sentence-mini-card .card-pos-tag { font-size: 0.65rem !important; padding: 2px 0 !important; }
 .sentence-mini-card .card-effect-bar { font-size: 0.6rem !important; padding: 3px 4px !important; line-height: 1.2 !important; }
 .sentence-mini-card .card-cost { width: 22px !important; height: 22px !important; font-size: 0.72rem !important; }
@@ -1170,14 +1170,14 @@ body.dragging-card * { cursor: grabbing !important; }
 #sentence-preview {
   margin-top: 6px;
   font-family: var(--font-brush);
-  font-size: clamp(1.1rem, 3.5vw, 1.3rem);
+  font-size: 1.3rem;
   color: var(--ink);
   opacity: 0.9;
   min-height: 1.4em;
   letter-spacing: 0.1em;
 }
 #sentence-score-preview {
-  font-size: clamp(0.95rem, 1.6vw, 1.15rem);
+  font-size: 1.15rem;
   color: var(--gold);
   opacity: 0.95;
   margin-top: 6px;
@@ -1195,7 +1195,7 @@ body.dragging-card * { cursor: grabbing !important; }
   color: var(--gold);
 }
 #duizhang-preview {
-  font-size: clamp(0.88rem, 1.4vw, 1.05rem);
+  font-size: 1.05rem;
   margin-top: 5px;
   min-height: 1em;
   font-family: var(--font-brush);
@@ -1254,7 +1254,7 @@ body.dragging-card * { cursor: grabbing !important; }
 #hand-cards {
   display: flex;
   justify-content: center;
-  gap: clamp(5px, 1vw, 8px);
+  gap: 8px;
   flex-wrap: nowrap;
   overflow-x: auto;
   padding: 0 4px;

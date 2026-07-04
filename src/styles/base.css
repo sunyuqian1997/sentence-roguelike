@@ -3,12 +3,13 @@
 html { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 html, body {
   width: 100%; height: 100%; overflow: hidden;
-  background: var(--paper);
+  /* 信箱留边的幕布色(游戏画布经 uiScale 等比缩放居中,余边露出 body) */
+  background: #262e3b;
   color: var(--ink);
   font-family: var(--font-serif);
-  /* Root size drives all rem sizing. Capped lower so on big/high-DPI screens at
-     100% the UI doesn't max out and overflow (was 21px → everything too big). */
-  font-size: clamp(15px, 1.5vw, 18px);
+  /* 固定设计分辨率(uiScale.js, 1240×640):rem 必须是常量,
+     视口大小只影响整体缩放系数,不再影响排版。 */
+  font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   user-select: none; -webkit-user-select: none;

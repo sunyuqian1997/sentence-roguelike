@@ -6,6 +6,7 @@ import { VFX } from '../ui/vfx.js';
 import { WORD_DEFS, makeCard, createStarterDeck, randomCard, randomCardWeighted } from '../data/cards.js';
 import { showScreen, renderCombat, createCardElement, renderChantedSentence } from '../ui/render.js';
 import { playChantPuppetAnim, playEnemyPuppetAnim, playEnemyVsEnemyAnim, IMPACT_MS, playBestVerseReplay, stopBestVerseReplay } from '../ui/puppets.js';
+import { toGameRect } from '../ui/uiScale.js';
 import { generateCharSVG } from '../ui/svgArt.js';
 import { dealDamageToPlayer, dealDamageToEnemy, checkEnemies, resetVictoryGuard } from './damage.js';
 import { resetCreativity, recordChantCreativity } from './creativity.js';
@@ -345,9 +346,10 @@ export function addToSentence(handIndex) {
   if (wouldBeForbidden(card)) { rejectForbidden(); return; }
 
   // FLIP: capture origin card rect before mutation
+  // (设计坐标:克隆挂进 #game 缩放画布,字号/尺寸与源卡天然一致)
   const handEls = document.querySelectorAll('#hand-cards .card');
   const sourceEl = handEls[handIndex];
-  const sourceRect = sourceEl ? sourceEl.getBoundingClientRect() : null;
+  const sourceRect = sourceEl ? toGameRect(sourceEl.getBoundingClientRect()) : null;
   const sourceClone = sourceEl ? sourceEl.cloneNode(true) : null;
 
   G.sentence.push(card);
@@ -362,7 +364,7 @@ export function addToSentence(handIndex) {
       const targetWrap = newSlots[newSlots.length - 1];
       if (!targetWrap) return;
       const targetCard = targetWrap.querySelector('.sentence-mini-card') || targetWrap;
-      const targetRect = targetCard.getBoundingClientRect();
+      const targetRect = toGameRect(targetCard.getBoundingClientRect());
 
       // Hide the real destination momentarily
       targetWrap.style.opacity = '0';
@@ -377,7 +379,7 @@ export function addToSentence(handIndex) {
       sourceClone.style.pointerEvents = 'none';
       sourceClone.style.transition = 'all 0.28s cubic-bezier(0.4, 0, 0.2, 1)';
       sourceClone.classList.add('card-flying');
-      document.body.appendChild(sourceClone);
+      (document.getElementById('game') || document.body).appendChild(sourceClone);
 
       requestAnimationFrame(() => {
         sourceClone.style.left = targetRect.left + 'px';

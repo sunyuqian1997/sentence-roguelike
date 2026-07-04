@@ -24,7 +24,7 @@
 }
 #title-screen h1 {
   font-family: var(--font-brush);
-  font-size: clamp(3rem, 10vw, 5.5rem);
+  font-size: 5.5rem;
   color: var(--ink);
   text-shadow:
     2px 2px 0 rgba(17,17,16,0.1),
@@ -34,7 +34,7 @@
 }
 #title-screen .subtitle {
   font-family: var(--font-serif);
-  font-size: clamp(0.9rem, 2.2vw, 1.2rem);
+  font-size: 1.2rem;
   color: var(--ink-faint);
   font-style: italic;
   margin-bottom: 2.5rem;
@@ -76,7 +76,7 @@
 
 .map-row {
   display: flex; justify-content: center;
-  gap: clamp(28px, 6vw, 44px); padding: 12px 0;
+  gap: 44px; padding: 12px 0;
   position: relative;
 }
 
@@ -292,7 +292,7 @@
 /* Fixed width (not shrink-to-fit) so the box stays put as cards are added —
    no more horizontal drift. Cards fill from the left inside it. */
 #sentence-dock > #sentence-area {
-  width: min(1180px, 97vw);
+  width: 1180px;
   flex: 0 0 auto;
 }
 
@@ -368,7 +368,7 @@
 }
 .poetry-content h2 {
   font-family: var(--font-brush); color: var(--ink);
-  font-size: clamp(1.6rem, 5vw, 2.2rem); letter-spacing: 0.3em;
+  font-size: 2.2rem; letter-spacing: 0.3em;
   margin-bottom: 8px;
 }
 .poetry-flavor {
@@ -391,7 +391,7 @@
   min-height: 36px; padding: 4px;
 }
 #poetry-preview {
-  font-family: var(--font-brush); font-size: clamp(1.2rem, 3.5vw, 1.6rem);
+  font-family: var(--font-brush); font-size: 1.6rem;
   color: var(--ink); margin-top: 8px; letter-spacing: 0.12em; min-height: 1.5em;
 }
 #poetry-score-display {
@@ -411,7 +411,7 @@
 .reward-content h2 {
   font-family: var(--font-brush);
   color: var(--gold); margin-bottom: 12px;
-  font-size: clamp(1.4rem, 4vw, 1.8rem); letter-spacing: 0.25em;
+  font-size: 1.8rem; letter-spacing: 0.25em;
 }
 .reward-cards { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin: 14px 0; }
 
@@ -422,9 +422,9 @@
   align-items: stretch;
   gap: 24px;
   text-align: center;
-  max-width: min(1100px, 94vw);
-  width: 94vw;
-  max-height: 92vh;
+  max-width: 1100px;
+  width: 1165.6px;
+  max-height: 588.8px;
 }
 .reward-col {
   flex: 1 1 0;
@@ -443,9 +443,9 @@
   .reward-content.reward-two-col {
     flex-direction: column;
     gap: 12px;
-    max-width: 96vw;
-    width: 96vw;
-    max-height: 94vh;
+    max-width: 1190.4px;
+    width: 1190.4px;
+    max-height: 601.6px;
     overflow-y: auto;
     align-items: stretch;
   }
@@ -468,7 +468,7 @@
 .rest-content h2 {
   font-family: var(--font-brush); color: var(--ink);
   margin-bottom: 8px; letter-spacing: 0.25em;
-  font-size: clamp(1.3rem, 3.5vw, 1.6rem);
+  font-size: 1.6rem;
 }
 .rest-content p { margin-bottom: 18px; font-style: italic; color: var(--ink-faint); font-size: 0.95rem; }
 .rest-options { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; }
@@ -502,7 +502,7 @@
 .event-content h2 {
   font-family: var(--font-brush); color: var(--ink);
   margin-bottom: 14px; letter-spacing: 0.2em;
-  font-size: clamp(1.2rem, 3vw, 1.5rem);
+  font-size: 1.5rem;
 }
 .event-text {
   font-style: italic; line-height: 1.8; margin-bottom: 22px;
@@ -541,7 +541,7 @@
 .shop-content h2 {
   font-family: var(--font-brush); color: var(--gold);
   margin-bottom: 6px; letter-spacing: 0.25em;
-  font-size: clamp(1.3rem, 3.5vw, 1.6rem);
+  font-size: 1.6rem;
 }
 .shop-gold { color: var(--gold); margin-bottom: 14px; font-size: 0.95rem; }
 .shop-cards {
@@ -563,7 +563,7 @@
 .end-content { text-align: center; padding: 20px; max-width: 500px; width: 90%; }
 .end-content h2 {
   font-family: var(--font-brush); color: var(--ink);
-  font-size: clamp(1.8rem, 5vw, 2.5rem); margin-bottom: 14px; letter-spacing: 0.3em;
+  font-size: 2.5rem; margin-bottom: 14px; letter-spacing: 0.3em;
 }
 
 #victory-screen .end-content h2 {
@@ -608,7 +608,7 @@
 #meta-overlay { z-index: 1100; }
 #meta-overlay h2 {
   font-family: var(--font-brush); color: var(--ink);
-  margin-bottom: 5px; font-size: clamp(1.4rem, 4vw, 1.8rem); letter-spacing: 0.25em;
+  margin-bottom: 5px; font-size: 1.8rem; letter-spacing: 0.25em;
 }
 .meta-subtitle {
   font-family: var(--font-serif);

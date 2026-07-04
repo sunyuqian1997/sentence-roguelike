@@ -1,5 +1,8 @@
 import './styles/index.css';
 
+import { initUiScale } from './ui/uiScale.js';
+initUiScale(); // 必须最先跑:后续所有渲染都发生在固定设计分辨率画布里
+
 import { G, META } from './game/state.js';
 import { toggleMute } from './game/audio.js';
 import { initInkBackground } from './ui/inkShader.js';
