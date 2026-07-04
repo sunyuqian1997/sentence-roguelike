@@ -731,3 +731,27 @@ body { font-family: var(--font-pixel); }
 #hand-cards .card, #target-cards .card, #target-cards-enemy .card { height: 116px !important; }
 #hand-controls { padding: 1px 10px 0 !important; }
 #hand-controls .btn { padding: 4px 16px !important; font-size: 0.88rem !important; min-height: 0 !important; }
+
+/* ============================================================
+   拖拽性能:幽灵/让位卡提升为合成层,pointermove 只改 transform
+   (配合 dragSort.js 的 rect 缓存,消除布局抖动导致的滞涩)
+   ============================================================ */
+.drag-ghost, .drag-ghost .card { will-change: transform; }
+.sentence-card-wrap.drag-shift, #hand-cards .drag-shift { will-change: transform; }
+
+/* ============================================================
+   造句坞显示修正:预览条只显示完整的行(不再腰斩第二行),
+   坞高 176→190(舞台 244→230 让出),迷你卡加大到 96×104。
+   ============================================================ */
+#combat-stage { flex: 0 0 230px !important; min-height: 230px !important; max-height: 230px !important; }
+#combat-screen > #sentence-dock { flex: 0 0 190px !important; height: 190px; }
+#sentence-area { height: 182px; }
+#sentence-score-preview {
+  max-height: 66px !important;   /* 恰好两整行 chips */
+  padding: 3px 22px 3px 8px !important; /* 右侧留出滚动条位,尾部 chip 不再被切 */
+}
+#sentence-slots-container { padding: 4px 6px !important; }
+.sentence-card-wrap { width: 96px; }
+.sentence-mini-card { width: 96px !important; height: 104px !important; min-width: 96px !important; }
+.sentence-mini-card .card-word { font-size: 1.25rem !important; }
+#duizhang-preview { flex: 0 0 16px; font-size: 0.66rem !important; margin: 0 !important; overflow: hidden; white-space: nowrap; }

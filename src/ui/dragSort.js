@@ -46,12 +46,18 @@ function isAfter(p, c, rowH) {
 }
 
 // Insertion index for point p among els (count of centers that come before it).
-function insertIndexAt(p, els) {
-  let idx = 0;
-  for (const el of els) {
+// 性能契约:每次 pointermove 都实时读全部卡槽 rect 会造成布局抖动(拖拽滞涩
+// 的元凶),而且让位 transform 会污染实时 rect 产生振荡。改为拖拽开始时
+// 缓存一次基准 rect(cacheRects),move 全程只查缓存。
+function cacheRects(els) {
+  return els.map(el => {
     const r = el.getBoundingClientRect();
-    if (isAfter(p, { x: r.left + r.width / 2, y: r.top + r.height / 2 }, r.height)) idx++;
-  }
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2, h: r.height };
+  });
+}
+function insertIndexAtCached(p, rects) {
+  let idx = 0;
+  for (const c of rects) if (isAfter(p, c, c.h)) idx++;
   return idx;
 }
 
@@ -168,11 +174,14 @@ export function attachSentenceDrag(wrap) {
         active.sourceEl.classList.add('drag-source');
         active.ghost = makeGhost(active.sourceEl);
         active.others.forEach(el => el.classList.add('drag-shift'));
+        // 拖拽全程用的基准 rect 只在此刻量一次(见 cacheRects 注释)
+        active.otherRects = cacheRects(active.others);
+        active.dockRect = active.dock.getBoundingClientRect();
       },
       onMove(ev) {
         moveGhost(active.ghost, ev);
         // Dragged clear of the dock = "take it back" — gap closes, ghost dims.
-        const r = active.dock.getBoundingClientRect();
+        const r = active.dockRect;
         const over = ev.clientX > r.left - DOCK_PAD && ev.clientX < r.right + DOCK_PAD
           && ev.clientY > r.top - DOCK_PAD && ev.clientY < r.bottom + DOCK_PAD;
         if (!over) {
@@ -185,7 +194,7 @@ export function attachSentenceDrag(wrap) {
         }
         active.ghost.classList.remove('ghost-removing');
         const p = { x: ev.clientX, y: ev.clientY };
-        const insertIdx = insertIndexAt(p, active.others);
+        const insertIdx = insertIndexAtCached(p, active.otherRects);
         if (insertIdx === active.insertIdx) return;
         active.insertIdx = insertIdx;
         // Open the gap: each sibling moves by (final − original) slots ∈ {-1,0,1}
@@ -268,10 +277,13 @@ export function attachHandDrag(cardEl, handIndex) {
         cardEl.classList.add('drag-source');
         active.ghost = makeGhost(cardEl);
         active.wraps.forEach(el => el.classList.add('drag-shift'));
+        // 拖拽全程用的基准 rect 只在此刻量一次(见 cacheRects 注释)
+        active.wrapRects = cacheRects(active.wraps);
+        active.dockRect = active.dock.getBoundingClientRect();
       },
       onMove(ev) {
         moveGhost(active.ghost, ev);
-        const r = active.dock.getBoundingClientRect();
+        const r = active.dockRect;
         const over = ev.clientX > r.left - DOCK_PAD && ev.clientX < r.right + DOCK_PAD
           && ev.clientY > r.top - DOCK_PAD && ev.clientY < r.bottom + DOCK_PAD;
         if (over !== active.overDock) {
@@ -280,7 +292,7 @@ export function attachHandDrag(cardEl, handIndex) {
           if (!over) { clearShifts(active.wraps); active.insertIdx = -1; }
         }
         if (!over) return;
-        const insertIdx = insertIndexAt({ x: ev.clientX, y: ev.clientY }, active.wraps);
+        const insertIdx = insertIndexAtCached({ x: ev.clientX, y: ev.clientY }, active.wrapRects);
         if (insertIdx === active.insertIdx) return;
         active.insertIdx = insertIdx;
         active.wraps.forEach((el, k) => {
