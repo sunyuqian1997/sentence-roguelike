@@ -52,6 +52,18 @@ export const VFX = {
     setTimeout(() => el.remove(), 600);
   },
 
+  // 落卡墨渍(Maker 生成贴图):在 (x,y) 溅开一朵墨花,随机旋转防重复感。
+  inkSplat(x, y, size = 90) {
+    const el = document.createElement('div');
+    el.className = 'ink-splat-fx';
+    el.style.width = el.style.height = size + 'px';
+    el.style.left = (x - size / 2) + 'px';
+    el.style.top = (y - size / 2) + 'px';
+    el.style.setProperty('--splat-rot', Math.floor(Math.random() * 360) + 'deg');
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 550);
+  },
+
   brushStrike() {
     const el = document.createElement('div');
     el.className = 'brush-strike';

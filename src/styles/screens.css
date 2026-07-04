@@ -89,6 +89,12 @@
   background: var(--glass-bg);
   box-shadow: inset 0 1px 3px rgba(17,17,16,0.06);
 }
+.map-node-icon {
+  width: 74%; height: 74%;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 1px rgba(17,17,16,0.15));
+}
 .map-node.available {
   cursor: pointer;
   border-color: var(--ink);

@@ -338,9 +338,16 @@ export function renderHand() {
   syncTargetSelectability();
 
   const handEl = document.getElementById('hand-cards');
+  // FLIP:重渲前记住每张卡的旧位置(按卡对象跟踪),重渲后从旧位滑到新位,
+  // 抽卡/弃牌后剩余手牌不再瞬移跳位。
+  const prevRects = new Map();
+  handEl.querySelectorAll('.card').forEach(el => {
+    if (el._card) prevRects.set(el._card, el.getBoundingClientRect());
+  });
   handEl.innerHTML = '';
   G.hand.forEach((card, idx) => {
     const el = createCardElement(card, idx);
+    el._card = card;
     if (G.sentence.includes(card)) el.classList.add('in-sentence');
     // 韵脚预告:上一句有韵脚时,把"结尾用它就押上"的卡亮出 🎵 角标,
     // 让押韵从事后惊喜变成可主动追的策略。
@@ -356,6 +363,24 @@ export function renderHand() {
     }
     attachHandDrag(el, idx);
     handEl.appendChild(el);
+  });
+  // FLIP play 阶段:有旧位置的卡先钉回旧位,下一帧滑到新位。
+  // in-sentence 卡有自己的 transform(淡出翻转),不参与,避免打架。
+  handEl.querySelectorAll('.card').forEach(el => {
+    if (el.classList.contains('in-sentence')) return;
+    const old = el._card && prevRects.get(el._card);
+    if (!old) return; // 新抽的卡走原有入场动画
+    const now = el.getBoundingClientRect();
+    const dx = old.left - now.left, dy = old.top - now.top;
+    if (Math.abs(dx) < 2 && Math.abs(dy) < 2) return;
+    el.style.transition = 'none';
+    el.style.transform = `translate(${dx}px, ${dy}px)`;
+    el.style.animation = 'none'; // 老卡不重播入场淡入
+    requestAnimationFrame(() => {
+      el.style.transition = 'transform 260ms cubic-bezier(0.2, 0.8, 0.3, 1)';
+      el.style.transform = '';
+      setTimeout(() => { el.style.transition = ''; el.style.animation = ''; }, 300);
+    });
   });
 }
 

@@ -10,6 +10,7 @@ import { G } from '../game/state.js';
 import { playSFX } from '../game/audio.js';
 import { renderCombat, hideTooltip } from './render.js';
 import { addToSentenceAt, removeSentenceWord } from '../game/combat.js';
+import { VFX } from './vfx.js';
 
 const THRESHOLD = 6;          // px of travel before a press becomes a drag
 const LAND_MS = 170;          // ghost → slot landing flight
@@ -95,6 +96,8 @@ function landGhost(ghost, targetRect, revealEl, done) {
       const card = revealEl.querySelector('.card') || revealEl;
       card.classList.add('drop-pop');
       setTimeout(() => card.classList.remove('drop-pop'), 400);
+      // 墨渍在落点绽开 — squash&stretch 的"重量"有了视觉溅射佐证。
+      VFX.inkSplat(targetRect.left + targetRect.width / 2, targetRect.top + targetRect.height / 2);
     }
     playSFX('card_land');
     if (done) done();

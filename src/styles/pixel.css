@@ -691,3 +691,12 @@ body { font-family: var(--font-pixel); }
   /* 顶栏压扁 */
   #combat-top { padding: 2px 10px !important; min-height: 0 !important; }
 }
+
+/* ============================================================
+   毛笔光标(Maker 生成) — 默认指针换成蘸墨毛笔,笔尖为热点。
+   交互元素(卡牌/按钮)保留语义光标(pointer/grab/not-allowed),
+   避免抹掉 R1 做的可用性暗示。
+   ============================================================ */
+#game, .screen {
+  cursor: url('/cursor_brush.png') 5 27, auto;
+}

@@ -1,7 +1,7 @@
 import { G, META, saveMeta } from './state.js';
 import { t, isEn } from '../i18n.js';
 import { showFloatingText, shuffleArray } from '../utils.js';
-import { playSFX, initAudio, playAmbientMusic, playCombatMusic, playBossMusic, stopMusic } from './audio.js';
+import { playSFX, initAudio, playAmbientMusic, playAmbientMusicDeferred, playCombatMusic, playBossMusic, stopMusic, playVictoryJingle } from './audio.js';
 import { VFX } from '../ui/vfx.js';
 import { WORD_DEFS, makeCard, createStarterDeck, randomCard, randomCardWeighted } from '../data/cards.js';
 import { showScreen, renderCombat, createCardElement, renderChantedSentence } from '../ui/render.js';
@@ -1206,7 +1206,7 @@ export function endRound() {
 // COMBAT VICTORY
 // ============================================================
 export function combatVictory() {
-  playSFX('heal');
+  playVictoryJingle();
   G._thorns = 0;
   // In normal play this is the map node we entered; under ?autocombat there's no
   // node, so fall back to a plain fight reward instead of crashing.
@@ -1225,7 +1225,9 @@ export function combatVictory() {
 
 export function showRewardScreen() {
   showScreen('reward-screen');
-  playAmbientMusic();
+  // 胜利小调(~10s)独享听觉焦点,放完再淡入环境乐。
+  stopMusic();
+  playAmbientMusicDeferred();
   document.getElementById('reward-gold-text').textContent = `+${G.combatRewards.gold} 文银`;
 
   // 本场最帅一句：动态重放 + 倍率徽章

@@ -18,25 +18,63 @@ const BGM_VOLUME = 0.4;
 let bgmEl = null;        // current <audio>
 let bgmKey = null;       // which track is playing
 
+// 线性音量渐变(<audio> 无原生 fade)。返回 interval id 以便取消。
+function fadeAudio(el, from, to, ms, onDone) {
+  const steps = 12, dt = ms / steps;
+  let i = 0;
+  el.volume = Math.max(0, Math.min(1, from));
+  const iv = setInterval(() => {
+    i++;
+    try { el.volume = Math.max(0, Math.min(1, from + (to - from) * (i / steps))); } catch (e) { /* detached */ }
+    if (i >= steps) { clearInterval(iv); if (onDone) onDone(); }
+  }, dt);
+  return iv;
+}
+
 // Play an MP3 track for `key`. If the file is missing/blocked, run `fallback`
 // (the synthesized loop) instead — so the game always has music.
+// 换曲走 500ms crossfade:旧轨淡出后释放,新轨从 0 淡入,场景切换不再硬切。
 function playBgmTrack(key, fallback) {
   const src = BGM_TRACKS[key];
   if (bgmEl && bgmKey === key && !bgmEl.paused) return; // already on
   // Stop the synth loop NOW so it never layers under the mp3 while it loads.
   if (musicInterval) { clearInterval(musicInterval); musicInterval = null; }
-  stopBgmTrack();
+  const old = bgmEl;
+  if (old) {
+    bgmEl = null; bgmKey = null;
+    fadeAudio(old, old.volume, 0, 500, () => { try { old.pause(); old.src = ''; } catch (e) { /* ignore */ } });
+  }
   const el = new Audio(src);
   el.loop = true;
-  el.volume = G.muted ? 0 : BGM_VOLUME;
+  el.volume = 0;
   bgmEl = el; bgmKey = key;
   const useFallback = () => {
     if (bgmEl === el) { stopBgmTrack(); }
     if (fallback) fallback();
   };
   el.addEventListener('error', useFallback, { once: true });
+  const fadeIn = () => { if (!G.muted && bgmEl === el) fadeAudio(el, 0, BGM_VOLUME, 500); };
   const p = el.play();
-  if (p && p.catch) p.catch(useFallback); // autoplay blocked → synth
+  if (p && p.then) p.then(fadeIn).catch(useFallback); // autoplay blocked → synth
+  else fadeIn();
+}
+
+// ---- 胜利小调(Maker text_to_music 生成的 10s 古筝短曲) ----
+// 结算时压低当前 BGM 播一次,放完恢复;文件缺失/被拦则静默跳过。
+export function playVictoryJingle() {
+  if (G.muted) return;
+  const el = new Audio('/bgm/victory.mp3');
+  el.volume = 0.5;
+  const prev = bgmEl;
+  const prevVol = prev ? prev.volume : null;
+  if (prev) fadeAudio(prev, prev.volume, 0.06, 250);
+  const restore = () => {
+    if (prev && prevVol != null && bgmEl === prev) fadeAudio(prev, prev.volume, G.muted ? 0 : BGM_VOLUME, 600);
+  };
+  el.addEventListener('ended', restore, { once: true });
+  el.addEventListener('error', restore, { once: true });
+  const p = el.play();
+  if (p && p.catch) p.catch(restore);
 }
 
 function stopBgmTrack() {
@@ -94,6 +132,11 @@ function synthLoop(notes, period, perTick) {
   }
   tick();
   musicInterval = setInterval(tick, period);
+}
+
+// 胜利小调播完后再起环境乐;若期间已有别的曲子(如又进战斗)则不打扰。
+export function playAmbientMusicDeferred(ms = 10800) {
+  setTimeout(() => { if (!bgmKey && !musicInterval) playAmbientMusic(); }, ms);
 }
 
 export function playAmbientMusic() {

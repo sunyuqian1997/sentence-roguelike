@@ -62,7 +62,9 @@ export function renderMap() {
   document.getElementById('map-gold').textContent = G.gold;
   document.getElementById('map-act-label').textContent = G.actNames[G.act];
 
+  // Maker 生成的水墨图标;加载失败时回退 emoji,地图永不缺图。
   const icons = { fight:'⚔️', elite:'💀', rest:'🌙', event:'❓', shop:'🏮', boss:'👑', poetry:'📜' };
+  const iconImgs = { fight:1, elite:1, rest:1, event:1, shop:1, boss:1, poetry:1 };
   const nodePositions = [];
 
   G.map.forEach((row, ri) => {
@@ -72,7 +74,10 @@ export function renderMap() {
     row.forEach((node, ni) => {
       const nd = document.createElement('div');
       nd.className = 'map-node';
-      nd.textContent = icons[node.type] || '?';
+      const fallback = icons[node.type] || '?';
+      nd.innerHTML = iconImgs[node.type]
+        ? `<img class="map-node-icon" src="/map-icons/${node.type}.png" alt="" draggable="false" onerror="this.outerHTML='${fallback}'">`
+        : fallback;
       if (node.visited) nd.classList.add('visited');
       if (node.available) nd.classList.add('available');
       if (ri===G.currentRow && ni===G.currentNodeIndex) nd.classList.add('current');

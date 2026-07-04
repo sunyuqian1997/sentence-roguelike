@@ -318,6 +318,22 @@
   animation: inkSplash 0.5s var(--ease-out-expo) forwards;
 }
 
+/* --- Ink splat on card drop (Maker 生成贴图, VFX.inkSplat) --- */
+
+@keyframes inkSplatPop {
+  0%   { transform: rotate(var(--splat-rot, 0deg)) scale(0.3); opacity: 0; }
+  25%  { transform: rotate(var(--splat-rot, 0deg)) scale(1.05); opacity: 0.55; }
+  60%  { transform: rotate(var(--splat-rot, 0deg)) scale(1.15); opacity: 0.35; }
+  100% { transform: rotate(var(--splat-rot, 0deg)) scale(1.25); opacity: 0; }
+}
+
+.ink-splat-fx {
+  position: fixed;
+  background: url('/fx/ink_splat.png') center / contain no-repeat;
+  pointer-events: none; z-index: 5000;
+  animation: inkSplatPop 0.55s ease-out forwards;
+}
+
 /* --- Brush strike sweep (critical hits) --- */
 
 @keyframes brushStrike {
