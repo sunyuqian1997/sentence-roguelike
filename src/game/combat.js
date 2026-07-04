@@ -823,10 +823,13 @@ export function applyEffects(effects) {
         };
         if (p.target === 'enemy') {
           applyToEnemy(resolveEnemy(p.subjectEnemyIdx));
-        } else if (p.target === 'broadcast') {
-          // Generic subject ("皇帝你儿子是给") — wisecrack heard by all enemies
-          G.enemies.forEach(applyToEnemy);
-          showFloatingText(document.querySelector('#combat-top'), `📢 ${p.subjectWord}${p.copulaWord}${p.srcWord}：${p.pun.label}`, '#9B59B6');
+        } else if (p.target === 'coactor' || p.target === 'broadcast') {
+          // 具名主语("猫是给")— 双关是那个 co-actor 的状态:纯表演,
+          // 不给敌人上 debuff(演出在 puppets.playChantPuppetAnim 的
+          // coactor 分支,棍人换表情)。broadcast 为旧档兼容别名。
+          const coEl = document.querySelector(`.puppet-coactor[data-coactor="${p.subjectWord}"]`);
+          showFloatingText(coEl || document.querySelector('#combat-top'),
+            `${p.subjectWord}·${p.pun.label}`, '#9B59B6');
         } else {
           // self ("我是给") — the wisecrack rebounds as a player buff. Each pun
           // tag maps to a positive selfEffect (PUN_STATUS[tag].selfPun).

@@ -392,7 +392,9 @@ export function detectPredicates(cards) {
     };
 
     if (predType === 'pun') {
-      const target = subjectKind === 'enemy' ? 'enemy' : subjectKind === 'self' ? 'self' : 'broadcast';
+      // 具名主语("猫是给")的双关落在那个主语自己身上 —— 它是句中的
+      // co-actor(舞台上有它的棍人),状态该由它演,而不是广播给敌人。
+      const target = subjectKind === 'enemy' ? 'enemy' : subjectKind === 'self' ? 'self' : 'coactor';
       results.push({ ...base, kind: 'pun', target, pun: pred.pun });
     } else if (predType === 'me') {
       if (subjectKind === 'enemy') {

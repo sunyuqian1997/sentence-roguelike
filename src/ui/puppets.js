@@ -714,6 +714,14 @@ export function playChantPuppetAnim(effects) {
       if (selfPun && PUN_TO_POSE[selfPun]) {
         player.dataset.pose = 'heal';
         setEmoji(player, PUN_TO_POSE[selfPun].emoji);
+      } else if (pred && pred.kind === 'pun' && (pred.target === 'coactor' || pred.target === 'broadcast') && PUN_TO_POSE[pred.pun.tag]) {
+        // "猫是给" — 双关落在具名主语自己的棍人上(魅惑的心冒在猫头顶,
+        // 不再错冒到敌人头上)
+        const coEl = document.querySelector(`.puppet-coactor[data-coactor="${pred.subjectWord}"]`);
+        if (coEl) {
+          coEl.dataset.pose = PUN_TO_POSE[pred.pun.tag].pose;
+          setEmoji(coEl, PUN_TO_POSE[pred.pun.tag].emoji);
+        }
       } else if (punTag && PUN_TO_POSE[punTag]) {
         enemy.dataset.pose = PUN_TO_POSE[punTag].pose;
         setEmoji(enemy, PUN_TO_POSE[punTag].emoji);
