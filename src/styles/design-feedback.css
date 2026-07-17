@@ -52,6 +52,21 @@
 }
 .df-bubble.is-visible { display: block; animation: dfPopIn 200ms both; }
 
+/* Stage dialogue has temporary visual priority over gameplay HUD. The status
+   emoji stays attached to the sprite and remains readable; only the name,
+   intent, HP and status cards above that actor fade for the bubble's lifetime. */
+#stage-player,
+#stage-enemy {
+  transition: opacity 90ms linear, visibility 90ms linear;
+}
+#combat-screen:has(.df-bubble-player.is-visible) #stage-player,
+#combat-screen:has(.puppet-bubble[data-bubble-who='player']:not(.bubble-out)) #stage-player,
+#combat-screen:has(.df-bubble-enemy.is-visible) #stage-enemy,
+#combat-screen:has(.puppet-bubble[data-bubble-who='enemy']:not(.bubble-out)) #stage-enemy {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
 /* Ink splashes, small seals and the center grand seal are direct ports of the
    corresponding splashE/P, sealE/P and sealCenter reference components. */
 .df-splash {

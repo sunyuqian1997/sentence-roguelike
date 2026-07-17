@@ -1,7 +1,6 @@
 import { G, META, saveMeta } from '../game/state.js';
 import { isEn } from '../i18n.js';
 import { PLAYER_MASTERY_HINTS, quotePoolFor } from '../data/battleDialogue.js';
-import { uiScale } from './uiScale.js';
 
 const CHANNELS = ['player', 'enemy'];
 const state = {
@@ -10,12 +9,15 @@ const state = {
 };
 const quoteCursor = new Map();
 let root = null;
-const selectionTimers = new Set();
 
 export function clearSelectionPhaseDialogue() {
-  selectionTimers.forEach(window.clearTimeout);
-  selectionTimers.clear();
+  // Remove legacy in-theatre turn lines left by an older hot-reloaded build.
   document.querySelectorAll('[data-selection-dialogue]').forEach((el) => el.remove());
+  CHANNELS.forEach((channel) => {
+    const lane = state[channel];
+    lane.queue = lane.queue.filter((entry) => !entry.selectionPhase);
+    if (lane.current?.selectionPhase) hide(channel, lane.serial);
+  });
 }
 
 function selectionPlayerLine(turn, summary) {
@@ -48,39 +50,29 @@ function selectionEnemyLine(enemy, index, summary) {
   return `这回合我准备${intent?.label || '行动'}。`;
 }
 
-function placeHeadLine(anchor, text, who) {
-  const stage = document.getElementById('puppet-stage');
-  if (!stage || !anchor || !text) return;
-  const el = document.createElement('div');
-  el.className = 'puppet-bubble';
-  el.dataset.selectionDialogue = who;
-  el.textContent = text;
-  stage.appendChild(el);
-  const sr = stage.getBoundingClientRect();
-  const ar = anchor.getBoundingClientRect();
-  const scale = uiScale();
-  const left = (ar.left + ar.width / 2 - sr.left) / scale - el.offsetWidth / 2;
-  const top = (ar.top - sr.top) / scale - el.offsetHeight - 7;
-  el.style.left = `${Math.max(2, Math.min(left, stage.clientWidth - el.offsetWidth - 2))}px`;
-  el.style.top = `${Math.max(2, top)}px`;
-  const timer = window.setTimeout(() => {
-    selectionTimers.delete(timer);
-    el.classList.add('bubble-out');
-    window.setTimeout(() => el.remove(), 300);
-  }, 2500);
-  selectionTimers.add(timer);
-}
-
 export function showSelectionPhaseDialogue(turn, summary) {
   clearSelectionPhaseDialogue();
   if (G.isTutorial) return;
-  placeHeadLine(document.getElementById('puppet-player'), selectionPlayerLine(turn, summary), 'player');
+  // Per-turn observations belong to the foreground portraits, not the puppet
+  // theatre. The theatre is reserved for words that are physically acted out.
+  enqueue('player', {
+    kind: 'selection-thought',
+    speaker: isEn() ? 'Lin Xi' : '林夕',
+    text: selectionPlayerLine(turn, summary),
+    duration: 3400,
+    priority: 12,
+    selectionPhase: true,
+  });
   (G.enemies || []).forEach((enemy, index) => {
     if (!enemy || enemy.hp <= 0) return;
-    const anchor = document.querySelector(`.puppet-enemy-unit[data-enemy-index="${index}"]`)
-      || (document.getElementById('puppet-enemy')?.dataset.enemyIndex === String(index)
-        ? document.getElementById('puppet-enemy') : null);
-    placeHeadLine(anchor, selectionEnemyLine(enemy, index, summary), `enemy-${index}`);
+    enqueue('enemy', {
+      kind: 'selection-remark',
+      speaker: (isEn() ? (enemy.nameEn || enemy.name) : enemy.name) || (isEn() ? 'Echo' : '回声'),
+      text: selectionEnemyLine(enemy, index, summary),
+      duration: 1800,
+      priority: 12,
+      selectionPhase: true,
+    });
   });
 }
 
