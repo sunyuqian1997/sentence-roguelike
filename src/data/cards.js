@@ -79,7 +79,6 @@ export function createStarterDeck() {
   tryAdd('cu');          // 戳
   // 动词 - 防守 (3)
   tryAdd('shou');        // 守
-  tryAdd('chen');        // 防
   tryAdd('dang');        // 挡
   // 动词 - 治疗/回血 (2)
   tryAdd('piaofu');      // 漂
