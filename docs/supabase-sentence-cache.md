@@ -31,11 +31,27 @@ Supabase 在这里不是“让模型更快思考”，而是跨玩家、跨 Verc
 
 这是轻量彩蛋，不把“全服第一次出现”误当作主要创意评分；句子是否有趣仍由 LLM 的基础评分决定。
 
-## 一次性配置
+## 小白配置步骤
 
-1. 打开 Supabase Dashboard → SQL Editor。
-2. 完整运行 [`supabase/sentence-cache.sql`](../supabase/sentence-cache.sql)。
-3. 本地 `.env` 和 Vercel Settings → Environment Variables 添加：
+### 1. 创建表
+
+1. 打开 [Supabase Dashboard](https://supabase.com/dashboard)，进入项目。
+2. 左侧选择 **SQL Editor**，点击 **New query**。
+3. 打开 [`supabase/sentence-cache.sql`](../supabase/sentence-cache.sql)，全选并复制全部内容。
+4. 粘贴到 SQL Editor，一次性点击 **Run**，不要逐行执行。
+5. 看到 **Success** 后，去左侧 **Table Editor**。列表中应出现空表
+   `sentence_judgments`；空表是正常状态，第一次真实判句后才会写入。
+
+### 2. 找到服务端连接信息
+
+1. 点击项目顶部 **Connect**；如果界面中没有该按钮，打开 **Settings → API Keys**。
+2. 复制 **Project URL**，形如 `https://xxxx.supabase.co`。
+3. 创建或复制 **Secret key**，优先选择形如 `sb_secret_...` 的新密钥。
+4. 不要使用 Publishable key / anon key，也不要把 Secret key 放进聊天或截图。
+
+### 3. 配置本地与 Vercel
+
+在项目根目录未提交的 `.env` 中添加：
 
 ```dotenv
 SUPABASE_URL=https://你的项目.supabase.co
@@ -47,6 +63,9 @@ SUPABASE_SECRET_KEY=sb_secret_你的服务端密钥
 也不要粘贴到聊天、浏览器控制台或前端源码。
 
 保存 Vercel 环境变量后需要重新部署。
+
+本地保存 `.env` 后重新运行 `npx vercel dev`。只运行 `npm run dev` 不会启动 Vercel 的
+`/api/judge-sentence` Function，因此无法完成真实数据库验收。
 
 ## 验收
 
