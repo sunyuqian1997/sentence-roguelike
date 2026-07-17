@@ -73,6 +73,24 @@ html, body {
 }
 
 #os-menubar strong { letter-spacing: .12em; }
+.os-menu-command {
+  align-self: stretch;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--os-ink);
+  box-shadow: none;
+  font: inherit;
+  cursor: pointer;
+}
+.os-menu-command:hover,
+.os-menu-command:focus-visible {
+  background: var(--os-ink);
+  color: var(--os-paper);
+  outline: none;
+}
+.os-menu-command:active { translate: 1px 1px; }
 .os-menubar-spacer { flex: 1; }
 #os-night-label { border: 1px solid var(--os-ink); padding: 1px 8px; background: var(--os-water); }
 #mute-btn {

@@ -16,6 +16,7 @@ import { initCheats } from './cheats.js';
 import { startGame, replayTutorial, startCombat, endPlayerTurn, chantSentence, addToSentence, removeSentenceWord, skipReward, showRewardScreen } from './game/combat.js';
 import { renderCombat } from './ui/render.js';
 import { ENEMY_DEFS } from './data/enemies.js';
+import { createStarterDeck } from './data/cards.js';
 import {
   showRestScreen, restHeal, restUpgrade, closeUpgrade,
   showEventScreen, showShopScreen, shopRemoveCard, closeRemove, leaveShop,
@@ -88,6 +89,7 @@ import('./game/chantLog.js').then(m => {
   // Local-only visual QA entry for the settlement screen. It is stripped from
   // production behavior by Vite's DEV constant and never changes saved data.
   if (import.meta.env.DEV && new URLSearchParams(window.location.search).get('debugreward') === '1') {
+    if (!G.deck.length) G.deck = createStarterDeck();
     G.combatRewards = { gold: 46 };
     G._bestLine = {
       text: '猫把残句怪推回没有写完的梦里',
