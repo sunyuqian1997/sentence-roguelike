@@ -90,6 +90,7 @@ import('./game/chantLog.js').then(m => {
   // production behavior by Vite's DEV constant and never changes saved data.
   if (import.meta.env.DEV && new URLSearchParams(window.location.search).get('debugreward') === '1') {
     if (!G.deck.length) G.deck = createStarterDeck();
+    G.floorsCleared = Math.max(1, G.floorsCleared || 0);
     G.combatRewards = { gold: 46 };
     G._bestLine = {
       text: '猫把残句怪推回没有写完的梦里',

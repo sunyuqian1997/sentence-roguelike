@@ -12,6 +12,7 @@ import { dealDamageToPlayer, dealDamageToEnemy, checkEnemies, resetVictoryGuard 
 import { resetCreativity, recordChantCreativity } from './creativity.js';
 import { generateMap, renderMap } from './map.js';
 import { CARD_PACKS, packName, packDesc } from '../data/packs.js';
+import { lessonRewardKeys, nextSyntaxLesson } from '../data/deckProgression.js';
 import { playStory, STORY_CHAPTERS_REF } from '../ui/storyOverlay.js';
 import STORY_CHAPTERS from '../data/story.json';
 import { SUMMON_EFFECTS, evaluateSentence, checkExclamationPosition, detectDuizhang } from './sentence.js';
@@ -195,7 +196,6 @@ export function startPlayerTurn() {
   guaranteePunctuation();
   guaranteeVerb();
   guaranteeCopula();
-  guaranteeTutorialCombo();
   guaranteeOnboardingHand();
   renderCombat();
   playerTurnReadyFeedback(G.turn);
@@ -240,30 +240,27 @@ export function drawCards(count) {
 }
 
 function guaranteePunctuation() {
-  // Always guarantee a comma for duizhang (对仗) opportunities
-  const hasComma = G.hand.some(c => c.pos === 'punctuation' && c.punctType === 'comma');
-  if (!hasComma) {
-    const commaCard = makeCard({ ...WORD_DEFS.comma, key: 'comma' });
-    const replaceIdx = G.hand.findIndex(c => c.pos !== 'verb' && c.pos !== 'subject' && c.pos !== 'exclamation');
-    if (replaceIdx >= 0) {
-      G.discardPile.push(G.hand[replaceIdx]);
-      G.hand[replaceIdx] = commaCard;
-    } else {
-      G.hand.push(commaCard);
-    }
+  if (G.hand.some(c => c.pos === 'punctuation')) return;
+
+  // Before the comma lesson, guarantee the starter period. Once a comma is
+  // actually in the deck, prefer it so the newly learned summon/compound
+  // syntax can be practiced immediately. Never conjure unowned punctuation.
+  const all = [...G.drawPile, ...G.discardPile, ...G.hand];
+  const preferredType = all.some(c => c.pos === 'punctuation' && c.punctType === 'comma')
+    ? 'comma' : 'period';
+  let source = G.drawPile;
+  let idx = source.findIndex(c => c.pos === 'punctuation' && c.punctType === preferredType);
+  if (idx < 0) {
+    source = G.discardPile;
+    idx = source.findIndex(c => c.pos === 'punctuation' && c.punctType === preferredType);
   }
-  // Also add another punctuation if none besides the comma
-  const hasOtherPunct = G.hand.some(c => c.pos === 'punctuation' && c.punctType !== 'comma');
-  if (!hasOtherPunct && Math.random() < 0.4) {
-    const punctKeys = ['period', 'exclamation_punct', 'question'];
-    const key = punctKeys[Math.floor(Math.random() * punctKeys.length)];
-    const punctCard = makeCard({ ...WORD_DEFS[key], key });
-    const replaceIdx = G.hand.findIndex(c => c.pos !== 'verb' && c.pos !== 'subject' && c.pos !== 'exclamation' && c.pos !== 'punctuation');
-    if (replaceIdx >= 0) {
-      G.discardPile.push(G.hand[replaceIdx]);
-      G.hand[replaceIdx] = punctCard;
-    }
-  }
+  if (idx < 0) return;
+  const punctCard = source.splice(idx, 1)[0];
+  const replaceIdx = G.hand.findIndex(c => c.pos !== 'verb' && c.pos !== 'subject' && c.pos !== 'exclamation');
+  if (replaceIdx >= 0) {
+    G.discardPile.push(G.hand[replaceIdx]);
+    G.hand[replaceIdx] = punctCard;
+  } else G.hand.push(punctCard);
 }
 
 function guaranteeCopula() {
@@ -292,9 +289,12 @@ function guaranteeCopula() {
 }
 
 function guaranteeVerb() {
-  // Guarantee at least 2 verbs for duizhang opportunities
+  // Basic decks need one reliable action. A learned comma raises this to two,
+  // opening compound sentences without flooding the first combat with verbs.
   const verbCount = G.hand.filter(c => c.pos === 'verb').length;
-  const needed = Math.max(0, 2 - verbCount);
+  const hasCommaInDeck = [...G.drawPile, ...G.discardPile, ...G.hand]
+    .some(c => c.pos === 'punctuation' && c.punctType === 'comma');
+  const needed = Math.max(0, (hasCommaInDeck ? 2 : 1) - verbCount);
   for (let i = 0; i < needed; i++) {
     // Try to find a verb in drawPile first, then discardPile
     let verbIdx = G.drawPile.findIndex(c => c.pos === 'verb');
@@ -311,36 +311,6 @@ function guaranteeVerb() {
       G.hand[replaceIdx] = verbCard;
     } else {
       G.hand.push(verbCard);
-    }
-  }
-}
-
-// 开局教学组合: 第一场战斗的前两个回合, 保证手里有「是 / 给 / 猫」三张牌,
-// 让玩家一定能拼出「X 是 猫」「X 是 给」这类谐音梗判断句。
-function guaranteeTutorialCombo() {
-  if (G.combatCount !== 1 || G.turn > 2) return;
-  const wanted = ['shi_copula', 'gei', 'mao'];
-  for (const key of wanted) {
-    const def = WORD_DEFS[key];
-    if (!def) continue;
-    if (G.hand.some(c => c.key === key)) continue; // 已在手
-    // 优先从抽牌堆/弃牌堆里取已有的那张, 取不到就新造一张。
-    let idx = G.drawPile.findIndex(c => c.key === key);
-    let card;
-    if (idx >= 0) card = G.drawPile.splice(idx, 1)[0];
-    else {
-      idx = G.discardPile.findIndex(c => c.key === key);
-      if (idx >= 0) card = G.discardPile.splice(idx, 1)[0];
-      else card = makeCard({ ...def, key });
-    }
-    // 替换一张非核心牌, 不踢掉动词/系词/标点/已凑齐的教学牌。
-    const replaceIdx = G.hand.findIndex(c =>
-      c.pos !== 'verb' && c.pos !== 'punctuation' && !c.copulaConn && !wanted.includes(c.key));
-    if (replaceIdx >= 0) {
-      G.discardPile.push(G.hand[replaceIdx]);
-      G.hand[replaceIdx] = card;
-    } else {
-      G.hand.push(card);
     }
   }
 }
@@ -1398,30 +1368,50 @@ export function showRewardScreen() {
   const container = document.getElementById('reward-cards');
   container.innerHTML = '';
 
-  const isFirstReward = G.floorsCleared <= 1;
+  const syntaxLesson = isEn() ? null
+    : nextSyntaxLesson(G.deck.map(card => card.key), G.floorsCleared);
+  const offeredKeys = new Set(lessonRewardKeys(syntaxLesson));
   for (let i = 0; i < 3; i++) {
+    const lesson = i === 0 ? syntaxLesson : null;
     let card;
-    if (isFirstReward && i === 0) {
-      card = makeCard({ ...WORD_DEFS.hatsunemiku, key: 'hatsunemiku' });
-    } else {
+    if (lesson) card = makeCard({ ...WORD_DEFS[lesson.key], key: lesson.key });
+    else {
       const roll = Math.random();
       let rarity;
       if (roll < 0.50) rarity = 'common';
       else if (roll < 0.82) rarity = 'uncommon';
       else rarity = 'rare';
-      card = randomCardWeighted(rarity);
+      card = randomCardWeighted(rarity, { excludeKeys: [...offeredKeys] });
     }
+    offeredKeys.add(card.key);
 
     const wrapper = document.createElement('div');
     wrapper.className = 'reward-card-wrapper';
     const cardEl = createCardElement(card, null, { noClick: true });
     cardEl.style.cursor = 'pointer';
-    cardEl.onclick = () => { G.deck.push(card); afterReward(); };
+    cardEl.onclick = () => {
+      G.deck.push(card);
+      if (lesson) {
+        lessonRewardKeys(lesson).slice(1).forEach((key) => {
+          if (WORD_DEFS[key] && !G.deck.some(owned => owned.key === key)) {
+            G.deck.push(makeCard({ ...WORD_DEFS[key], key }));
+          }
+        });
+      }
+      afterReward();
+    };
     const rl = document.createElement('div');
-    rl.className = `rarity-label rarity-${card.rarity}`;
-    rl.textContent = card.rarity === 'common' ? '普通' : card.rarity === 'uncommon' ? '非凡' : '稀有';
+    rl.className = `rarity-label rarity-${card.rarity}${lesson ? ' syntax-lesson-label' : ''}`;
+    rl.textContent = lesson ? `新句式 · ${lesson.title}`
+      : card.rarity === 'common' ? '普通' : card.rarity === 'uncommon' ? '非凡' : '稀有';
     wrapper.appendChild(cardEl);
     wrapper.appendChild(rl);
+    if (lesson) {
+      const note = document.createElement('div');
+      note.className = 'syntax-lesson-note';
+      note.innerHTML = `<strong>${lesson.example}</strong><span>${lesson.note}</span>`;
+      wrapper.appendChild(note);
+    }
     container.appendChild(wrapper);
   }
 

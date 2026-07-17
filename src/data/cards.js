@@ -1,7 +1,8 @@
-import { META } from '../game/state.js';
+import { G, META } from '../game/state.js';
 import { isEn } from '../i18n.js';
 import zhCards from './cards.json';
 import enCards from '../lang/en/cards.json';
+import { STARTER_DECK_KEYS, isCardAvailableAtFloor } from './deckProgression.js';
 
 // 语言切换会 reload 页面,故在模块加载期按当前语言选卡库即可。
 // 英文版用 en 卡库;卡面/句子评估都走对应语言。
@@ -65,55 +66,7 @@ export function createStarterDeck() {
     tryAdd('comma', 2); tryAdd('period');                           // punctuation
     return deck;
   }
-  // 拼贴诗起始词库 — 大幅扩种，覆盖每个词性的多种语气与功能
-  // 主语 (4)
-  tryAdd('wo');          // 我
-  tryAdd('wuming');      // 无名者
-  tryAdd('yingzi');      // 影子（穿透）
-  tryAdd('mao');         // 猫（随机效果）
-  // 动词 - 攻击 (5)
-  tryAdd('zhan');        // 斩
-  tryAdd('sui');         // 碎
-  tryAdd('chui');        // 锤
-  tryAdd('kan');         // 砍
-  tryAdd('cu');          // 戳
-  // 动词 - 防守 (3)
-  tryAdd('shou');        // 守
-  tryAdd('dang');        // 挡
-  // 动词 - 治疗/回血 (2)
-  tryAdd('piaofu');      // 漂
-  tryAdd('moyu');        // 摸鱼
-  // 动词 - 移动 (1, P5)
-  tryAdd('qu_verb');     // 去（动词位:去地点=换场景。地点卡在奖励池）
-  // 宾语 (4)
-  tryAdd('hai');         // 海
-  tryAdd('huijin');      // 灰烬
-  tryAdd('guge');        // 骨
-  tryAdd('yueliang');    // 月亮
-  // 修饰 (3)
-  tryAdd('chaoshide');   // 潮湿地
-  tryAdd('shuaiqide');   // 帅气地
-  tryAdd('menglie');     // 猛烈地
-  // 连接 (4)
-  tryAdd('er');          // 而
-  tryAdd('he');          // 和
-  tryAdd('shi_copula', 2); // 是×2（系词，谐音梗核心，起手保证看到）
-  tryAdd('yong');        // 用（工具格：用X戳,万物皆兵）
-  // 感叹 (3)
-  tryAdd('oh');          // 哦
-  tryAdd('ah');          // 啊
-  tryAdd('qu');          // 去（我去！惊叹 / 我去V 奋起）
-  // 标点 (3)
-  tryAdd('comma', 2);    // ，×2
-  tryAdd('period');      // 。
-  // 谐音/梗系列 (起手保证有一张)
-  tryAdd('gei');         // 给≈gay
-  tryAdd('lao');         // 老（衰老 pun）
-  tryAdd('ri');          // 日（昼明 pun）
-  // "皇帝你儿子是给" 套件 — 经典梗组合保证可用
-  tryAdd('huangdi');     // 皇帝
-  tryAdd('ni');          // 你
-  tryAdd('erzi');        // 儿子
+  STARTER_DECK_KEYS.forEach((key) => tryAdd(key));
   return deck;
 }
 
@@ -124,6 +77,7 @@ export function getCardPool(rarity) {
     if (key === 'wo') continue;
     if (def.unlockable && !META.unlockedCards.includes(key)) continue;
     if (def.pack && !META.unlockedPacks?.includes(def.pack)) continue;
+    if (!isCardAvailableAtFloor(key, G.floorsCleared || 0)) continue;
     pool.push(key);
   }
   return pool;
@@ -154,8 +108,9 @@ function categorize(key) {
   return 'other';
 }
 
-export function randomCardWeighted(rarity) {
-  const pool = getCardPool(rarity);
+export function randomCardWeighted(rarity, options = {}) {
+  const excluded = new Set(options.excludeKeys || []);
+  const pool = getCardPool(rarity).filter(key => !excluded.has(key));
   if (pool.length === 0) return makeCard({ ...WORD_DEFS.wo, key: 'wo' });
 
   const buckets = {};

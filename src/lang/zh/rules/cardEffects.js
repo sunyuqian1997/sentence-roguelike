@@ -4,7 +4,7 @@
 // here; do NOT hardcode word checks in the pipeline.
 import { G } from '../../../game/state.js';
 import { actorIdentity } from '../../../game/combatFacts.js';
-import { resolveIdentityTrait } from '../../../game/poetics.js';
+import { isCopulaPredicate, resolveIdentityTrait } from '../../../game/poetics.js';
 
 export function applySubjects(ctx) {
   const { effects, bonus } = ctx;
@@ -13,21 +13,47 @@ export function applySubjects(ctx) {
   // just attacks: 影子斩敌 = independent attack; 皇帝挡纸鬼 = independent block;
   // 无名者守我 = blocks FOR me; 月兔治我 = heals me. The primary real verb decides
   // what the co-actor does and at whom.
-  const primaryVerb = ctx.realVerbs.find(v => !VERB_SPECIALS.some(([flag]) => v[flag]))
-    || ctx.realVerbs[0];
-  const coActVerbType = primaryVerb ? (primaryVerb.combatType || 'attack') : null;
-  // Target side: an attack lands on the enemy; defense/heal benefit 我 (the
-  // poet), unless the verb explicitly targets the enemy.
-  const coActTargetsEnemy = coActVerbType === 'attack';
-  const canCoAct = !!primaryVerb && (ctx.hasEnemyTarget || coActVerbType !== 'attack');
+  const instrumentSubjects = new Set();
+  ctx.constructions
+    .filter((entry) => entry.id === 'yong_instrumental')
+    .forEach((entry) => instrumentSubjects.add(ctx.cards[entry.match.instrIdx]));
+
+  const clauseFor = (subject) => {
+    let start = 0;
+    for (let i = 0; i <= ctx.cards.length; i++) {
+      const atEnd = i === ctx.cards.length;
+      const atComma = !atEnd && ctx.cards[i].pos === 'punctuation' && ctx.cards[i].punctType === 'comma';
+      if (!atEnd && !atComma) continue;
+      const clause = ctx.cards.slice(start, i);
+      if (clause.includes(subject)) return clause;
+      start = i + 1;
+    }
+    return ctx.cards;
+  };
 
   ctx.subjects.forEach(s => {
+    // A noun used as an instrument or copula predicate is not simultaneously
+    // an acting subject. Its construction/identity rule owns the effect.
+    if (instrumentSubjects.has(s) || isCopulaPredicate(ctx.cards, s)) return;
+
     const b = s.powerBonus || 0;
     const ub = s.upgraded ? Math.ceil(b * 1.5) : b;
 
     // Co-actor: a named subject acting independently. ctx.coActors was
     // pre-filtered in buildContext to exclude copula-predicate subjects and 你.
-    const isCoActor = canCoAct && ctx.coActors.includes(s);
+    const clause = clauseFor(s);
+    const subjectIdx = clause.indexOf(s);
+    const primaryVerb = clause.slice(subjectIdx + 1)
+      .find(v => (v.pos === 'verb' || v.pos === 'special')
+        && !VERB_SPECIALS.some(([flag]) => v[flag]))
+      || clause.slice(subjectIdx + 1).find(v => v.pos === 'verb' || v.pos === 'special');
+    const coActVerbType = primaryVerb ? (primaryVerb.combatType || 'attack') : null;
+    const clauseTarget = primaryVerb
+      ? clause.slice(clause.indexOf(primaryVerb) + 1).find(c => c._isEnemyTarget)
+      : null;
+    const coActTargetsEnemy = coActVerbType === 'attack';
+    const canCoAct = !!primaryVerb && (!!clauseTarget || coActVerbType !== 'attack');
+    const isCoActor = canCoAct && ctx.coActors.includes(s) && !instrumentSubjects.has(s);
     if (isCoActor) {
       // Power from the subject's martial stat (attack) or generic, min 3.
       const martial = (s.bonusType === 'attack' || s.bonusType === 'all') ? ub : 0;
@@ -42,6 +68,7 @@ export function applySubjects(ctx) {
         name: s.word, power,
         verbType: coActVerbType,
         targetsEnemy: coActTargetsEnemy,
+        targetEnemyIdx: clauseTarget?._enemyIdx ?? -1,
         identity: transformedIdentity || null,
       });
       const actLabel = coActVerbType === 'attack' ? `独立攻击${power}`

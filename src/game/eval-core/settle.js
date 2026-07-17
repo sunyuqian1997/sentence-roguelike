@@ -88,8 +88,12 @@ export function settle(ir) {
   }
 
   if (hasMultiTarget) {
-    effects.multiTargetIndices = multiTargetIndices;
-    grammarNotes.push(`🎯 多目标×${multiTargetIndices.length}`);
+    effects.multiTargetIndices = [...new Set(multiTargetIndices)];
+    const targetCount = effects.multiTargetIndices.length;
+    if (targetCount > 1 && effects.damage > 0) {
+      effects.damage = Math.max(1, Math.floor(effects.damage / targetCount));
+      grammarNotes.push(`🎯 多目标×${targetCount}（总伤均分）`);
+    } else grammarNotes.push(`🎯 多目标×${targetCount}`);
   }
 
   if (effects._coActors && effects._coActors.length) {
@@ -113,7 +117,7 @@ export function settle(ir) {
       else if (a.verbType === 'heal') a.heal = Math.floor(scaled * finalExcHeal);
       else {
         a.damage = Math.floor(scaled * finalExcAttack);
-        a.targetEnemyIdx = effects.targetEnemyIdx;
+        if (a.targetEnemyIdx == null || a.targetEnemyIdx < 0) a.targetEnemyIdx = effects.targetEnemyIdx;
         a.ignoreBlock = effects.ignoreBlock;
       }
       if (b > 0) a.rallied = b;

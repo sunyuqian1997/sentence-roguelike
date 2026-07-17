@@ -648,10 +648,20 @@ export function updatePuppets() {
   const hasEnemyTarget = sentence.some(c => c && c._isEnemyTarget);
   const verbs = sentence.filter(c => c && c.pos === 'verb');
   const lastVerb = verbs[verbs.length - 1];
+  const instrumentSubjects = new Set();
+  for (let i = 0; i < sentence.length; i++) {
+    if (sentence[i]?.word !== '用' || sentence[i]?.pos !== 'connector') continue;
+    const noun = sentence.slice(i + 1).find(c => c && c.pos !== 'modifier');
+    if (!noun || (noun.pos !== 'subject' && noun.pos !== 'object') || noun._isEnemyTarget) continue;
+    const nounIndex = sentence.indexOf(noun, i + 1);
+    const verb = sentence.slice(nounIndex + 1).find(c => c && c.pos !== 'modifier');
+    if (verb && (verb.pos === 'verb' || verb.pos === 'special')) instrumentSubjects.add(noun);
+  }
   const standbyNames = sentence.filter(c => c && c.pos === 'subject' && c.word !== '我'
         && !c._isEnemyTarget && !c._isSelfTarget
         && !isYouCard(c)
-        && !isCopulaPredicate(sentence, c))
+        && !isCopulaPredicate(sentence, c)
+        && !instrumentSubjects.has(c))
     .map(c => c.word);
   const playerIsActing = standbyNames.length === 0;
   const stageEnemyIntent = G.enemies?.[Number(enemy.dataset.enemyIndex)]?.nextIntent

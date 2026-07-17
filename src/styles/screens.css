@@ -456,6 +456,18 @@
   font-size: 1.1rem; color: var(--gold); margin-bottom: 10px;
 }
 .rarity-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 700; }
+.syntax-lesson-label { color: var(--teal-dark); letter-spacing: 0.05em; }
+.syntax-lesson-note {
+  width: 176px;
+  color: var(--ink-light);
+  font-family: var(--font-brush);
+  font-size: 0.68rem;
+  line-height: 1.4;
+  text-align: center;
+}
+.syntax-lesson-note strong,
+.syntax-lesson-note span { display: block; }
+.syntax-lesson-note strong { color: var(--ink); margin-bottom: 2px; }
 .rarity-starter { color: var(--smoke); }
 .rarity-common { color: var(--ink-faint); }
 .rarity-uncommon { color: var(--blue-ink); }
