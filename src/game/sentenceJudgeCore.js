@@ -68,6 +68,9 @@ export function normalizeJudgeResult(candidate, fallbackResult = null) {
   if (!Number.isFinite(numericScore)) return { ...fallback };
   const score = Math.max(0, Math.min(100, Math.round(numericScore)));
   const band = gradeForScore(score);
+  const noveltyBonus = candidate?.isNovel
+    ? Math.max(0, Math.min(3, Math.round(Number(candidate?.noveltyBonus) || 0)))
+    : 0;
   return {
     score,
     grade: band.grade,
@@ -78,6 +81,9 @@ export function normalizeJudgeResult(candidate, fallbackResult = null) {
     feedback: cleanFeedback(candidate?.feedback, fallback.feedback),
     tags: cleanTags(candidate?.tags, fallback.tags),
     source: typeof candidate?.source === 'string' ? candidate.source.slice(0, 24) : 'deepseek',
+    isNovel: noveltyBonus > 0,
+    noveltyBonus,
+    noveltyMultiplier: noveltyBonus > 0 ? 1 + noveltyBonus / 100 : 1,
   };
 }
 
@@ -145,31 +151,36 @@ function scalePositive(value, multiplier) {
 export function applyJudgeToEvaluation(result, judgeInput) {
   if (!result?.effects) return result;
   const judge = normalizeJudgeResult(judgeInput, heuristicJudge(result.text || ''));
+  const effectiveMultiplier = judge.multiplier * judge.noveltyMultiplier;
   const effects = result.effects;
   for (const field of SCALABLE_EFFECT_FIELDS) {
     if (Number.isFinite(effects[field]) && effects[field] > 0) {
-      effects[field] = scalePositive(effects[field], judge.multiplier);
+      effects[field] = scalePositive(effects[field], effectiveMultiplier);
     }
   }
   if (Array.isArray(effects._coActors)) {
     effects._coActors.forEach((actor) => {
-      actor.damage = scalePositive(actor.damage, judge.multiplier);
-      actor.block = scalePositive(actor.block, judge.multiplier);
-      actor.heal = scalePositive(actor.heal, judge.multiplier);
+      actor.damage = scalePositive(actor.damage, effectiveMultiplier);
+      actor.block = scalePositive(actor.block, effectiveMultiplier);
+      actor.heal = scalePositive(actor.heal, effectiveMultiplier);
     });
   }
-  result.totalMult = Number(((result.totalMult || 1) * judge.multiplier).toFixed(2));
+  result.totalMult = Number(((result.totalMult || 1) * effectiveMultiplier).toFixed(2));
   result.judge = judge;
   result.literaryNotes = [
     ...(result.literaryNotes || []),
-    `判句 ${judge.grade}·${judge.gradeLabel} ${judge.score}分 ×${judge.multiplier.toFixed(2)}`,
+    `判句 ${judge.grade}·${judge.gradeLabel} ${judge.score}分 ×${effectiveMultiplier.toFixed(2)}${judge.isNovel ? ` · 首见 +${judge.noveltyBonus}%` : ''}`,
   ];
   return result;
 }
 
 export function scaleSummonValue(base, judgeInput) {
-  const multiplier = typeof judgeInput === 'number'
-    ? judgeInput
-    : normalizeJudgeResult(judgeInput, heuristicJudge('')).multiplier;
-  return scalePositive(base, Math.max(JUDGE_LIMITS.minMultiplier, Math.min(JUDGE_LIMITS.maxMultiplier, multiplier)));
+  const judge = typeof judgeInput === 'number'
+    ? null
+    : normalizeJudgeResult(judgeInput, heuristicJudge(''));
+  const multiplier = judge
+    ? judge.multiplier * judge.noveltyMultiplier
+    : judgeInput;
+  const maxWithNovelty = JUDGE_LIMITS.maxMultiplier * (1 + 3 / 100);
+  return scalePositive(base, Math.max(JUDGE_LIMITS.minMultiplier, Math.min(maxWithNovelty, multiplier)));
 }

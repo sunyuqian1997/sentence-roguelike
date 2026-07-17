@@ -1,0 +1,58 @@
+-- 词灵录：跨实例判句缓存
+-- 在 Supabase Dashboard → SQL Editor 中完整运行一次。
+
+create table if not exists public.sentence_judgments (
+  fingerprint text primary key check (fingerprint ~ '^[0-9a-f]{64}$'),
+  judge_version text not null,
+  model text not null,
+  score smallint not null check (score between 0 and 100),
+  feedback text not null check (char_length(feedback) <= 64),
+  tags jsonb not null default '[]'::jsonb check (jsonb_typeof(tags) = 'array'),
+  seen_count bigint not null default 1 check (seen_count >= 1),
+  created_at timestamptz not null default now(),
+  last_seen_at timestamptz not null default now()
+);
+
+alter table public.sentence_judgments enable row level security;
+revoke all on table public.sentence_judgments from public, anon, authenticated;
+grant select, insert, update on table public.sentence_judgments to service_role;
+
+create or replace function public.cache_sentence_judgment(
+  p_fingerprint text,
+  p_judge_version text,
+  p_model text,
+  p_score smallint,
+  p_feedback text,
+  p_tags jsonb
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  was_inserted boolean := false;
+begin
+  insert into public.sentence_judgments (
+    fingerprint, judge_version, model, score, feedback, tags
+  ) values (
+    p_fingerprint, p_judge_version, p_model, p_score, p_feedback, p_tags
+  )
+  on conflict (fingerprint) do nothing
+  returning true into was_inserted;
+
+  if not coalesce(was_inserted, false) then
+    update public.sentence_judgments
+       set seen_count = seen_count + 1,
+           last_seen_at = now()
+     where fingerprint = p_fingerprint;
+  end if;
+
+  return coalesce(was_inserted, false);
+end;
+$$;
+
+revoke all on function public.cache_sentence_judgment(text, text, text, smallint, text, jsonb)
+  from public, anon, authenticated;
+grant execute on function public.cache_sentence_judgment(text, text, text, smallint, text, jsonb)
+  to service_role;

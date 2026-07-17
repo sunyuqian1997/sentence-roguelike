@@ -7,11 +7,23 @@ import {
   normalizeJudgeSentence,
   scaleSummonValue,
 } from '../src/game/sentenceJudgeCore.js';
+import {
+  noveltyBonusFor,
+  sentenceFingerprint,
+} from '../api/sentence-cache.js';
 
 assert.equal(normalizeJudgeSentence(`\u0000  月亮   走进广播室  `), '月亮 走进广播室');
 assert.equal(normalizeJudgeSentence('字'.repeat(100)).length, 80);
 assert.deepEqual(gradeForScore(90), { min: 90, grade: 'S', multiplier: 1.6, label: '惊鸿' });
 assert.equal(gradeForScore(39).grade, 'D');
+assert.equal(sentenceFingerprint('月亮走进教室', 'deepseek-v4-flash').length, 64);
+assert.equal(
+  sentenceFingerprint('月亮走进教室', 'deepseek-v4-flash'),
+  sentenceFingerprint('月亮走进教室', 'deepseek-v4-flash'),
+);
+assert.equal(noveltyBonusFor(60, true), 3);
+assert.equal(noveltyBonusFor(59, true), 0);
+assert.equal(noveltyBonusFor(90, false), 0);
 
 const dream = heuristicJudge('走廊尽头的月亮，在广播里醒来。');
 const flat = heuristicJudge('我我我我我');
@@ -47,6 +59,17 @@ assert.equal(evaluation.effects.selfHarmDmg, 3, 'penalties must not be amplified
 assert.equal(evaluation.effects._coActors[0].damage, 6);
 assert.equal(evaluation.totalMult, 1.92);
 assert.equal(scaleSummonValue(10, { score: 30, feedback: '', tags: [] }), 8);
+
+const novelEvaluation = {
+  text: '影子推开月亮', totalMult: 1, literaryNotes: [],
+  effects: { damage: 100 },
+};
+applyJudgeToEvaluation(novelEvaluation, {
+  score: 60, feedback: '第一次见', tags: ['搭配新鲜'],
+  isNovel: true, noveltyBonus: 3,
+});
+assert.equal(novelEvaluation.effects.damage, 118, 'B grade ×1.15 and novelty ×1.03');
+assert.ok(novelEvaluation.literaryNotes.at(-1).includes('首见 +3%'));
 
 // Vercel Function must remain playable when no secret exists (plain Vite dev,
 // Preview without env, or quota incident).

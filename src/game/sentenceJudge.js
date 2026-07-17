@@ -46,7 +46,14 @@ export async function judgeSentence(sentence, options = {}) {
 
   const elapsed = performance.now() - startedAt;
   if (elapsed < MIN_JUDGE_BEAT_MS) await wait(MIN_JUDGE_BEAT_MS - elapsed);
-  responseCache.set(normalized, result);
+  // Novelty is claim-once. Cache the base judgment after returning the first
+  // response so the same browser cannot replay the bonus during this run.
+  responseCache.set(normalized, result.isNovel ? {
+    ...result,
+    isNovel: false,
+    noveltyBonus: 0,
+    noveltyMultiplier: 1,
+  } : result);
   if (responseCache.size > 64) responseCache.delete(responseCache.keys().next().value);
   return { ...result };
 }

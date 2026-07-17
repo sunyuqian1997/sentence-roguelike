@@ -3,6 +3,12 @@ import {
   normalizeJudgeResult,
   normalizeJudgeSentence,
 } from '../src/game/sentenceJudgeCore.js';
+import {
+  noveltyBonusFor,
+  persistJudgment,
+  readPersistentJudgment,
+  sentenceFingerprint,
+} from './sentence-cache.js';
 
 const DEEPSEEK_ENDPOINT = 'https://api.deepseek.com/chat/completions';
 const DEFAULT_MODEL = 'deepseek-v4-flash';
@@ -45,8 +51,8 @@ function allowRequest(id) {
   return bucket.count <= 20;
 }
 
-function readCached(sentence) {
-  const hit = cache.get(sentence);
+function readCached(fingerprint) {
+  const hit = cache.get(fingerprint);
   if (!hit || Date.now() - hit.time > CACHE_TTL_MS) {
     if (hit) cache.delete(sentence);
     return null;
@@ -54,8 +60,8 @@ function readCached(sentence) {
   return { ...hit.value, source: 'server-cache' };
 }
 
-function writeCached(sentence, value) {
-  cache.set(sentence, { time: Date.now(), value });
+function writeCached(fingerprint, value) {
+  cache.set(fingerprint, { time: Date.now(), value });
   if (cache.size > 200) cache.delete(cache.keys().next().value);
 }
 
@@ -111,8 +117,17 @@ export default async function handler(request, response) {
   const sentence = normalizeJudgeSentence(body?.sentence);
   if (!sentence) return json(response, 400, { error: 'sentence_required' });
   const fallback = heuristicJudge(sentence);
-  const cached = readCached(sentence);
+  const model = process.env.DEEPSEEK_MODEL || DEFAULT_MODEL;
+  const fingerprint = sentenceFingerprint(sentence, model);
+  const cached = readCached(fingerprint);
   if (cached) return json(response, 200, cached);
+
+  const persistent = await readPersistentJudgment(fingerprint);
+  if (persistent) {
+    const normalized = normalizeJudgeResult(persistent, fallback);
+    writeCached(fingerprint, normalized);
+    return json(response, 200, normalized);
+  }
 
   if (!process.env.DEEPSEEK_API_KEY) {
     return json(response, 200, { ...fallback, source: 'server-fallback-no-key' });
@@ -120,8 +135,23 @@ export default async function handler(request, response) {
 
   try {
     const result = await callDeepSeek(sentence, fallback);
-    writeCached(sentence, result);
-    return json(response, 200, result);
+    const inserted = await persistJudgment({ fingerprint, model, result });
+    const noveltyBonus = noveltyBonusFor(result.score, inserted);
+    const served = {
+      ...result,
+      isNovel: noveltyBonus > 0,
+      noveltyBonus,
+      noveltyMultiplier: noveltyBonus > 0 ? 1 + noveltyBonus / 100 : 1,
+    };
+    // The first caller receives the small novelty reward. Memory and database
+    // caches keep the base judgment so repeats cannot claim it again.
+    writeCached(fingerprint, {
+      ...result,
+      isNovel: false,
+      noveltyBonus: 0,
+      noveltyMultiplier: 1,
+    });
+    return json(response, 200, served);
   } catch (_error) {
     return json(response, 200, { ...fallback, source: 'server-fallback-upstream' });
   }
