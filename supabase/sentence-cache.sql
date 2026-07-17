@@ -1,6 +1,8 @@
 -- 词灵录：跨实例判句缓存
 -- 在 Supabase Dashboard → SQL Editor 中完整运行一次。
 
+begin;
+
 create table if not exists public.sentence_judgments (
   fingerprint text primary key check (fingerprint ~ '^[0-9a-f]{64}$'),
   sentence_text text,
@@ -23,7 +25,17 @@ alter table public.sentence_judgments enable row level security;
 revoke all on table public.sentence_judgments from public, anon, authenticated;
 grant select, insert, update on table public.sentence_judgments to service_role;
 
-drop function if exists public.cache_sentence_judgment(text, text, text, smallint, text, jsonb);
+-- Secure the legacy six-argument function if an older version of this file
+-- created it. Keep it in place so this migration is non-destructive.
+do $permissions$
+begin
+  if to_regprocedure('public.cache_sentence_judgment(text,text,text,smallint,text,jsonb)') is not null then
+    execute 'revoke execute on function public.cache_sentence_judgment(text, text, text, smallint, text, jsonb) from public';
+    execute 'revoke execute on function public.cache_sentence_judgment(text, text, text, smallint, text, jsonb) from anon';
+    execute 'revoke execute on function public.cache_sentence_judgment(text, text, text, smallint, text, jsonb) from authenticated';
+  end if;
+end
+$permissions$;
 
 create or replace function public.cache_sentence_judgment(
   p_fingerprint text,
@@ -61,7 +73,13 @@ begin
 end;
 $$;
 
-revoke all on function public.cache_sentence_judgment(text, text, text, text, smallint, text, jsonb)
-  from public, anon, authenticated;
+revoke execute on function public.cache_sentence_judgment(text, text, text, text, smallint, text, jsonb)
+  from public;
+revoke execute on function public.cache_sentence_judgment(text, text, text, text, smallint, text, jsonb)
+  from anon;
+revoke execute on function public.cache_sentence_judgment(text, text, text, text, smallint, text, jsonb)
+  from authenticated;
 grant execute on function public.cache_sentence_judgment(text, text, text, text, smallint, text, jsonb)
   to service_role;
+
+commit;
