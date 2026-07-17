@@ -9,6 +9,7 @@ import {
 } from '../src/game/sentenceJudgeCore.js';
 import {
   noveltyBonusFor,
+  persistJudgment,
   sentenceFingerprint,
 } from '../api/sentence-cache.js';
 
@@ -24,6 +25,30 @@ assert.equal(
 assert.equal(noveltyBonusFor(60, true), 3);
 assert.equal(noveltyBonusFor(59, true), 0);
 assert.equal(noveltyBonusFor(90, false), 0);
+
+// Persistent writes use PostgREST's atomic ignore-duplicates response: one
+// represented row means this caller inserted it, while [] means it was known.
+const previousSupabaseUrl = process.env.SUPABASE_URL;
+const previousSupabaseSecret = process.env.SUPABASE_SECRET_KEY;
+const previousFetch = globalThis.fetch;
+process.env.SUPABASE_URL = 'https://cache.test';
+process.env.SUPABASE_SECRET_KEY = 'server-test-secret';
+const insertResponses = [[{ fingerprint: 'new' }], []];
+globalThis.fetch = async (_url, options) => {
+  assert.equal(options.headers.Prefer, 'resolution=ignore-duplicates,return=representation');
+  return { ok: true, async json() { return insertResponses.shift(); } };
+};
+const persistedInput = {
+  fingerprint: 'a'.repeat(64), sentence: '月亮走进广播室', model: 'test-model',
+  result: { score: 80, feedback: '有画面', tags: ['画面感'] },
+};
+assert.equal(await persistJudgment(persistedInput), true);
+assert.equal(await persistJudgment(persistedInput), false);
+globalThis.fetch = previousFetch;
+if (previousSupabaseUrl === undefined) delete process.env.SUPABASE_URL;
+else process.env.SUPABASE_URL = previousSupabaseUrl;
+if (previousSupabaseSecret === undefined) delete process.env.SUPABASE_SECRET_KEY;
+else process.env.SUPABASE_SECRET_KEY = previousSupabaseSecret;
 
 const dream = heuristicJudge('走廊尽头的月亮，在广播里醒来。');
 const flat = heuristicJudge('我我我我我');

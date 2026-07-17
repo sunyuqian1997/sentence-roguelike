@@ -43,8 +43,14 @@ Supabase 在这里不是“让模型更快思考”，而是跨玩家、跨 Verc
 5. 看到 **Success** 后，去左侧 **Table Editor**。列表中应出现空表
    `sentence_judgments`；空表是正常状态，第一次真实判句后才会写入。
 
-已经运行过旧版 SQL 的项目也直接重新运行整份文件。它会增加 `sentence_text` 列并更新缓存函数；
-旧测试行的原句无法反推，所以会保持空白，新判定的行会显示原句。
+如果 SQL Editor 仍显示 `syntax error at or near "revoke"`，说明编辑器中还是旧版脚本：先全选清空，
+再复制当前文件的全部内容。新版没有任何 `revoke execute on function`。运行前出现“此查询会修改数据库对象”
+一类确认提示是正常的；Security Advisor 若提示“RLS 已开启但没有 policy”也符合本项目设计，因为浏览器角色
+本来就不应读写该表，不要为 `anon` 添加 policy。
+
+已经运行过旧版 SQL 的项目也直接重新运行整份文件。它会增加 `sentence_text` 列，并把旧版缓存函数
+降级为受 RLS 约束的普通函数；当前后端不再依赖 RPC。旧测试行的原句无法反推，所以会保持空白，
+新判定的行会显示原句。
 
 ### 2. 找到服务端连接信息
 
@@ -75,12 +81,13 @@ SUPABASE_SECRET_KEY=sb_secret_你的服务端密钥
 
 用 `vercel dev` 吟诵一个基础分 ≥60 的新句：第一次结果应包含 `source: deepseek`、
 `isNovel: true`、`noveltyBonus: 3`。再次吟诵同一句应来自浏览器/服务端/Supabase 缓存，且
-`isNovel: false`。Supabase Table Editor 中对应行的 `seen_count` 会随持久层命中或并发写入增加。
+`isNovel: false`。Supabase Table Editor 中应出现一行，并在 `sentence_text` 中显示实际原句。
+`seen_count` 当前保留作未来统计字段；缓存命中不会为了一次计数再追加数据库写请求。
 
 ## 安全与性能
 
 - 表已启用 RLS，并撤销 `anon` / `authenticated` 权限。
 - Secret Key 仅由 `/api/judge-sentence` 使用；浏览器仍只调用同源 API。
 - Supabase 读取有 650ms、写入有 900ms 硬超时；数据库慢或离线时立即回到原链路，不阻塞战斗。
-- 唯一主键与 SQL 函数保证并发请求中只有一个请求取得首见奖励。
+- 唯一主键与 `ignore-duplicates` 原子插入保证并发请求中只有一个请求取得首见奖励。
 - 当前缓存适合精确去重，不承担强限流；大流量下仍应增加全局速率限制。

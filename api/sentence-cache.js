@@ -81,21 +81,27 @@ export async function persistJudgment({ fingerprint, sentence, model, result }) 
   const config = cacheConfig();
   if (!config) return false;
   try {
-    const response = await timedFetch(`${config.url}/rest/v1/rpc/cache_sentence_judgment`, {
+    const endpoint = new URL(`${config.url}/rest/v1/sentence_judgments`);
+    endpoint.searchParams.set('on_conflict', 'fingerprint');
+    const response = await timedFetch(endpoint, {
       method: 'POST',
-      headers: headers(config.key, { Accept: 'application/json' }),
+      headers: headers(config.key, {
+        Accept: 'application/json',
+        Prefer: 'resolution=ignore-duplicates,return=representation',
+      }),
       body: JSON.stringify({
-        p_fingerprint: fingerprint,
-        p_sentence_text: sentence,
-        p_judge_version: JUDGE_VERSION,
-        p_model: model,
-        p_score: result.score,
-        p_feedback: result.feedback,
-        p_tags: result.tags,
+        fingerprint,
+        sentence_text: String(sentence).slice(0, 80),
+        judge_version: JUDGE_VERSION,
+        model,
+        score: result.score,
+        feedback: result.feedback,
+        tags: result.tags,
       }),
     }, SUPABASE_WRITE_TIMEOUT_MS);
     if (!response.ok) return false;
-    return (await response.json()) === true;
+    const rows = await response.json();
+    return Array.isArray(rows) && rows.length === 1;
   } catch (_error) {
     return false;
   }

@@ -25,61 +25,21 @@ alter table public.sentence_judgments enable row level security;
 revoke all on table public.sentence_judgments from public, anon, authenticated;
 grant select, insert, update on table public.sentence_judgments to service_role;
 
--- Secure the legacy six-argument function if an older version of this file
--- created it. Keep it in place so this migration is non-destructive.
-do $permissions$
+-- Older revisions used SECURITY DEFINER RPC functions. The current backend
+-- writes the table directly with the server-only Secret Key, so those RPCs are
+-- no longer needed. Downgrade any existing copies to SECURITY INVOKER: even if
+-- an old EXECUTE grant remains, RLS and the table grants above still block
+-- browser roles. This deliberately avoids function-level REVOKE statements,
+-- which some Supabase SQL Editor sessions reject while parsing migrations.
+do $legacy_functions$
 begin
   if to_regprocedure('public.cache_sentence_judgment(text,text,text,smallint,text,jsonb)') is not null then
-    execute 'revoke execute on function public.cache_sentence_judgment(text, text, text, smallint, text, jsonb) from public';
-    execute 'revoke execute on function public.cache_sentence_judgment(text, text, text, smallint, text, jsonb) from anon';
-    execute 'revoke execute on function public.cache_sentence_judgment(text, text, text, smallint, text, jsonb) from authenticated';
+    execute 'alter function public.cache_sentence_judgment(text, text, text, smallint, text, jsonb) security invoker';
+  end if;
+  if to_regprocedure('public.cache_sentence_judgment(text,text,text,text,smallint,text,jsonb)') is not null then
+    execute 'alter function public.cache_sentence_judgment(text, text, text, text, smallint, text, jsonb) security invoker';
   end if;
 end
-$permissions$;
-
-create or replace function public.cache_sentence_judgment(
-  p_fingerprint text,
-  p_sentence_text text,
-  p_judge_version text,
-  p_model text,
-  p_score smallint,
-  p_feedback text,
-  p_tags jsonb
-)
-returns boolean
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  was_inserted boolean := false;
-begin
-  insert into public.sentence_judgments (
-    fingerprint, sentence_text, judge_version, model, score, feedback, tags
-  ) values (
-    p_fingerprint, left(p_sentence_text, 80), p_judge_version, p_model, p_score, p_feedback, p_tags
-  )
-  on conflict (fingerprint) do nothing
-  returning true into was_inserted;
-
-  if not coalesce(was_inserted, false) then
-    update public.sentence_judgments
-       set seen_count = seen_count + 1,
-           last_seen_at = now()
-     where fingerprint = p_fingerprint;
-  end if;
-
-  return coalesce(was_inserted, false);
-end;
-$$;
-
-revoke execute on function public.cache_sentence_judgment(text, text, text, text, smallint, text, jsonb)
-  from public;
-revoke execute on function public.cache_sentence_judgment(text, text, text, text, smallint, text, jsonb)
-  from anon;
-revoke execute on function public.cache_sentence_judgment(text, text, text, text, smallint, text, jsonb)
-  from authenticated;
-grant execute on function public.cache_sentence_judgment(text, text, text, text, smallint, text, jsonb)
-  to service_role;
+$legacy_functions$;
 
 commit;

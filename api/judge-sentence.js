@@ -54,7 +54,7 @@ function allowRequest(id) {
 function readCached(fingerprint) {
   const hit = cache.get(fingerprint);
   if (!hit || Date.now() - hit.time > CACHE_TTL_MS) {
-    if (hit) cache.delete(sentence);
+    if (hit) cache.delete(fingerprint);
     return null;
   }
   return { ...hit.value, source: 'server-cache' };
