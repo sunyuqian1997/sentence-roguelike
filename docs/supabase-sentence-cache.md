@@ -77,6 +77,6 @@ SUPABASE_SECRET_KEY=sb_secret_你的服务端密钥
 
 - 表已启用 RLS，并撤销 `anon` / `authenticated` 权限。
 - Secret Key 仅由 `/api/judge-sentence` 使用；浏览器仍只调用同源 API。
-- Supabase 查询有 260ms 硬超时，数据库慢时立即回到原链路，不阻塞战斗。
+- Supabase 读取有 650ms、写入有 900ms 硬超时；数据库慢或离线时立即回到原链路，不阻塞战斗。
 - 唯一主键与 SQL 函数保证并发请求中只有一个请求取得首见奖励。
 - 当前缓存适合精确去重，不承担强限流；大流量下仍应增加全局速率限制。

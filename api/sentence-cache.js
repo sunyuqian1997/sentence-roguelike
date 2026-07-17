@@ -3,7 +3,8 @@ import { createHash } from 'node:crypto';
 export const JUDGE_VERSION = 'sentence-judge-2026-07-v1';
 export const NOVELTY_MIN_SCORE = 60;
 export const NOVELTY_BONUS_PERCENT = 3;
-const SUPABASE_TIMEOUT_MS = 260;
+const SUPABASE_READ_TIMEOUT_MS = 650;
+const SUPABASE_WRITE_TIMEOUT_MS = 900;
 
 function cacheConfig() {
   const url = String(process.env.SUPABASE_URL || '').trim().replace(/\/+$/, '');
@@ -22,9 +23,9 @@ function headers(key, extra = {}) {
   };
 }
 
-async function timedFetch(url, options = {}) {
+async function timedFetch(url, options = {}, timeoutMs = SUPABASE_READ_TIMEOUT_MS) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), SUPABASE_TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     return await fetch(url, { ...options, signal: controller.signal });
   } finally {
@@ -91,7 +92,7 @@ export async function persistJudgment({ fingerprint, model, result }) {
         p_feedback: result.feedback,
         p_tags: result.tags,
       }),
-    });
+    }, SUPABASE_WRITE_TIMEOUT_MS);
     if (!response.ok) return false;
     return (await response.json()) === true;
   } catch (_error) {
