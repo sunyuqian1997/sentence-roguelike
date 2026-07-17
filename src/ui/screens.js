@@ -213,7 +213,7 @@ function renderSentenceJournal(afterId) {
   div.id = 'sentence-journal';
   div.className = 'ink-reward-breakdown';
   div.style.marginTop = '12px';
-  let h = '<div style="font-family:var(--font-brush);font-size:1rem;color:var(--ink);letter-spacing:0.15em;margin-bottom:8px;text-align:center;">— 今夜发行记录 —</div>';
+  let h = '<div style="font-family:var(--font-brush);font-size:1rem;color:var(--ink);letter-spacing:0.15em;margin-bottom:8px;text-align:center;">— 句子记录 —</div>';
   G.sentenceJournal.forEach((s, i) => {
     h += `<div style="font-family:var(--font-brush);font-size:0.95rem;color:var(--ink-light);line-height:2;text-align:center;letter-spacing:0.08em;">「${s}」</div>`;
   });

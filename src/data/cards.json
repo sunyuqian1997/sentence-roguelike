@@ -3733,7 +3733,7 @@
     }
   },
   "chen": {
-    "word": "沉",
+    "word": "防",
     "pos": "verb",
     "valence": "intrans",
     "cost": 1,
@@ -3741,10 +3741,10 @@
     "combatType": "defense",
     "basePower": 5,
     "upgPower": 8,
-    "flavor": "向海底，向更深的海底",
+    "flavor": "先护住自己，再想下一句",
     "desc": "格挡 {power}",
     "en": {
-      "word": "Sink",
+      "word": "Defend",
       "desc": "DEF {power}"
     }
   },

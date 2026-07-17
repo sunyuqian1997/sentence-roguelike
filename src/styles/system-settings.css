@@ -1,0 +1,212 @@
+/* ============================================================
+   System controls, sentence log, and restrained CRT finish.
+   Loaded after the main skin so these OS controls remain authoritative.
+   ============================================================ */
+
+#settings-btn {
+  position: absolute;
+  left: 12px;
+  top: 36px;
+  z-index: 32010;
+  min-width: 76px;
+  height: 30px;
+  padding: 0 8px;
+  border: 2px solid var(--os-ink, #1a1a18);
+  border-radius: 0;
+  background: var(--os-paper, #f6f1e2);
+  color: var(--os-ink, #1a1a18);
+  box-shadow: 3px 3px 0 rgba(20, 42, 38, .4);
+  font: 10px/1 var(--font-pixel);
+  cursor: pointer;
+}
+#settings-btn:hover,
+#settings-btn:focus-visible { background: var(--os-water, #bcded7); outline: 2px solid var(--os-orange, #d96c3f); outline-offset: 2px; }
+#settings-btn.is-muted::after { content: '×'; margin-left: 4px; color: var(--os-orange-dark, #9d402a); }
+
+body:has(#combat-screen.active) #settings-btn {
+  top: 3px;
+  left: 12px;
+  height: 24px;
+  min-height: 24px;
+}
+body:has(#combat-screen.active) #combat-top::before { left: 98px !important; }
+body:has(#combat-screen.active) #combat-top { padding-left: 202px !important; }
+
+.audio-settings-panel[hidden] { display: none !important; }
+.audio-settings-panel {
+  position: absolute;
+  left: 12px;
+  top: 70px;
+  z-index: 32000;
+  width: 238px;
+  padding: 0 !important;
+  overflow: hidden;
+  border: 2px solid var(--os-ink, #1a1a18) !important;
+  background: var(--os-paper, #f6f1e2) !important;
+  color: var(--os-ink, #1a1a18);
+  box-shadow: 0 0 0 2px var(--os-gold, #c8b98a), 6px 6px 0 rgba(20, 42, 38, .42) !important;
+  font-family: var(--font-pixel);
+}
+body:has(#combat-screen.active) .audio-settings-panel { top: 34px; }
+.audio-settings-title {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 7px;
+  border-bottom: 2px solid var(--os-ink, #1a1a18);
+  background: var(--os-water, #bcded7);
+  font-size: 10px;
+  letter-spacing: .06em;
+}
+.audio-settings-title button {
+  width: 25px;
+  height: 22px;
+  border: 0;
+  border-left: 2px solid var(--os-ink, #1a1a18);
+  background: var(--os-paper, #f6f1e2);
+  color: var(--os-ink, #1a1a18);
+  font: 16px/1 var(--font-pixel);
+  cursor: pointer;
+}
+.audio-settings-title button:focus-visible { outline: 2px solid var(--os-orange, #d96c3f); outline-offset: -4px; }
+.audio-settings-body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 5px;
+  padding: 9px 10px 10px;
+}
+.audio-settings-body label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+}
+.audio-settings-body output { color: var(--os-orange-dark, #9d402a); font-variant-numeric: tabular-nums; }
+.audio-settings-body input[type='range'] {
+  width: 100%;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--os-orange, #d96c3f);
+  cursor: pointer;
+}
+.audio-settings-body input[type='range']:focus-visible {
+  outline: 2px solid var(--os-orange, #d96c3f);
+  outline-offset: 2px;
+}
+#audio-mute-toggle {
+  height: 25px;
+  margin-top: 3px;
+  border: 2px solid var(--os-ink, #1a1a18);
+  background: var(--os-paper, #f6f1e2);
+  color: var(--os-ink, #1a1a18);
+  box-shadow: 2px 2px 0 rgba(20, 42, 38, .35);
+  font: 10px/1 var(--font-pixel);
+  cursor: pointer;
+}
+#audio-mute-toggle[aria-pressed='true'] { background: var(--os-orange, #d96c3f); color: var(--os-paper, #f6f1e2); }
+#audio-mute-toggle:focus-visible { outline: 2px solid var(--os-orange, #d96c3f); outline-offset: 2px; }
+
+/* The live sentence log is intentionally not another OS window: it is a quiet,
+   transparent text layer in the unused strip left of the 836px stage. */
+#combat-stage > #round-journal {
+  position: absolute !important;
+  left: auto !important;
+  right: calc(100% + 10px) !important;
+  top: 0 !important;
+  width: 180px !important;
+  height: 92px !important;
+  max-height: 92px !important;
+  display: flex !important;
+  flex-direction: column;
+  gap: 0 !important;
+  padding: 0 !important;
+  overflow: hidden;
+  z-index: 16;
+  opacity: .66;
+  border: 0 !important;
+  border-left: 1px solid rgba(246, 241, 226, .24) !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  transition: opacity .16s ease;
+}
+#combat-stage > #round-journal:hover,
+#combat-stage > #round-journal:focus-within { opacity: .88; }
+#combat-stage > #round-journal::after {
+  content: '↕';
+  position: absolute;
+  right: 2px;
+  bottom: 1px;
+  color: rgba(246, 241, 226, .34);
+  font: 8px/1 var(--font-pixel);
+  pointer-events: none;
+}
+#combat-stage > #round-journal .round-journal-header {
+  min-height: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 0 5px 2px;
+  border: 0;
+  border-bottom: 1px solid rgba(246, 241, 226, .18);
+  background: transparent;
+}
+#combat-stage > #round-journal .round-journal-title {
+  color: rgba(246, 241, 226, .62) !important;
+  font: 400 8px/1 var(--font-pixel) !important;
+  letter-spacing: .1em !important;
+  white-space: nowrap;
+}
+#combat-stage > #round-journal #rhyme-streak-tag { padding: 0 3px; font-size: 8px; white-space: nowrap; }
+#combat-stage > #round-journal #round-journal-lines {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  padding: 4px 7px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  scrollbar-color: rgba(246, 241, 226, .2) transparent;
+  mask-image: linear-gradient(to bottom, #000 0, #000 78%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 78%, transparent 100%);
+}
+#combat-stage > #round-journal .round-journal-line,
+#combat-stage > #round-journal .round-journal-empty {
+  width: 100%;
+  color: rgba(246, 241, 226, .72) !important;
+  font: 8px/1.4 var(--font-pixel) !important;
+  text-align: left;
+}
+#combat-stage > #round-journal .round-journal-line { animation: roundJournalFade .22s steps(3) both; }
+#combat-stage > #round-journal .rj-num { flex: 0 0 auto; color: rgba(246, 241, 226, .38); font-size: 7px; }
+
+/* Invalid combinations explain themselves on the action button. */
+#chant-btn.btn-invalid-sentence {
+  background: var(--os-paper, #f6f1e2) !important;
+  color: var(--os-orange-dark, #9d402a) !important;
+  border-color: var(--os-orange-dark, #9d402a) !important;
+  letter-spacing: .04em !important;
+}
+
+/* CRT strength reduced to 60% of the previous alpha values. */
+#crt-overlay::before {
+  background:
+    repeating-linear-gradient(180deg, rgba(18, 35, 31, 0) 0 2px, rgba(18, 35, 31, .10) 2px 3px),
+    repeating-linear-gradient(90deg, rgba(217, 108, 63, .015) 0 1px, rgba(46, 139, 132, .011) 1px 3px) !important;
+}
+#crt-overlay::after {
+  box-shadow:
+    inset 0 0 44px rgba(16, 39, 34, .25),
+    inset 0 0 8px rgba(16, 39, 34, .21) !important;
+  background: radial-gradient(ellipse at center, transparent 68%, rgba(14, 34, 30, .10) 100%) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #combat-stage > #round-journal .round-journal-line { animation: none; }
+}

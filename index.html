@@ -18,7 +18,24 @@
     <span id="os-night-label">第零夜 · 18:47</span>
   </header>
   <div id="ink-bg"></div>
-  <button id="mute-btn" onclick="toggleMute()">♪</button>
+  <button id="settings-btn" type="button" aria-expanded="false" aria-controls="audio-settings-panel">
+    ⚙ <span data-i18n="settings">设置</span>
+  </button>
+  <section id="audio-settings-panel" class="audio-settings-panel os-window" aria-label="声音设置" hidden>
+    <div class="audio-settings-title">
+      <span data-i18n="soundSettings">声音设置.sys</span>
+      <button id="audio-settings-close" type="button" aria-label="关闭声音设置">×</button>
+    </div>
+    <div class="audio-settings-body">
+      <label for="audio-master"><span data-i18n="masterVolume">总音量</span><output id="audio-master-value" for="audio-master">80%</output></label>
+      <input id="audio-master" type="range" min="0" max="100" step="1" value="80" aria-label="总音量">
+      <label for="audio-bgm"><span data-i18n="bgmVolume">背景音乐</span><output id="audio-bgm-value" for="audio-bgm">70%</output></label>
+      <input id="audio-bgm" type="range" min="0" max="100" step="1" value="70" aria-label="背景音乐音量">
+      <label for="audio-sfx"><span data-i18n="sfxVolume">音效</span><output id="audio-sfx-value" for="audio-sfx">80%</output></label>
+      <input id="audio-sfx" type="range" min="0" max="100" step="1" value="80" aria-label="音效音量">
+      <button id="audio-mute-toggle" type="button" aria-pressed="false">全部静音</button>
+    </div>
+  </section>
   <button id="crt-toggle" type="button" onclick="toggleCRT()" aria-pressed="true">CRT ON</button>
   <div id="crt-overlay" aria-hidden="true"></div>
   <div id="tooltip"><div class="tt-name"></div><div class="tt-type"></div><div class="tt-desc"></div><div class="tt-flavor"></div></div>
@@ -72,7 +89,7 @@
       </div>
       <div class="combat-info"><span id="combat-status-effects"></span></div>
       <div class="combat-info">
-        <button class="btn-small btn btn-secondary" onclick="viewJournal()" style="font-size:0.65rem;padding:3px 8px;" id="journal-btn" data-i18n="poemBook">课堂记录</button>
+        <button class="btn-small btn btn-secondary" onclick="viewJournal()" style="font-size:0.65rem;padding:3px 8px;" id="journal-btn" data-i18n="poemBook">句子记录</button>
         <button class="btn-small btn btn-secondary" onclick="viewDeck()" style="font-size:0.65rem;padding:3px 8px;" data-i18n="deckBtn">词库</button>
       </div>
     </div>
@@ -87,6 +104,15 @@
     <!-- Battle stage: player standee (left) | puppet theatre (center) | enemy standee (right) -->
     <div id="combat-stage">
       <div class="os-window-title combat-stage-title"><span>词灵戏台.pict</span><i>×</i></div>
+      <div id="round-journal" aria-label="本场句子记录">
+        <div class="round-journal-header">
+          <span class="round-journal-title" data-i18n="roundJournal">句子记录</span>
+          <span id="rhyme-streak-tag"></span>
+        </div>
+        <div id="round-journal-lines" tabindex="0" aria-label="已吟诵的句子">
+          <div class="round-journal-empty">尚未吟诵…</div>
+        </div>
+      </div>
       <div id="stage-player" class="stage-side">
         <div class="standee player-standee" id="player-char-card" title="点击选「我」为目标">
           <img id="player-portrait-img" src="/main_characters/girl/00.png" alt="林夕" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
@@ -101,16 +127,6 @@
       </div>
 
       <div id="stage-center">
-        <!-- 本场诗册：贴左侧竖条，左对齐 -->
-        <div id="round-journal">
-          <div class="round-journal-header">
-            <span class="round-journal-title" data-i18n="roundJournal">梦中语句</span>
-            <span id="rhyme-streak-tag"></span>
-          </div>
-          <div id="round-journal-lines">
-            <div class="round-journal-empty">尚未发行…</div>
-          </div>
-        </div>
         <div id="puppet-stage">
             <div class="theatre-backdrop"></div>
             <div class="theatre-wash"></div>
@@ -268,7 +284,7 @@
 
   <!-- JOURNAL OVERLAY -->
   <div id="journal-overlay" class="overlay">
-    <h3>今夜发行记录（<span id="journal-count">0</span>句）</h3>
+    <h3>句子记录（<span id="journal-count">0</span>句）</h3>
     <div id="journal-list" class="journal-list"></div>
     <button class="btn btn-small btn-secondary" onclick="closeJournal()" style="margin-top:14px;">关闭</button>
   </div>
@@ -341,5 +357,6 @@
 function toggleLang(){try{var m=JSON.parse(localStorage.getItem('sentence_rogue_meta')||'{}');m.lang=m.lang==='en'?'zh':'en';localStorage.setItem('sentence_rogue_meta',JSON.stringify(m));window.location.href=window.location.href.split('?')[0]+'?t='+Date.now();}catch(e){alert(e);}}
 </script>
 <script type="module" src="/src/main.js"></script>
+<script type="module" src="/src/ui/audioSettingsBoot.js"></script>
 </body>
 </html>

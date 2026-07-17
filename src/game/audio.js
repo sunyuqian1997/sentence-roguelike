@@ -1,6 +1,56 @@
 import { G } from './state.js';
+import { t } from '../i18n.js';
 
-let audioCtx = null, masterGain = null, musicInterval = null;
+let audioCtx = null, masterGain = null, musicGain = null, sfxGain = null, musicInterval = null;
+
+const AUDIO_SETTINGS_KEY = 'sentence_rogue_audio_settings';
+const DEFAULT_AUDIO_SETTINGS = Object.freeze({
+  master: 0.8,
+  bgm: 0.7,
+  sfx: 0.8,
+  muted: false,
+});
+
+function clamp01(value, fallback = 1) {
+  const n = Number(value);
+  return Number.isFinite(n) ? Math.max(0, Math.min(1, n)) : fallback;
+}
+
+function readAudioSettings() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(AUDIO_SETTINGS_KEY) || '{}');
+    return {
+      master: clamp01(saved.master, DEFAULT_AUDIO_SETTINGS.master),
+      bgm: clamp01(saved.bgm, DEFAULT_AUDIO_SETTINGS.bgm),
+      sfx: clamp01(saved.sfx, DEFAULT_AUDIO_SETTINGS.sfx),
+      muted: saved.muted === true,
+    };
+  } catch (error) {
+    return { ...DEFAULT_AUDIO_SETTINGS };
+  }
+}
+
+let audioSettings = readAudioSettings();
+G.muted = audioSettings.muted;
+const activeMedia = new Set();
+
+function saveAudioSettings() {
+  try { localStorage.setItem(AUDIO_SETTINGS_KEY, JSON.stringify(audioSettings)); } catch (error) { /* ignore */ }
+}
+
+function bgmVolume(base = 1) {
+  return audioSettings.muted ? 0 : clamp01(base) * audioSettings.master * audioSettings.bgm;
+}
+
+function applyAudioLevels() {
+  G.muted = audioSettings.muted;
+  if (masterGain) masterGain.gain.value = audioSettings.muted ? 0 : 0.12 * audioSettings.master;
+  if (musicGain) musicGain.gain.value = audioSettings.bgm;
+  if (sfxGain) sfxGain.gain.value = audioSettings.sfx;
+  if (bgmEl) bgmEl.volume = bgmVolume(BGM_VOLUME);
+  activeMedia.forEach((el) => { el.volume = bgmVolume(el._baseVolume || 0.5); });
+  syncAudioSettingsUI();
+}
 
 // ---- Real MP3 BGM ----
 // Drop files in public/bgm/ and reference by the absolute "/bgm/..." path.
@@ -25,7 +75,8 @@ function fadeAudio(el, from, to, ms, onDone) {
   el.volume = Math.max(0, Math.min(1, from));
   const iv = setInterval(() => {
     i++;
-    try { el.volume = Math.max(0, Math.min(1, from + (to - from) * (i / steps))); } catch (e) { /* detached */ }
+    const liveTarget = el === bgmEl && to > 0 ? bgmVolume(BGM_VOLUME) : to;
+    try { el.volume = Math.max(0, Math.min(1, from + (liveTarget - from) * (i / steps))); } catch (e) { /* detached */ }
     if (i >= steps) { clearInterval(iv); if (onDone) onDone(); }
   }, dt);
   return iv;
@@ -53,7 +104,7 @@ function playBgmTrack(key, fallback) {
     if (fallback) fallback();
   };
   el.addEventListener('error', useFallback, { once: true });
-  const fadeIn = () => { if (!G.muted && bgmEl === el) fadeAudio(el, 0, BGM_VOLUME, 500); };
+  const fadeIn = () => { if (!G.muted && bgmEl === el) fadeAudio(el, 0, bgmVolume(BGM_VOLUME), 500); };
   const p = el.play();
   if (p && p.then) p.then(fadeIn).catch(useFallback); // autoplay blocked → synth
   else fadeIn();
@@ -64,17 +115,20 @@ function playBgmTrack(key, fallback) {
 export function playVictoryJingle() {
   if (G.muted) return;
   const el = new Audio('/bgm/victory.mp3');
-  el.volume = 0.5;
+  el._baseVolume = 0.5;
+  activeMedia.add(el);
+  el.volume = bgmVolume(0.5);
   const prev = bgmEl;
   const prevVol = prev ? prev.volume : null;
   if (prev) fadeAudio(prev, prev.volume, 0.06, 250);
   const restore = () => {
-    if (prev && prevVol != null && bgmEl === prev) fadeAudio(prev, prev.volume, G.muted ? 0 : BGM_VOLUME, 600);
+    if (prev && prevVol != null && bgmEl === prev) fadeAudio(prev, prev.volume, bgmVolume(BGM_VOLUME), 600);
   };
-  el.addEventListener('ended', restore, { once: true });
-  el.addEventListener('error', restore, { once: true });
+  const finish = () => { activeMedia.delete(el); restore(); };
+  el.addEventListener('ended', finish, { once: true });
+  el.addEventListener('error', finish, { once: true });
   const p = el.play();
-  if (p && p.catch) p.catch(restore);
+  if (p && p.catch) p.catch(finish);
 }
 
 function stopBgmTrack() {
@@ -83,21 +137,110 @@ function stopBgmTrack() {
 }
 
 export function initAudio() {
-  if (audioCtx) return;
+  if (audioCtx) {
+    if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+    applyAudioLevels();
+    return;
+  }
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   masterGain = audioCtx.createGain();
-  masterGain.gain.value = 0.12;
   masterGain.connect(audioCtx.destination);
+  musicGain = audioCtx.createGain();
+  sfxGain = audioCtx.createGain();
+  musicGain.connect(masterGain);
+  sfxGain.connect(masterGain);
+  applyAudioLevels();
 }
 
-export function toggleMute() {
-  G.muted = !G.muted;
-  document.getElementById('mute-btn').textContent = G.muted ? '🔇' : '♪';
-  if (masterGain) masterGain.gain.value = G.muted ? 0 : 0.12;
-  if (bgmEl) bgmEl.volume = G.muted ? 0 : BGM_VOLUME;
+export function toggleMute(force) {
+  audioSettings.muted = typeof force === 'boolean' ? force : !audioSettings.muted;
+  saveAudioSettings();
+  applyAudioLevels();
 }
 
-function playNote(freq, dur, type, t, gain) {
+export function getAudioSettings() {
+  return { ...audioSettings };
+}
+
+export function setAudioSetting(name, value) {
+  if (!['master', 'bgm', 'sfx'].includes(name)) return;
+  audioSettings[name] = clamp01(value, audioSettings[name]);
+  saveAudioSettings();
+  applyAudioLevels();
+}
+
+function syncAudioSettingsUI() {
+  const values = {
+    master: Math.round(audioSettings.master * 100),
+    bgm: Math.round(audioSettings.bgm * 100),
+    sfx: Math.round(audioSettings.sfx * 100),
+  };
+  Object.entries(values).forEach(([name, value]) => {
+    const input = document.getElementById(`audio-${name}`);
+    const output = document.getElementById(`audio-${name}-value`);
+    if (input && input.value !== String(value)) input.value = String(value);
+    if (output) output.textContent = `${value}%`;
+  });
+  const mute = document.getElementById('audio-mute-toggle');
+  if (mute) {
+    mute.setAttribute('aria-pressed', String(audioSettings.muted));
+    mute.textContent = audioSettings.muted ? t('unmuteAll') : t('muteAll');
+  }
+  const settingsButton = document.getElementById('settings-btn');
+  if (settingsButton) settingsButton.classList.toggle('is-muted', audioSettings.muted);
+}
+
+export function toggleAudioSettings(force, restoreFocus = true) {
+  const panel = document.getElementById('audio-settings-panel');
+  const button = document.getElementById('settings-btn');
+  if (!panel || !button) return;
+  const open = typeof force === 'boolean' ? force : panel.hidden;
+  panel.hidden = !open;
+  button.setAttribute('aria-expanded', String(open));
+  if (open) requestAnimationFrame(() => document.getElementById('audio-master')?.focus());
+  else if (restoreFocus) button.focus({ preventScroll: true });
+}
+
+export function initAudioSettings() {
+  const panel = document.getElementById('audio-settings-panel');
+  const settingsButton = document.getElementById('settings-btn');
+  if (!panel || !settingsButton || panel.dataset.bound === '1') return;
+  panel.dataset.bound = '1';
+  settingsButton.addEventListener('click', () => toggleAudioSettings());
+  document.getElementById('audio-settings-close')?.addEventListener('click', () => toggleAudioSettings(false));
+  document.getElementById('audio-mute-toggle')?.addEventListener('click', () => toggleMute());
+  ['master', 'bgm', 'sfx'].forEach((name) => {
+    document.getElementById(`audio-${name}`)?.addEventListener('input', (event) => {
+      setAudioSetting(name, Number(event.currentTarget.value) / 100);
+    });
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !panel.hidden) toggleAudioSettings(false);
+  });
+  document.addEventListener('pointerdown', (event) => {
+    if (!panel.hidden && !panel.contains(event.target) && !settingsButton.contains(event.target)) {
+      toggleAudioSettings(false, false);
+    }
+  });
+  syncAudioSettingsUI();
+}
+
+let ambientStartArmed = false;
+export function initAmbientMusicOnFirstInteraction() {
+  if (ambientStartArmed) return;
+  ambientStartArmed = true;
+  const start = () => {
+    initAudio();
+    const combatActive = document.getElementById('combat-screen')?.classList.contains('active');
+    if (!combatActive || G.isTutorial) playAmbientMusic();
+    document.removeEventListener('pointerdown', start, true);
+    document.removeEventListener('keydown', start, true);
+  };
+  document.addEventListener('pointerdown', start, true);
+  document.addEventListener('keydown', start, true);
+}
+
+function playNote(freq, dur, type, t, gain, bus = 'sfx') {
   if (!audioCtx) return;
   const o = audioCtx.createOscillator();
   const g = audioCtx.createGain();
@@ -110,7 +253,7 @@ function playNote(freq, dur, type, t, gain) {
   g.gain.linearRampToValueAtTime(gain || 0.2, t + atk);
   g.gain.exponentialRampToValueAtTime(0.001, t + dur);
   o.connect(g);
-  g.connect(masterGain);
+  g.connect(bus === 'bgm' ? musicGain : sfxGain);
   o.start(t);
   o.stop(t + dur);
 }
@@ -142,21 +285,24 @@ export function playAmbientMusicDeferred(ms = 10800) {
 export function playAmbientMusic() {
   playBgmTrack('ambient', () => synthLoop(
     [261.6, 293.7, 329.6, 392.0, 440.0], 3500,
-    (n, t) => { playNote(n, 3, 'sine', t, 0.06); playNote(n * 0.5, 3, 'triangle', t, 0.03); }
+    (n, t) => { playNote(n, 3, 'sine', t, 0.06, 'bgm'); playNote(n * 0.5, 3, 'triangle', t, 0.03, 'bgm'); }
   ));
 }
 
 export function playCombatMusic() {
+  // The tutorial is a guided main-interface experience, so it deliberately
+  // keeps the ambient track instead of switching to combat music.
+  if (G.isTutorial) { playAmbientMusic(); return; }
   playBgmTrack('combat', () => synthLoop(
     [196.0, 220.0, 261.6, 220.0, 196.0, 164.8, 196.0, 261.6], 550,
-    (n, t) => { playNote(n, 0.25, 'triangle', t, 0.1); playNote(98, 0.15, 'sine', t, 0.08); }
+    (n, t) => { playNote(n, 0.25, 'triangle', t, 0.1, 'bgm'); playNote(98, 0.15, 'sine', t, 0.08, 'bgm'); }
   ));
 }
 
 export function playBossMusic() {
   playBgmTrack('boss', () => synthLoop(
     [164.8, 196.0, 220.0, 261.6, 220.0, 196.0, 164.8, 146.8], 380,
-    (n, t) => { playNote(n, 0.2, 'sawtooth', t, 0.06); playNote(82.4, 0.12, 'triangle', t, 0.1); }
+    (n, t) => { playNote(n, 0.2, 'sawtooth', t, 0.06, 'bgm'); playNote(82.4, 0.12, 'triangle', t, 0.1, 'bgm'); }
   ));
 }
 
@@ -177,7 +323,7 @@ function playNoise(duration, t, gain) {
   filter.Q.value = 0.5;
   noise.connect(filter);
   filter.connect(g);
-  g.connect(masterGain);
+  g.connect(sfxGain);
   noise.start(t);
   noise.stop(t + duration);
 }
