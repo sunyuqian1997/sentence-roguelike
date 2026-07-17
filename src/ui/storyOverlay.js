@@ -7,8 +7,9 @@ export let storyCallback = null;
 export function skipStory() {
   storyQueue = [];
   document.getElementById('story-overlay').classList.remove('active');
-  if (storyCallback) storyCallback();
+  const callback = storyCallback;
   storyCallback = null;
+  if (callback) callback();
 }
 
 export function playStory(chapterKey, callback) {
@@ -34,8 +35,9 @@ export function playStory(chapterKey, callback) {
 export function showNextStoryLine() {
   if (storyQueue.length === 0) {
     document.getElementById('story-overlay').classList.remove('active');
-    if (storyCallback) storyCallback();
+    const callback = storyCallback;
     storyCallback = null;
+    if (callback) callback();
     return;
   }
   const line = storyQueue.shift();
@@ -53,12 +55,14 @@ export function showNextStoryLine() {
   }
   typeChar();
   const portraitEl = document.getElementById('story-portrait');
-  if (line.speaker === '李清照') {
-    portraitEl.innerHTML = `<img src="/lqz.png" alt="李清照" style="width:100%;height:100%;border-radius:50%;object-fit:cover;object-position:top;">`;
+  if (line.speaker === '林夕' || line.speaker === '李清照') {
+    portraitEl.innerHTML = `<img src="/lqz.png" alt="林夕" style="width:100%;height:100%;object-fit:cover;object-position:top;">`;
   } else {
     const speakerMap = {
       '仓颉之影': 'cangjie', '诗圣残魂': 'shisheng',
-      '词帝幽灵': 'cidi', '???': 'shadow',
+      '词帝幽灵': 'cidi', '教务处的眼': 'cangjie',
+      '第十三频道': 'shisheng', '地下档案·■■■': 'cidi',
+      '???': 'shadow',
     };
     portraitEl.innerHTML = generateCharSVG(speakerMap[line.speaker] || 'system', 100);
   }

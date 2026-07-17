@@ -92,6 +92,19 @@ export function renderEnemies() {
   const area = document.getElementById('enemy-area');
   area.innerHTML = '';
   const targetedIdx = getTargetedEnemyIdx();
+  const targetedEnemy = targetedIdx >= 0 ? G.enemies[targetedIdx] : null;
+  const foregroundEnemy = targetedEnemy?.hp > 0
+    ? targetedEnemy
+    : G.enemies.find(enemy => enemy && enemy.hp > 0);
+  const foregroundSprite = document.getElementById('battle-sprite-enemy');
+  const foregroundSpriteImage = document.getElementById('battle-enemy-sprite-img');
+  if (foregroundSprite && foregroundSpriteImage) {
+    foregroundSprite.hidden = !foregroundEnemy;
+    if (foregroundEnemy) {
+      foregroundSpriteImage.src = foregroundEnemy.portrait || '/enemies/moyao.png';
+      foregroundSpriteImage.alt = enemyName(foregroundEnemy);
+    }
+  }
 
   G.enemies.forEach((enemy, idx) => {
     if (enemy.hp <= 0) return;
@@ -159,6 +172,7 @@ function addEnemyTarget(idx, enemy) {
   if (!tryAddCard(card)) { renderCombat(); return; }
   playSFX('card');
   renderCombat();
+  if (G.isTutorial) document.dispatchEvent(new CustomEvent('tutorial:sentence-changed'));
 }
 
 export function getTargetedEnemyIdx() {
@@ -456,6 +470,7 @@ export function addSelfTarget() {
   if (!tryAddCard(card)) { renderCombat(); return; }
   playSFX('card');
   renderCombat();
+  if (G.isTutorial) document.dispatchEvent(new CustomEvent('tutorial:sentence-changed'));
 }
 
 // Clicking the player portrait also still selects 我 (kept as a bonus). Mark
@@ -468,6 +483,7 @@ function syncTargetSelectability() {
 export function createCardElement(card, handIndex, opts={}) {
   const div = document.createElement('div');
   div.className = `card pos-${card.pos}`;
+  if (card.key) div.dataset.cardKey = card.key;
   if (card.upgraded) div.classList.add('upgraded');
   if (card.rarity === 'uncommon') div.classList.add('rarity-uncommon');
   if (card.rarity === 'rare') div.classList.add('rarity-rare');

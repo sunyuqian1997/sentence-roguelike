@@ -20,6 +20,7 @@ import { EVENTS_BY_ACT, EVENTS_FALLBACK } from '../data/events.js';
 import { SCENES, sceneName, addSceneryWords, sceneTurnStartEffects } from './scenes.js';
 import { closeMetaScreen, showVictoryScreen } from '../ui/screens.js';
 import { logChant } from './chantLog.js';
+import { beginTutorial } from './tutorial.js';
 
 // ============================================================
 // GAME START
@@ -40,6 +41,7 @@ export function startGame() {
   G.allCardsCostZero = false; G.poeticAura = false;
   G.shopInventory = null; G.drawLessNextTurn = 0;
   G.scenesVisited = [];   // 本局到过的场景(P5,连环画 P6 的原料)
+  G.isTutorial = false;
 
   if (META.perks.includes('thick_paper')) { G.maxHp += 5; G.hp += 5; }
   if (META.perks.includes('ink_pot')) { G.gold += 15; }
@@ -48,12 +50,24 @@ export function startGame() {
   META.runs++; saveMeta();
   G.map = generateMap(1);
   playAmbientMusic();
-  if (META.runs <= 1) {
-    playStory('prologue', function() {
-      playStory('act1_intro', function() {
-        showScreen('map-screen');
-        renderMap();
-      });
+  if (!META.tutorialCompleted) {
+    G.isTutorial = true;
+    const tutorialEnemy = {
+      name: '被涂掉的「她」', nameEn: 'The Erased Girl', hp: 5,
+      act: 1, type: 'normal', emoji: '▨', portrait: '/canjuguai.png',
+      tags: ['word', 'school', 'anomaly'], tutorial: true,
+      ai(enemy) { enemy.nextIntent = { type: 'attack', value: 0, icon: '眼', label: '注视' }; },
+      act_fn() {},
+    };
+    startCombat([tutorialEnemy]);
+    beginTutorial(function() {
+      G.combatCount = 0;
+      G.currentRow = -1;
+      G.currentNodeIndex = -1;
+      resetVictoryGuard();
+      playAmbientMusic();
+      showScreen('map-screen');
+      renderMap();
     });
   } else {
     playStory('act1_intro', function() {
@@ -142,6 +156,7 @@ export function startPlayerTurn() {
   guaranteeVerb();
   guaranteeCopula();
   guaranteeTutorialCombo();
+  guaranteeOnboardingHand();
   renderCombat();
   requestAnimationFrame(() => {
     document.querySelectorAll('#hand-cards .card').forEach((c, i) => {
@@ -149,6 +164,26 @@ export function startPlayerTurn() {
       c.classList.add('card-deal-anim');
     });
   });
+}
+
+function guaranteeOnboardingHand() {
+  if (!G.isTutorial || G.turn !== 1 || G.hand.some(card => card.key === 'zhan')) return;
+  let card = null;
+  let index = G.drawPile.findIndex(candidate => candidate.key === 'zhan');
+  if (index >= 0) card = G.drawPile.splice(index, 1)[0];
+  if (!card) {
+    index = G.discardPile.findIndex(candidate => candidate.key === 'zhan');
+    if (index >= 0) card = G.discardPile.splice(index, 1)[0];
+  }
+  if (!card && WORD_DEFS.zhan) card = makeCard({ ...WORD_DEFS.zhan, key: 'zhan' });
+  if (!card) return;
+  const replaceIndex = G.hand.findIndex(candidate => candidate.pos !== 'punctuation' && candidate.pos !== 'verb');
+  if (replaceIndex >= 0) {
+    G.discardPile.push(G.hand[replaceIndex]);
+    G.hand[replaceIndex] = card;
+  } else {
+    G.hand.push(card);
+  }
 }
 
 export function drawCards(count) {
@@ -355,6 +390,7 @@ export function addToSentence(handIndex) {
   G.sentence.push(card);
   playSFX('card_insert');
   renderCombat();
+  if (G.isTutorial) document.dispatchEvent(new CustomEvent('tutorial:sentence-changed'));
   requestAnimationFrame(() => {
     syncSentenceComplete();
 
@@ -456,6 +492,8 @@ export function chantSentence() {
       return;
     }
   }
+
+  if (G.isTutorial) document.dispatchEvent(new CustomEvent('tutorial:chant'));
 
   G.energy -= cost;
   G.sentencesChanted++;
@@ -1214,6 +1252,10 @@ export function endRound() {
 // COMBAT VICTORY
 // ============================================================
 export function combatVictory() {
+  if (G.isTutorial) {
+    document.dispatchEvent(new CustomEvent('tutorial:victory'));
+    return;
+  }
   playVictoryJingle();
   G._thorns = 0;
   // In normal play this is the map node we entered; under ?autocombat there's no
@@ -1236,7 +1278,7 @@ export function showRewardScreen() {
   // 胜利小调(~10s)独享听觉焦点,放完再淡入环境乐。
   stopMusic();
   playAmbientMusicDeferred();
-  document.getElementById('reward-gold-text').textContent = `+${G.combatRewards.gold} 文银`;
+  document.getElementById('reward-gold-text').textContent = `+${G.combatRewards.gold} 校章`;
 
   // 本场最帅一句：动态重放 + 倍率徽章
   const bvWrap = document.getElementById('best-verse');
@@ -1285,7 +1327,7 @@ export function showRewardScreen() {
   const journalEl = document.getElementById('reward-journal');
   if (journalEl && G.sentenceJournal.length > 0) {
     let h = '<div style="margin-top:14px;padding:10px;border:1px solid var(--panel-border);border-radius:6px;background:rgba(255,255,255,0.3);">';
-    h += '<div style="font-family:var(--font-brush);font-size:0.9rem;color:var(--ink);text-align:center;margin-bottom:6px;">— 本局诗篇 —</div>';
+    h += '<div style="font-family:var(--font-brush);font-size:0.9rem;color:var(--ink);text-align:center;margin-bottom:6px;">— 今夜发行记录 —</div>';
     G.sentenceJournal.forEach(s => {
       h += `<div style="font-family:var(--font-brush);font-size:0.85rem;color:var(--ink-light);text-align:center;line-height:1.8;">「${s}」</div>`;
     });
@@ -1327,7 +1369,7 @@ function renderPackShop(container) {
           btn.onclick = null;
           btn.className = 'pack-item pack-bought';
           const goldEl = document.getElementById('reward-gold-text');
-          if (goldEl) goldEl.textContent = `+${G.combatRewards?.gold || 0} 文银 (持有: ${G.gold}⬡)`;
+          if (goldEl) goldEl.textContent = `+${G.combatRewards?.gold || 0} 校章 (持有: ${G.gold}⬡)`;
         };
       }
       packDiv.appendChild(btn);

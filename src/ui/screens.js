@@ -17,13 +17,13 @@ import { renderMap } from '../game/map.js';
 export function showRestScreen() {
   showScreen('rest-screen');
   const restThemes = isEn() ? [
-    { title: 'Starlit Garden', flavor: 'Glowing word-flowers bloom. Hold one to your ear and hear a faint verse.' },
-    { title: 'Word Spring', flavor: 'Letters drift in the warm spring. Soaking here, you feel strength return.' },
-    { title: 'Library Nook', flavor: 'A cozy corner. The books murmur softly, like a lullaby.' },
+    { title: 'Abandoned Infirmary', flavor: 'The bed is still warm. Behind the curtain, someone counts each beat of your heart.' },
+    { title: 'Night Duty Room', flavor: 'The duty roster has no names. A cold cup of tea is waiting in your usual place.' },
+    { title: 'Locked Library', flavor: 'Books whisper your homework answers. None of them answer how to leave.' },
   ] : [
-    { title: '星空花园', flavor: '花园里开满了会发光的文字花。摘一朵放在耳边，能听到很轻很轻的诗。' },
-    { title: '词语温泉', flavor: '热腾腾的温泉里漂浮着各种文字。泡在里面，感觉力量在慢慢恢复。' },
-    { title: '图书馆角落', flavor: '找到了一个舒服的角落。书架上的书在轻轻低语，像催眠曲一样。' },
+    { title: '废弃保健室', flavor: '病床还是温的。帘子后面有人替你数着每一次心跳。' },
+    { title: '夜间值班室', flavor: '值班表上一个名字也没有。你常坐的位置，却放着一杯冷掉的茶。' },
+    { title: '上锁的图书馆', flavor: '书架在低声告诉你作业答案。没有一本书知道该怎么离开。' },
   ];
   const theme = restThemes[Math.floor(Math.random() * restThemes.length)];
   document.getElementById('rest-title').textContent = theme.title;
@@ -108,18 +108,18 @@ export function renderShop() {
       if (item.sold) return;
       if (G.gold < item.price) {
         // 买不起也要有回应:说清缺多少, 别让玩家怀疑"为什么点不动"。
-        showFloatingText(w, `✗ 缺 ${item.price - G.gold} 文银`, '#C54B3C');
+        showFloatingText(w, `✗ 缺 ${item.price - G.gold} 校章`, '#C54B3C');
         playSFX('denied');
         return;
       }
       G.gold -= item.price; G.deck.push(item.card); item.sold = true;
-      showFloatingText(w, `-${item.price} 文银`, '#B8862B');
+      showFloatingText(w, `-${item.price} 校章`, '#B8862B');
       playSFX('card_insert');
       renderShop();
     };
     const p = document.createElement('div');
     p.className = `shop-price ${affordable?'':'cannot-afford'}`;
-    p.textContent = `${item.price}文银`;
+    p.textContent = `${item.price}校章`;
     w.appendChild(el); w.appendChild(p); c.appendChild(w);
   });
   document.getElementById('shop-remove-btn').style.opacity = G.gold >= 75 ? '1' : '0.4';
@@ -178,7 +178,7 @@ export function calculateInkReward(isVictory) {
   add(`行过${G.floorsCleared}层`, G.floorsCleared*2);
   add(`斩精英${G.elitesKilled}`, G.elitesKilled*5);
   add(`败Boss${G.bossesKilled}`, G.bossesKilled*15);
-  add(`吟诵${G.sentencesChanted}句`, Math.floor(G.sentencesChanted/3));
+  add(`发行${G.sentencesChanted}句`, Math.floor(G.sentencesChanted/3));
   if(G.act>=2) add('至第二章', 5);
   if(G.act>=3) add('至第三章', 10);
   if(isVictory) add('大作已成！', 20);
@@ -198,8 +198,8 @@ export function updateMetaAfterRun(isV) {
 export function renderInkBreakdown(id, reward) {
   const el = document.getElementById(id);
   let h = '<div class="ink-reward-breakdown">';
-  reward.breakdown.forEach(i => { h+=`<div class="ink-line"><span>${i.label}</span><span style="color:var(--gold)">+${i.value}文气</span></div>`; });
-  h += `<div class="ink-line ink-total"><span>总计</span><span>+${reward.total}文气</span></div></div>`;
+  reward.breakdown.forEach(i => { h+=`<div class="ink-line"><span>${i.label}</span><span style="color:var(--gold)">+${i.value}异常墨迹</span></div>`; });
+  h += `<div class="ink-line ink-total"><span>总计</span><span>+${reward.total}异常墨迹</span></div></div>`;
   el.innerHTML = h;
 }
 
@@ -213,7 +213,7 @@ function renderSentenceJournal(afterId) {
   div.id = 'sentence-journal';
   div.className = 'ink-reward-breakdown';
   div.style.marginTop = '12px';
-  let h = '<div style="font-family:var(--font-brush);font-size:1rem;color:var(--ink);letter-spacing:0.15em;margin-bottom:8px;text-align:center;">— 本局诗篇 —</div>';
+  let h = '<div style="font-family:var(--font-brush);font-size:1rem;color:var(--ink);letter-spacing:0.15em;margin-bottom:8px;text-align:center;">— 今夜发行记录 —</div>';
   G.sentenceJournal.forEach((s, i) => {
     h += `<div style="font-family:var(--font-brush);font-size:0.95rem;color:var(--ink-light);line-height:2;text-align:center;letter-spacing:0.08em;">「${s}」</div>`;
   });
@@ -230,8 +230,8 @@ export function gameOver() {
     <div>行过：<span>${G.floorsCleared}层</span></div>
     <div>精英：<span>${G.elitesKilled}</span></div>
     <div>Boss：<span>${G.bossesKilled}</span></div>
-    <div>吟诵：<span>${G.sentencesChanted}句</span></div>
-    <div>文银：<span>${G.gold}</span></div>
+    <div>发行：<span>${G.sentencesChanted}句</span></div>
+    <div>校章：<span>${G.gold}</span></div>
   `;
   renderInkBreakdown('gameover-ink-breakdown', r.reward);
   renderSentenceJournal('gameover-ink-breakdown');
@@ -252,7 +252,7 @@ export function showVictoryScreen() {
     <div>行过：<span>${G.floorsCleared}层</span></div>
     <div>精英：<span>${G.elitesKilled}</span></div>
     <div>Boss：<span>${G.bossesKilled}</span></div>
-    <div>吟诵：<span>${G.sentencesChanted}句</span></div>
+    <div>发行：<span>${G.sentencesChanted}句</span></div>
     <div>词库：<span>${G.deck.length}张</span></div>
   `;
   renderInkBreakdown('victory-ink-breakdown', r.reward);
@@ -270,9 +270,9 @@ export function closeMetaScreen() { document.getElementById('meta-overlay').clas
 
 export function renderMetaScreen() {
   document.getElementById('meta-stats').innerHTML = `
-    <div class="meta-stat"><div class="stat-val">${META.ink}</div><div class="stat-label">文气</div></div>
+    <div class="meta-stat"><div class="stat-val">${META.ink}</div><div class="stat-label">异常墨迹</div></div>
     <div class="meta-stat"><div class="stat-val">${META.totalInk}</div><div class="stat-label">累计</div></div>
-    <div class="meta-stat"><div class="stat-val">${META.runs}</div><div class="stat-label">冒险</div></div>
+    <div class="meta-stat"><div class="stat-val">${META.runs}</div><div class="stat-label">夜巡</div></div>
     <div class="meta-stat"><div class="stat-val">${META.bestFloor}</div><div class="stat-label">最深</div></div>
   `;
 
@@ -281,7 +281,7 @@ export function renderMetaScreen() {
     const owned = META.perks.includes(key);
     ph += `<div class="meta-item${owned?' purchased':''}">
       <div class="item-info"><div class="item-name">${perk.name}</div><div class="item-desc">${perk.desc}</div></div>
-      <div class="item-cost">${perk.cost}文气</div>
+      <div class="item-cost">${perk.cost}异常墨迹</div>
       ${owned?'':`<button class="buy-btn" onclick="buyPerk('${key}')" ${META.ink>=perk.cost?'':'disabled'}>购买</button>`}
     </div>`;
   }
@@ -292,7 +292,7 @@ export function renderMetaScreen() {
     const owned = META.unlockedCards.includes(key);
     ch += `<div class="meta-item${owned?' purchased':''}">
       <div class="item-info"><div class="item-name">${info.name}</div></div>
-      <div class="item-cost">${info.cost}文气</div>
+      <div class="item-cost">${info.cost}异常墨迹</div>
       ${owned?'':`<button class="buy-btn" onclick="buyCardMeta('${key}')" ${META.ink>=info.cost?'':'disabled'}>解锁</button>`}
     </div>`;
   }
@@ -319,13 +319,13 @@ export function showPoetryScreen() {
   poetrySelected = [];
   showScreen('poetry-screen');
   const themes = isEn() ? [
-    { title: 'Inscribe', flavor: 'Stone walls like paper. Leave a verse, gain power.' },
-    { title: 'Wind Terrace', flavor: 'Atop the peak, wind sings. Chant a line and the world stirs.' },
-    { title: 'Ink Pool', flavor: 'A pool of ink mirrors the stars. Your verse becomes strength.' },
+    { title: 'Write on the Blackboard', flavor: 'The chalk moves before your hand does. Do not let it finish your name.' },
+    { title: 'Answer Sheet', flavor: 'There is only one question: “Who left school alive?”' },
+    { title: 'Notice Board', flavor: 'Every missing-person notice shows your face. Choose one line to change.' },
   ] : [
-    { title: '题壁', flavor: '古亭之中，石壁如纸。留下你的诗句，换取灵感与力量。' },
-    { title: '临风台', flavor: '山巅之上，风声如歌。在此吟一句，天地为之动容。' },
-    { title: '墨池', flavor: '一池墨水，映出星辰。你的诗句将化为力量。' },
+    { title: '黑板留字', flavor: '粉笔比你的手先动。别让它写完你的名字。' },
+    { title: '答题卡', flavor: '整张卷子只有一道题：「谁活着离开了学校？」' },
+    { title: '公告栏', flavor: '每一张寻人启事都是你的脸。选一句，把它改掉。' },
   ];
   const theme = themes[Math.floor(Math.random() * themes.length)];
   document.getElementById('poetry-title').textContent = theme.title;
@@ -353,7 +353,7 @@ function renderPoetryUI() {
   const scoreEl = document.getElementById('poetry-score-display');
   if (poetrySelected.length >= 2) {
     const score = evaluatePoetryScore();
-    scoreEl.innerHTML = `诗意评分: <b>${score.total.toFixed(1)}</b> — ${score.grade}`;
+    scoreEl.innerHTML = `异常强度: <b>${score.total.toFixed(1)}</b> — ${score.grade}`;
   } else {
     scoreEl.innerHTML = '至少需要两个词';
   }

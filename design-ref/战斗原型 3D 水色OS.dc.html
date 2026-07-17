@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&amp;family=Ma+Shan+Zheng&amp;family=Noto+Serif+SC:wght@400;500;700;900&amp;display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#69A89B;font-family:'DotGothic16','Noto Serif SC',serif;overflow:hidden}
+@keyframes swayP{0%,100%{transform:rotate(-1.3deg)}50%{transform:rotate(1.3deg)}}
+@keyframes swayE{0%,100%{transform:rotate(1.3deg)}50%{transform:rotate(-1.3deg)}}
+@keyframes popIn{from{transform:scale(.4);opacity:0}60%{transform:scale(1.15);opacity:1}to{transform:scale(1);opacity:1}}
+@keyframes fxup{0%{opacity:0;transform:translate(-50%,6px) scale(.7)}18%{opacity:1;transform:translate(-50%,-8px) scale(1.18)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-46px) scale(1)}}
+@keyframes splashIn{0%{transform:scale(.2);opacity:0}30%{opacity:1}100%{transform:scale(1.35);opacity:0}}
+@keyframes stampIn{0%{transform:scale(2.4) rotate(-8deg);opacity:0}55%{transform:scale(.9) rotate(-8deg);opacity:1}100%{transform:scale(1) rotate(-8deg);opacity:1}}
+@keyframes stampInC{0%{transform:translate(-50%,-50%) scale(2.6) rotate(-6deg);opacity:0}55%{transform:translate(-50%,-50%) scale(.92) rotate(-6deg);opacity:1}100%{transform:translate(-50%,-50%) scale(1) rotate(-6deg);opacity:1}}
+@keyframes shakeS{0%,100%{transform:none}25%{transform:translate(-4px,2px)}50%{transform:translate(4px,-2px)}75%{transform:translate(-3px,1px)}}
+@keyframes shakeB{0%,100%{transform:none}15%{transform:translate(-11px,6px) rotate(-.4deg)}30%{transform:translate(10px,-6px) rotate(.4deg)}45%{transform:translate(-8px,4px) rotate(-.3deg)}60%{transform:translate(7px,-3px) rotate(.3deg)}80%{transform:translate(-4px,2px)}}
+@keyframes blinkCur{0%,49%{opacity:1}50%,100%{opacity:0}}
+@keyframes winIn{0%{opacity:0;transform:scale(.86) translateY(10px)}60%{opacity:1;transform:scale(1.02)}100%{opacity:1;transform:none}}
+@keyframes winInC{0%{opacity:0;transform:translateX(-50%) scale(.86) translateY(10px)}60%{opacity:1;transform:translateX(-50%) scale(1.02)}100%{opacity:1;transform:translateX(-50%)}}
+</style>
+</helmet>
+
+<div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#69A89B">
+<div ref="{{ rootRef }}" style="width:1240px;height:640px;flex:none;position:relative;overflow:hidden;color:#1A1A18;background:radial-gradient(circle at 1px 1px,rgba(20,42,38,.2) 1px,transparent 1.4px) 0 0/4px 4px,linear-gradient(180deg,#8FC4B8,#5F9E90);transform:scale({{ scale }});transform-origin:center;box-shadow:0 4px 30px rgba(0,0,0,.4)">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;animation:{{ shakeAnim }}">
+
+  <!-- menu bar -->
+  <div style="height:30px;flex:0 0 30px;background:#F6F1E2;border-bottom:2px solid #1A1A18;display:flex;align-items:center;justify-content:space-between;padding:0 14px;position:relative;z-index:20">
+    <div style="display:flex;gap:18px;align-items:center;font-size:12px;letter-spacing:.06em">
+      <span style="font-family:'Ma Shan Zheng',cursive;font-size:14px">❖ 词灵录</span>
+      <span onClick="{{ uiTick }}" style="cursor:pointer" style-hover="background:#1A1A18;color:#F6F1E2" style-active="transform:translate(1px,1px)">诗册·{{ journal }}</span>
+      <span onClick="{{ uiTick }}" style="cursor:pointer" style-hover="background:#1A1A18;color:#F6F1E2" style-active="transform:translate(1px,1px)">词库</span>
+      <span style="color:#6E6A5C">抽 24 · 弃 10</span>
+    </div>
+    <div style="display:flex;gap:14px;align-items:center;font-size:12px">
+      <span>♪</span>
+      <span style="border:1px solid #1A1A18;background:#DFF1EC;padding:0 8px;font-size:11px">第一回合</span>
+    </div>
+  </div>
+
+  <div style="flex:1;position:relative;overflow:hidden">
+    <img src="public/lqz.png" alt="诗人立绘位" style="position:absolute;left:6px;bottom:0;height:430px;width:280px;object-fit:cover;object-position:top;image-rendering:pixelated;z-index:11;mask-image:linear-gradient(180deg,transparent 0,black 9%),linear-gradient(90deg,black 62%,transparent 99%);-webkit-mask-image:linear-gradient(180deg,transparent 0,black 9%);mask-composite:intersect;filter:grayscale(1) sepia(.5) hue-rotate(120deg) saturate(.9) brightness(1.02) contrast(1.05);pointer-events:none">
+    <img src="public/enemies/moyao.png" alt="墨妖立绘位" style="position:absolute;right:6px;bottom:0;height:430px;width:280px;object-fit:cover;object-position:top;image-rendering:pixelated;z-index:11;mask-image:linear-gradient(180deg,transparent 0,black 9%),linear-gradient(270deg,black 62%,transparent 99%);-webkit-mask-image:linear-gradient(180deg,transparent 0,black 9%);mask-composite:intersect;filter:grayscale(1) sepia(.5) hue-rotate(120deg) saturate(.9) brightness(.92) contrast(1.1);pointer-events:none">
+
+    <!-- ============ stage window ============ -->
+    <div style="position:absolute;left:50%;transform:translateX(-50%);top:4px;width:836px;z-index:3;background:#F6F1E2;border:2px solid #1A1A18;box-shadow:0 0 0 2px #C8B98A,7px 7px 0 rgba(20,42,38,.45);animation:winInC .3s cubic-bezier(.3,1.3,.4,1) both">
+      <!-- striped mac title bar -->
+      <div style="height:24px;border-bottom:2px solid #1A1A18;background:repeating-linear-gradient(0deg,#F6F1E2 0 2px,#1A1A18 2px 3px,#F6F1E2 3px 5px) content-box,#F6F1E2;padding:4px 6px;display:flex;align-items:center;position:relative">
+        <span onClick="{{ uiClose }}" title="可选关闭键（此窗常驻不可关）" style-hover="background:#1A1A18;color:#F6F1E2" style-active="transform:translate(1px,1px)" style="margin-left:auto;width:13px;height:13px;border:2px solid #1A1A18;background:#F6F1E2;flex:none;z-index:2;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;line-height:1">✕</span>
+        <span style="position:absolute;left:50%;transform:translateX(-50%);background:#F6F1E2;padding:0 14px;font-size:13px;font-weight:700;letter-spacing:.2em">词灵戏台.pict</span>
+      </div>
+      <!-- 3D theatre viewport -->
+      <div style="height:296px;position:relative;overflow:hidden;border:2px solid #1A1A18;margin:6px;background:#F3ECD8;perspective:1000px;perspective-origin:50% 32%">
+        <div style="position:absolute;left:50%;top:0;width:700px;height:284px;margin-left:-350px;transform-style:preserve-3d">
+          <div style="position:absolute;left:-56px;right:-56px;top:0;bottom:8px;transform:translateZ(-150px);background:url('./public/scenes/jiuguan.jpg') center 30%/cover;filter:grayscale(1) sepia(.55) hue-rotate(120deg) saturate(1.15) brightness(.66) contrast(1.12)"></div>
+          <div style="position:absolute;left:-56px;right:-56px;top:0;bottom:8px;transform:translateZ(-148px);background:radial-gradient(circle at 1px 1px,rgba(20,42,38,.14) 1px,transparent 1.3px) 0 0/3px 3px,linear-gradient(180deg,rgba(20,42,38,.42),rgba(46,139,132,.12) 55%,rgba(20,42,38,.4))"></div>
+          <div style="position:absolute;left:4px;right:4px;bottom:8px;height:150px;transform:rotateX(76deg);transform-origin:50% 100%;background:repeating-linear-gradient(0deg,rgba(26,26,24,.07) 0 2px,transparent 2px 9px),radial-gradient(ellipse 70% 60% at 50% 30%,rgba(87,182,172,.2),transparent 75%),#F6F1E2;border:2px solid #1A1A18"></div>
+          <div style="position:absolute;left:4px;top:8px;bottom:8px;width:150px;transform:rotateY(72deg);transform-origin:0 50%;background:linear-gradient(90deg,#C4E4DC,#9CC8C0 80%);border-top:2px solid #1A1A18"></div>
+          <div style="position:absolute;right:4px;top:8px;bottom:8px;width:150px;transform:rotateY(-72deg);transform-origin:100% 50%;background:linear-gradient(-90deg,#C4E4DC,#9CC8C0 80%);border-top:2px solid #1A1A18"></div>
+          <div style="position:absolute;left:4px;right:4px;top:8px;height:28px;transform:translateZ(-80px);background:radial-gradient(circle 13px at 15px 0px,#57B6AC 12px,transparent 13px) left top/30px 22px repeat-x,linear-gradient(180deg,#57B6AC 0 8px,transparent 8px)"></div>
+
+          <!-- POET puppet -->
+          <div style="position:absolute;left:21%;bottom:20px;transform:translateZ(-36px) translateX({{ poetShift }}px);transition:transform .4s cubic-bezier(.3,1.15,.4,1);display:flex;flex-direction:column;align-items:center;gap:3px">
+            <sc-if value="{{ hasBubbleP }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#F6F1E2;border:2px solid #1A1A18;border-radius:9px;box-shadow:2px 2px 0 rgba(26,26,24,.35);padding:3px 10px;font-size:14px;color:#1A1A18;white-space:nowrap;z-index:9;animation:popIn .2s both">{{ bubbleP }}</div>
+            </sc-if>
+            <div style="display:flex;align-items:center;gap:4px">
+              <span style="border:2px solid #1A1A18;background:#F6F1E2;font-size:10px;font-weight:700;color:#1A1A18;padding:0 6px">诗人</span>
+              <div style="width:66px;height:8px;border:2px solid #1A1A18;background:#F6F1E2;position:relative"><div style="position:absolute;left:0;top:0;bottom:0;background:repeating-linear-gradient(90deg,#D96C3F 0 4px,#E8935E 4px 8px);width:{{ poetHpPct }};transition:width .3s ease"></div></div>
+              <span style="font-size:8.5px;font-weight:900;color:#B4471F;line-height:1">{{ poetHP }}/50</span>
+            </div>
+            <div style="min-height:15px;display:flex;gap:3px">
+              <sc-if value="{{ hasBlock }}" hint-placeholder-val="{{ false }}"><span style="font-size:9px;font-weight:900;color:#F6F1E2;background:#2E8B84;border:1px solid #1A1A18;padding:0 5px">盾 {{ block }}</span></sc-if>
+            </div>
+            <div style="position:relative">
+              <div style="animation:swayP 3.2s ease-in-out infinite;transform-origin:50% 94%">
+                <svg viewBox="0 0 100 132" style="height:150px;filter:{{ poetGlow }}" xmlns="http://www.w3.org/2000/svg">
+                  <ellipse cx="50" cy="128" rx="20" ry="3" fill="rgba(26,26,24,.16)"></ellipse>
+                  <g style="transform:{{ poetBody }};transform-origin:50px 122px;transition:transform .18s ease">
+                    <path d="M27,26 Q22,40 26,50 L33,44 Q28,36 32,26 Z" fill="#1A1A18"></path>
+                    <path d="M73,26 Q78,40 74,50 L67,44 Q72,36 68,26 Z" fill="#1A1A18"></path>
+                    <circle cx="50" cy="23" r="9.5" fill="#F6F1E2" stroke="#1A1A18" stroke-width="2.4"></circle>
+                    <path d="M41,21 C41,13 46,10 50,10 C54,10 59,13 59,21 C56,16 53,14.5 50,14.5 C47,14.5 44,16 41,21 Z" fill="#1A1A18"></path>
+                    <circle cx="50" cy="7" r="4" fill="#1A1A18"></circle>
+                    <path d="M46,8 Q50,4 54,8" stroke="#2E8B84" stroke-width="1.8" fill="none" stroke-linecap="round"></path>
+                    <circle cx="47" cy="22" r="1.2" fill="#1A1A18"></circle><circle cx="53" cy="22" r="1.2" fill="#1A1A18"></circle>
+                    <path d="M47,27 Q50,29 53,27" stroke="#1A1A18" stroke-width="1.3" fill="none" stroke-linecap="round"></path>
+                    <path d="M48,33 C39,52 30,84 25,122 L75,122 C70,84 61,52 52,33 Z" fill="#1A1A18" opacity=".93"></path>
+                    <path d="M46,58 C43,80 40,100 37,118" stroke="#F6F1E2" stroke-width="1.2" opacity=".5" fill="none"></path>
+                    <path d="M56,62 C58,82 60,100 62,116" stroke="#F6F1E2" stroke-width="1.2" opacity=".45" fill="none"></path>
+                    <g style="transform:rotate({{ poetArm }}deg);transform-origin:50px 44px;transition:transform .18s ease">
+                      <path d="M48,42 Q34,50 28,62" stroke="#1A1A18" stroke-width="4.5" fill="none" stroke-linecap="round"></path>
+                      <path d="M52,42 Q66,50 72,62" stroke="#1A1A18" stroke-width="4.5" fill="none" stroke-linecap="round"></path>
+                      <line x1="72" y1="62" x2="80" y2="74" stroke="#1A1A18" stroke-width="2.2" stroke-linecap="round"></line>
+                      <circle cx="81" cy="76" r="2.2" fill="#2E8B84"></circle>
+                    </g>
+                  </g>
+                </svg>
+              </div>
+              <sc-if value="{{ splashP }}" hint-placeholder-val="{{ false }}">
+                <svg viewBox="0 0 100 100" style="position:absolute;left:50%;top:36%;width:90px;height:90px;margin-left:-45px;margin-top:-45px;animation:splashIn .5s ease-out both;pointer-events:none" xmlns="http://www.w3.org/2000/svg">
+                  <g fill="#1A1A18"><circle cx="50" cy="50" r="13" opacity=".85"></circle><circle cx="24" cy="38" r="5"></circle><circle cx="76" cy="34" r="4"></circle><circle cx="68" cy="70" r="6"></circle><circle cx="30" cy="70" r="4.5"></circle><circle cx="50" cy="16" r="3.5"></circle><circle cx="84" cy="54" r="3"></circle><circle cx="14" cy="56" r="3"></circle></g>
+                </svg>
+              </sc-if>
+              <sc-if value="{{ sealP }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;left:50%;top:34%;margin-left:-24px;width:48px;height:48px;border:3px solid #2E8B84;color:#2E8B84;background:rgba(246,241,226,.9);display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:30px;animation:stampIn .42s cubic-bezier(.2,1.3,.4,1) both;pointer-events:none">守</div>
+              </sc-if>
+            </div>
+          </div>
+
+          <!-- ENEMY puppet -->
+          <div style="position:absolute;left:60%;bottom:26px;transform:translateZ(-88px) translateX({{ enemyShift }}px);transition:transform .22s cubic-bezier(.4,0,.6,1);display:flex;flex-direction:column;align-items:center;gap:3px">
+            <sc-if value="{{ hasBubbleE }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#F6F1E2;border:2px solid #1A1A18;border-radius:9px;box-shadow:2px 2px 0 rgba(26,26,24,.35);padding:3px 10px;font-size:14px;color:#1A1A18;white-space:nowrap;z-index:9;animation:popIn .2s both">{{ bubbleE }}</div>
+            </sc-if>
+            <span style="border:2px solid #B4471F;background:#D96C3F;font-size:11px;font-weight:900;color:#FFF6E0;padding:0 8px;opacity:{{ intentOp }};transform:scale({{ intentScale }});transition:transform .18s cubic-bezier(.3,1.5,.5,1)">⚔ 9 · 恶语中伤</span>
+            <div style="display:flex;align-items:center;gap:4px">
+              <span style="border:2px solid #1A1A18;background:#F6F1E2;font-size:10px;font-weight:700;color:#1A1A18;padding:0 6px">墨妖</span>
+              <div style="width:66px;height:8px;border:2px solid #1A1A18;background:#F6F1E2;position:relative"><div style="position:absolute;left:0;top:0;bottom:0;background:repeating-linear-gradient(90deg,#D96C3F 0 4px,#E8935E 4px 8px);width:{{ enemyHpPct }};transition:width .3s ease"></div></div>
+              <span style="font-size:8.5px;font-weight:900;color:#B4471F;line-height:1">{{ enemyHP }}/32</span>
+            </div>
+            <div style="min-height:15px;display:flex;gap:3px">
+              <span style="font-size:9px;font-weight:900;color:#FFF6E0;background:#B4471F;border:1px solid #1A1A18;padding:0 4px">伤1</span>
+              <span style="font-size:9px;font-weight:900;color:#B4471F;background:#FFF3E2;border:1px solid #B4471F;padding:0 4px">弱1</span>
+            </div>
+            <div style="position:relative">
+              <div style="animation:swayE 2.6s ease-in-out .7s infinite;transform-origin:50% 94%">
+                <svg viewBox="0 0 100 132" style="height:136px" xmlns="http://www.w3.org/2000/svg">
+                  <ellipse cx="50" cy="128" rx="20" ry="3" fill="rgba(26,26,24,.16)"></ellipse>
+                  <g style="transform:{{ enemyBody }};transform-origin:50px 122px;transition:transform .18s ease;opacity:{{ enemyOp }}">
+                    <path d="M50,16 C64,16 72,28 72,42 C72,50 70,56 68,62 C74,70 76,84 75,96 C74,106 76,116 78,122 Q70,112 66,120 Q60,128 54,120 Q50,114 46,120 Q40,128 34,120 Q30,112 22,122 C24,116 26,106 25,96 C24,84 26,70 32,62 C30,56 28,50 28,42 C28,28 36,16 50,16 Z" fill="#1A1A18" opacity=".94"></path>
+                    <circle cx="43" cy="38" r="2.6" fill="#F6F1E2"></circle><circle cx="57" cy="38" r="2.6" fill="#F6F1E2"></circle>
+                    <circle cx="43.6" cy="38.5" r="1.2" fill="#2E8B84"></circle><circle cx="56.4" cy="38.5" r="1.2" fill="#2E8B84"></circle>
+                    <path d="M42,50 Q50,54 58,50" stroke="#F6F1E2" stroke-width="1.5" fill="none" stroke-linecap="round"></path>
+                    <path d="M30,66 Q18,72 14,82" stroke="#1A1A18" stroke-width="4" stroke-linecap="round" fill="none"></path>
+                    <path d="M70,66 Q82,72 86,82" stroke="#1A1A18" stroke-width="4" stroke-linecap="round" fill="none"></path>
+                    <circle cx="20" cy="30" r="2.6" fill="#1A1A18" opacity=".55"></circle><circle cx="82" cy="24" r="2" fill="#1A1A18" opacity=".5"></circle>
+                  </g>
+                </svg>
+              </div>
+              <sc-if value="{{ splashE }}" hint-placeholder-val="{{ false }}">
+                <svg viewBox="0 0 100 100" style="position:absolute;left:50%;top:36%;width:90px;height:90px;margin-left:-45px;margin-top:-45px;animation:splashIn .5s ease-out both;pointer-events:none" xmlns="http://www.w3.org/2000/svg">
+                  <g fill="#D96C3F"><circle cx="50" cy="50" r="13" opacity=".9"></circle><circle cx="24" cy="38" r="5"></circle><circle cx="76" cy="34" r="4"></circle><circle cx="68" cy="70" r="6"></circle><circle cx="30" cy="70" r="4.5"></circle><circle cx="50" cy="16" r="3.5"></circle><circle cx="84" cy="54" r="3"></circle><circle cx="14" cy="56" r="3"></circle></g>
+                </svg>
+              </sc-if>
+              <sc-if value="{{ sealE }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;left:50%;top:32%;margin-left:-24px;width:48px;height:48px;border:3px solid #1A1A18;color:#1A1A18;background:rgba(246,241,226,.92);display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:30px;animation:stampIn .42s cubic-bezier(.2,1.3,.4,1) both;pointer-events:none">中</div>
+              </sc-if>
+            </div>
+          </div>
+
+          <!-- FX layer -->
+          <div style="position:absolute;inset:0;transform:translateZ(60px);pointer-events:none">
+            <sc-for list="{{ fxView }}" as="f" hint-placeholder-count="0">
+              <span style="position:absolute;left:{{ f.x }}px;top:{{ f.y }}px;transform:translate(-50%,0);font-family:'Ma Shan Zheng',cursive;font-size:{{ f.size }}px;font-weight:900;color:{{ f.color }};text-shadow:2px 2px 0 #F6F1E2,-1px -1px 0 #F6F1E2;animation:fxup 1s ease-out forwards;white-space:nowrap">{{ f.text }}</span>
+            </sc-for>
+          </div>
+          <sc-if value="{{ enemyDead }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;left:50%;top:44%;transform:translate(-50%,-50%) translateZ(70px) rotate(-3deg);background:#F6F1E2;border:3px solid #1A1A18;box-shadow:3px 3px 0 rgba(26,26,24,.4);padding:6px 22px;font-family:'Ma Shan Zheng',cursive;font-size:30px;color:#1A1A18;letter-spacing:.3em">墨妖·已破</div>
+          </sc-if>
+        </div>
+      </div>
+      <!-- window footer: scrollbar strip -->
+      <div style="height:20px;margin:0 6px 6px;border:2px solid #1A1A18;display:flex;align-items:stretch;background:radial-gradient(circle at 1px 1px,rgba(26,26,24,.25) .8px,transparent 1.1px) 0 0/3px 3px,#DFF1EC">
+        <span style="width:20px;border-right:2px solid #1A1A18;display:flex;align-items:center;justify-content:center;font-size:10px;background:#F6F1E2">◁</span>
+        <span style="width:26px;margin-left:38%;border-left:2px solid #1A1A18;border-right:2px solid #1A1A18;background:#F6F1E2"></span>
+        <span style="width:20px;margin-left:auto;border-left:2px solid #1A1A18;display:flex;align-items:center;justify-content:center;font-size:10px;background:#F6F1E2">▷</span>
+      </div>
+    </div>
+
+    <!-- sentence row: dialog window -->
+    <div style="position:absolute;left:330px;right:330px;top:344px;height:130px;z-index:5;background:#F6F1E2;border:2px solid #1A1A18;box-shadow:0 0 0 2px #C8B98A,6px 6px 0 rgba(20,42,38,.4);display:flex;flex-direction:column;animation:winIn .3s cubic-bezier(.3,1.3,.4,1) .1s both">
+      <div style="height:22px;flex:none;border-bottom:2px solid #1A1A18;background:repeating-linear-gradient(0deg,#F6F1E2 0 2px,#1A1A18 2px 3px,#F6F1E2 3px 5px) content-box,#F6F1E2;padding:4px 6px;display:flex;align-items:center;position:relative">
+        <span onClick="{{ uiClose }}" title="可选关闭键（此窗常驻不可关）" style-hover="background:#1A1A18;color:#F6F1E2" style-active="transform:translate(1px,1px)" style="margin-left:auto;width:12px;height:12px;border:2px solid #1A1A18;background:#F6F1E2;flex:none;z-index:2;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;line-height:1">✕</span>
+        <span style="position:absolute;left:50%;transform:translateX(-50%);background:#F6F1E2;padding:0 12px;font-size:12px;font-weight:700;letter-spacing:.15em">造句.txt</span>
+      </div>
+      <div style="flex:1;display:flex;align-items:flex-end;justify-content:center;gap:14px;padding:4px 16px 8px;position:relative">
+        <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+          <span style="color:#8A8676;font-size:13px;align-self:center">点击手牌，词落于此<span style="animation:blinkCur 1s step-end infinite">▌</span></span>
+        </sc-if>
+        <sc-for list="{{ sentenceView }}" as="w" hint-placeholder-count="0">
+          <div onMouseEnter="{{ w.enter }}" onMouseLeave="{{ w.leave }}" onPointerDown="{{ w.down }}" ref="{{ w.ref }}" title="点击移回手牌 · 拖动换位" style="height:98px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;cursor:grab;touch-action:none;position:relative;z-index:{{ w.z }};transform:{{ w.t }};opacity:{{ w.op }};transition:{{ w.trans }};animation:{{ w.anim }}">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+              <div style="display:flex;gap:3px;min-height:15px">
+                <sc-for list="{{ w.flags }}" as="f" hint-placeholder-count="0"><span style="font-size:9.5px;font-weight:900;padding:0 5px;border:1px solid #1A1A18;background:#DFF1EC;color:#1A1A18;white-space:nowrap">{{ f.t }}</span></sc-for>
+              </div>
+              <span style="font-family:'Ma Shan Zheng',cursive;font-size:38px;line-height:1.1;color:{{ w.wordColor }};text-shadow:{{ w.glow }}">{{ w.word }}</span>
+              <span style="font-size:8.5px;color:#F6F1E2;background:{{ w.posColor }};padding:0 4px;letter-spacing:.1em">{{ w.posTag }}</span>
+            </div>
+          </div>
+        </sc-for>
+        <sc-if value="{{ hasSentence }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;margin-left:14px;align-self:center">
+            <div style="border:3px solid #D96C3F;color:#B4471F;background:#FFF3E2;padding:3px 10px;display:flex;flex-direction:column;align-items:center;transform:rotate(2deg) scale({{ verdictScale }});transition:transform .18s cubic-bezier(.3,1.5,.5,1);box-shadow:2px 2px 0 rgba(180,71,31,.3)">
+              <span style="font-size:19px;font-weight:900;line-height:1.1">×{{ multText }}</span>
+              <span style="font-size:10px;font-weight:700;white-space:nowrap">费 {{ cost }}{{ chipText }}</span>
+            </div>
+            <sc-if value="{{ warn }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:9.5px;font-weight:900;padding:0 5px;border:1px solid #1A1A18;background:#F6F1E2;color:#1A1A18;white-space:nowrap">⚠ 没有谓语·废句</span>
+            </sc-if>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <!-- energy: desktop icon style -->
+    <div style="position:absolute;left:16px;bottom:14px;z-index:12;display:flex;flex-direction:column;align-items:center;gap:3px;animation:winIn .3s cubic-bezier(.3,1.3,.4,1) .26s both">
+      <span style="width:44px;height:44px;border:2px solid #1A1A18;background:#F6F1E2;box-shadow:0 0 0 2px #C8B98A,3px 3px 0 rgba(20,42,38,.4);display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:20px">{{ energy }}</span>
+      <span style="font-size:11px;background:#F6F1E2;border:1px solid #1A1A18;padding:0 6px">文力</span>
+    </div>
+
+    <!-- hand window -->
+    <div style="position:absolute;left:300px;right:300px;bottom:2px;height:152px;z-index:6;background:#F6F1E2;border:2px solid #1A1A18;box-shadow:0 0 0 2px #C8B98A,5px 5px 0 rgba(20,42,38,.4);display:flex;flex-direction:column;animation:winIn .3s cubic-bezier(.3,1.3,.4,1) .18s both">
+      <div style="height:20px;flex:none;border-bottom:2px solid #1A1A18;background:repeating-linear-gradient(0deg,#F6F1E2 0 2px,#1A1A18 2px 3px,#F6F1E2 3px 5px) content-box,#F6F1E2;padding:3px 6px;display:flex;align-items:center;position:relative">
+        <span onClick="{{ uiClose }}" title="可选关闭键（此窗常驻不可关）" style-hover="background:#1A1A18;color:#F6F1E2" style-active="transform:translate(1px,1px)" style="margin-left:auto;width:12px;height:12px;border:2px solid #1A1A18;background:#F6F1E2;flex:none;z-index:2;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;line-height:1">✕</span>
+        <span style="position:absolute;left:50%;transform:translateX(-50%);background:#F6F1E2;padding:0 12px;font-size:11px;font-weight:700;letter-spacing:.15em">手牌 · 8 项</span>
+      </div>
+      <div style="flex:1;display:flex;align-items:flex-end;justify-content:center;gap:7px;padding:0 0 8px;background:radial-gradient(circle at 1px 1px,rgba(26,26,24,.07) 1px,transparent 1.3px) 0 0/4px 4px">
+        <sc-for list="{{ handView }}" as="c" hint-placeholder-count="8">
+          <div style="position:relative;flex:none">
+            <sc-if value="{{ c.hovered }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;bottom:calc(100% + 14px);left:50%;transform:translateX(-50%);border:2px solid #1A1A18;background:#F6F1E2;box-shadow:2px 2px 0 rgba(26,26,24,.35);padding:4px 8px;width:150px;z-index:9;pointer-events:none">
+                <div style="font-size:11px;font-weight:900;white-space:nowrap">{{ c.word }} · {{ c.posTag }} · 费{{ c.cost }}</div>
+                <div style="font-size:10px;color:#6E6A5C;margin-top:1px">{{ c.desc }}</div>
+              </div>
+            </sc-if>
+            <div onMouseEnter="{{ c.enter }}" onMouseLeave="{{ c.leave }}" onClick="{{ c.click }}" style="width:56px;height:104px;cursor:pointer;border:2px solid {{ c.bcolor }};background:#FDFAF0;position:relative;display:flex;flex-direction:column;text-align:center;transition:transform .12s ease,box-shadow .12s ease,opacity .15s ease;transform:{{ c.lift }};box-shadow:{{ c.shadow }};opacity:{{ c.opacity }}">
+              <div style="position:absolute;top:2px;left:2px;width:16px;height:16px;background:#1A1A18;color:#F6F1E2;border:2px solid #F6F1E2;outline:2px solid #1A1A18;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;z-index:2">{{ c.cost }}</div>
+              <div style="color:#F6F1E2;font-size:9px;font-weight:700;letter-spacing:.14em;padding:3px 0;border-bottom:2px solid #1A1A18;background:{{ c.posColor }}">{{ c.posShort }}</div>
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;line-height:1;font-size:20px;color:{{ c.wordColor }};writing-mode:vertical-rl">{{ c.word }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- console: OS dialog buttons -->
+    <div style="position:absolute;right:16px;bottom:14px;z-index:12;display:flex;flex-direction:column;align-items:stretch;gap:6px;padding:8px 10px;border:2px solid #1A1A18;background:#F6F1E2;box-shadow:0 0 0 2px #C8B98A,5px 5px 0 rgba(20,42,38,.45);animation:winIn .3s cubic-bezier(.3,1.3,.4,1) .26s both">
+      <span onClick="{{ chant }}" style="border:2px solid #1A1A18;border-radius:8px;background:#D96C3F;color:#FFF6E0;font-weight:700;letter-spacing:.08em;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;font-size:15px;padding:6px 18px;box-shadow:0 0 0 2px #F6F1E2,0 0 0 4px #1A1A18;opacity:{{ chantOpacity }}" style-active="transform:translate(2px,2px)">吟诵（{{ cost }}）</span>
+      <span onClick="{{ endTurn }}" style="border:2px solid #1A1A18;border-radius:6px;background:#F6F1E2;color:#1A1A18;font-weight:700;letter-spacing:.08em;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;font-size:11px;padding:2px 10px;opacity:{{ endOpacity }}" style-active="transform:translate(2px,2px)">结束回合</span>
+    </div>
+
+    <!-- dim / spotlight overlay -->
+    <div style="position:absolute;inset:0;z-index:12;pointer-events:none;background:radial-gradient(ellipse 58% 58% at 50% 30%,transparent 36%,rgba(26,26,24,.4) 78%);opacity:{{ dimOp }};transition:opacity .35s ease"></div>
+
+    <!-- flying ghost cards -->
+    <sc-for list="{{ flightView }}" as="f" hint-placeholder-count="0">
+      <div style="position:absolute;left:{{ f.cx }}px;top:{{ f.cy }}px;width:56px;height:104px;border:2px solid #2E8B84;background:#FDFAF0;box-shadow:2px 2px 0 #2E8B84;display:flex;flex-direction:column;text-align:center;z-index:40;pointer-events:none;transform:rotate({{ f.r }}deg) scale({{ f.sc }});transition:{{ f.tr }}">
+        <div style="color:#F6F1E2;font-size:9px;font-weight:700;letter-spacing:.14em;padding:3px 0;border-bottom:2px solid #1A1A18;background:{{ f.posColor }}">{{ f.posShort }}</div>
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;line-height:1;font-size:20px;color:{{ f.wordColor }};writing-mode:vertical-rl">{{ f.word }}</div>
+      </div>
+    </sc-for>
+
+    <!-- center grand seal: system alert -->
+    <sc-if value="{{ sealCenter }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;left:50%;top:42%;width:150px;height:150px;border:5px double #B4471F;color:#B4471F;background:#FFF3E2;display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:58px;letter-spacing:.1em;z-index:30;animation:stampInC .42s cubic-bezier(.2,1.3,.4,1) both;box-shadow:5px 5px 0 rgba(26,26,24,.45);pointer-events:none">妙极</div>
+    </sc-if>
+  </div>
+
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:680}}">
+class Component extends DCLogic {
+  state = {
+    sentence: [], hoverS: -1, hoverH: '', energy: 3, journal: 1, scale: 1,
+    poetHP: 50, block: 0, enemyHP: 32,
+    poetPose: 'idle', enemyPose: 'idle', playing: false,
+    poetShift: 0, enemyShift: 0,
+    confirmIdx: -1, confirmed: 0, goneAll: false, verdictPulse: false,
+    shake: 'none', dim: false,
+    splashE: false, splashP: false, sealE: false, sealP: false, sealCenter: false, playerGlow: false,
+    intentFlash: false, bubbleP: '', bubbleE: '',
+    fx: [], flights: [], landing: -1, dragIdx: -1, dragDx: 0,
+  };
+  rootRef = React.createRef();
+  timers = [];
+  _fxId = 0;
+
+  // aqua OS palette: ink black + cream + teal
+  defs = {
+    wo:    { word: '我',   posTag: '主语', posShort: '主', posColor: '#2E8B84', wordColor: '#2E8B84', border: '#2E8B84', cost: 0, desc: '主语·指自身', flags: [] },
+    dian:  { word: '丶',   posTag: '标点', posShort: '标', posColor: '#8A8676', wordColor: '#8A8676', cost: 0, desc: '标点·分句+对仗', flags: [{ t: '✂ 分句', v: 0 }] },
+    chuo:  { word: '戳',   posTag: '谓语', posShort: '谓', posColor: '#1A1A18', wordColor: '#1A1A18', cost: 2, desc: '攻击 12', verb: true, atk: 12, flags: [{ t: '⚔ 12', v: 0 }] },
+    shou:  { word: '守',   posTag: '谓语', posShort: '谓', posColor: '#1A1A18', wordColor: '#1A1A18', cost: 1, desc: '格挡 5', verb: true, block: 5, flags: [] },
+    shi:   { word: '是',   posTag: '连接', posShort: '连', posColor: '#6E6A5C', wordColor: '#1A1A18', cost: 0, desc: '系词·A是B → 给B施加双关状态', flags: [{ t: '连词 +10%', v: 0.1 }] },
+    gei:   { word: '给',   posTag: '连接', posShort: '连', posColor: '#6E6A5C', wordColor: '#2E8B84', cost: 1, desc: '挡3+回血3+抽1；是/为后=谐音', heal: 3, block: 3, flags: [{ t: '🌈 给≈gay', v: 0.2 }] },
+    mao:   { word: '猫',   posTag: '主语', posShort: '主', posColor: '#2E8B84', wordColor: '#1A1A18', cost: 0, desc: '主语·随机效果', flags: [{ t: '🐱 +1牌', v: 0.1 }, { t: '🎵 +0.4', v: 0.4 }] },
+    moyao: { word: '墨妖', posTag: '宾语', posShort: '宾', posColor: '#B45A2B', wordColor: '#B4471F', border: '#B45A2B', cost: 0, desc: '敌方目标·作宾语', flags: [{ t: '🎯 目标', v: 0 }] },
+  };
+  order = ['wo', 'dian', 'chuo', 'shou', 'shi', 'gei', 'mao', 'moyao'];
+  notes = [392, 440, 494, 523, 587, 659, 698, 784];
+
+  poetPoses = {
+    idle:  { body: 'none', arm: 0 },
+    chant: { body: 'none', arm: -76 },
+    charge:{ body: 'rotate(-9deg) translateX(-4px)', arm: -32 },
+    lunge: { body: 'rotate(11deg) translateX(16px)', arm: 42 },
+    hit:   { body: 'rotate(-15deg) translateX(-8px)', arm: -58 },
+  };
+  enemyPoses = {
+    idle:  'none',
+    lunge: 'rotate(-13deg) translateX(-10px)',
+    hit:   'rotate(13deg) translateX(10px)',
+    dead:  'rotate(78deg) translate(10px,14px)',
+  };
+
+  componentDidMount() {
+    this._fit = () => this.setState({ scale: Math.min(window.innerWidth / 1264, window.innerHeight / 664, 1.4) });
+    window.addEventListener('resize', this._fit);
+    this._fit();
+  }
+  componentWillUnmount() {
+    window.removeEventListener('resize', this._fit);
+    this.timers.forEach(clearTimeout);
+  }
+  at(ms, fn) { this.timers.push(setTimeout(fn, ms)); }
+
+  ctx() { return this.actx || (this.actx = new (window.AudioContext || window.webkitAudioContext)()); }
+  tone(freq, dur, type, gain) {
+    try {
+      const c = this.ctx(), o = c.createOscillator(), g = c.createGain();
+      o.type = type || 'triangle'; o.frequency.value = freq;
+      g.gain.setValueAtTime(gain || 0.2, c.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + (dur || 0.18));
+      o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime + (dur || 0.18) + 0.02);
+    } catch (e) {}
+  }
+  thud(freq) {
+    try {
+      const c = this.ctx(), o = c.createOscillator(), g = c.createGain();
+      o.type = 'sawtooth'; o.frequency.setValueAtTime(freq || 160, c.currentTime);
+      o.frequency.exponentialRampToValueAtTime(48, c.currentTime + 0.15);
+      g.gain.setValueAtTime(0.32, c.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.17);
+      o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime + 0.2);
+    } catch (e) {}
+  }
+
+  addFx(x, y, text, color, size) {
+    const id = ++this._fxId;
+    this.setState(st => ({ fx: [...st.fx, { id, x, y, text, color, size: size || 30 }] }));
+    this.at(1050, () => this.setState(st => ({ fx: st.fx.filter(f => f.id !== id) })));
+  }
+
+  flyCard(e, id) {
+    const d = this.defs[id];
+    const root = this.rootRef.current;
+    const sc = this.state.scale || 1;
+    let x = 620, y = 520;
+    if (root && e && e.currentTarget) {
+      const rr = root.getBoundingClientRect();
+      const cr = e.currentTarget.getBoundingClientRect();
+      x = (cr.left - rr.left) / sc; y = (cr.top - rr.top) / sc;
+    }
+    this.tone(660, 0.07, 'sine', 0.12);
+    const idx = this.state.sentence.length;
+    const fid = Math.random();
+    this.setState(s => ({
+      sentence: [...s.sentence, id], landing: idx,
+      flights: [...s.flights, { id: fid, word: d.word, posShort: d.posShort, posColor: d.posColor, wordColor: d.wordColor, cx: x, cy: y, r: 0, sc: 1, go: false }],
+    }));
+    this.at(30, () => {
+      const el = this._wordEls && this._wordEls[idx];
+      const root2 = this.rootRef.current;
+      let tx = 620, ty = 380;
+      if (el && root2) {
+        const rr = root2.getBoundingClientRect();
+        const wr = el.getBoundingClientRect();
+        tx = (wr.left + wr.width / 2 - rr.left) / sc - 28;
+        ty = (wr.top + wr.height / 2 - rr.top) / sc - 52;
+      }
+      this.setState(s => ({ flights: s.flights.map(f => f.id === fid ? { ...f, cx: tx, cy: ty, r: 4, sc: 0.55, go: true } : f) }));
+    });
+    this.at(200, () => {
+      this.tone(920, 0.05, 'sine', 0.1);
+      this.setState(s => ({ flights: s.flights.filter(f => f.id !== fid), landing: s.landing === idx ? -1 : s.landing }));
+    });
+  }
+
+  swapWords(a, b) {
+    this.setState(s => { const arr = s.sentence.slice(); const t = arr[a]; arr[a] = arr[b]; arr[b] = t; return { sentence: arr }; });
+    this.tone(520, 0.05, 'sine', 0.08);
+  }
+  wordDown(e, idx) {
+    if (this.state.playing) return;
+    e.preventDefault();
+    const W = 66;
+    this._drag = { idx, startX: e.clientX, moved: false };
+    this._mv = ev => {
+      const d = this._drag; if (!d) return;
+      const sc = this.state.scale || 1;
+      let dx = (ev.clientX - d.startX) / sc;
+      if (Math.abs(dx) > 5) d.moved = true;
+      while (dx > W * 0.62 && d.idx < this.state.sentence.length - 1) { this.swapWords(d.idx, d.idx + 1); d.startX += W * sc; d.idx++; dx = (ev.clientX - d.startX) / sc; }
+      while (dx < -W * 0.62 && d.idx > 0) { this.swapWords(d.idx, d.idx - 1); d.startX -= W * sc; d.idx--; dx = (ev.clientX - d.startX) / sc; }
+      this.setState({ dragIdx: d.idx, dragDx: dx });
+    };
+    this._up = () => {
+      window.removeEventListener('pointermove', this._mv);
+      window.removeEventListener('pointerup', this._up);
+      const d = this._drag; this._drag = null;
+      if (d && !d.moved) {
+        this.tone(294, 0.1, 'triangle', 0.12);
+        this.setState(s => ({ sentence: s.sentence.filter((_, i) => i !== d.idx), dragIdx: -1, dragDx: 0, hoverS: -1 }));
+      } else {
+        this.setState({ dragIdx: -1, dragDx: 0 });
+      }
+    };
+    window.addEventListener('pointermove', this._mv);
+    window.addEventListener('pointerup', this._up);
+    this.setState({ dragIdx: idx, dragDx: 0, hoverS: -1 });
+  }
+
+  evalSentence() {
+    const defs = this.state.sentence.map(id => this.defs[id]);
+    const cost = defs.reduce((a, d) => a + d.cost, 0);
+    const hasVerb = defs.some(d => d.verb);
+    const atk = defs.reduce((a, d) => a + (d.atk || 0), 0);
+    const block = defs.reduce((a, d) => a + (d.block || 0), 0);
+    const heal = defs.reduce((a, d) => a + (d.heal || 0), 0);
+    const bonus = defs.reduce((a, d) => a + d.flags.reduce((x, f) => x + f.v, 0), 0);
+    const mult = (hasVerb ? 1 : 0.3) * (1 + bonus);
+    return { cost, hasVerb, atk, block, heal, mult, dmg: Math.round(atk * mult), blockOut: Math.round(block * mult) };
+  }
+
+  chantNow() {
+    const st = this.state;
+    const sen = st.sentence.slice();
+    const ev = this.evalSentence();
+    if (!sen.length || st.playing || st.energy < ev.cost || st.enemyHP <= 0) return;
+    const n = sen.length;
+    this.setState({ playing: true, hoverS: -1, hoverH: '', dragIdx: -1 });
+
+    for (let i = 0; i < n; i++) {
+      this.at(40 + i * 95, () => { this.setState({ confirmIdx: i, confirmed: i + 1 }); this.tone(this.notes[i % 8], 0.14, 'triangle', 0.22); });
+    }
+    const tV = 40 + n * 95 + 60;
+    this.at(tV, () => { this.setState({ confirmIdx: -1, verdictPulse: true, shake: 'small' }); this.thud(220); });
+    this.at(tV + 200, () => this.setState({ verdictPulse: false, shake: 'none' }));
+
+    const verse = sen.map(id => this.defs[id].word).join('');
+    let t = tV + 300;
+    if (ev.dmg > 0) {
+      this.at(t, () => this.setState({ dim: true, bubbleP: '「' + verse + '！」', poetPose: 'charge' }));
+      this.at(t + 260, () => this.setState({ poetShift: 190, poetPose: 'lunge' }));
+      this.at(t + 480, () => {
+        this.thud(180);
+        this.setState(s => ({
+          splashE: true, enemyPose: 'hit', shake: 'big',
+          enemyHP: Math.max(0, s.enemyHP - ev.dmg),
+          block: s.block + ev.blockOut,
+          poetHP: Math.min(50, s.poetHP + ev.heal),
+        }));
+        this.addFx(470, 66, '⚔ ' + ev.dmg, '#D96C3F', 38);
+        if (ev.blockOut > 0) this.addFx(210, 90, '🛡 ' + ev.blockOut, '#2E8B84', 24);
+        if (ev.heal > 0) this.addFx(210, 64, '+' + ev.heal, '#2E8B84', 24);
+      });
+      this.at(t + 860, () => {
+        this.setState({ splashE: false, sealE: true, sealCenter: true, shake: 'big', goneAll: true, poetShift: 0, poetPose: 'idle', bubbleP: '', enemyPose: 'idle' });
+        this.thud(105); this.tone(880, 0.3, 'triangle', 0.18);
+      });
+      this.at(t + 1160, () => this.setState({ shake: 'none' }));
+      this.at(t + 1350, () => this.setState(s => ({ dim: false, sealCenter: false, sealE: false, enemyPose: s.enemyHP <= 0 ? 'dead' : 'idle' })));
+      t += 1500;
+    } else {
+      this.at(t, () => { this.setState({ playerGlow: true, shake: 'small', bubbleP: '「' + verse + '」', poetPose: 'chant' }); this.tone(523, 0.25, 'sine', 0.2); });
+      this.at(t + 240, () => {
+        this.setState(s => ({ sealP: true, block: s.block + ev.blockOut, poetHP: Math.min(50, s.poetHP + ev.heal), shake: 'none', goneAll: true }));
+        this.thud(200);
+        this.addFx(210, 90, '🛡 ' + ev.blockOut, '#2E8B84', 30);
+        if (ev.heal > 0) this.addFx(210, 62, '+' + ev.heal, '#2E8B84', 26);
+      });
+      this.at(t + 780, () => this.setState({ sealP: false, playerGlow: false, bubbleP: '', poetPose: 'idle' }));
+      t += 1000;
+    }
+    this.at(t, () => this.setState(s => ({
+      playing: false, sentence: [], confirmed: 0, goneAll: false,
+      energy: Math.max(0, s.energy - ev.cost), journal: s.journal + 1,
+    })));
+  }
+
+  endTurnNow() {
+    const st = this.state;
+    if (st.playing) return;
+    if (st.enemyHP <= 0) return;
+    this.setState({ playing: true, sentence: [], hoverS: -1, dragIdx: -1 });
+    this.at(200, () => { this.setState({ intentFlash: true, bubbleE: '「恶语中伤！」' }); this.tone(330, 0.12, 'square', 0.12); });
+    this.at(480, () => this.setState({ intentFlash: false, enemyShift: -170, enemyPose: 'lunge', bubbleE: '' }));
+    this.at(680, () => {
+      this.thud(140);
+      this.setState(s => {
+        const absorbed = Math.min(s.block, 9);
+        const through = 9 - absorbed;
+        if (absorbed > 0) this.addFx(210, 92, '盾挡' + absorbed, '#2E8B84', 22);
+        if (through > 0) this.addFx(210, 62, '⚔ ' + through, '#B4471F', 34);
+        return { splashP: true, poetPose: 'hit', poetHP: Math.max(0, s.poetHP - through), block: 0, shake: 'big' };
+      });
+    });
+    this.at(960, () => this.setState({ splashP: false, shake: 'none', enemyShift: 0, enemyPose: 'idle' }));
+    this.at(1200, () => this.setState({ poetPose: 'idle', energy: 3, playing: false }));
+  }
+
+  renderVals() {
+    const s = this.state;
+    const ev = this.evalSentence();
+    const enemyDead = s.enemyHP <= 0;
+    this._wordEls = this._wordEls || {};
+
+    const sentenceView = s.sentence.map((id, idx) => {
+      const d = this.defs[id];
+      const dragging = s.dragIdx === idx;
+      const hovered = (s.hoverS === idx || dragging) && !s.playing;
+      const active = s.confirmIdx === idx;
+      const confirmed = idx < s.confirmed && s.playing;
+      let t = 'none';
+      if (active) t = 'scale(1.45) translateY(-6px)';
+      else if (confirmed && !s.goneAll) t = 'scale(1.12)';
+      if (s.goneAll) t = 'translateY(-12px) scale(.7)';
+      if (dragging) t = 'translateX(' + s.dragDx + 'px) translateY(-6px) scale(1.08) rotate(' + Math.max(-6, Math.min(6, s.dragDx * 0.08)) + 'deg)';
+      else if (hovered && !s.playing) t = 'translateY(-5px) scale(1.05)';
+      const isLanding = s.landing === idx;
+      return {
+        key: id, word: d.word, posTag: d.posTag, posShort: d.posShort,
+        posColor: d.posColor, wordColor: d.wordColor, cost: d.cost, flags: d.flags, t,
+        op: (s.goneAll || isLanding) ? '0' : '1',
+        anim: isLanding ? 'none' : 'popIn .18s cubic-bezier(.3,1.5,.5,1) both',
+        ref: el => { this._wordEls[idx] = el; },
+        z: dragging ? '30' : '5',
+        trans: dragging ? 'opacity .3s ease' : 'transform .16s cubic-bezier(.3,1.4,.5,1),opacity .3s ease',
+        glow: (active || confirmed) ? '0 0 14px rgba(46,139,132,.9), 0 0 5px rgba(46,139,132,.8)' : 'none',
+        enter: () => { if (!s.playing && s.dragIdx < 0) this.setState({ hoverS: idx }); },
+        leave: () => { if (this.state.dragIdx < 0) this.setState({ hoverS: -1 }); },
+        down: e => this.wordDown(e, idx),
+      };
+    });
+
+    const handView = this.order.map(id => {
+      const d = this.defs[id];
+      const used = s.sentence.includes(id);
+      const hovered = s.hoverH === id && !used && !s.playing;
+      return {
+        key: id, word: d.word, posTag: d.posTag, posShort: d.posShort,
+        posColor: d.posColor, wordColor: d.wordColor, cost: d.cost, desc: d.desc,
+        hovered,
+        lift: hovered ? 'translateY(-14px)' : 'none',
+        bcolor: hovered ? '#2E8B84' : (d.border || '#1A1A18'),
+        shadow: hovered ? '2px 2px 0 #2E8B84, 0 8px 14px rgba(26,26,24,.25)' : '2px 2px 0 rgba(26,26,24,.4)',
+        opacity: used ? '0.35' : '1',
+        enter: () => { if (!used && !s.playing) { this.tone(1180, 0.04, 'sine', 0.05); this.setState({ hoverH: id }); } },
+        leave: () => this.setState({ hoverH: '' }),
+        click: e => { if (!used && !s.playing) this.flyCard(e, id); },
+      };
+    });
+
+    const canChant = s.sentence.length > 0 && s.energy >= ev.cost && !s.playing && !enemyDead;
+    const chips = [];
+    if (ev.dmg > 0) chips.push('⚔' + ev.dmg);
+    if (ev.blockOut > 0) chips.push('🛡' + ev.blockOut);
+    if (ev.heal > 0) chips.push('❤+' + ev.heal);
+    const pp = this.poetPoses[s.poetPose] || this.poetPoses.idle;
+    const preview = !s.playing && !enemyDead && ev.atk > 0 && s.poetPose === 'idle';
+
+    return {
+      rootRef: this.rootRef,
+      scale: s.scale, journal: s.journal, energy: s.energy,
+      sentenceView, handView,
+      fxView: s.fx, flightView: s.flights.map(f => ({ ...f, tr: f.go ? 'all .17s ease-in' : 'none' })),
+      isEmpty: s.sentence.length === 0,
+      hasSentence: s.sentence.length > 0,
+      cost: ev.cost,
+      multText: ev.mult.toFixed(2),
+      chipText: chips.length ? ' · ' + chips.join(' · ') : '',
+      warn: s.sentence.length > 0 && !ev.hasVerb,
+      verdictScale: s.verdictPulse ? 1.35 : 1,
+      shakeAnim: s.shake === 'big' ? 'shakeB .45s ease' : (s.shake === 'small' ? 'shakeS .25s ease' : 'none'),
+      dimOp: s.dim ? '1' : '0',
+      poetHP: s.poetHP, block: s.block, hasBlock: s.block > 0,
+      poetHpPct: Math.round(s.poetHP / 50 * 100) + '%',
+      enemyHP: s.enemyHP,
+      enemyHpPct: Math.round(s.enemyHP / 32 * 100) + '%',
+      enemyDead,
+      enemyOp: enemyDead ? '0.3' : '1',
+      intentOp: enemyDead ? '0' : '1',
+      intentScale: s.intentFlash ? 1.5 : 1,
+      poetBody: preview ? this.poetPoses.charge.body : pp.body,
+      poetArm: preview ? this.poetPoses.charge.arm : pp.arm,
+      poetShift: preview ? 110 : s.poetShift, enemyShift: s.enemyShift,
+      poetGlow: s.playerGlow ? 'drop-shadow(0 0 8px rgba(46,139,132,.85))' : 'none',
+      enemyBody: this.enemyPoses[s.enemyPose] || 'none',
+      splashE: s.splashE, splashP: s.splashP,
+      sealE: s.sealE, sealP: s.sealP, sealCenter: s.sealCenter,
+      bubbleP: s.bubbleP, hasBubbleP: !!s.bubbleP,
+      bubbleE: s.bubbleE, hasBubbleE: !!s.bubbleE,
+      chantOpacity: canChant ? '1' : '0.45',
+      endOpacity: s.playing || enemyDead ? '0.45' : '1',
+      chant: () => this.chantNow(),
+      endTurn: () => this.endTurnNow(),
+      // OS 构件反馈音：菜单 tick / 关闭方块 close（窗口不真的关，只给反馈示意）
+      uiTick: () => this.tone(660, 0.06, 'sine', 0.1),
+      uiClose: () => this.tone(392, 0.12, 'triangle', 0.15),
+    };
+  }
+}
+</script>
+</body>
+</html>

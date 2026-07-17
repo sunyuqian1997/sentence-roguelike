@@ -1,0 +1,420 @@
+/* ============================================================
+   design-ref combat composition
+   CSS perspective theatre + foreground character Sprite layers.
+   This file intentionally loads after every legacy combat stylesheet.
+   ============================================================ */
+
+/* Character art is always shown in its source colors. */
+.battle-sprite img,
+.standee img,
+.enemy-portrait-img,
+.tutorial-portrait,
+.story-portrait img,
+#tutorial-layer:not(.speaker-linxi) .tutorial-portrait {
+  filter: none !important;
+  image-rendering: auto !important;
+}
+
+#combat-screen.active {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Large foreground Sprite framing from the reference composition. */
+.battle-sprite {
+  position: absolute;
+  bottom: 0;
+  width: 280px;
+  height: 430px;
+  z-index: 9;
+  pointer-events: none;
+  overflow: hidden;
+  transition: none;
+}
+.battle-sprite img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  image-rendering: auto !important;
+}
+.battle-sprite-player {
+  left: 6px;
+}
+.battle-sprite-enemy {
+  right: 6px;
+}
+.battle-sprite[hidden] { display: none !important; }
+
+/* Reference stage window: 836px centered, independent of the Sprite layer. */
+#combat-stage {
+  flex: 0 0 356px !important;
+  display: block !important;
+  width: 836px !important;
+  height: 356px !important;
+  min-height: 356px !important;
+  max-height: 356px !important;
+  margin: 4px auto 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  z-index: 3;
+}
+
+#stage-center {
+  position: absolute !important;
+  inset: 30px 6px 26px !important;
+  width: auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  overflow: hidden !important;
+  border: 2px solid var(--os-ink);
+  background: #F3ECD8;
+  perspective: 1000px;
+  perspective-origin: 50% 32%;
+}
+
+#puppet-stage {
+  position: absolute !important;
+  left: 50% !important;
+  top: 0 !important;
+  width: 700px !important;
+  height: 284px !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 0 0 -350px !important;
+  padding: 0 !important;
+  display: block !important;
+  overflow: visible !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  transform-style: preserve-3d;
+}
+
+.theatre-backdrop,
+.theatre-wash,
+.theatre-floor,
+.theatre-wall,
+.theatre-valance {
+  position: absolute;
+  pointer-events: none;
+}
+.theatre-backdrop {
+  left: -56px;
+  right: -56px;
+  top: 0;
+  bottom: 8px;
+  transform: translateZ(-150px);
+  background: url('/scenes/jiuguan.jpg') center 30% / cover;
+  filter: grayscale(1) sepia(.55) hue-rotate(120deg) saturate(1.15) brightness(.66) contrast(1.12);
+}
+.theatre-wash {
+  left: -56px;
+  right: -56px;
+  top: 0;
+  bottom: 8px;
+  transform: translateZ(-148px);
+  background:
+    radial-gradient(circle at 1px 1px, rgba(20, 42, 38, .14) 1px, transparent 1.3px) 0 0 / 3px 3px,
+    linear-gradient(180deg, rgba(20, 42, 38, .42), rgba(46, 139, 132, .12) 55%, rgba(20, 42, 38, .4));
+}
+.theatre-floor {
+  left: 4px;
+  right: 4px;
+  bottom: 8px;
+  height: 150px;
+  transform: rotateX(76deg);
+  transform-origin: 50% 100%;
+  border: 2px solid var(--os-ink);
+  background:
+    repeating-linear-gradient(0deg, rgba(26, 26, 24, .07) 0 2px, transparent 2px 9px),
+    radial-gradient(ellipse 70% 60% at 50% 30%, rgba(87, 182, 172, .2), transparent 75%),
+    var(--os-paper);
+}
+.theatre-wall {
+  top: 8px;
+  bottom: 8px;
+  width: 150px;
+  border-top: 2px solid var(--os-ink);
+}
+.theatre-wall-left {
+  left: 4px;
+  transform: rotateY(72deg);
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, #C4E4DC, #9CC8C0 80%);
+}
+.theatre-wall-right {
+  right: 4px;
+  transform: rotateY(-72deg);
+  transform-origin: 100% 50%;
+  background: linear-gradient(-90deg, #C4E4DC, #9CC8C0 80%);
+}
+.theatre-valance {
+  left: 4px;
+  right: 4px;
+  top: 8px;
+  height: 28px;
+  transform: translateZ(-80px);
+  background:
+    radial-gradient(circle 13px at 15px 0, var(--os-teal-light) 12px, transparent 13px) left top / 30px 22px repeat-x,
+    linear-gradient(180deg, var(--os-teal-light) 0 8px, transparent 8px);
+}
+
+#combat-screen[data-scene='yuexia'] .theatre-backdrop { background-image: url('/scenes/yuexia.jpg'); }
+#combat-screen[data-scene='haibian'] .theatre-backdrop { background-image: url('/scenes/haibian.jpg'); }
+#combat-screen[data-scene='jiuguan'] .theatre-backdrop { background-image: url('/scenes/jiuguan.jpg'); }
+#combat-screen[data-scene='zhanchang'] .theatre-backdrop { background-image: url('/scenes/zhanchang.jpg'); }
+
+/* Existing animated puppets now inhabit the perspective room at reference positions. */
+#puppet-stage > .puppet {
+  position: absolute !important;
+  top: auto !important;
+  margin: 0 !important;
+  z-index: 5;
+}
+#puppet-player {
+  left: 145px !important;
+  bottom: 20px !important;
+  width: 120px !important;
+  height: 150px !important;
+  translate: 0 0 -36px;
+}
+#puppet-enemy {
+  left: 420px !important;
+  bottom: 26px !important;
+  width: 109px !important;
+  height: 136px !important;
+  translate: 0 0 -88px;
+}
+#puppet-vs { display: none !important; }
+#puppet-player .puppet-label,
+#puppet-enemy .puppet-label { display: none !important; }
+
+/* Reuse live combat data as the compact in-stage labels from the design. */
+#stage-player {
+  position: absolute !important;
+  left: 142px !important;
+  top: 58px !important;
+  width: 180px !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  z-index: 14;
+}
+#stage-player .standee { display: none !important; }
+#stage-player .standee-name,
+#stage-player .standee-hp {
+  margin: 0 !important;
+  padding: 0 6px !important;
+  min-height: 16px;
+  font: 700 10px/14px var(--font-pixel) !important;
+  letter-spacing: .06em;
+  box-shadow: none !important;
+}
+#stage-player .standee-statuses { min-height: 15px; }
+
+#stage-enemy {
+  position: absolute !important;
+  left: 447px !important;
+  top: 42px !important;
+  width: 230px !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  z-index: 14;
+}
+#stage-enemy > #enemy-area {
+  width: 100% !important;
+  height: auto !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  overflow: visible !important;
+}
+#stage-enemy .enemy {
+  width: auto !important;
+  min-width: 104px !important;
+  max-width: 112px !important;
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 0 !important;
+  gap: 2px !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+#stage-enemy .enemy-portrait,
+#stage-enemy .enemy-portrait-img { display: none !important; }
+#stage-enemy .enemy-name,
+#stage-enemy .enemy-intent {
+  margin: 0 !important;
+  padding: 1px 6px !important;
+  min-height: 16px;
+  font: 700 10px/14px var(--font-pixel) !important;
+  white-space: nowrap;
+  box-shadow: none !important;
+}
+#stage-enemy .enemy-intent { order: -1; color: var(--os-paper) !important; background: var(--os-orange) !important; }
+#stage-enemy .enemy-hp-row { width: 100%; gap: 4px; }
+#stage-enemy .enemy-hp-bar { width: 66px !important; height: 8px !important; }
+#stage-enemy .enemy-hp-text { font-size: 8px !important; }
+#stage-enemy .enemy-status-effects { min-height: 14px; margin: 0 !important; gap: 2px !important; }
+#stage-enemy .status-icon { padding: 0 3px !important; font-size: 8px !important; }
+
+/* Front sprites sit behind composing windows, so the game remains fully usable. */
+#combat-screen > #sentence-dock {
+  flex: 0 0 130px !important;
+  width: 590px !important;
+  height: 130px !important;
+  min-height: 130px !important;
+  margin: -20px auto 0 !important;
+  padding: 27px 6px 6px !important;
+  z-index: 12 !important;
+}
+#sentence-area {
+  position: relative !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: 95px !important;
+  min-height: 0 !important;
+  padding: 2px 6px !important;
+}
+#sentence-score-preview {
+  position: absolute !important;
+  right: 6px;
+  top: 4px;
+  width: auto !important;
+  max-width: 205px !important;
+  max-height: 84px !important;
+  padding: 3px 6px !important;
+  z-index: 4;
+}
+#sentence-slots-container {
+  position: absolute !important;
+  inset: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 0 112px 6px 8px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  overflow: visible !important;
+}
+#sentence-slots-container .sentence-card-wrap { width: 64px !important; }
+#sentence-slots-container .sentence-mini-card {
+  width: 64px !important;
+  min-width: 64px !important;
+  height: 88px !important;
+}
+#sentence-slots-container .sentence-mini-card .card-effect-bar { display: none !important; }
+#sentence-slots-container .sentence-mini-card .card-word { font-size: 20px !important; }
+
+#hand-area {
+  left: 298px !important;
+  right: 298px !important;
+  width: auto !important;
+  height: 150px !important;
+  min-height: 150px !important;
+  padding: 28px 8px 4px !important;
+  z-index: 13 !important;
+}
+#hand-cards .card,
+#target-cards .card,
+#target-cards-enemy .card {
+  width: 58px !important;
+  min-width: 58px !important;
+  height: 104px !important;
+}
+#hand-cards { gap: 6px !important; }
+#hand-cards-wrapper .card-effect-bar { display: none !important; }
+
+/* Tutorial disclosure includes the foreground Sprite layer. */
+#combat-screen.tutorial-mode .battle-sprite,
+#combat-screen.tutorial-mode #puppet-player { opacity: 0; pointer-events: none; }
+#combat-screen.tutorial-mode[data-tutorial-step='encounter'] .battle-sprite,
+#combat-screen.tutorial-mode[data-tutorial-step='self'] .battle-sprite,
+#combat-screen.tutorial-mode[data-tutorial-step='verb'] .battle-sprite,
+#combat-screen.tutorial-mode[data-tutorial-step='target'] .battle-sprite,
+#combat-screen.tutorial-mode[data-tutorial-step='chant'] .battle-sprite,
+#combat-screen.tutorial-mode[data-tutorial-step='attack'] .battle-sprite,
+#combat-screen.tutorial-mode[data-tutorial-step='aftermath'] .battle-sprite { opacity: 1; }
+#combat-screen.tutorial-mode:not([data-tutorial-step='awakening']) #puppet-player {
+  opacity: 1;
+  pointer-events: auto;
+}
+#tutorial-layer.watching-attack .tutorial-skip { pointer-events: none; }
+
+/* ============================================================
+   Optional CRT layer. It never receives input and never alters layout.
+   ============================================================ */
+#crt-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 30000;
+  pointer-events: none;
+  overflow: hidden;
+}
+.crt-enabled #crt-overlay { display: block; }
+#crt-overlay::before,
+#crt-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+#crt-overlay::before {
+  background:
+    repeating-linear-gradient(180deg, rgba(18, 35, 31, 0) 0 2px, rgba(18, 35, 31, .17) 2px 3px),
+    repeating-linear-gradient(90deg, rgba(217, 108, 63, .025) 0 1px, rgba(46, 139, 132, .018) 1px 3px);
+  mix-blend-mode: multiply;
+  animation: crtScan 8s linear infinite;
+}
+#crt-overlay::after {
+  box-shadow:
+    inset 0 0 44px rgba(16, 39, 34, .42),
+    inset 0 0 8px rgba(16, 39, 34, .35);
+  background: radial-gradient(ellipse at center, transparent 68%, rgba(14, 34, 30, .16) 100%);
+}
+#crt-toggle {
+  position: absolute;
+  right: 58px;
+  top: 36px;
+  z-index: 31000;
+  min-width: 62px;
+  height: 24px;
+  padding: 0 6px;
+  border: 2px solid var(--os-ink);
+  border-radius: 0;
+  background: var(--os-paper);
+  color: var(--os-ink);
+  box-shadow: 3px 3px 0 rgba(20, 42, 38, .4);
+  font: 10px/1 var(--font-pixel);
+  cursor: pointer;
+}
+#crt-toggle[aria-pressed='true'] { background: var(--os-water); color: var(--os-night); }
+body:has(#combat-screen.active) #crt-toggle { top: 3px; right: 58px; }
+body:has(#combat-screen.active) #mute-btn { top: 3px !important; right: 12px !important; }
+body:has(#combat-screen.active) #combat-top { padding-right: 174px !important; }
+
+@keyframes crtScan {
+  from { transform: translateY(-3px); }
+  to { transform: translateY(3px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #crt-overlay::before { animation: none; }
+}

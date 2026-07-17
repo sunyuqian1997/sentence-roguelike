@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&amp;family=Ma+Shan+Zheng&amp;family=Noto+Serif+SC:wght@400;500;700;900&amp;display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:#3E6B62;font-family:'DotGothic16','Noto Serif SC',serif}
+@keyframes blinkCur{0%,49%{opacity:1}50%,100%{opacity:0}}
+@keyframes stampInC{0%{transform:scale(2.2) rotate(-6deg);opacity:0}55%{transform:scale(.92) rotate(-6deg);opacity:1}100%{transform:scale(1) rotate(-6deg);opacity:1}}
+/* 窗口生命周期：开=winIn(.3s 回弹)+660→920Hz 双音；关=winOut(.22s)+392Hz。居中窗（自带 translateX(-50%)）用 winInC */
+@keyframes winIn{0%{opacity:0;transform:scale(.86) translateY(10px)}60%{opacity:1;transform:scale(1.02)}100%{opacity:1;transform:none}}
+@keyframes winInC{0%{opacity:0;transform:translateX(-50%) scale(.86) translateY(10px)}60%{opacity:1;transform:translateX(-50%) scale(1.02)}100%{opacity:1;transform:translateX(-50%)}}
+@keyframes winOut{0%{opacity:1;transform:none}100%{opacity:0;transform:scale(.88) translateY(8px)}}
+</style>
+</helmet>
+
+<!-- ══════════════════════════════════════════════════════════════════
+  《词灵录》水色OS 全套界面规范稿 —— 供移植 agent 照抄
+  ▸ 战斗主界面见 战斗原型 3D 水色OS.dc.html（权威交互实现）
+  ▸ 风格令牌（全项目通用，禁止引入新色）：
+      桌面底     #69A89B（渐变 #8FC4B8→#5F9E90 + 4px 点阵 rgba(20,42,38,.2)）
+      窗口纸     #F6F1E2  |  卡纸亮 #FDFAF0  |  水色面板 #DFF1EC
+      墨线       #1A1A18（所有描边 2px 实线）
+      墨青主色   #2E8B84（我方/加持/选中）    浅墨青 #57B6AC
+      柿橙腔调   #D96C3F（主按钮/攻击/敌方）  深柿 #B4471F  橙纸 #FFF3E2
+      暖金衬边   #C8B98A（窗口外圈 0 0 0 2px）
+      窗口投影   6px 6px 0 rgba(20,42,38,.4)（主窗）/ 3px（小件）
+  ▸ 窗口构件：条纹标题栏 = repeating-linear-gradient(0deg,#F6F1E2 0 2px,#1A1A18 2px 3px,#F6F1E2 3px 5px) content-box
+      + 左侧 12px 关闭方块 + 居中白底标题「xxx.扩展名」
+  ▸ 字体：UI 用 DotGothic16，书法字用 Ma Shan Zheng，正文 Noto Serif SC
+  ▸ 主按钮 = 柿橙底 #D96C3F + 白字 + 双圈描边(0 0 0 2px #F6F1E2, 0 0 0 4px #1A1A18)
+═══════════════════════════════════════════════════════════════════ -->
+<section id="t1" style="padding:36px 40px 60px">
+  <div style="display:flex;align-items:baseline;gap:10px;margin:0 0 6px">
+    <a href="#t1" style="font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#D96C3F;color:#FFF6E0;border-radius:4px;text-decoration:none">1</a>
+    <span style="font:600 14px/1.2 'Noto Serif SC',serif;color:#F6F1E2">水色OS · 全套界面（桌面 1240×640）＋ 组件规范</span>
+  </div>
+  <div style="max-width:1000px;font:12.5px/1.8 'Noto Serif SC',serif;color:rgba(246,241,226,.8);margin:0 0 24px">
+    与战斗主界面同一套 OS 皮肤：<a href="#1a" style="color:#FFD9A0;text-decoration:none;font-weight:700">1a 标题画面</a> · <a href="#1b" style="color:#FFD9A0;text-decoration:none;font-weight:700">1b 旅途地图</a> · <a href="#1c" style="color:#FFD9A0;text-decoration:none;font-weight:700">1c 词库</a> · <a href="#1d" style="color:#FFD9A0;text-decoration:none;font-weight:700">1d 战后结算</a> · <a href="#1e" style="color:#FFD9A0;text-decoration:none;font-weight:700">1e 组件与色彩规范</a>。源码内含逐块注释，移植时按注释与文件头令牌表执行。
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:34px;align-items:flex-start">
+
+  <!-- ════════════ 1a 标题画面 ════════════ -->
+  <div id="1a" style="flex:none;display:flex;flex-direction:column;gap:8px">
+    <div style="font:12px/1.5 'Noto Serif SC',serif;color:rgba(246,241,226,.85)"><a href="#1a" style="font:600 10px ui-monospace,Menlo,monospace;padding:2px 6px;background:rgba(246,241,226,.18);color:#F6F1E2;border-radius:4px;text-decoration:none;margin-right:6px">1a</a><b style="color:#FFD9A0">标题画面</b> — 桌面即启动器：logo 窗 + 开始菜单窗，右下角版本角标</div>
+    <!-- 画布：桌面底（全部界面共用此底） -->
+    <div style="width:1240px;height:640px;position:relative;overflow:hidden;color:#1A1A18;background:radial-gradient(circle at 1px 1px,rgba(20,42,38,.2) 1px,transparent 1.4px) 0 0/4px 4px,linear-gradient(180deg,#8FC4B8,#5F9E90);border:1px solid rgba(0,0,0,.3);box-shadow:0 2px 12px rgba(0,0,0,.4)">
+      <!-- 菜单栏：与战斗界面完全一致，只是右侧无回合指示 -->
+      <div style="height:30px;background:#F6F1E2;border-bottom:2px solid #1A1A18;display:flex;align-items:center;justify-content:space-between;padding:0 14px">
+        <div style="display:flex;gap:18px;align-items:center;font-size:12px"><span style="font-family:'Ma Shan Zheng',cursive;font-size:14px">❖ 词灵录</span><span style="color:#6E6A5C">文件</span><span style="color:#6E6A5C">设置</span><span style="color:#6E6A5C">帮助</span></div>
+        <span style="font-size:12px">♪ · 12:00</span>
+      </div>
+      <!-- 桌面图标列（左上）：进入各系统的入口，双击隐喻 -->
+      <div style="position:absolute;left:26px;top:52px;display:flex;flex-direction:column;gap:20px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;width:76px">
+          <span style-hover="transform:translateY(-3px)" style-active="transform:translate(1px,1px)" style="transition:transform .12s ease;width:44px;height:44px;border:2px solid #1A1A18;background:#FDFAF0;box-shadow:0 0 0 2px #C8B98A,3px 3px 0 rgba(20,42,38,.4);display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:22px">词</span>
+          <span style="font-size:11px;background:#F6F1E2;border:1px solid #1A1A18;padding:0 6px;white-space:nowrap">词库.dict</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;width:76px">
+          <span style-hover="transform:translateY(-3px)" style-active="transform:translate(1px,1px)" style="transition:transform .12s ease;width:44px;height:44px;border:2px solid #1A1A18;background:#FDFAF0;box-shadow:0 0 0 2px #C8B98A,3px 3px 0 rgba(20,42,38,.4);display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:22px">诗</span>
+          <span style="font-size:11px;background:#F6F1E2;border:1px solid #1A1A18;padding:0 6px;white-space:nowrap">诗册.log</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;width:76px">
+          <span style-hover="transform:translateY(-3px)" style-active="transform:translate(1px,1px)" style="transition:transform .12s ease;width:44px;height:44px;border:2px solid #1A1A18;background:#FDFAF0;box-shadow:0 0 0 2px #C8B98A,3px 3px 0 rgba(20,42,38,.4);display:flex;align-items:center;justify-content:center;font-size:20px">⚙</span>
+          <span style="font-size:11px;background:#F6F1E2;border:1px solid #1A1A18;padding:0 6px;white-space:nowrap">设置.cfg</span>
+        </div>
+      </div>
+      <!-- logo 主窗：书法大字 + 副题，居中偏上 -->
+      <div style="position:absolute;left:50%;top:96px;transform:translateX(-50%);width:560px;background:#F6F1E2;border:2px solid #1A1A18;box-shadow:0 0 0 2px #C8B98A,7px 7px 0 rgba(20,42,38,.45);animation:winInC .3s cubic-bezier(.3,1.3,.4,1) both">
+        <div style="height:24px;border-bottom:2px solid #1A1A18;background:repeating-linear-gradient(0deg,#F6F1E2 0 2px,#1A1A18 2px 3px,#F6F1E2 3px 5px) content-box,#F6F1E2;padding:4px 6px;display:flex;align-items:center;position:relative">
+          <span title="可选关闭键（此窗常驻不可关）" style-hover="background:#1A1A18;color:#F6F1E2" style="margin-left:auto;width:13px;height:13px;border:2px solid #1A1A18;background:#F6F1E2;z-index:2;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;line-height:1">✕</span>
+          <span style="position:absolute;left:50%;transform:translateX(-50%);background:#F6F1E2;padding:0 14px;font-size:12px;font-weight:700;letter-spacing:.2em">词灵录.app</span>
+        </div>
+        <div style="padding:26px 30px 22px;display:flex;flex-direction:column;align-items:center;gap:10px;background:radial-gradient(circle at 1px 1px,rgba(26,26,24,.05) 1px,transparent 1.3px) 0 0/4px 4px">
+          <!-- 书法 logo：墨字 + 柿橙落款印 -->
+          <div style="display:flex;align-items:flex-end;gap:12px">
+            <span style="font-family:'Ma Shan Zheng',cursive;font-size:86px;line-height:1;letter-spacing:.06em">词灵录</span>
+            <span style="width:34px;height:34px;border:2px solid #B4471F;color:#B4471F;background:#FFF3E2;display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:18px;transform:rotate(-6deg);margin-bottom:8px">吟</span>
+          </div>
+          <span style="font-size:12px;letter-spacing:.5em;color:#6E6A5C">言 出 法 随 · 造 句 战 斗 肉 鸽</span>
+        </div>
+      </div>
+      <!-- 开始菜单窗：OS 列表选单，选中行 = 墨青反白 + ▶ 光标 -->
+      <div style="position:absolute;left:50%;top:352px;transform:translateX(-50%);width:300px;background:#F6F1E2;border:2px solid #1A1A18;box-shadow:0 0 0 2px #C8B98A,6px 6px 0 rgba(20,42,38,.4);animation:winInC .3s cubic-bezier(.3,1.3,.4,1) .12s both">
+        <div style="height:22px;border-bottom:2px solid #1A1A18;background:repeating-linear-gradient(0deg,#F6F1E2 0 2px,#1A1A18 2px 3px,#F6F1E2 3px 5px) content-box,#F6F1E2;padding:4px 6px;display:flex;align-items:center;position:relative">
+          <span title="可选关闭键（此窗常驻不可关）" style-hover="background:#1A1A18;color:#F6F1E2" style="margin-left:auto;width:12px;height:12px;border:2px solid #1A1A18;background:#F6F1E2;z-index:2;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;line-height:1">✕</span>
+          <span style="position:absolute;left:50%;transform:translateX(-50%);background:#F6F1E2;padding:0 12px;font-size:11px;font-weight:700;letter-spacing:.15em">menu.sys</span>
+        </div>
+        <div style="padding:8px;display:flex;flex-direction:column;gap:4px">
+          <!-- 选中行样式：墨青底白字；hover 行为同 -->
+          <span style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:#2E8B84;color:#F6F1E2;font-size:14px;font-weight:700;cursor:pointer">▶ 开始新局</span>
+          <span style="display:flex;align-items:center;gap:8px;padding:7px 12px;font-size:14px;color:#1A1A18;cursor:pointer" style-hover="background:#DFF1EC">　继续旅途 <span style="margin-left:auto;font-size:10px;color:#6E6A5C">第 3 夜</span></span>
+          <span style="display:flex;align-items:center;gap:8px;padding:7px 12px;font-size:14px;color:#1A1A18;cursor:pointer" style-hover="background:#DFF1EC">　词库</span>
+          <span style="display:flex;align-items:center;gap:8px;padding:7px 12px;font-size:14px;color:#8A8676;cursor:not-allowed">　每日一诗（未解锁）</span>
+        </div>
+        <!-- 主按钮：柿橙实体键（全项目唯一高亮键式样） -->
+        <div style="padding:8px;border-top:1px dashed rgba(26,26,24,.3);display:flex;justify-content:center">
+          <span style="border:2px solid #1A1A18;border-radius:8px;background:#D96C3F;color:#FFF6E0;font-weight:700;font-size:14px;padding:6px 34px;cursor:pointer;box-shadow:0 0 0 2px #F6F1E2,0 0 0 4px #1A1A18" style-active="transform:translate(2px,2px)">进 入</span>
+        </div>
+      </div>
+      <span style="position:absolute;right:16px;bottom:12px;font-size:11px;color:#F6F1E2;background:#1A1A18;padding:1px 8px">ver 0.9 · 水色OS</span>
+    </div>
+  </div>
+
+  <!-- ════════════ 1b 旅途地图 ════════════ -->
+  <div id="1b" style="flex:none;display:flex;flex-direction:column;gap:8px">
+    <div style="font:12px/1.5 'Noto Serif SC',serif;color:rgba(246,241,226,.85)"><a href="#1b" style="font:600 10px ui-monospace,Menlo,monospace;padding:2px 6px;background:rgba(246,241,226,.18);color:#F6F1E2;border-radius:4px;text-decoration:none;margin-right:6px">1b</a><b style="color:#FFD9A0">旅途地图</b> — 「旅途.map」大窗：节点连线选关；当前节点柿橙高亮，已过节点盖墨青印，未达节点灰</div>
+    <div style="width:1240px;height:640px;position:relative;overflow:hidden;color:#1A1A18;background:radial-gradient(circle at 1px 1px,rgba(20,42,38,.2) 1px,transparent 1.4px) 0 0/4px 4px,linear-gradient(180deg,#8FC4B8,#5F9E90);border:1px solid rgba(0,0,0,.3);box-shadow:0 2px 12px rgba(0,0,0,.4)">
+      <div style="height:30px;background:#F6F1E2;border-bottom:2px solid #1A1A18;display:flex;align-items:center;justify-content:space-between;padding:0 14px">
+        <div style="display:flex;gap:18px;align-items:center;font-size:12px"><span style="font-family:'Ma Shan Zheng',cursive;font-size:14px">❖ 词灵录</span><span style="cursor:pointer" style-hover="background:#1A1A18;color:#F6F1E2">诗册·3</span><span style="cursor:pointer" style-hover="background:#1A1A18;color:#F6F1E2">词库</span></div>
+        <div style="display:flex;gap:12px;font-size:12px"><span>♪</span><span style="border:1px solid #1A1A18;background:#DFF1EC;padding:0 8px;font-size:11px">第 三 夜</span></div>
+      </div>
+      <!-- 地图窗：占中央大部；viewport 内是深水绿"夜图"底，节点用 OS 图标语言 -->
+      <div style="position:absolute;left:50%;top:44px;transform:translateX(-50%);width:900px;background:#F6F1E2;border:2px solid #1A1A18;box-shadow:0 0 0 2px #C8B98A,7px 7px 0 rgba(20,42,38,.45);animation:winInC .3s cubic-bezier(.3,1.3,.4,1) both">
+        <div style="height:24px;border-bottom:2px solid #1A1A18;background:repeating-linear-gradient(0deg,#F6F1E2 0 2px,#1A1A18 2px 3px,#F6F1E2 3px 5px) content-box,#F6F1E2;padding:4px 6px;display:flex;align-items:center;position:relative">
+          <span title="可选关闭键（此窗常驻不可关）" style-hover="background:#1A1A18;color:#F6F1E2" style="margin-left:auto;width:13px;height:13px;border:2px solid #1A1A18;background:#F6F1E2;z-index:2;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;line-height:1">✕</span>
+          <span style="position:absolute;left:50%;transform:translateX(-50%);background:#F6F1E2;padding:0 14px;font-size:12px;font-weight:700;letter-spacing:.2em">旅途.map — 墨城郊野</span>
+        </div>
+        <!-- 深色夜图底：故意加深（同战斗戏台布景层），窗纸与图底强对比 -->
+        <div style="height:396px;margin:6px;border:2px solid #1A1A18;position:relative;overflow:hidden;background:radial-gradient(circle at 1px 1px,rgba(246,241,226,.08) 1px,transparent 1.3px) 0 0/4px 4px,linear-gradient(180deg,#1F4A44,#153631)">
+          <!-- 路径连线：SVG 虚线；已走过 = 墨青实线，未走 = 纸色虚线 -->
+          <svg viewBox="0 0 884 392" style="position:absolute;inset:0;width:100%;height:100%" xmlns="http://www.w3.org/2000/svg">
+            <path d="M90,330 C170,300 190,220 260,210" stroke="#57B6AC" stroke-width="3" fill="none"></path>
+            <path d="M260,210 C330,200 360,270 430,255" stroke="#57B6AC" stroke-width="3" fill="none"></path>
+            <path d="M430,255 C500,240 520,150 590,140" stroke="#F6F1E2" stroke-width="2.5" stroke-dasharray="6 7" fill="none" opacity=".65"></path>
+            <path d="M430,255 C510,290 560,300 620,280" stroke="#F6F1E2" stroke-width="2.5" stroke-dasharray="6 7" fill="none" opacity=".65"></path>
+            <path d="M590,140 C660,130 700,110 780,96" stroke="#F6F1E2" stroke-width="2.5" stroke-dasharray="6 7" fill="none" opacity=".4"></path>
+            <path d="M620,280 C690,260 730,180 780,96" stroke="#F6F1E2" stroke-width="2.5" stroke-dasharray="6 7" fill="none" opacity=".4"></path>
+          </svg>
+          <!-- 节点通用构件：44px 图标块 + 下方标签；状态见各注释 -->
+          <!-- 已通过：墨青底 + 盖「过」印 -->
+          <div style="position:absolute;left:60px;top:300px;display:flex;flex-direction:column;align-items:center;gap:3px">
+            <span style="width:44px;height:44px;border:2px solid #1A1A18;background:#2E8B84;color:#F6F1E2;box-shadow:2px 2px 0 rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:20px;transform:rotate(-4deg)">过</span>
+            <span style="font-size:10px;color:#F6F1E2;background:rgba(26,26,24,.7);padding:0 5px">酒馆·序战</span>
+          </div>
+          <div style="position:absolute;left:230px;top:180px;display:flex;flex-direction:column;align-items:center;gap:3px">
+            <span style="width:44px;height:44px;border:2px solid #1A1A18;background:#2E8B84;color:#F6F1E2;box-shadow:2px 2px 0 rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:20px;transform:rotate(3deg)">过</span>
+            <span style="font-size:10px;color:#F6F1E2;background:rgba(26,26,24,.7);padding:0 5px">拾词人</span>
+          </div>
+          <!-- 当前节点：柿橙底 + 白描边脉冲圈 + ▼ 指示 -->
+          <div style="position:absolute;left:398px;top:222px;display:flex;flex-direction:column;align-items:center;gap:3px">
+            <span style="font-size:14px;color:#D96C3F;font-weight:900">▼</span>
+            <span style="width:50px;height:50px;border:2px solid #1A1A18;background:#D96C3F;color:#FFF6E0;box-shadow:0 0 0 3px #FFF3E2,0 0 0 5px #B4471F,3px 3px 0 rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;font-size:22px">⚔</span>
+            <span style="font-size:10px;color:#FFF3E2;background:#B4471F;padding:0 6px;font-weight:700">墨妖·遭遇战</span>
+          </div>
+          <!-- 未到达：纸色描边空心；问号=随机事件，双刀=精英，商=商铺 -->
+          <div style="position:absolute;left:562px;top:108px;display:flex;flex-direction:column;align-items:center;gap:3px">
+            <span style="width:44px;height:44px;border:2px dashed #F6F1E2;background:rgba(246,241,226,.12);color:#F6F1E2;display:flex;align-items:center;justify-content:center;font-size:20px">？</span>
+            <span style="font-size:10px;color:rgba(246,241,226,.75)">异闻</span>
+          </div>
+          <div style="position:absolute;left:592px;top:248px;display:flex;flex-direction:column;align-items:center;gap:3px">
+            <span style="width:44px;height:44px;border:2px dashed #F6F1E2;background:rgba(246,241,226,.12);color:#F6F1E2;display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:19px">商</span>
+            <span style="font-size:10px;color:rgba(246,241,226,.75)">字铺</span>
+          </div>
+          <!-- BOSS 节点：大一号 + 双层橙圈虚线（未达为灰橙） -->
+          <div style="position:absolute;left:742px;top:52px;display:flex;flex-direction:column;align-items:center;gap:3px">
+            <span style="width:58px;height:58px;border:3px double #F6F1E2;background:rgba(180,71,31,.35);color:#F6F1E2;display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:26px">魁</span>
+            <span style="font-size:10px;color:rgba(246,241,226,.75)">夜魁 · BOSS</span>
+          </div>
+        </div>
+        <!-- 窗脚：图例 + 前进按钮 -->
+        <div style="height:40px;margin:0 6px 6px;border:2px solid #1A1A18;background:#DFF1EC;display:flex;align-items:center;gap:16px;padding:0 12px;font-size:11px">
+          <span><span style="display:inline-block;width:10px;height:10px;background:#2E8B84;border:1px solid #1A1A18;vertical-align:-1px"></span> 已通过</span>
+          <span><span style="display:inline-block;width:10px;height:10px;background:#D96C3F;border:1px solid #1A1A18;vertical-align:-1px"></span> 当前</span>
+          <span><span style="display:inline-block;width:10px;height:10px;border:1px dashed #1A1A18;vertical-align:-1px"></span> 未达</span>
+          <span style="margin-left:auto;border:2px solid #1A1A18;border-radius:8px;background:#D96C3F;color:#FFF6E0;font-weight:700;font-size:13px;padding:4px 22px;cursor:pointer;box-shadow:0 0 0 2px #F6F1E2,0 0 0 4px #1A1A18" style-active="transform:translate(2px,2px)">启程 ▶</span>
+        </div>
+      </div>
+      <!-- 左下常驻状态条：与战斗界面同一构件（文力换成生命/铜钱） -->
+      <div style="position:absolute;left:16px;bottom:14px;display:flex;gap:10px">
+        <div style="display:flex;align-items:center;gap:6px;padding:5px 10px;border:2px solid #1A1A18;background:#F6F1E2;box-shadow:0 0 0 2px #C8B98A,3px 3px 0 rgba(20,42,38,.4);font-size:12px;font-weight:700"><span style="color:#2E8B84">❤ 42/50</span></div>
+        <div style="display:flex;align-items:center;gap:6px;padding:5px 10px;border:2px solid #1A1A18;background:#F6F1E2;box-shadow:0 0 0 2px #C8B98A,3px 3px 0 rgba(20,42,38,.4);font-size:12px;font-weight:700"><span style="color:#B4471F">◉ 128 文</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ 1c 词库 ════════════ -->
+  <div id="1c" style="flex:none;display:flex;flex-direction:column;gap:8px">
+    <div style="font:12px/1.5 'Noto Serif SC',serif;color:rgba(246,241,226,.85)"><a href="#1c" style="font:600 10px ui-monospace,Menlo,monospace;padding:2px 6px;background:rgba(246,241,226,.18);color:#F6F1E2;border-radius:4px;text-decoration:none;margin-right:6px">1c</a><b style="color:#FFD9A0">词库</b> — 「词库.dict」文件管理器：左侧词性筛选栏（树形），右侧词卡网格；选中卡橙框 + 底部详情行</div>
+    <div style="width:1240px;height:640px;position:relative;overflow:hidden;color:#1A1A18;background:radial-gradient(circle at 1px 1px,rgba(20,42,38,.2) 1px,transparent 1.4px) 0 0/4px 4px,linear-gradient(180deg,#8FC4B8,#5F9E90);border:1px solid rgba(0,0,0,.3);box-shadow:0 2px 12px rgba(0,0,0,.4)">
+      <div style="height:30px;background:#F6F1E2;border-bottom:2px solid #1A1A18;display:flex;align-items:center;justify-content:space-between;padding:0 14px">
+        <div style="display:flex;gap:18px;align-items:center;font-size:12px"><span style="font-family:'Ma Shan Zheng',cursive;font-size:14px">❖ 词灵录</span><span style="color:#6E6A5C">编辑</span><span style="color:#6E6A5C">排序</span></div>
+        <span style="font-size:12px">♪</span>
+      </div>
+      <div style="position:absolute;left:50%;top:44px;transform:translateX(-50%);width:1000px;background:#F6F1E2;border:2px solid #1A1A18;box-shadow:0 0 0 2px #C8B98A,7px 7px 0 rgba(20,42,38,.45);animation:winInC .3s cubic-bezier(.3,1.3,.4,1) both">
+        <div style="height:24px;border-bottom:2px solid #1A1A18;background:repeating-linear-gradient(0deg,#F6F1E2 0 2px,#1A1A18 2px 3px,#F6F1E2 3px 5px) content-box,#F6F1E2;padding:4px 6px;display:flex;align-items:center;position:relative">
+          <span title="可选关闭键（此窗常驻不可关）" style-hover="background:#1A1A18;color:#F6F1E2" style="margin-left:auto;width:13px;height:13px;border:2px solid #1A1A18;background:#F6F1E2;z-index:2;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;line-height:1">✕</span>
+          <span style="position:absolute;left:50%;transform:translateX(-50%);background:#F6F1E2;padding:0 14px;font-size:12px;font-weight:700;letter-spacing:.2em">词库.dict — 已收 24 / 108 词</span>
+        </div>
+        <div style="display:flex;margin:6px;border:2px solid #1A1A18;height:420px">
+          <!-- 左栏：词性树。分类色 = 战斗界面词性条同色（主#2E8B84 谓#1A1A18 宾#B45A2B 连#6E6A5C 标#8A8676） -->
+          <div style="width:190px;flex:none;border-right:2px solid #1A1A18;background:#DFF1EC;padding:10px 0;font-size:13px">
+            <div style="padding:5px 14px;font-weight:700;color:#6E6A5C;font-size:11px;letter-spacing:.2em">▾ 词 性</div>
+            <div style="padding:6px 14px 6px 24px;background:#2E8B84;color:#F6F1E2;font-weight:700;cursor:pointer">全部（24）</div>
+            <div style="padding:6px 14px 6px 24px;cursor:pointer" style-hover="background:rgba(46,139,132,.18)"><span style="color:#2E8B84">■</span> 主语（6）</div>
+            <div style="padding:6px 14px 6px 24px;cursor:pointer" style-hover="background:rgba(46,139,132,.18)"><span style="color:#1A1A18">■</span> 谓语（8）</div>
+            <div style="padding:6px 14px 6px 24px;cursor:pointer" style-hover="background:rgba(46,139,132,.18)"><span style="color:#B45A2B">■</span> 宾语（5）</div>
+            <div style="padding:6px 14px 6px 24px;cursor:pointer" style-hover="background:rgba(46,139,132,.18)"><span style="color:#6E6A5C">■</span> 连接（3）</div>
+            <div style="padding:6px 14px 6px 24px;cursor:pointer" style-hover="background:rgba(46,139,132,.18)"><span style="color:#8A8676">■</span> 标点（2）</div>
+            <div style="padding:12px 14px 5px;font-weight:700;color:#6E6A5C;font-size:11px;letter-spacing:.2em">▾ 特 性</div>
+            <div style="padding:6px 14px 6px 24px;cursor:pointer" style-hover="background:rgba(46,139,132,.18)">🌈 谐音双关（4）</div>
+            <div style="padding:6px 14px 6px 24px;cursor:pointer" style-hover="background:rgba(46,139,132,.18)">🎵 押韵（6）</div>
+          </div>
+          <!-- 右栏：词卡网格。卡=战斗手牌同构件（56×104 竖排书法字+词性条+费角标）；选中卡柿橙描边+微抬 -->
+          <div style="flex:1;padding:14px;display:flex;flex-wrap:wrap;gap:12px;align-content:flex-start;background:radial-gradient(circle at 1px 1px,rgba(26,26,24,.06) 1px,transparent 1.3px) 0 0/4px 4px;overflow:hidden">
+            <!-- 选中示例：戳 -->
+            <div style="width:58px;height:106px;border:2px solid #D96C3F;background:#FDFAF0;position:relative;display:flex;flex-direction:column;text-align:center;box-shadow:0 0 0 2px #FFF3E2,3px 3px 0 #B4471F;transform:translateY(-4px);cursor:pointer">
+              <div style="position:absolute;top:2px;left:2px;width:16px;height:16px;background:#1A1A18;color:#F6F1E2;border:2px solid #F6F1E2;outline:2px solid #1A1A18;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;z-index:2">2</div>
+              <div style="color:#F6F1E2;font-size:9px;font-weight:700;letter-spacing:.14em;padding:3px 0;border-bottom:2px solid #1A1A18;background:#1A1A18">谓</div>
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:22px;writing-mode:vertical-rl">戳</div>
+            </div>
+            <div style="width:58px;height:106px;border:2px solid #1A1A18;background:#FDFAF0;position:relative;display:flex;flex-direction:column;text-align:center;box-shadow:2px 2px 0 rgba(26,26,24,.4);cursor:pointer" style-hover="transform:translateY(-4px)">
+              <div style="position:absolute;top:2px;left:2px;width:16px;height:16px;background:#1A1A18;color:#F6F1E2;border:2px solid #F6F1E2;outline:2px solid #1A1A18;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;z-index:2">1</div>
+              <div style="color:#F6F1E2;font-size:9px;font-weight:700;letter-spacing:.14em;padding:3px 0;border-bottom:2px solid #1A1A18;background:#1A1A18">谓</div>
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:22px;writing-mode:vertical-rl">守</div>
+            </div>
+            <div style="width:58px;height:106px;border:2px solid #2E8B84;background:#FDFAF0;position:relative;display:flex;flex-direction:column;text-align:center;box-shadow:2px 2px 0 rgba(26,26,24,.4);cursor:pointer" style-hover="transform:translateY(-4px)">
+              <div style="position:absolute;top:2px;left:2px;width:16px;height:16px;background:#1A1A18;color:#F6F1E2;border:2px solid #F6F1E2;outline:2px solid #1A1A18;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;z-index:2">0</div>
+              <div style="color:#F6F1E2;font-size:9px;font-weight:700;letter-spacing:.14em;padding:3px 0;border-bottom:2px solid #1A1A18;background:#2E8B84">主</div>
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:22px;color:#2E8B84;writing-mode:vertical-rl">我</div>
+            </div>
+            <div style="width:58px;height:106px;border:2px solid #1A1A18;background:#FDFAF0;position:relative;display:flex;flex-direction:column;text-align:center;box-shadow:2px 2px 0 rgba(26,26,24,.4);cursor:pointer" style-hover="transform:translateY(-4px)">
+              <div style="position:absolute;top:2px;left:2px;width:16px;height:16px;background:#1A1A18;color:#F6F1E2;border:2px solid #F6F1E2;outline:2px solid #1A1A18;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;z-index:2">0</div>
+              <div style="color:#F6F1E2;font-size:9px;font-weight:700;letter-spacing:.14em;padding:3px 0;border-bottom:2px solid #1A1A18;background:#2E8B84">主</div>
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:22px;writing-mode:vertical-rl">猫</div>
+            </div>
+            <div style="width:58px;height:106px;border:2px solid #B45A2B;background:#FDFAF0;position:relative;display:flex;flex-direction:column;text-align:center;box-shadow:2px 2px 0 rgba(26,26,24,.4);cursor:pointer" style-hover="transform:translateY(-4px)">
+              <div style="position:absolute;top:2px;left:2px;width:16px;height:16px;background:#1A1A18;color:#F6F1E2;border:2px solid #F6F1E2;outline:2px solid #1A1A18;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;z-index:2">0</div>
+              <div style="color:#F6F1E2;font-size:9px;font-weight:700;letter-spacing:.14em;padding:3px 0;border-bottom:2px solid #1A1A18;background:#B45A2B">宾</div>
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:18px;color:#B4471F;writing-mode:vertical-rl">墨妖</div>
+            </div>
+            <div style="width:58px;height:106px;border:2px solid #1A1A18;background:#FDFAF0;position:relative;display:flex;flex-direction:column;text-align:center;box-shadow:2px 2px 0 rgba(26,26,24,.4);cursor:pointer" style-hover="transform:translateY(-4px)">
+              <div style="position:absolute;top:2px;left:2px;width:16px;height:16px;background:#1A1A18;color:#F6F1E2;border:2px solid #F6F1E2;outline:2px solid #1A1A18;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;z-index:2">0</div>
+              <div style="color:#F6F1E2;font-size:9px;font-weight:700;letter-spacing:.14em;padding:3px 0;border-bottom:2px solid #1A1A18;background:#6E6A5C">连</div>
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:22px;writing-mode:vertical-rl">是</div>
+            </div>
+            <div style="width:58px;height:106px;border:2px solid #1A1A18;background:#FDFAF0;position:relative;display:flex;flex-direction:column;text-align:center;box-shadow:2px 2px 0 rgba(26,26,24,.4);cursor:pointer" style-hover="transform:translateY(-4px)">
+              <div style="position:absolute;top:2px;left:2px;width:16px;height:16px;background:#1A1A18;color:#F6F1E2;border:2px solid #F6F1E2;outline:2px solid #1A1A18;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;z-index:2">1</div>
+              <div style="color:#F6F1E2;font-size:9px;font-weight:700;letter-spacing:.14em;padding:3px 0;border-bottom:2px solid #1A1A18;background:#6E6A5C">连</div>
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:22px;color:#2E8B84;writing-mode:vertical-rl">给</div>
+            </div>
+            <div style="width:58px;height:106px;border:2px solid #1A1A18;background:#FDFAF0;position:relative;display:flex;flex-direction:column;text-align:center;box-shadow:2px 2px 0 rgba(26,26,24,.4);cursor:pointer" style-hover="transform:translateY(-4px)">
+              <div style="position:absolute;top:2px;left:2px;width:16px;height:16px;background:#1A1A18;color:#F6F1E2;border:2px solid #F6F1E2;outline:2px solid #1A1A18;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;z-index:2">0</div>
+              <div style="color:#F6F1E2;font-size:9px;font-weight:700;letter-spacing:.14em;padding:3px 0;border-bottom:2px solid #1A1A18;background:#8A8676">标</div>
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:22px;color:#8A8676;writing-mode:vertical-rl">丶</div>
+            </div>
+            <!-- 未解锁槽位：虚线空卡 -->
+            <div style="width:58px;height:106px;border:2px dashed rgba(26,26,24,.35);display:flex;align-items:center;justify-content:center;color:rgba(26,26,24,.3);font-size:20px">？</div>
+            <div style="width:58px;height:106px;border:2px dashed rgba(26,26,24,.35);display:flex;align-items:center;justify-content:center;color:rgba(26,26,24,.3);font-size:20px">？</div>
+          </div>
+        </div>
+        <!-- 底部详情行：显示选中词条完整说明（同战斗 hover 浮签内容） -->
+        <div style="height:44px;margin:0 6px 6px;border:2px solid #1A1A18;background:#FFF3E2;display:flex;align-items:center;gap:14px;padding:0 14px">
+          <span style="font-family:'Ma Shan Zheng',cursive;font-size:24px;color:#B4471F">戳</span>
+          <span style="font-size:11px;font-weight:700;color:#F6F1E2;background:#1A1A18;padding:0 6px">谓语</span>
+          <span style="font-size:12px">费 2 · 攻击 12 · <span style="color:#B4471F">「言出法随：入句即令目标畏惧」</span></span>
+          <span style="margin-left:auto;font-size:11px;color:#6E6A5C">收录于 第一夜 · 酒馆</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ 1d 战后结算 ════════════ -->
+  <div id="1d" style="flex:none;display:flex;flex-direction:column;gap:8px">
+    <div style="font:12px/1.5 'Noto Serif SC',serif;color:rgba(246,241,226,.85)"><a href="#1d" style="font:600 10px ui-monospace,Menlo,monospace;padding:2px 6px;background:rgba(246,241,226,.18);color:#F6F1E2;border-radius:4px;text-decoration:none;margin-right:6px">1d</a><b style="color:#FFD9A0">战后结算</b> — 战斗界面之上弹出「结算.log」对话框：战报 + 三选一新词；背景压暗 40%</div>
+    <div style="width:1240px;height:640px;position:relative;overflow:hidden;color:#1A1A18;background:radial-gradient(circle at 1px 1px,rgba(20,42,38,.2) 1px,transparent 1.4px) 0 0/4px 4px,linear-gradient(180deg,#8FC4B8,#5F9E90);border:1px solid rgba(0,0,0,.3);box-shadow:0 2px 12px rgba(0,0,0,.4)">
+      <div style="height:30px;background:#F6F1E2;border-bottom:2px solid #1A1A18;display:flex;align-items:center;justify-content:space-between;padding:0 14px">
+        <div style="display:flex;gap:18px;align-items:center;font-size:12px"><span style="font-family:'Ma Shan Zheng',cursive;font-size:14px">❖ 词灵录</span><span style="color:#6E6A5C">诗册·4</span></div>
+        <span style="font-size:12px">♪</span>
+      </div>
+      <!-- 压暗层：结算时盖住战斗画面（此处示意） -->
+      <div style="position:absolute;inset:30px 0 0;background:rgba(20,42,38,.42)"></div>
+      <!-- 结算主窗 -->
+      <div style="position:absolute;left:50%;top:70px;transform:translateX(-50%);width:640px;background:#F6F1E2;border:2px solid #1A1A18;box-shadow:0 0 0 2px #C8B98A,8px 8px 0 rgba(20,42,38,.5);animation:winInC .34s cubic-bezier(.3,1.3,.4,1) both">
+        <div style="height:24px;border-bottom:2px solid #1A1A18;background:repeating-linear-gradient(0deg,#F6F1E2 0 2px,#1A1A18 2px 3px,#F6F1E2 3px 5px) content-box,#F6F1E2;padding:4px 6px;display:flex;align-items:center;position:relative">
+          <span title="可选关闭键（此窗常驻不可关）" style-hover="background:#1A1A18;color:#F6F1E2" style="margin-left:auto;width:13px;height:13px;border:2px solid #1A1A18;background:#F6F1E2;z-index:2;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;line-height:1">✕</span>
+          <span style="position:absolute;left:50%;transform:translateX(-50%);background:#F6F1E2;padding:0 14px;font-size:12px;font-weight:700;letter-spacing:.2em">结算.log — 墨妖·已破</span>
+        </div>
+        <div style="padding:18px 22px 8px;display:flex;gap:20px;align-items:flex-start">
+          <!-- 大印：胜利盖章（stampInC 入场） -->
+          <div style="width:104px;height:104px;flex:none;border:5px double #B4471F;color:#B4471F;background:#FFF3E2;display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:42px;letter-spacing:.08em;animation:stampInC .42s cubic-bezier(.2,1.3,.4,1) both;box-shadow:3px 3px 0 rgba(180,71,31,.3)">妙极</div>
+          <!-- 战报表：OS 键值行，虚线分隔 -->
+          <div style="flex:1;font-size:12.5px;line-height:1.5">
+            <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed rgba(26,26,24,.3)"><span style="color:#6E6A5C">回合数</span><b>4 回合</b></div>
+            <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed rgba(26,26,24,.3)"><span style="color:#6E6A5C">最佳诗句</span><b style="font-family:'Ma Shan Zheng',cursive;font-size:15px">「我戳墨妖」 ×1.35</b></div>
+            <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed rgba(26,26,24,.3)"><span style="color:#6E6A5C">总伤害</span><b style="color:#B4471F">38</b></div>
+            <div style="display:flex;justify-content:space-between;padding:4px 0"><span style="color:#6E6A5C">拾获</span><b style="color:#B4471F">◉ 26 文</b></div>
+          </div>
+        </div>
+        <!-- 奖励区：三选一新词。选中=柿橙框双圈+抬起；说明文字在卡下 -->
+        <div style="margin:8px 22px 0;border-top:2px solid #1A1A18;padding-top:10px">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.3em;color:#6E6A5C;text-align:center;margin-bottom:10px">▼ 拾 一 词 入 库 ▼</div>
+          <div style="display:flex;justify-content:center;gap:26px">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer">
+              <div style="width:64px;height:118px;border:2px solid #D96C3F;background:#FDFAF0;position:relative;display:flex;flex-direction:column;text-align:center;box-shadow:0 0 0 2px #FFF3E2,3px 3px 0 #B4471F;transform:translateY(-5px)">
+                <div style="position:absolute;top:2px;left:2px;width:17px;height:17px;background:#1A1A18;color:#F6F1E2;border:2px solid #F6F1E2;outline:2px solid #1A1A18;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;z-index:2">2</div>
+                <div style="color:#F6F1E2;font-size:9px;font-weight:700;letter-spacing:.14em;padding:3px 0;border-bottom:2px solid #1A1A18;background:#1A1A18">谓</div>
+                <div style="flex:1;display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:25px;writing-mode:vertical-rl">斩</div>
+              </div>
+              <span style="font-size:10.5px;color:#1A1A18;background:#FFF3E2;border:1px solid #B4471F;padding:0 6px;white-space:nowrap">攻18 · 句首时+暴击</span>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer" style-hover="transform:translateY(-3px)">
+              <div style="width:64px;height:118px;border:2px solid #1A1A18;background:#FDFAF0;position:relative;display:flex;flex-direction:column;text-align:center;box-shadow:2px 2px 0 rgba(26,26,24,.4)">
+                <div style="position:absolute;top:2px;left:2px;width:17px;height:17px;background:#1A1A18;color:#F6F1E2;border:2px solid #F6F1E2;outline:2px solid #1A1A18;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;z-index:2">1</div>
+                <div style="color:#F6F1E2;font-size:9px;font-weight:700;letter-spacing:.14em;padding:3px 0;border-bottom:2px solid #1A1A18;background:#2E8B84">主</div>
+                <div style="flex:1;display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:25px;color:#2E8B84;writing-mode:vertical-rl">月</div>
+              </div>
+              <span style="font-size:10.5px;color:#6E6A5C">主语 · 夜间战斗+韵脚</span>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer" style-hover="transform:translateY(-3px)">
+              <div style="width:64px;height:118px;border:2px solid #1A1A18;background:#FDFAF0;position:relative;display:flex;flex-direction:column;text-align:center;box-shadow:2px 2px 0 rgba(26,26,24,.4)">
+                <div style="position:absolute;top:2px;left:2px;width:17px;height:17px;background:#1A1A18;color:#F6F1E2;border:2px solid #F6F1E2;outline:2px solid #1A1A18;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;z-index:2">0</div>
+                <div style="color:#F6F1E2;font-size:9px;font-weight:700;letter-spacing:.14em;padding:3px 0;border-bottom:2px solid #1A1A18;background:#8A8676">标</div>
+                <div style="flex:1;display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:25px;color:#8A8676;writing-mode:vertical-rl">！</div>
+              </div>
+              <span style="font-size:10.5px;color:#6E6A5C">标点 · 句尾+30%气势</span>
+            </div>
+          </div>
+        </div>
+        <!-- 底部按钮行：主（柿橙）+ 次（纸底描边） -->
+        <div style="display:flex;justify-content:center;gap:14px;padding:14px 0 16px">
+          <span style="border:2px solid #1A1A18;border-radius:8px;background:#D96C3F;color:#FFF6E0;font-weight:700;font-size:14px;padding:6px 30px;cursor:pointer;box-shadow:0 0 0 2px #F6F1E2,0 0 0 4px #1A1A18" style-active="transform:translate(2px,2px)">收入诗册 ▶</span>
+          <span style="border:2px solid #1A1A18;border-radius:6px;background:#F6F1E2;color:#6E6A5C;font-weight:700;font-size:12px;padding:6px 18px;cursor:pointer" style-active="transform:translate(2px,2px)">跳过</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ 1e 组件与色彩规范 ════════════ -->
+  <div id="1e" style="flex:none;display:flex;flex-direction:column;gap:8px">
+    <div style="font:12px/1.5 'Noto Serif SC',serif;color:rgba(246,241,226,.85)"><a href="#1e" style="font:600 10px ui-monospace,Menlo,monospace;padding:2px 6px;background:rgba(246,241,226,.18);color:#F6F1E2;border-radius:4px;text-decoration:none;margin-right:6px">1e</a><b style="color:#FFD9A0">组件与色彩规范</b> — 移植 agent 的对照表：色板 / 窗口构件 / 按钮 / 词卡解剖 / 层级规则</div>
+    <div style="width:1240px;padding:22px;display:flex;flex-wrap:wrap;gap:20px;background:radial-gradient(circle at 1px 1px,rgba(20,42,38,.2) 1px,transparent 1.4px) 0 0/4px 4px,linear-gradient(180deg,#8FC4B8,#5F9E90);border:1px solid rgba(0,0,0,.3);box-shadow:0 2px 12px rgba(0,0,0,.4);color:#1A1A18">
+      <!-- 色板 -->
+      <div style="width:360px;background:#F6F1E2;border:2px solid #1A1A18;box-shadow:0 0 0 2px #C8B98A,4px 4px 0 rgba(20,42,38,.4);padding:12px 14px">
+        <div style="font-size:12px;font-weight:700;letter-spacing:.2em;border-bottom:2px solid #1A1A18;padding-bottom:6px;margin-bottom:10px">色 板（全项目仅此 10 色）</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:10px">
+          <div style="width:76px"><div style="height:30px;background:#69A89B;border:1px solid #1A1A18"></div>桌面 #69A89B</div>
+          <div style="width:76px"><div style="height:30px;background:#F6F1E2;border:1px solid #1A1A18"></div>窗纸 #F6F1E2</div>
+          <div style="width:76px"><div style="height:30px;background:#FDFAF0;border:1px solid #1A1A18"></div>卡纸 #FDFAF0</div>
+          <div style="width:76px"><div style="height:30px;background:#DFF1EC;border:1px solid #1A1A18"></div>水面板 #DFF1EC</div>
+          <div style="width:76px"><div style="height:30px;background:#1A1A18"></div><span style="color:#1A1A18">墨线 #1A1A18</span></div>
+          <div style="width:76px"><div style="height:30px;background:#2E8B84"></div>墨青 #2E8B84</div>
+          <div style="width:76px"><div style="height:30px;background:#57B6AC"></div>浅青 #57B6AC</div>
+          <div style="width:76px"><div style="height:30px;background:#D96C3F"></div>柿橙 #D96C3F</div>
+          <div style="width:76px"><div style="height:30px;background:#B4471F"></div>深柿 #B4471F</div>
+          <div style="width:76px"><div style="height:30px;background:#C8B98A"></div>暖金 #C8B98A</div>
+        </div>
+        <div style="font-size:10.5px;line-height:1.7;margin-top:10px;color:#6E6A5C">用色纪律：<b style="color:#2E8B84">墨青</b>=我方/加持/选中；<b style="color:#B4471F">柿橙</b>=主按钮/攻击/敌方/当前；暖金只做窗口衬边；其余一律墨线+纸色。</div>
+      </div>
+      <!-- 窗口构件解剖 -->
+      <div style="width:360px;background:#F6F1E2;border:2px solid #1A1A18;box-shadow:0 0 0 2px #C8B98A,4px 4px 0 rgba(20,42,38,.4);padding:12px 14px">
+        <div style="font-size:12px;font-weight:700;letter-spacing:.2em;border-bottom:2px solid #1A1A18;padding-bottom:6px;margin-bottom:10px">窗 口 构 件</div>
+        <div style="border:2px solid #1A1A18;box-shadow:0 0 0 2px #C8B98A,4px 4px 0 rgba(20,42,38,.4);margin:6px 4px 12px">
+          <div style="height:22px;border-bottom:2px solid #1A1A18;background:repeating-linear-gradient(0deg,#F6F1E2 0 2px,#1A1A18 2px 3px,#F6F1E2 3px 5px) content-box,#F6F1E2;padding:4px 6px;display:flex;align-items:center;position:relative">
+            <span title="可选关闭键（此窗常驻不可关）" style-hover="background:#1A1A18;color:#F6F1E2" style="margin-left:auto;width:12px;height:12px;border:2px solid #1A1A18;background:#F6F1E2;z-index:2;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;line-height:1">✕</span>
+            <span style="position:absolute;left:50%;transform:translateX(-50%);background:#F6F1E2;padding:0 10px;font-size:11px;font-weight:700">标题.ext</span>
+          </div>
+          <div style="padding:10px;font-size:11px;background:#F6F1E2">内容区（留白 6px，再包 2px 墨线内框时用于 viewport）</div>
+        </div>
+        <div style="font-size:10.5px;line-height:1.8;color:#6E6A5C">
+          ① 条纹标题栏（5px 循环）+ 白底居中「名.扩展名」+ 右上 ✕ 关闭键（<b>可选组件</b>：常驻窗口不可关，仅弹窗/临时窗真正响应；不可关窗口点 ✕ 只给反馈音）<br>
+          ② 外圈：<code>0 0 0 2px #C8B98A</code> 暖金衬边<br>
+          ③ 投影：主窗 <code>7px 7px 0 rgba(20,42,38,.45)</code>，次窗 5px，小件 3px —— 投影大小 = 层级<br>
+          ④ 立绘永远在窗口之上（z 11），仅飞卡(40)/大印(30)更高
+        </div>
+      </div>
+      <!-- 按钮 & 词卡解剖 -->
+      <div style="width:440px;background:#F6F1E2;border:2px solid #1A1A18;box-shadow:0 0 0 2px #C8B98A,4px 4px 0 rgba(20,42,38,.4);padding:12px 14px">
+        <div style="font-size:12px;font-weight:700;letter-spacing:.2em;border-bottom:2px solid #1A1A18;padding-bottom:6px;margin-bottom:10px">按 钮 · 词 卡 · 状 态</div>
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+          <span style="border:2px solid #1A1A18;border-radius:8px;background:#D96C3F;color:#FFF6E0;font-weight:700;font-size:13px;padding:5px 20px;box-shadow:0 0 0 2px #F6F1E2,0 0 0 4px #1A1A18">主按钮</span>
+          <span style="border:2px solid #1A1A18;border-radius:6px;background:#F6F1E2;font-weight:700;font-size:12px;padding:5px 14px">次按钮</span>
+          <span style="border:2px solid #1A1A18;border-radius:6px;background:#F6F1E2;color:#8A8676;font-weight:700;font-size:12px;padding:5px 14px;opacity:.5">禁用</span>
+          <span style="font-size:10.5px;color:#6E6A5C">按下=translate(2px,2px)</span>
+        </div>
+        <div style="display:flex;gap:16px;align-items:flex-start">
+          <div style="width:64px;height:118px;border:2px solid #1A1A18;background:#FDFAF0;position:relative;display:flex;flex-direction:column;text-align:center;box-shadow:2px 2px 0 rgba(26,26,24,.4);flex:none">
+            <div style="position:absolute;top:2px;left:2px;width:17px;height:17px;background:#1A1A18;color:#F6F1E2;border:2px solid #F6F1E2;outline:2px solid #1A1A18;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;z-index:2">2</div>
+            <div style="color:#F6F1E2;font-size:9px;font-weight:700;letter-spacing:.14em;padding:3px 0;border-bottom:2px solid #1A1A18;background:#1A1A18">谓</div>
+            <div style="flex:1;display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:25px;writing-mode:vertical-rl">戳</div>
+          </div>
+          <div style="font-size:10.5px;line-height:1.8;color:#6E6A5C">
+            词卡解剖（战斗/词库/结算通用）：<br>
+            ① 左上费用角标：墨底白字 + 白内圈 + 墨外圈<br>
+            ② 顶部词性条：主=墨青 / 谓=墨线 / 宾=#B45A2B / 连=#6E6A5C / 标=#8A8676<br>
+            ③ 主字：Ma Shan Zheng 竖排 <code>writing-mode:vertical-rl</code><br>
+            状态：hover=抬14px+柿橙描边；已用=透明度.35；选中=柿橙框+双圈 <code>0 0 0 2px #FFF3E2, 3px 3px 0 #B4471F</code>
+          </div>
+        </div>
+      </div>
+      <!-- 层级/交互规则速查 -->
+      <div style="width:360px;background:#FFF3E2;border:2px solid #B4471F;box-shadow:4px 4px 0 rgba(180,71,31,.3);padding:12px 14px">
+        <div style="font-size:12px;font-weight:700;letter-spacing:.2em;border-bottom:2px solid #B4471F;padding-bottom:6px;margin-bottom:10px;color:#B4471F">移 植 检 查 单</div>
+        <div style="font-size:11px;line-height:2;color:#1A1A18">
+          □ 全部界面共用同一桌面底 + 30px 菜单栏<br>
+          □ 深色 viewport（戏台布景/地图夜图）必须暗于 #2A5850，保证纸色小人/节点可读<br>
+          □ 音效/动效规格照 战斗原型 3D 水色OS 源码（tone/thud/keyframes 直接搬）<br>
+          □ 言出法随：词入句即触发预备态（见小人表现力面板）<br>
+          □ 字号下限：正文 11px / 标签 9px；书法字不受限<br>
+          □ 新界面若需新构件，先复用 1e 组件，禁止发明新配色<br>
+          □ 窗口开关动效音效照「反馈演示」卡规格执行
+        </div>
+      </div>
+      <!-- 反馈演示（可交互）：hover/按下/开窗/关窗的动效+音效实机示意；音效为 WebAudio 合成（tone），需先点击过页面 -->
+      <div style="width:440px;background:#F6F1E2;border:2px solid #1A1A18;box-shadow:0 0 0 2px #C8B98A,4px 4px 0 rgba(20,42,38,.4);padding:12px 14px">
+        <div style="font-size:12px;font-weight:700;letter-spacing:.2em;border-bottom:2px solid #1A1A18;padding-bottom:6px;margin-bottom:10px">反 馈 演 示（可 点 · 有 声）</div>
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px">
+          <span onMouseEnter="{{ hoverTick }}" onClick="{{ pressTock }}" style="border:2px solid #1A1A18;border-radius:8px;background:#D96C3F;color:#FFF6E0;font-weight:700;font-size:13px;padding:5px 20px;cursor:pointer;box-shadow:0 0 0 2px #F6F1E2,0 0 0 4px #1A1A18;transition:transform .1s ease" style-hover="transform:translateY(-2px)" style-active="transform:translate(2px,2px)">主按钮</span>
+          <span onMouseEnter="{{ hoverTick }}" onClick="{{ pressTock }}" style="border:2px solid #1A1A18;border-radius:6px;background:#F6F1E2;font-weight:700;font-size:12px;padding:5px 14px;cursor:pointer;transition:transform .1s ease" style-hover="background:#DFF1EC" style-active="transform:translate(2px,2px)">次按钮</span>
+          <span onMouseEnter="{{ hoverTick }}" onClick="{{ openWin }}" style="border:2px solid #1A1A18;border-radius:6px;background:#2E8B84;color:#F6F1E2;font-weight:700;font-size:12px;padding:5px 14px;cursor:pointer;transition:transform .1s ease" style-active="transform:translate(2px,2px)">打开窗口 ▶</span>
+        </div>
+        <!-- 窗口生命周期沙盒 -->
+        <div style="height:158px;position:relative;border:1px dashed rgba(26,26,24,.35);background:radial-gradient(circle at 1px 1px,rgba(26,26,24,.06) 1px,transparent 1.3px) 0 0/4px 4px;overflow:hidden">
+          <sc-if value="{{ winShown }}" hint-placeholder-val="{{ true }}">
+            <div style="position:absolute;left:calc(50% - 115px);top:14px;width:230px;background:#F6F1E2;border:2px solid #1A1A18;box-shadow:0 0 0 2px #C8B98A,5px 5px 0 rgba(20,42,38,.4);animation:{{ winAnim }}">
+              <div style="height:22px;border-bottom:2px solid #1A1A18;background:repeating-linear-gradient(0deg,#F6F1E2 0 2px,#1A1A18 2px 3px,#F6F1E2 3px 5px) content-box,#F6F1E2;padding:4px 6px;display:flex;align-items:center;position:relative">
+                <span onClick="{{ closeWin }}" style-hover="background:#1A1A18;color:#F6F1E2" style-active="transform:translate(1px,1px)" style="margin-left:auto;width:12px;height:12px;border:2px solid #1A1A18;background:#F6F1E2;z-index:2;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;line-height:1">✕</span>
+                <span style="position:absolute;left:50%;transform:translateX(-50%);background:#F6F1E2;padding:0 10px;font-size:11px;font-weight:700">演示.win</span>
+              </div>
+              <div style="padding:12px 10px;font-size:11px;line-height:1.7;text-align:center">点右上 ✕ 关闭<br><span style="color:#6E6A5C">开 .30s 回弹 · 关 .22s 收拢</span></div>
+            </div>
+          </sc-if>
+        </div>
+        <div style="font-size:10.5px;line-height:1.8;color:#6E6A5C;margin-top:8px">规格：hover = 1180Hz tick + 抬起/换底；按下 = 位移(2px,2px) + 520Hz；开窗 = winIn/.3s + 660→920Hz 双音；关窗 = winOut/.22s + 392Hz；界面进场各窗 winIn 错峰 0/.1/.18/.26s（见战斗主界面）。</div>
+      </div>
+    </div>
+  </div>
+
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  // 仅服务 1e「反馈演示」卡：窗口开关状态 + WebAudio 反馈音（规格与战斗主界面一致）
+  state = { open: true, closing: false };
+  ctx() { return this.actx || (this.actx = new (window.AudioContext || window.webkitAudioContext)()); }
+  tone(freq, dur, type, gain) {
+    try {
+      const c = this.ctx(), o = c.createOscillator(), g = c.createGain();
+      o.type = type || 'triangle'; o.frequency.value = freq;
+      g.gain.setValueAtTime(gain || 0.2, c.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + (dur || 0.18));
+      o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime + (dur || 0.18) + 0.02);
+    } catch (e) {}
+  }
+  renderVals() {
+    const s = this.state;
+    return {
+      winShown: s.open || s.closing,
+      winAnim: s.closing ? 'winOut .22s ease-in both' : 'winIn .3s cubic-bezier(.3,1.3,.4,1) both',
+      hoverTick: () => this.tone(1180, 0.04, 'sine', 0.05),
+      pressTock: () => this.tone(520, 0.06, 'sine', 0.12),
+      openWin: () => {
+        if (s.open) return;
+        this.tone(660, 0.08, 'sine', 0.14);
+        setTimeout(() => this.tone(920, 0.08, 'sine', 0.12), 90);
+        this.setState({ open: true, closing: false });
+      },
+      closeWin: () => {
+        if (s.closing) return;
+        this.tone(392, 0.12, 'triangle', 0.15);
+        this.setState({ closing: true });
+        setTimeout(() => this.setState({ open: false, closing: false }), 210);
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>

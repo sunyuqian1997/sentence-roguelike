@@ -4,6 +4,7 @@ export const META_DEFAULT = {
   perks: [],
   lang: 'zh',
   unlockedPacks: ['base', 'caodong', 'luxun'],
+  tutorialCompleted: false,
 };
 
 export function loadMeta() {
@@ -21,10 +22,10 @@ export function saveMeta() {
 }
 
 export const LEGACY_PERKS = {
-  thick_paper: { name: '厚宣纸', desc: '每次冒险开始+5最大生命', cost: 30 },
-  ink_pot: { name: '墨池', desc: '每次冒险开始+15文银', cost: 20 },
-  sharp_brush: { name: '利笔', desc: '每次冒险开始+1力量', cost: 40 },
-  extra_scroll: { name: '展卷', desc: '每回合抽6张而非5张', cost: 50 },
+  thick_paper: { name: '厚封档案袋', desc: '每次夜巡开始+5最大生命', cost: 30 },
+  ink_pot: { name: '值日生零钱盒', desc: '每次夜巡开始+15校章', cost: 20 },
+  sharp_brush: { name: '红色批改笔', desc: '每次夜巡开始+1力量', cost: 40 },
+  extra_scroll: { name: '备用作业本', desc: '每回合抽6张而非5张', cost: 50 },
 };
 
 export const UNLOCKABLE_CARDS_META = {
@@ -52,7 +53,7 @@ export const G = {
   enemyTargets: [],
   allCardsCostZero: false, poeticAura: false,
   musicStarted: false, muted: false,
-  actNames: ['', '第一章·词语花园', '第二章·回声走廊', '第三章·沉默之塔'],
+  actNames: ['', '第零夜·不存在的三楼', '第一夜·第十三广播室', '第二夜·地下学生档案'],
   shopInventory: null,
   drawLessNextTurn: 0,
   sentenceJournal: [],
@@ -62,4 +63,5 @@ export const G = {
   currentScene: null,   // 场景(P5): { id, name, sinceTurn } | null
   sceneryProps: [],     // 舞台景物道具(P5): [{ id, word, turn }],上限 3
   scenesVisited: [],    // 本局到过的场景: [{ id, turn, combatCount }](P6 连环画原料)
+  isTutorial: false,
 };

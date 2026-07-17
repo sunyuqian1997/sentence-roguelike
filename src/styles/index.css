@@ -6,3 +6,5 @@
 @import './animations.css';
 @import './responsive.css';
 @import './pixel.css'; /* retro pixel skin — must stay last */
+@import './shuise-os.css'; /* design-ref 水色OS — authoritative final skin */
+@import './design-stage.css'; /* design-ref 3D theatre + foreground Sprite composition */

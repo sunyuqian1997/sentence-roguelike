@@ -3,31 +3,52 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>词灵录 — 魔法少女造句战斗</title>
+<title>词灵录 — 放学后，不要朗读墙上的字</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=DotGothic16&family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 <div id="game">
+  <header id="os-menubar" aria-label="词灵录系统菜单">
+    <strong>❖ 词灵录</strong>
+    <span>档案</span><span>校舍图</span><span>词库</span><span>帮助</span>
+    <span class="os-menubar-spacer"></span>
+    <span id="os-night-label">第零夜 · 18:47</span>
+  </header>
   <div id="ink-bg"></div>
   <button id="mute-btn" onclick="toggleMute()">♪</button>
+  <button id="crt-toggle" type="button" onclick="toggleCRT()" aria-pressed="true">CRT ON</button>
+  <div id="crt-overlay" aria-hidden="true"></div>
   <div id="tooltip"><div class="tt-name"></div><div class="tt-type"></div><div class="tt-desc"></div><div class="tt-flavor"></div></div>
 
   <!-- TITLE -->
   <div id="title-screen" class="screen active">
-    <h1 data-i18n="title">词灵录</h1>
-    <div class="subtitle" data-i18n="subtitle">文字即魔法</div>
-    <button class="btn" onclick="startGame()" data-i18n="startBtn">开始</button>
-    <button class="btn btn-small btn-secondary" onclick="showMetaScreen()" style="margin-top:12px;" data-i18n="metaBtn">文渊阁</button>
-    <div class="ink-display-title" id="title-ink-display"></div>
-    <button class="btn btn-small btn-secondary" onclick="toggleLang()" style="margin-top:12px;font-size:0.75rem;" id="lang-btn">EN / 中文</button>
-    <div class="credit" data-i18n="credit">李清照 · v8</div>
+    <div class="desktop-icons" aria-hidden="true">
+      <div class="desktop-icon"><b>词</b><span>词库.dict</span></div>
+      <div class="desktop-icon"><b>夜</b><span>失踪.log</span></div>
+      <div class="desktop-icon"><b>校</b><span>校舍.map</span></div>
+    </div>
+    <section class="title-logo-window os-window">
+      <div class="os-window-title"><span>词灵录.app</span><i>×</i></div>
+      <h1 data-i18n="title">词灵录</h1>
+      <div class="subtitle" data-i18n="subtitle">放学后，不要朗读墙上的字</div>
+      <div class="title-seal">异</div>
+    </section>
+    <section class="title-menu-window os-window">
+      <div class="os-window-title"><span>menu.sys</span><i>×</i></div>
+      <button class="btn" onclick="startGame()" data-i18n="startBtn">进入旧校舍</button>
+      <button class="btn btn-small btn-secondary" onclick="showMetaScreen()" data-i18n="metaBtn">学生档案</button>
+      <button class="btn btn-small btn-secondary" onclick="toggleLang()" id="lang-btn">EN / 中文</button>
+      <div class="ink-display-title" id="title-ink-display"></div>
+    </section>
+    <div class="credit" data-i18n="credit">林夕 · 高二（3）班 · 失联中</div>
   </div>
 
   <!-- MAP -->
   <div id="map-screen" class="screen">
+    <div class="os-window-title map-window-title"><span>旧校舍.map — 不存在的三楼</span><i>×</i></div>
     <div id="map-header">
       <div class="player-stats">
         <span style="color:#e07070">♥ <span id="map-hp">50/50</span></span>
@@ -50,19 +71,27 @@
       </div>
       <div class="combat-info"><span id="combat-status-effects"></span></div>
       <div class="combat-info">
-        <button class="btn-small btn btn-secondary" onclick="viewJournal()" style="font-size:0.65rem;padding:3px 8px;" id="journal-btn" data-i18n="poemBook">诗册</button>
+        <button class="btn-small btn btn-secondary" onclick="viewJournal()" style="font-size:0.65rem;padding:3px 8px;" id="journal-btn" data-i18n="poemBook">课堂记录</button>
         <button class="btn-small btn btn-secondary" onclick="viewDeck()" style="font-size:0.65rem;padding:3px 8px;" data-i18n="deckBtn">词库</button>
       </div>
     </div>
 
+    <div id="battle-sprite-player" class="battle-sprite battle-sprite-player" aria-hidden="true">
+      <img src="/lqz.png" alt="">
+    </div>
+    <div id="battle-sprite-enemy" class="battle-sprite battle-sprite-enemy" aria-hidden="true">
+      <img id="battle-enemy-sprite-img" src="/enemies/moyao.png" alt="">
+    </div>
+
     <!-- Battle stage: player standee (left) | puppet theatre (center) | enemy standee (right) -->
     <div id="combat-stage">
+      <div class="os-window-title combat-stage-title"><span>词灵戏台.pict</span><i>×</i></div>
       <div id="stage-player" class="stage-side">
         <div class="standee player-standee" id="player-char-card" title="点击选「我」为目标">
-          <img id="player-portrait-img" src="/lqz.png" alt="诗人" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-          <div class="portrait-placeholder" data-i18n="poet">诗人</div>
+          <img id="player-portrait-img" src="/lqz.png" alt="林夕" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="portrait-placeholder" data-i18n="poet">林夕</div>
         </div>
-        <div class="standee-name" id="player-portrait-name" data-i18n="poet">诗人</div>
+        <div class="standee-name" id="player-portrait-name" data-i18n="poet">林夕</div>
         <div class="standee-hp player-hp" id="player-status-bar">
           <span class="hp-icon">♥</span><span id="combat-hp" class="hp-value">50/50</span>
           <span class="player-block-display" id="combat-block-display"></span>
@@ -74,14 +103,20 @@
         <!-- 本场诗册：贴左侧竖条，左对齐 -->
         <div id="round-journal">
           <div class="round-journal-header">
-            <span class="round-journal-title" data-i18n="roundJournal">本场诗册</span>
+            <span class="round-journal-title" data-i18n="roundJournal">异常语句</span>
             <span id="rhyme-streak-tag"></span>
           </div>
           <div id="round-journal-lines">
-            <div class="round-journal-empty">尚未吟诵…</div>
+            <div class="round-journal-empty">尚未发行…</div>
           </div>
         </div>
         <div id="puppet-stage">
+            <div class="theatre-backdrop"></div>
+            <div class="theatre-wash"></div>
+            <div class="theatre-floor"></div>
+            <div class="theatre-wall theatre-wall-left"></div>
+            <div class="theatre-wall theatre-wall-right"></div>
+            <div class="theatre-valance"></div>
             <div id="puppet-player" class="puppet" data-pose="idle">
               <svg viewBox="0 0 80 100" class="puppet-svg" xmlns="http://www.w3.org/2000/svg">
                 <ellipse class="ground" cx="40" cy="97" rx="15" ry="2.5"/>
@@ -116,7 +151,7 @@
                 <line class="leg leg-r" x1="47" y1="88" x2="49" y2="96"/>
                 <text class="puppet-emoji" x="40" y="6" text-anchor="middle"></text>
               </svg>
-              <div class="puppet-label" data-i18n="poet">诗人</div>
+              <div class="puppet-label" data-i18n="poet">林夕</div>
             </div>
             <div id="puppet-vs">⋯</div>
             <div id="puppet-enemy" class="puppet" data-pose="idle">
@@ -137,7 +172,7 @@
                 </g>
                 <text class="puppet-emoji" x="40" y="8" text-anchor="middle"></text>
               </svg>
-              <div class="puppet-label" data-i18n="enemy">敌</div>
+              <div class="puppet-label" data-i18n="enemy">异常</div>
             </div>
         </div>
       </div>
@@ -149,6 +184,7 @@
 
     <!-- Sentence dock: grid of slots + duizhang note + score preview -->
     <div id="sentence-dock">
+      <div class="os-window-title sentence-window-title"><span>造句.txt</span><i>×</i></div>
       <div id="sentence-area">
         <!-- 效果区：另起一行横跨造句区上方，费用/攻击/倍率/命中规则有大空间 -->
         <div id="sentence-score-preview"></div>
@@ -158,6 +194,7 @@
     </div>
 
     <div id="hand-area">
+      <div class="os-window-title hand-window-title"><span>手牌 · 待发行文字</span><i>×</i></div>
       <div id="hand-cards-wrapper">
         <!-- 我 目标卡在左端，敌人目标卡在最右端，手牌居中 -->
         <div id="target-cards"></div>
@@ -170,8 +207,8 @@
           <span style="font-size:0.75rem" data-i18n="energy">文力</span>
         </div>
         <div style="display:flex;gap:10px;">
-          <button class="btn btn-vermillion" id="chant-btn" onclick="chantSentence()" style="font-size:0.85rem;padding:0.5em 1.8em;" data-i18n="chant">吟诵</button>
-          <button class="btn btn-small btn-secondary" id="end-turn-btn" onclick="endPlayerTurn()" style="font-size:0.75rem;" data-i18n="endTurn">结束</button>
+          <button class="btn btn-vermillion" id="chant-btn" onclick="chantSentence()" style="font-size:0.85rem;padding:0.5em 1.8em;" data-i18n="chant">发行文字</button>
+          <button class="btn btn-small btn-secondary" id="end-turn-btn" onclick="endPlayerTurn()" style="font-size:0.75rem;" data-i18n="endTurn">等待铃声</button>
         </div>
       </div>
     </div>
@@ -191,9 +228,9 @@
       </div>
       <!-- 右栏：战利品 + 操作（金币 / 选牌 / 卡包 / 跳过） -->
       <div class="reward-col reward-col-loot">
-        <h2 data-i18n="victory">战胜！</h2>
+        <h2 data-i18n="victory">异常已压制</h2>
         <div class="reward-gold" id="reward-gold-text"></div>
-        <h3 class="reward-section-title" data-i18n="selectCard">选张新牌：</h3>
+        <h3 class="reward-section-title" data-i18n="selectCard">回收一枚文字：</h3>
         <div class="reward-cards" id="reward-cards"></div>
         <button class="btn btn-small btn-secondary" onclick="skipReward()" style="margin-top:14px;" data-i18n="skip">跳过</button>
       </div>
@@ -203,17 +240,17 @@
   <!-- REST -->
   <div id="rest-screen" class="screen">
     <div class="rest-content">
-      <h2 id="rest-title" data-i18n="restTitle">月下独酌</h2>
-      <p id="rest-flavor" data-i18n="restFlavor">小憩片刻…</p>
+      <h2 id="rest-title" data-i18n="restTitle">废弃保健室</h2>
+      <p id="rest-flavor" data-i18n="restFlavor">帘子后面有人替你数着心跳。</p>
       <div class="rest-options">
         <div class="rest-option" onclick="restHeal()">
           <div class="icon">🍵</div>
-          <div class="label" data-i18n="restHeal">品茗·回血30%</div>
+          <div class="label" data-i18n="restHeal">服药·恢复30%</div>
           <div class="desc" id="rest-heal-desc"></div>
         </div>
         <div class="rest-option" onclick="restUpgrade()">
           <div class="icon">🖌️</div>
-          <div class="label" data-i18n="restUpgrade">研墨·升级</div>
+          <div class="label" data-i18n="restUpgrade">红笔批注·升级</div>
           <div class="desc"></div>
         </div>
       </div>
@@ -232,11 +269,11 @@
   <!-- SHOP -->
   <div id="shop-screen" class="screen">
     <div class="shop-content">
-      <h2 data-i18n="shopTitle">词坊</h2>
-      <div class="shop-gold"><span data-i18n="gold">文银</span>：<span id="shop-gold">0</span></div>
+      <h2 data-i18n="shopTitle">失物招领处</h2>
+      <div class="shop-gold"><span data-i18n="gold">校章</span>：<span id="shop-gold">0</span></div>
       <div class="shop-cards" id="shop-cards"></div>
       <div class="shop-remove-section">
-        <button class="btn btn-small" id="shop-remove-btn" onclick="shopRemoveCard()"><span data-i18n="shopRemove">忘却一张词</span> (75)</button>
+        <button class="btn btn-small" id="shop-remove-btn" onclick="shopRemoveCard()"><span data-i18n="shopRemove">注销一枚文字</span> (75)</button>
       </div>
       <button class="btn btn-small btn-secondary" onclick="leaveShop()" style="margin-top:14px;" data-i18n="leave">离去</button>
     </div>
@@ -245,8 +282,8 @@
   <!-- POETRY SHRINE -->
   <div id="poetry-screen" class="screen">
     <div class="poetry-content">
-      <h2 id="poetry-title" data-i18n="poetryTitle">题壁</h2>
-      <p class="poetry-flavor" id="poetry-flavor" data-i18n="poetryFlavor">留诗换力。</p>
+      <h2 id="poetry-title" data-i18n="poetryTitle">黑板留字</h2>
+      <p class="poetry-flavor" id="poetry-flavor" data-i18n="poetryFlavor">写下句子。不要回头看。</p>
       <div id="poetry-sentence-area">
         <div id="poetry-slots"></div>
         <div id="poetry-preview"></div>
@@ -276,7 +313,7 @@
 
   <!-- JOURNAL OVERLAY -->
   <div id="journal-overlay" class="overlay">
-    <h3>本局诗册（<span id="journal-count">0</span>句）</h3>
+    <h3>今夜发行记录（<span id="journal-count">0</span>句）</h3>
     <div id="journal-list" class="journal-list"></div>
     <button class="btn btn-small btn-secondary" onclick="closeJournal()" style="margin-top:14px;">关闭</button>
   </div>
@@ -297,13 +334,13 @@
   <!-- GAME OVER -->
   <div id="gameover-screen" class="screen" style="overflow-y:auto;">
     <div class="end-content">
-      <h2>词穷了…</h2>
-      <p style="font-style:italic;opacity:0.6;margin-bottom:14px;font-size:0.9rem;">魔法用尽了，文字散落一地……</p>
+    <h2>档案已归零</h2>
+      <p style="font-style:italic;opacity:0.6;margin-bottom:14px;font-size:0.9rem;">广播念完了你的名字。走廊里又多了一件校服。</p>
       <div class="end-stats" id="gameover-stats"></div>
       <div id="gameover-ink-breakdown"></div>
       <div class="death-buttons">
-        <button class="btn" onclick="startGame()">再次冒险✨</button>
-        <button class="btn btn-small btn-secondary" onclick="showMetaScreen()">文渊阁</button>
+        <button class="btn" onclick="startGame()">从18:47重来</button>
+        <button class="btn btn-small btn-secondary" onclick="showMetaScreen()">学生档案</button>
       </div>
     </div>
   </div>
@@ -311,21 +348,21 @@
   <!-- VICTORY -->
   <div id="victory-screen" class="screen" style="overflow-y:auto;">
     <div class="end-content">
-      <h2>冒险完成！✨</h2>
-      <p style="font-style:italic;opacity:0.6;margin-bottom:14px;font-size:0.9rem;">文字的秩序恢复了，图书馆的书页轻轻翻动。</p>
+      <h2>天亮了</h2>
+      <p style="font-style:italic;opacity:0.6;margin-bottom:14px;font-size:0.9rem;">旧校舍从平面图上消失了。广播仍在叫你的名字。</p>
       <div class="end-stats" id="victory-stats"></div>
       <div id="victory-ink-breakdown"></div>
       <div class="death-buttons">
-        <button class="btn" onclick="startGame()">再次冒险✨</button>
-        <button class="btn btn-small btn-secondary" onclick="showMetaScreen()">文渊阁</button>
+        <button class="btn" onclick="startGame()">再次夜巡</button>
+        <button class="btn btn-small btn-secondary" onclick="showMetaScreen()">学生档案</button>
       </div>
     </div>
   </div>
 
   <!-- META -->
   <div id="meta-overlay" class="overlay">
-    <h2>文渊阁</h2>
-    <div class="meta-subtitle">每一次词穷，都让下一句更有力量</div>
+    <h2>学生档案</h2>
+    <div class="meta-subtitle">校方声明：本校从未存在高二（三）班学生林夕</div>
     <div class="meta-stats" id="meta-stats"></div>
     <div class="meta-section" id="meta-perks-section"></div>
     <div class="meta-section" id="meta-cards-section"></div>
@@ -337,7 +374,7 @@
   <div class="story-center">
     <div class="story-portrait" id="story-portrait"></div>
     <div class="story-box">
-      <div class="story-speaker" id="story-speaker">李清照</div>
+      <div class="story-speaker" id="story-speaker">林夕</div>
       <div class="story-text" id="story-text"></div>
       <div class="story-continue">点击继续 ▸</div>
     </div>
