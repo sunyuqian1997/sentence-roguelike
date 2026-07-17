@@ -1159,10 +1159,12 @@ export function playBestVerseReplay(bestLine, stageEl) {
 
   const poet = livePlayer.cloneNode(true);
   poet.id = ''; poet.dataset.chanting = ''; poet.dataset.pose = 'idle';
-  poet.style.cssText = 'position:absolute;left:8%;bottom:6%;width:22%;transform-origin:bottom center;';
+  poet.classList.add('best-verse-actor');
+  poet.style.cssText = 'position:absolute;left:18px;bottom:7px;width:112px;height:112px;transform-origin:bottom center;';
   const foe = liveEnemy.cloneNode(true);
   foe.id = ''; foe.dataset.chanting = ''; foe.dataset.pose = 'idle';
-  foe.style.cssText = 'position:absolute;right:8%;bottom:6%;width:22%;transform-origin:bottom center;';
+  foe.classList.add('best-verse-actor');
+  foe.style.cssText = 'position:absolute;right:18px;bottom:7px;width:112px;height:112px;transform-origin:bottom center;';
   stageEl.appendChild(poet);
   stageEl.appendChild(foe);
   ensureSpriteAnimator(poet);
@@ -1182,7 +1184,9 @@ export function playBestVerseReplay(bestLine, stageEl) {
     el.dataset.spriteKey = coActorSpriteKey(name);
     el.dataset.pose = 'idle';
     el.innerHTML = coActorSprite(name);
-    el.style.cssText = `position:absolute;left:${34 + i * 12}%;bottom:5%;width:17%;transform-origin:bottom center;z-index:${3 - i};`;
+    el.classList.add('best-verse-actor');
+    el.style.cssText = `position:absolute;left:${104 + i * 38}px;bottom:7px;width:96px;height:96px;transform-origin:bottom center;z-index:${3 - i};`;
+    el.style.setProperty('--stage-sprite-size', '96px');
     setEmoji(el, coActorEmoji(name));
     stageEl.appendChild(el);
     ensureSpriteAnimator(el);
@@ -1198,10 +1202,11 @@ export function playBestVerseReplay(bestLine, stageEl) {
   const runCycle = () => {
     const t = [];
     t.push(setTimeout(() => {
+      const travel = Math.max(72, stageEl.clientWidth - 266);
       allies.forEach((a, i) => {
         a.dataset.pose = isAttack ? 'attack' : 'heal';
         a.style.transition = 'transform 0.35s cubic-bezier(0.22,1,0.36,1)';
-        a.style.transform = isAttack ? `translateX(${110 + i * 6}%)` : 'translateY(-4%)';
+        a.style.transform = isAttack ? `translateX(${travel + i * 6}px)` : 'translateY(-4px)';
       });
     }, 350));
     t.push(setTimeout(() => {

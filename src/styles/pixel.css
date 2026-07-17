@@ -537,35 +537,90 @@ body { font-family: var(--font-pixel); }
 
 /* ---- Reward screen: 本场最帅一句 dynamic replay ---- */
 #best-verse {
+  width: min(100%, 680px);
+  max-width: none;
   margin: 0 auto 14px;
-  max-width: 460px;
-  padding: 10px 14px 12px;
+  padding: 9px;
   background: var(--paper) !important;
   border: var(--px-border);
   box-shadow: var(--px-shadow);
 }
+#best-verse.is-visible {
+  display: grid;
+  grid-template-columns: minmax(300px, 1.55fr) minmax(150px, .85fr);
+  align-items: stretch;
+  gap: 12px;
+}
 #best-verse-stage {
-  height: 150px;
-  margin-bottom: 6px;
+  position: relative;
+  height: 126px;
+  min-width: 0;
   background:
     radial-gradient(ellipse 70% 50% at 50% 92%, rgba(58,47,37,0.10), transparent 70%),
     var(--paper-2);
   border: 2px solid var(--line);
-  overflow: visible;
+  overflow: hidden;
 }
-#best-verse-stage .puppet-svg { width: 100%; height: 100%; }
+#best-verse-stage::after {
+  content: '';
+  position: absolute;
+  left: 4%; right: 4%; bottom: 7px;
+  height: 1px;
+  background: var(--line);
+  opacity: .22;
+}
+#best-verse-stage .puppet {
+  --stage-sprite-size: 112px;
+  position: absolute !important;
+  top: auto !important;
+  width: 112px !important;
+  height: 112px !important;
+  margin: 0 !important;
+  aspect-ratio: auto !important;
+  display: block !important;
+  z-index: 2;
+}
+#best-verse-stage .puppet .sprite-frame {
+  width: 112px !important;
+  height: 112px !important;
+  margin-left: -56px !important;
+  bottom: 0 !important;
+  image-rendering: pixelated !important;
+}
+#best-verse-stage .puppet-label { display: none !important; }
+#best-verse-stage .puppet-emoji {
+  top: 4px !important;
+  z-index: 6 !important;
+}
+.best-verse-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 8px 10px 8px 0;
+  text-align: left;
+}
 #best-verse-text {
   font-family: var(--font-pixel) !important;
-  font-size: 1.05rem;
+  font-size: clamp(.88rem, 1.15vw, 1.12rem);
+  line-height: 1.55;
   color: var(--ink);
   font-weight: 700;
   letter-spacing: 0.04em;
+  text-wrap: balance;
 }
 #best-verse-meta {
   font-family: var(--font-pixel) !important;
   font-size: 0.78rem;
   color: var(--accent);
-  margin-top: 3px;
+  margin-bottom: 8px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 52%, transparent);
+}
+
+@media (max-width: 760px), (orientation: portrait) {
+  #best-verse.is-visible { grid-template-columns: minmax(260px, 1.25fr) minmax(150px, .75fr); }
 }
 
 /* 卡包列表在浅色奖励屏里 — 原样式是给深色背景的白字(看不见)。改深墨字 + 纸色块。 */

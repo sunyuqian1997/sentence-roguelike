@@ -13,7 +13,7 @@ import { initDesignFeedback } from './ui/designFeedback.js';
 import { initBattleDialogue } from './ui/battleDialogue.js';
 import { getLang, setLang, applyStaticI18n } from './i18n.js';
 import { initCheats } from './cheats.js';
-import { startGame, replayTutorial, startCombat, endPlayerTurn, chantSentence, addToSentence, removeSentenceWord, skipReward } from './game/combat.js';
+import { startGame, replayTutorial, startCombat, endPlayerTurn, chantSentence, addToSentence, removeSentenceWord, skipReward, showRewardScreen } from './game/combat.js';
 import { renderCombat } from './ui/render.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import {
@@ -84,6 +84,23 @@ import('./game/chantLog.js').then(m => {
   initDesignFeedback();
   initBattleDialogue();
   initCheats();
+
+  // Local-only visual QA entry for the settlement screen. It is stripped from
+  // production behavior by Vite's DEV constant and never changes saved data.
+  if (import.meta.env.DEV && new URLSearchParams(window.location.search).get('debugreward') === '1') {
+    G.combatRewards = { gold: 46 };
+    G._bestLine = {
+      text: '猫把残句怪推回没有写完的梦里',
+      mult: 1.98,
+      effects: { damage: 18, _coActors: [{ name: '猫' }] },
+    };
+    G.sentenceJournal = [
+      '我把残句怪交给猫',
+      '猫把残句怪推回没有写完的梦里',
+      '纸鬼是给我撑伞的影子',
+    ];
+    window.setTimeout(showRewardScreen, 0);
+  }
 
   applyStaticI18n();
 

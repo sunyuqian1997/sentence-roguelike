@@ -1384,12 +1384,15 @@ export function showRewardScreen() {
   const bvText = document.getElementById('best-verse-text');
   const bvMeta = document.getElementById('best-verse-meta');
   if (bvWrap && G._bestLine) {
-    bvWrap.style.display = 'block';
+    bvWrap.hidden = false;
+    bvWrap.classList.add('is-visible');
     bvText.textContent = `「${G._bestLine.text}」`;
     bvMeta.textContent = `本场最佳 · ✨×${G._bestLine.mult.toFixed(2)}`;
     setTimeout(() => playBestVerseReplay(G._bestLine, bvStage), 250);
   } else if (bvWrap) {
-    bvWrap.style.display = 'none';
+    bvWrap.hidden = true;
+    bvWrap.classList.remove('is-visible');
+    if (bvStage) bvStage.innerHTML = '';
   }
 
   const container = document.getElementById('reward-cards');
