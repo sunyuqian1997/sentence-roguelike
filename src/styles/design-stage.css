@@ -19,11 +19,11 @@
   position: relative;
   overflow: hidden;
   /* One fixed-design scale source keeps desktop and narrow-view letterboxing
-     visually identical. Portraits are +15%; stage actors are +15.6%. */
+     visually identical. This pass grows portraits 15% and every stage actor
+     25% from the previous baseline, while keeping their feet pinned. */
   --battle-sprite-width: 322px;
   --battle-sprite-height: 495px;
-  --stage-sprite-size: 148px;
-  --stage-coactor-sprite-size: 130px;
+  --stage-sprite-size: 185px;
 }
 
 /* Large foreground Sprite framing from the reference composition. */
@@ -114,7 +114,7 @@
   top: 0;
   bottom: 8px;
   transform: translateZ(-150px);
-  background: url('/scenes/jiuguan.jpg') center 30% / cover;
+  background: url('/scenes/school-hallway.png') center 45% / cover;
   filter: grayscale(1) sepia(.55) hue-rotate(120deg) saturate(1.15) brightness(.66) contrast(1.12);
 }
 .theatre-wash {
@@ -171,7 +171,7 @@
 
 #combat-screen[data-scene='yuexia'] .theatre-backdrop { background-image: url('/scenes/yuexia.jpg'); }
 #combat-screen[data-scene='haibian'] .theatre-backdrop { background-image: url('/scenes/haibian.jpg'); }
-#combat-screen[data-scene='jiuguan'] .theatre-backdrop { background-image: url('/scenes/jiuguan.jpg'); }
+#combat-screen[data-scene='jiuguan'] .theatre-backdrop { background-image: url('/scenes/school-hallway.png'); }
 #combat-screen[data-scene='zhanchang'] .theatre-backdrop { background-image: url('/scenes/zhanchang.jpg'); }
 
 /* Existing animated puppets now inhabit the perspective room at reference positions. */
@@ -182,17 +182,19 @@
   z-index: 5;
 }
 #puppet-player {
-  left: 145px !important;
+  left: 205px !important;
   bottom: 20px !important;
-  width: 120px !important;
-  height: 150px !important;
+  width: var(--stage-sprite-size) !important;
+  height: var(--stage-sprite-size) !important;
+  margin-left: calc(var(--stage-sprite-size) / -2) !important;
   translate: 0 0 -36px;
 }
 #puppet-enemy {
-  left: 420px !important;
+  left: 475px !important;
   bottom: 26px !important;
-  width: 109px !important;
-  height: 136px !important;
+  width: var(--stage-sprite-size) !important;
+  height: var(--stage-sprite-size) !important;
+  margin-left: calc(var(--stage-sprite-size) / -2) !important;
   translate: 0 0 -88px;
 }
 #puppet-vs { display: none !important; }
@@ -207,7 +209,8 @@
   bottom: 0;
   width: var(--stage-sprite-size);
   height: var(--stage-sprite-size);
-  margin-left: -74px;
+  margin-left: calc(var(--stage-sprite-size) / -2);
+  z-index: 2;
   background-repeat: no-repeat;
   image-rendering: pixelated !important;
   transform-origin: bottom center;
@@ -215,6 +218,24 @@
   filter: none !important;
   mask: none !important;
   -webkit-mask: none !important;
+}
+.puppet::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -2px;
+  width: calc(var(--stage-sprite-size) * .64);
+  height: calc(var(--stage-sprite-size) * .15);
+  z-index: 1;
+  pointer-events: none;
+  transform: translateX(-50%) scaleX(var(--sprite-body-scale, 1)) scaleY(.42);
+  transform-origin: center;
+  border: 1px solid rgba(20, 42, 38, .16);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center,
+    rgba(20, 42, 38, .32) 0 34%,
+    rgba(46, 139, 132, .18) 52%,
+    rgba(20, 42, 38, 0) 76%);
 }
 .puppet,
 .puppet[data-pose],
@@ -235,9 +256,14 @@
   font: 18px/1 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
 }
 .puppet-coactor .sprite-frame {
-  width: var(--stage-coactor-sprite-size);
-  height: var(--stage-coactor-sprite-size);
-  margin-left: -65px;
+  width: var(--stage-sprite-size);
+  height: var(--stage-sprite-size);
+  margin-left: calc(var(--stage-sprite-size) / -2);
+}
+.puppet-coactor {
+  width: var(--stage-sprite-size) !important;
+  height: var(--stage-sprite-size) !important;
+  margin-left: calc(var(--stage-sprite-size) / -2) !important;
 }
 #puppet-player[data-identity]::after {
   content: attr(data-identity);
@@ -268,6 +294,7 @@
   align-items: center;
   gap: 3px;
   z-index: 14;
+  will-change: left, top;
 }
 #stage-player .standee { display: none !important; }
 #stage-player .standee-name,
@@ -291,6 +318,7 @@
   padding: 0 !important;
   display: block !important;
   z-index: 14;
+  will-change: left, top;
 }
 #stage-enemy > #enemy-area {
   width: 100% !important;

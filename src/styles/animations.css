@@ -127,32 +127,32 @@
 .shake { animation: shake 0.4s ease; }
 
 @keyframes screen-shake-sm {
-  0%, 100% { transform: translate(0, 0); }
-  20%      { transform: translate(-3px, 2px); }
-  40%      { transform: translate(3px, -2px); }
-  60%      { transform: translate(-2px, -1px); }
-  80%      { transform: translate(2px, 1px); }
+  0%, 100% { translate: 0; }
+  20%      { translate: -2px 1px; }
+  40%      { translate: 2px -1px; }
+  60%      { translate: -1px -1px; }
+  80%      { translate: 1px 1px; }
 }
 
 @keyframes screen-shake-md {
-  0%, 100% { transform: translate(0, 0); }
-  15%      { transform: translate(-6px, 4px); }
-  30%      { transform: translate(5px, -3px); }
-  45%      { transform: translate(-4px, -2px); }
-  60%      { transform: translate(4px, 3px); }
-  75%      { transform: translate(-3px, 1px); }
+  0%, 100% { translate: 0; }
+  15%      { translate: -4px 2px; }
+  30%      { translate: 4px -2px; }
+  45%      { translate: -3px -1px; }
+  60%      { translate: 3px 2px; }
+  75%      { translate: -2px 1px; }
 }
 
 @keyframes screen-shake-lg {
-  0%, 100% { transform: translate(0, 0); }
-  10%      { transform: translate(-10px, 6px); }
-  20%      { transform: translate(8px, -5px); }
-  30%      { transform: translate(-7px, -4px); }
-  40%      { transform: translate(9px, 5px); }
-  50%      { transform: translate(-6px, 3px); }
-  60%      { transform: translate(7px, -4px); }
-  70%      { transform: translate(-5px, 2px); }
-  80%      { transform: translate(4px, -3px); }
+  0%, 100% { translate: 0; }
+  10%      { translate: -5px 3px; }
+  20%      { translate: 5px -3px; }
+  30%      { translate: -4px -2px; }
+  40%      { translate: 4px 3px; }
+  50%      { translate: -3px 2px; }
+  60%      { translate: 3px -2px; }
+  70%      { translate: -2px 1px; }
+  80%      { translate: 2px -1px; }
 }
 
 .screen-shake-sm { animation: screen-shake-sm 0.3s ease; }

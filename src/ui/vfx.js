@@ -6,7 +6,10 @@ const gameLayer = () => document.getElementById('game') || document.body;
 
 export const VFX = {
   shake(intensity = 'sm') {
-    const el = document.getElementById('game');
+    // Never animate #game's transform: uiScale owns it. Individual `translate`
+    // on the active combat layer preserves the responsive scale exactly.
+    const el = document.querySelector('#combat-screen.active') || document.getElementById('game');
+    if (!el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     el.classList.remove('screen-shake-sm', 'screen-shake-md', 'screen-shake-lg');
     void el.offsetWidth;
     el.classList.add(`screen-shake-${intensity}`);

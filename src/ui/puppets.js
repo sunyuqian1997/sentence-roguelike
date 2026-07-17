@@ -60,6 +60,50 @@ const els = (enemyIndex = null) => ({
   enemy: getEnemyPuppet(enemyIndex) || document.getElementById('puppet-enemy'),
 });
 
+let _stageActorAnchorRaf = 0;
+function visualAnchor(actor) {
+  return actor?.querySelector('.sprite-frame') || actor;
+}
+
+// Reference layout keeps the HUD in the same flex column as its actor. Our
+// runtime HUD is a sibling, so continuously derive both from the fixed sprite
+// viewport. This also follows preview steps, dashes and hit recoil without
+// duplicating their motion values in CSS.
+function startStageActorAnchorTracking() {
+  if (_stageActorAnchorRaf) return;
+  const tick = () => {
+    _stageActorAnchorRaf = 0;
+    const screen = document.getElementById('combat-screen');
+    const combatStage = document.getElementById('combat-stage');
+    const player = document.getElementById('puppet-player');
+    const playerHud = document.getElementById('stage-player');
+    const enemyHud = document.getElementById('stage-enemy');
+    if (!screen?.classList.contains('active') || !combatStage || !player) return;
+
+    const stageRect = toGameRect(combatStage.getBoundingClientRect());
+    const playerRect = toGameRect(visualAnchor(player).getBoundingClientRect());
+    if (playerHud && playerRect.width) {
+      playerHud.style.setProperty('left', `${playerRect.left - stageRect.left + playerRect.width / 2 - playerHud.offsetWidth / 2}px`, 'important');
+      playerHud.style.setProperty('top', `${Math.max(30, playerRect.top - stageRect.top - playerHud.offsetHeight - 6)}px`, 'important');
+    }
+
+    const enemies = [...document.querySelectorAll('.puppet-enemy-unit')]
+      .filter((actor) => actor.offsetParent !== null)
+      .map((actor) => toGameRect(visualAnchor(actor).getBoundingClientRect()))
+      .filter((rect) => rect.width);
+    if (enemyHud && enemies.length) {
+      const centers = enemies.map((rect) => rect.left + rect.width / 2);
+      const center = centers.reduce((sum, value) => sum + value, 0) / centers.length;
+      const hudWidth = Math.max(112, enemies.length * 112 + (enemies.length - 1) * 6);
+      enemyHud.style.setProperty('width', `${hudWidth}px`, 'important');
+      enemyHud.style.setProperty('left', `${center - stageRect.left - hudWidth / 2}px`, 'important');
+      enemyHud.style.setProperty('top', `${Math.max(30, Math.min(...enemies.map((rect) => rect.top)) - stageRect.top - enemyHud.offsetHeight - 6)}px`, 'important');
+    }
+    _stageActorAnchorRaf = window.requestAnimationFrame(tick);
+  };
+  _stageActorAnchorRaf = window.requestAnimationFrame(tick);
+}
+
 export function syncEnemyPuppets() {
   const stage = document.getElementById('puppet-stage');
   const primary = document.getElementById('puppet-enemy');
@@ -79,10 +123,11 @@ export function syncEnemyPuppets() {
     if (el !== primary) el.remove();
   });
 
+  // Values are stable feet-anchor centres, not element left edges.
   const positions = alive.length === 1
-    ? [420]
-    : alive.length === 2 ? [382, 500]
-      : alive.map((_, i) => 330 + i * 96);
+    ? [475]
+    : alive.length === 2 ? [436, 554]
+      : alive.map((_, i) => 385 + i * 96);
 
   return alive.map(({ enemy, index }, order) => {
     let el = order === 0 ? primary : getEnemyPuppet(index);
@@ -106,8 +151,9 @@ export function syncEnemyPuppets() {
     el.style.setProperty('left', `${positions[order]}px`, 'important');
     el.style.setProperty('right', 'auto', 'important');
     el.style.setProperty('bottom', order === 0 ? '26px' : '22px', 'important');
-    el.style.setProperty('width', '109px', 'important');
-    el.style.setProperty('height', '136px', 'important');
+    el.style.setProperty('width', 'var(--stage-sprite-size)', 'important');
+    el.style.setProperty('height', 'var(--stage-sprite-size)', 'important');
+    el.style.setProperty('margin-left', 'calc(var(--stage-sprite-size) / -2)', 'important');
     el.style.translate = '0 0 -88px';
     el.style.zIndex = String(5 - order);
     const frame = el.querySelector('.sprite-frame');
@@ -133,8 +179,9 @@ function setBodyScale(el, scale) {
   if (!el) return;
   const sprite = el.querySelector('.sprite-frame');
   if (!sprite) return;
-  if (scale && scale !== 1) sprite.style.setProperty('--sprite-body-scale', String(scale));
-  else sprite.style.removeProperty('--sprite-body-scale');
+  sprite.style.removeProperty('--sprite-body-scale');
+  if (scale && scale !== 1) el.style.setProperty('--sprite-body-scale', String(scale));
+  else el.style.removeProperty('--sprite-body-scale');
 }
 
 function impactFlash(el) {
@@ -173,15 +220,15 @@ const coActorSpriteKey = (name) => COACTOR_SPRITE_KEYS[name] || 'coactor';
 // Identity sentences visibly recast the player into an available pixel body.
 // First-act atlases cover this pass; later identities reuse the nearest shape.
 const IDENTITY_SPRITES = Object.freeze({
-  '猫': { key: 'cat', scale: 0.72 },
-  '儿子': { key: 'son', scale: 0.62 },
-  '影子': { key: 'shadow', scale: 0.92 },
+  '猫': { key: 'cat', scale: 1.0 },
+  '儿子': { key: 'son', scale: 1.0 },
+  '影子': { key: 'shadow', scale: 1.0 },
   '大哥': { key: 'moyao', scale: 1.08 },
-  '初音未来': { key: 'miku', scale: 0.88 },
+  '初音未来': { key: 'miku', scale: 1.0 },
   '剑客': { key: 'wenqu', scale: 1.0 },
   '女侠': { key: 'wenqu', scale: 1.0 },
   '将军': { key: 'wenqu', scale: 1.12 },
-  '皇帝': { key: 'emperor', scale: 1.12 },
+  '皇帝': { key: 'emperor', scale: 1.0 },
   '巨人': { key: 'cangjie', scale: 1.38 },
   '无名者': { key: 'cangjie', scale: 0.96 },
   '李清照': { key: 'wenqu', scale: 0.94 },
@@ -191,10 +238,11 @@ const IDENTITY_SPRITES = Object.freeze({
 });
 
 // Where co-actors stand: in the open band BETWEEN the poet (far left) and the
-// VS marker (center), so they never overlap the poet. Each is ~62% scale.
-const COACTOR_BASE_LEFT = 30; // % from stage left — sits in the gap, poet→center
-const COACTOR_STEP = 10;      // % between successive co-actors, fanning rightward
-const COACTOR_SCALE = 0.6;
+// VS marker (center), so they never overlap the poet. All actors now share the
+// same baseline viewport; authored silhouette differences remain visible.
+const COACTOR_BASE_LEFT = 42; // % from stage left — first ally clears the poet
+const COACTOR_STEP = 12;      // % between successive co-actors, fanning rightward
+const COACTOR_SCALE = 1;
 
 // ---- Per-character SVG bodies ----
 // Each co-actor gets its OWN ink figure (not a recolored poet clone). They share
@@ -352,12 +400,12 @@ export function playCoActors(coActors) {
     const vt = verbOf(el.dataset.coactor);
     const dx = gapX(el, enemy);
     if (vt === 'attack') {
-      setTimeout(() => { el.dataset.pose = 'attack'; el.style.transform = `translateX(${Math.max(40, dx - 30)}px) scale(0.95)`; }, 300 * i + 120);
+      setTimeout(() => { el.dataset.pose = 'attack'; el.style.transform = `translateX(${Math.max(40, dx - 30)}px) scale(${COACTOR_SCALE})`; }, 300 * i + 120);
       setTimeout(() => { enemy.dataset.pose = 'hit'; impactFlash(enemy); }, 300 * i + 400);
     } else {
       // defend/heal: act in place (no dash at enemy) — 守/挡/治 are for 我.
       const pose = vt === 'heal' ? 'heal' : 'defend';
-      setTimeout(() => { el.dataset.pose = pose; el.style.transform = `translateY(-4px) scale(0.98)`; }, 300 * i + 120);
+      setTimeout(() => { el.dataset.pose = pose; el.style.transform = `translateY(-4px) scale(${COACTOR_SCALE})`; }, 300 * i + 120);
     }
     setTimeout(() => { el.dataset.pose = 'idle'; el.style.transform = `scale(${COACTOR_SCALE})`; }, 300 * i + 620);
     setTimeout(() => el.remove(), 300 * i + 900);
@@ -424,6 +472,7 @@ function removeBubbleNow(who) {
   if (!b) return;
   clearTimeout(b.fadeTimer);
   clearTimeout(b.removeTimer);
+  window.cancelAnimationFrame(b.trackRaf || 0);
   if (b.el) b.el.remove();
   _bubbles[who] = null;
 }
@@ -435,8 +484,8 @@ export function clearPuppetBubbles() {
 // Keep the bubble over the anchor's head and clamped inside the stage box
 // (the stage has overflow:hidden, so clamping = never clipped/off-viewport).
 function positionBubble(el, anchor, stage) {
-  const sr = stage.getBoundingClientRect();
-  const ar = anchor.getBoundingClientRect();
+  const sr = toGameRect(stage.getBoundingClientRect());
+  const ar = toGameRect(visualAnchor(anchor).getBoundingClientRect());
   if (!sr.width || !ar.width) return;
   const bw = el.offsetWidth, bh = el.offsetHeight;
   let left = ar.left + ar.width / 2 - sr.left - bw / 2;
@@ -447,10 +496,22 @@ function positionBubble(el, anchor, stage) {
   el.style.top = Math.round(top) + 'px';
 }
 
+function trackBubble(rec) {
+  window.cancelAnimationFrame(rec.trackRaf || 0);
+  const tick = () => {
+    if (!rec.el.isConnected || !_bubbles[rec.who] || rec.el.classList.contains('bubble-out')) return;
+    positionBubble(rec.el, rec.anchor, rec.stage);
+    rec.trackRaf = window.requestAnimationFrame(tick);
+  };
+  tick();
+}
+
 function showBubble(who, anchor, trig, sig, stage) {
   const cur = _bubbles[who];
   if (cur && cur.sig === sig) {                 // same signature → keep node
-    positionBubble(cur.el, anchor, stage);      // (just track the puppet)
+    cur.anchor = anchor;
+    cur.stage = stage;
+    positionBubble(cur.el, anchor, stage);
     return;
   }
   if (_spentBubbleSigs.has(sig)) return;        // already played once
@@ -464,13 +525,14 @@ function showBubble(who, anchor, trig, sig, stage) {
   el.textContent = pool[Math.floor(Math.random() * pool.length)];
   stage.appendChild(el);
   positionBubble(el, anchor, stage);
-  const rec = { sig, el, fadeTimer: null, removeTimer: null };
+  const rec = { who, sig, el, anchor, stage, fadeTimer: null, removeTimer: null, trackRaf: 0 };
+  _bubbles[who] = rec;
+  trackBubble(rec);
   rec.fadeTimer = setTimeout(() => {
     _spentBubbleSigs.add(sig);
     el.classList.add('bubble-out');
     rec.removeTimer = setTimeout(() => { if (_bubbles[who] === rec) removeBubbleNow(who); }, BUBBLE_FADE_MS);
   }, BUBBLE_TTL);
-  _bubbles[who] = rec;
 }
 
 // Called at the end of every updatePuppets() (i.e. every renderCombat while
@@ -577,6 +639,7 @@ export function updatePuppets() {
   const { player, enemy } = els(targetIndex);
   if (!player || !enemy) return;
   initPuppetSprites(document.getElementById('puppet-stage') || document);
+  startStageActorAnchorTracking();
 
   // 景物道具是持久布景,与姿态动画无关 — 放在 chanting 早退之前,吟诵中也同步。
   syncScenery(G.sceneryProps);
@@ -585,6 +648,12 @@ export function updatePuppets() {
   const hasEnemyTarget = sentence.some(c => c && c._isEnemyTarget);
   const verbs = sentence.filter(c => c && c.pos === 'verb');
   const lastVerb = verbs[verbs.length - 1];
+  const standbyNames = sentence.filter(c => c && c.pos === 'subject' && c.word !== '我'
+        && !c._isEnemyTarget && !c._isSelfTarget
+        && !isYouCard(c)
+        && !isCopulaPredicate(sentence, c))
+    .map(c => c.word);
+  const playerIsActing = standbyNames.length === 0;
   const stageEnemyIntent = G.enemies?.[Number(enemy.dataset.enemyIndex)]?.nextIntent
     || (G.enemies || []).find(e => e && e.hp > 0)?.nextIntent || null;
 
@@ -606,17 +675,17 @@ export function updatePuppets() {
 
   if (lastVerb) {
     if (lastVerb.combatType === 'attack') {
-      playerPose = 'ready';
+      if (playerIsActing) playerPose = 'ready';
       if (hasEnemyTarget) enemyPose = 'targeted';
     } else if (lastVerb.combatType === 'defense') {
-      playerPose = 'defend';
+      if (playerIsActing) playerPose = 'defend';
     } else if (lastVerb.combatType === 'heal') {
-      playerPose = 'heal';
+      if (playerIsActing) playerPose = 'heal';
     }
     // 及物动词(valence trans/ditrans)+ 已选敌方目标 ⇒ 我方向前逼近,预告"即将把
     // 这个动作施加到目标身上"。不及物动词(摸鱼/逃)只在原地摆姿势,不前压。
     const isTransitive = lastVerb.valence === 'trans' || lastVerb.valence === 'ditrans';
-    if (isTransitive && hasEnemyTarget && lastVerb.combatType !== 'defense' && lastVerb.combatType !== 'heal') {
+    if (playerIsActing && isTransitive && hasEnemyTarget && lastVerb.combatType !== 'defense' && lastVerb.combatType !== 'heal') {
       playerAiming = true;
     }
   }
@@ -728,11 +797,6 @@ export function updatePuppets() {
   // Standby co-actors: named subjects (not 我) take the stage as soon as they
   // join a sentence with ANY verb (attack/defend/heal) — instant "ally arrived"
   // feedback while composing. They act only on chant. Mirrors the evaluator's rule.
-  const standbyNames = sentence.filter(c => c && c.pos === 'subject' && c.word !== '我'
-        && !c._isEnemyTarget && !c._isSelfTarget
-        && !isYouCard(c)                     // "你" = the enemy, not a友方 ally
-        && !isCopulaPredicate(sentence, c))  // exclude "我是影子" identity B
-        .map(c => c.word);
   syncStandbyCoActors(standbyNames);
 
   // A named actor appears immediately, even before a verb is added. Persistent
@@ -743,6 +807,19 @@ export function updatePuppets() {
     el.dataset.spriteKey = transformed ? coActorSpriteKey(transformed) : coActorSpriteKey(name);
     setBodyScale(el, transformed ? (IDENTITY_SPRITES[transformed]?.scale || 1) : 1);
     setEmoji(el, transformed ? (COACTOR_EMOJI[transformed] || '') : coActorEmoji(name));
+    if (el.dataset.chanting !== '1') {
+      const isActiveActor = standbyNames.includes(name) && !!lastVerb;
+      const isAttackReady = isActiveActor && lastVerb.combatType === 'attack';
+      const previewPose = !isActiveActor ? 'idle'
+        : isAttackReady ? 'ready'
+          : lastVerb.combatType === 'defense' ? 'defend'
+            : lastVerb.combatType === 'heal' ? 'heal' : 'idle';
+      setPose(el, previewPose);
+      el.classList.toggle('puppet-aiming', isAttackReady && hasEnemyTarget);
+      el.style.transform = isAttackReady && hasEnemyTarget
+        ? `translateX(18px) scale(${COACTOR_SCALE})`
+        : `scale(${COACTOR_SCALE})`;
+    }
   });
 
   // "初音未来是皇帝": put the crown (+ any body-scale) on that co-actor's puppet.

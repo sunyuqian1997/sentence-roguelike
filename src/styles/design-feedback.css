@@ -33,8 +33,8 @@
 
 .df-impact-flash { background: rgba(246, 241, 226, .72); }
 #design-feedback-layer.df-impact .df-impact-flash { animation: dfFlash 90ms steps(2, end) both; }
-#combat-screen.df-shake-small { animation: dfShakeSmall 250ms ease; }
-#combat-screen.df-shake-big { animation: dfShakeBig 450ms ease; }
+#combat-screen.df-shake-small { animation: dfShakeSmall 220ms ease-out; }
+#combat-screen.df-shake-big { animation: dfShakeBig 340ms ease-out; }
 
 /* Reference speech bubbles: pop-in at the acting puppet, no generic phase UI. */
 .df-bubble {
@@ -411,8 +411,8 @@
   100% { opacity: 1; transform: none; }
 }
 @keyframes dfFlash { 0%, 100% { opacity: 0; } 45% { opacity: 1; } }
-@keyframes dfShakeSmall { 0%, 100% { translate: 0; } 25% { translate: -4px 2px; } 50% { translate: 4px -2px; } 75% { translate: -3px 1px; } }
-@keyframes dfShakeBig { 0%, 100% { translate: 0; rotate: 0deg; } 15% { translate: -11px 6px; rotate: -.4deg; } 30% { translate: 10px -6px; rotate: .4deg; } 45% { translate: -8px 4px; rotate: -.3deg; } 60% { translate: 7px -3px; rotate: .3deg; } 80% { translate: -4px 2px; } }
+@keyframes dfShakeSmall { 0%, 100% { translate: 0; } 25% { translate: -2px 1px; } 50% { translate: 2px -1px; } 75% { translate: -1px 1px; } }
+@keyframes dfShakeBig { 0%, 100% { translate: 0; } 16% { translate: -5px 3px; } 34% { translate: 5px -3px; } 52% { translate: -4px 2px; } 70% { translate: 3px -2px; } 84% { translate: -2px 1px; } }
 @keyframes dfPopIn { from { transform: scale(.4); opacity: 0; } 60% { transform: scale(1.15); opacity: 1; } to { transform: scale(1); opacity: 1; } }
 @keyframes dfSplashIn { 0% { transform: scale(.2); opacity: 0; } 30% { opacity: 1; } 100% { transform: scale(1.35); opacity: 0; } }
 @keyframes dfStampIn { 0% { transform: scale(2.4) rotate(-8deg); opacity: 0; } 55% { transform: scale(.9) rotate(-8deg); opacity: 1; } 100% { transform: scale(1) rotate(-8deg); opacity: 1; } }
@@ -421,6 +421,8 @@
 @keyframes dfCaret { 0%, 49% { opacity: .48; } 50%, 100% { opacity: .18; } }
 
 @media (prefers-reduced-motion: reduce) {
+  #combat-screen.df-shake-small,
+  #combat-screen.df-shake-big,
   #design-feedback-layer *,
   .df-chant-char,
   #sentence-slots-container .sentence-card-wrap,

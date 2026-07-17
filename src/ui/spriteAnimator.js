@@ -100,7 +100,10 @@ export class SpriteAnimator {
     this.lastTick = 0;
     this.raf = 0;
     this.observer = new MutationObserver(() => this.syncFromHost());
-    this.observer.observe(host, { attributes: true, attributeFilter: ['data-pose', 'data-sprite-key'] });
+    this.observer.observe(host, {
+      attributes: true,
+      attributeFilter: ['data-pose', 'data-sprite-key', 'data-sprite-side'],
+    });
     this.syncFromHost(true);
   }
 
