@@ -1,0 +1,4 @@
+4x4 pixel-art combat atlas from the supplied spectral scholar reference.
+Rows: idle, attack, hurt/recovery, defend+buff. 3/4 view facing left; fixed feet
+baseline; ornate star robe, tall official hat and book; flat #FF00FF source
+background; no text, borders, detached effects, filters, masks, or gradients.

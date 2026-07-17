@@ -10,6 +10,7 @@ import { PUN_STATUS, getRhymeKey, checkRhyme } from '../game/poetics.js';
 import { applyMeaningsToSentence } from '../game/meanings.js';
 import { updatePuppets } from './puppets.js';
 import { attachSentenceDrag, attachHandDrag } from './dragSort.js';
+import { spriteKeyForEnemy } from './spriteAnimator.js';
 
 // Puppet animations live in ./puppets.js; re-export for legacy importers.
 export { updatePuppets, playChantPuppetAnim, playEnemyPuppetAnim } from './puppets.js';
@@ -104,6 +105,13 @@ export function renderEnemies() {
       foregroundSpriteImage.src = foregroundEnemy.portrait || '/enemies/moyao.png';
       foregroundSpriteImage.alt = enemyName(foregroundEnemy);
     }
+  }
+  const stageEnemySprite = document.getElementById('puppet-enemy');
+  if (stageEnemySprite && foregroundEnemy) {
+    stageEnemySprite.dataset.spriteKey = spriteKeyForEnemy(foregroundEnemy);
+    stageEnemySprite.setAttribute('aria-label', enemyName(foregroundEnemy));
+    const frame = stageEnemySprite.querySelector('.sprite-frame');
+    if (frame) frame.setAttribute('aria-label', enemyName(foregroundEnemy));
   }
 
   G.enemies.forEach((enemy, idx) => {
@@ -356,6 +364,9 @@ export function createSentenceWordEl(card, idx) {
 export function renderHand() {
   renderTargetCards();
   syncTargetSelectability();
+
+  const handTitle = document.querySelector('.hand-window-title span');
+  if (handTitle) handTitle.textContent = `手牌 · ${G.hand.length} 项`;
 
   const handEl = document.getElementById('hand-cards');
   // FLIP:重渲前记住每张卡的旧位置(按卡对象跟踪),重渲后从旧位滑到新位,

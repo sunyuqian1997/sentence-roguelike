@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "kind": "identity_static_concepts",
+  "artDirection": "celadon retro mystery, cream/ink/teal, restrained persimmon accents",
+  "pixelArt": false,
+  "animationReady": true,
+  "concepts": [
+    {
+      "key": "cat",
+      "displayName": "猫",
+      "source": "cat/processed/clean.png",
+      "publicPath": "/sprites/concepts/cat/concept.png",
+      "atlasPath": "/sprites/cat/combat.png",
+      "status": "approved_animated"
+    },
+    {
+      "key": "miku",
+      "displayName": "初音未来",
+      "source": "miku/processed-v2/clean.png",
+      "publicPath": "/sprites/concepts/miku/concept.png",
+      "atlasPath": "/sprites/miku/combat.png",
+      "status": "approved_animated"
+    },
+    {
+      "key": "shadow",
+      "displayName": "影子",
+      "source": "shadow/processed/clean.png",
+      "publicPath": "/sprites/concepts/shadow/concept.png",
+      "atlasPath": "/sprites/shadow/combat.png",
+      "status": "approved_animated"
+    },
+    {
+      "key": "emperor",
+      "displayName": "皇帝",
+      "source": "emperor/processed/clean.png",
+      "publicPath": "/sprites/concepts/emperor/concept.png",
+      "atlasPath": "/sprites/emperor/combat.png",
+      "status": "approved_animated"
+    },
+    {
+      "key": "son",
+      "displayName": "儿子",
+      "source": "son/processed-v2/clean.png",
+      "publicPath": "/sprites/concepts/son/concept.png",
+      "atlasPath": "/sprites/son/combat.png",
+      "status": "approved_animated"
+    }
+  ]
+}

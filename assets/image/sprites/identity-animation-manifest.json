@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "workflow": "generate2dsprite",
+  "referenceManifest": "identity_concepts/manifest.json",
+  "grid": { "columns": 4, "rows": 4, "frameWidth": 128, "frameHeight": 128 },
+  "anchor": { "name": "feet", "frameY": 118 },
+  "direction": "right",
+  "characters": [
+    { "key": "cat", "raw": "cat/raw-sheet.png", "processed": "cat/processed-v3", "publicAtlas": "/sprites/cat/combat.png" },
+    { "key": "miku", "raw": "miku/raw-sheet.png", "processed": "miku/processed", "publicAtlas": "/sprites/miku/combat.png" },
+    { "key": "shadow", "raw": "shadow/raw-sheet.png", "processed": "shadow/processed", "publicAtlas": "/sprites/shadow/combat.png" },
+    { "key": "emperor", "raw": "emperor/raw-sheet.png", "processed": "emperor/processed", "publicAtlas": "/sprites/emperor/combat.png" },
+    { "key": "son", "raw": "son/raw-sheet.png", "processed": "son/processed", "publicAtlas": "/sprites/son/combat.png" }
+  ]
+}

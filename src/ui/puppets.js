@@ -16,6 +16,7 @@ import { playSFX } from '../game/audio.js';
 import { uiScale, toGameRect } from './uiScale.js';
 import { SCENERY } from '../game/scenes.js';
 import { isEn } from '../i18n.js';
+import { ensureSpriteAnimator, initPuppetSprites, makeSpriteMarkup } from './spriteAnimator.js';
 
 export const IMPACT_MS = 420;
 
@@ -62,12 +63,13 @@ function setPose(el, pose) {
   if (el && el.dataset.pose !== pose) el.dataset.pose = pose;
 }
 
-// Identity body-size: scale the inner SVG (not the .puppet, whose transform is
-// driven by pose CSS). Applied via a CSS var so it composes cleanly.
+// Identity body-size scales only the fixed sprite viewport; feet stay anchored.
 function setBodyScale(el, scale) {
   if (!el) return;
-  const svg = el.querySelector('.puppet-svg');
-  if (svg) svg.style.transform = scale && scale !== 1 ? `scale(${scale})` : '';
+  const sprite = el.querySelector('.sprite-frame');
+  if (!sprite) return;
+  if (scale && scale !== 1) sprite.style.setProperty('--sprite-body-scale', String(scale));
+  else sprite.style.removeProperty('--sprite-body-scale');
 }
 
 function impactFlash(el) {
@@ -93,6 +95,35 @@ const COACTOR_EMOJI = {
   '大哥': '🕶️',
 };
 const coActorEmoji = (name) => COACTOR_EMOJI[name] || '🥷';
+
+const COACTOR_SPRITE_KEYS = Object.freeze({
+  '猫': 'cat',
+  '初音未来': 'miku',
+  '影子': 'shadow',
+  '皇帝': 'emperor',
+  '儿子': 'son',
+});
+const coActorSpriteKey = (name) => COACTOR_SPRITE_KEYS[name] || 'coactor';
+
+// Identity sentences visibly recast the player into an available pixel body.
+// First-act atlases cover this pass; later identities reuse the nearest shape.
+const IDENTITY_SPRITES = Object.freeze({
+  '猫': { key: 'cat', scale: 0.72 },
+  '儿子': { key: 'son', scale: 0.62 },
+  '影子': { key: 'shadow', scale: 0.92 },
+  '大哥': { key: 'moyao', scale: 1.08 },
+  '初音未来': { key: 'miku', scale: 0.88 },
+  '剑客': { key: 'wenqu', scale: 1.0 },
+  '女侠': { key: 'wenqu', scale: 1.0 },
+  '将军': { key: 'wenqu', scale: 1.12 },
+  '皇帝': { key: 'emperor', scale: 1.12 },
+  '巨人': { key: 'cangjie', scale: 1.38 },
+  '无名者': { key: 'cangjie', scale: 0.96 },
+  '李清照': { key: 'wenqu', scale: 0.94 },
+  '书生': { key: 'wenqu', scale: 0.92 },
+  '月兔': { key: 'zhigui', scale: 0.78 },
+  '僧人': { key: 'wenqu', scale: 1.0 },
+});
 
 // Where co-actors stand: in the open band BETWEEN the poet (far left) and the
 // VS marker (center), so they never overlap the poet. Each is ~62% scale.
@@ -177,19 +208,20 @@ function genericCoActorSVG() {
     ${_shared}`;
 }
 
-function coActorSVG(name) {
-  const inner = COACTOR_SVG[name] || genericCoActorSVG();
-  return `<svg viewBox="0 0 80 100" class="puppet-svg" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
+function coActorSprite(name) {
+  return makeSpriteMarkup(coActorSpriteKey(name), name, coActorEmoji(name));
 }
 
-// Build one standby co-actor puppet with its OWN character SVG.
+// Build one standby co-actor with the shared pixel co-actor atlas. The label and
+// emoji preserve identity while the animation remains a stable fixed grid.
 function makeStandby(name, indexFromZero) {
   const clone = document.createElement('div');
   clone.className = 'puppet puppet-coactor standby';
-  clone.dataset.coactor2 = (COACTOR_SVG[name] ? name : 'generic');
+  clone.dataset.spriteSide = 'ally';
+  clone.dataset.spriteKey = coActorSpriteKey(name);
   clone.dataset.pose = 'idle';
   clone.dataset.coactor = name;
-  clone.innerHTML = `${coActorSVG(name)}<div class="puppet-label">${name}</div>`;
+  clone.innerHTML = coActorSprite(name);
   const label = clone.querySelector('.puppet-label');
   if (label) { label.style.opacity = '0.7'; label.style.display = 'block'; }
   setEmoji(clone, coActorEmoji(name));
@@ -197,10 +229,11 @@ function makeStandby(name, indexFromZero) {
   clone.style.left = (COACTOR_BASE_LEFT + indexFromZero * COACTOR_STEP) + '%';
   clone.style.bottom = '4%';
   clone.style.zIndex = String(3 - indexFromZero);
-  clone.style.opacity = '0';
+  clone.style.opacity = '1';
   clone.style.transformOrigin = 'bottom center';
-  clone.style.transform = `scale(${COACTOR_SCALE - 0.1})`;
-  clone.style.transition = 'opacity 0.25s, transform 0.3s cubic-bezier(0.22,1,0.36,1), left 0.3s';
+  clone.style.transform = `scale(${COACTOR_SCALE})`;
+  clone.style.transition = 'transform 0.3s cubic-bezier(0.22,1,0.36,1), left 0.3s';
+  ensureSpriteAnimator(clone);
   return clone;
 }
 
@@ -218,40 +251,23 @@ export function syncStandbyCoActors(names) {
   const existing = [...stage.querySelectorAll('.puppet-coactor.standby')];
   const want = names || [];
 
-  // Remove standbys no longer present. Mark them as fading and stash the pending
-  // remove timer so a quick re-add can cancel it instead of losing the node.
+  // Direct removal: sprites never fade or dissolve.
   existing.forEach(el => {
     if (!want.includes(el.dataset.coactor)) {
-      el.dataset.removing = '1';
-      el.style.opacity = '0';
-      el.style.transform = `scale(${COACTOR_SCALE - 0.1})`;
-      el._removeTimer = setTimeout(() => el.remove(), 250);
+      el.remove();
     }
   });
 
   // Add missing standbys, fanned out by their order of appearance.
   want.forEach((name, i) => {
-    // A still-attached node that is NOT mid-removal can be reused as-is.
-    const live = existing.find(e => e.dataset.coactor === name && e.isConnected && e.dataset.removing !== '1');
+    const live = existing.find(e => e.dataset.coactor === name && e.isConnected);
     if (live) {
       live.style.left = (COACTOR_BASE_LEFT + i * COACTOR_STEP) + '%';
-      return;
-    }
-    // A node that was fading out for this same name: cancel its removal and revive
-    // it (no new SFX, no flicker) instead of double-spawning.
-    const reviving = existing.find(e => e.dataset.coactor === name && e.isConnected && e.dataset.removing === '1');
-    if (reviving) {
-      clearTimeout(reviving._removeTimer);
-      reviving.dataset.removing = '';
-      reviving.style.left = (COACTOR_BASE_LEFT + i * COACTOR_STEP) + '%';
-      reviving.style.opacity = '1';
-      reviving.style.transform = `scale(${COACTOR_SCALE})`;
       return;
     }
     const el = makeStandby(name, i);
     stage.appendChild(el);
     playSFX('summon'); // a new ally just stepped onto the stage
-    requestAnimationFrame(() => { el.style.opacity = '1'; el.style.transform = `scale(${COACTOR_SCALE})`; });
   });
 }
 
@@ -279,8 +295,7 @@ export function playCoActors(coActors) {
       setTimeout(() => { el.dataset.pose = pose; el.style.transform = `translateY(-4px) scale(0.98)`; }, 300 * i + 120);
     }
     setTimeout(() => { el.dataset.pose = 'idle'; el.style.transform = `scale(${COACTOR_SCALE})`; }, 300 * i + 620);
-    setTimeout(() => { el.style.opacity = '0'; el.style.transform = `scale(${COACTOR_SCALE - 0.1})`; }, 300 * i + 900);
-    setTimeout(() => el.remove(), 300 * i + 1200);
+    setTimeout(() => el.remove(), 300 * i + 900);
   });
 }
 
@@ -400,6 +415,14 @@ function maybeShowBubbles() {
   const { player, enemy } = els();
   if (!stage || !player || !enemy) return;
 
+  // Dialogue priority: tutorial AVG > resolved-action bubble > compose-time
+  // quip. The first two own their own layers; compose quips must stay silent
+  // while either is active instead of reappearing during a render at impact.
+  if (G.isTutorial || G._chantResolving) {
+    clearPuppetBubbles();
+    return;
+  }
+
   const sentence = G.sentence || [];
   // The preview eval is only trustworthy for a non-empty, non-summon sentence
   // (render.js writes it in exactly that branch, so anything else is stale).
@@ -486,6 +509,7 @@ export function syncScenery(props) {
 export function updatePuppets() {
   const { player, enemy } = els();
   if (!player || !enemy) return;
+  initPuppetSprites(document.getElementById('puppet-stage') || document);
 
   // 景物道具是持久布景,与姿态动画无关 — 放在 chanting 早退之前,吟诵中也同步。
   syncScenery(G.sceneryProps);
@@ -494,22 +518,28 @@ export function updatePuppets() {
   const hasEnemyTarget = sentence.some(c => c && c._isEnemyTarget);
   const verbs = sentence.filter(c => c && c.pos === 'verb');
   const lastVerb = verbs[verbs.length - 1];
+  const stageEnemyIntent = (G.enemies || []).find(e => e && e.hp > 0)?.nextIntent || null;
 
   let playerPose = 'idle';
   let enemyPose = 'idle';
   let playerEmoji = '';
   let enemyEmoji = '';
   let playerScale = 1;   // identity body-size (我是儿子→0.6, 我是巨人→1.5…)
+  let playerSpriteKey = 'lqz';
+  let playerIdentity = '';
   let enemyScale = 1;
   let coActorIdentity = null;  // "初音未来是皇帝" → crown on the co-actor puppet
   let playerAiming = false;    // transitive verb + target → step toward the foe
 
   if (hasEnemyTarget) enemyPose = 'targeted';
+  else if (stageEnemyIntent?.type === 'attack' || stageEnemyIntent?.type === 'special' || stageEnemyIntent?.type === 'debuff') enemyPose = 'ready';
+  else if (stageEnemyIntent?.type === 'defend') enemyPose = 'defend';
+  else if (stageEnemyIntent?.type === 'buff') enemyPose = 'heal';
 
   if (lastVerb) {
     if (lastVerb.combatType === 'attack') {
-      playerPose = 'attack';
-      if (hasEnemyTarget) enemyPose = 'hit';
+      playerPose = 'ready';
+      if (hasEnemyTarget) enemyPose = 'targeted';
     } else if (lastVerb.combatType === 'defense') {
       playerPose = 'defend';
     } else if (lastVerb.combatType === 'heal') {
@@ -525,7 +555,7 @@ export function updatePuppets() {
 
   // Imperative preview — "给我V" active meaning anywhere in the sentence
   if (sentence.some(c => c && c._activeMeaning && c._activeMeaning.id === 'gei_imperative')) {
-    playerPose = 'attack';
+    playerPose = 'ready';
     playerEmoji = '🫵';
     enemyPose = 'targeted';
   }
@@ -548,7 +578,12 @@ export function updatePuppets() {
         && c.word !== '我' && !isYouCard(c) && !c._isEnemyTarget);
       if (pred.target === 'self') {
         playerPose = 'heal'; playerEmoji = trait.emoji;
-        if (trait.bodyScale) playerScale = trait.bodyScale;   // 我是儿子→变小, 我是巨人→变大
+        const identitySprite = IDENTITY_SPRITES[pred.identityWord];
+        if (identitySprite) {
+          playerSpriteKey = identitySprite.key;
+          playerIdentity = pred.identityWord;
+          playerScale = identitySprite.scale;
+        } else if (trait.bodyScale) playerScale = trait.bodyScale;
       } else if (subjIsCoActor) {
         // "初音未来是皇帝" — the crown belongs to the co-actor, not the enemy.
         coActorIdentity = { name: pred.subjectWord, emoji: trait.emoji, scale: trait.bodyScale || 1 };
@@ -596,6 +631,9 @@ export function updatePuppets() {
 
   // Never override a running battle animation
   if (player.dataset.chanting === '1') return;
+  player.dataset.spriteKey = playerSpriteKey;
+  if (playerIdentity) player.dataset.identity = playerIdentity;
+  else delete player.dataset.identity;
   setPose(player, playerPose);
   setPose(enemy, enemyPose);
   player.classList.toggle('puppet-aiming', playerAiming);
@@ -635,7 +673,7 @@ export function updatePuppets() {
 
 // Chant sequence: anticipation → dash/pose → impact → recover.
 // effects is the evaluator result.effects (may be a stub for summons).
-export function playChantPuppetAnim(effects) {
+export function playChantPuppetAnim(effects, timing) {
   const { player, enemy } = els();
   if (!player || !enemy) return;
   clearPuppetBubbles(); // compose-time quips must not linger over the chant
@@ -656,6 +694,12 @@ export function playChantPuppetAnim(effects) {
   const motif = (effects && effects._motifTriggers && effects._motifTriggers.length > 0)
     ? effects._motifTriggers[0].motif.id : null;
   const coActors = (effects && effects._coActors) || [];
+  const clock = {
+    dash: timing?.dashMs ?? 120,
+    impact: timing?.impactMs ?? IMPACT_MS,
+    recover: timing?.recoverMs ?? 720,
+    release: timing?.releaseMs ?? (coActors.length ? 1000 + 300 * coActors.length + 1300 : 1000),
+  };
 
   const seq = [
     // 0ms — anticipation crouch
@@ -665,7 +709,7 @@ export function playChantPuppetAnim(effects) {
       enemy.style.transition = 'transform 0.15s ease-out';
     }],
     // 120ms — dash / pose
-    [120, () => {
+    [clock.dash, () => {
       player.style.transition = 'transform 0.3s cubic-bezier(0.22,1,0.36,1)';
       const dx = gapX(player, enemy);
       if (imperative) {
@@ -690,7 +734,7 @@ export function playChantPuppetAnim(effects) {
       }
     }],
     // IMPACT — enemy reacts
-    [IMPACT_MS, () => {
+    [clock.impact, () => {
       if (effects && effects._enemyVsEnemy) {
         // 驱虎吞狼:主敌人棍人(=被打的宾语敌)吃冲撞后仰;
         // 出手的"倒戈敌人"由 playEnemyVsEnemyAnim 的临时棍人演。
@@ -745,19 +789,23 @@ export function playChantPuppetAnim(effects) {
     // Co-actors (猫/影子/初音…) get their OWN puppets summoned onto the stage
     // (see playCoActors below, fired right after this sequence starts).
     // 720ms — recover positions
-    [720, () => {
+    [clock.recover, () => {
       player.style.transition = 'transform 0.3s cubic-bezier(0.22,1,0.36,1)';
       player.style.transform = '';
       enemy.style.transition = 'transform 0.3s ease-out';
       enemy.style.transform = '';
+      player.dataset.pose = 'idle';
+      if (enemy.dataset.pose === 'hit') enemy.dataset.pose = 'idle';
     }],
     // release the stage back to updatePuppets — after co-actors finish too
-    [coActors.length ? 1000 + 300 * coActors.length + 1300 : 1000, () => {
+    [clock.release, () => {
       player.style.transform = '';
       enemy.style.transform = '';
       player.dataset.chanting = '';
       enemy.dataset.chanting = '';
       player.dataset.pose = 'idle';
+      player.dataset.spriteKey = 'lqz';
+      delete player.dataset.identity;
       enemy.classList.remove('puppet-impact');
     }],
   ];
@@ -765,13 +813,13 @@ export function playChantPuppetAnim(effects) {
 
   // Right after the poet's own strike, the standby co-actors (already on stage
   // from composition) dash out and pile on.
-  if (coActors.length) setTimeout(() => playCoActors(coActors), IMPACT_MS + 150);
+  if (coActors.length) setTimeout(() => playCoActors(coActors), clock.impact + 150);
 }
 
 // 驱虎吞狼小剧场:克隆一个临时"倒戈敌人"棍人(标注敌名),从主敌人棍人
 // 侧后方现身、冲撞过去;命中与 IMPACT_MS 同拍(主敌人的受击后仰由
 // playChantPuppetAnim 的 _enemyVsEnemy 分支负责),演完自行淡出移除。
-export function playEnemyVsEnemyAnim(eve) {
+export function playEnemyVsEnemyAnim(eve, timing) {
   const { enemy } = els();
   const stage = document.getElementById('puppet-stage');
   if (!enemy || !stage || !eve) return;
@@ -790,28 +838,29 @@ export function playEnemyVsEnemyAnim(eve) {
     top: (er.top - sr.top + 4) + 'px',
     width: er.width + 'px',
     height: er.height + 'px',
-    opacity: '0',
+    opacity: '1',
     zIndex: 3,
     pointerEvents: 'none',
     transform: 'scale(0.82) translateX(-16px)',
-    transition: 'transform 0.25s ease-out, opacity 0.2s ease-out',
+    transition: 'transform 0.25s ease-out',
   });
   const label = tmp.querySelector('.puppet-label');
   if (label && eve.srcWord) label.textContent = eve.srcWord;
   stage.appendChild(tmp);
+  ensureSpriteAnimator(tmp);
   playSFX('summon');
+  const impactAt = timing?.impactMs ?? IMPACT_MS;
   const seq = [
-    [30, () => { tmp.style.opacity = '1'; tmp.style.transform = 'scale(0.82)'; }],
+    [30, () => { tmp.style.transform = 'scale(0.82)'; }],
     [200, () => {
       tmp.style.transition = 'transform 0.22s cubic-bezier(0.22,1,0.36,1)';
       tmp.style.transform = 'scale(0.82) translateX(88px)';
       tmp.dataset.pose = 'attack';
     }],
-    [IMPACT_MS, () => { impactFlash(tmp); }],
+    [impactAt, () => { impactFlash(tmp); }],
     [700, () => {
-      tmp.style.transition = 'transform 0.3s ease-out, opacity 0.35s ease-out';
+      tmp.style.transition = 'transform 0.3s ease-out';
       tmp.style.transform = 'scale(0.82) translateX(-6px)';
-      tmp.style.opacity = '0';
     }],
     [1080, () => tmp.remove()],
   ];
@@ -844,15 +893,21 @@ export function playEnemyPuppetAnim(intent, opts) {
   const dmg = (intent && intent.value) || 0;
   const hits = (intent && intent.hits) || 1;
   const heavy = dmg >= 12 || hits >= 2;
+  const clock = {
+    anticipation: opts.timeline?.anticipationMs ?? 0,
+    dash: opts.timeline?.dashMs ?? 120,
+    impact: opts.timeline?.impactMs ?? IMPACT_MS,
+    recover: opts.timeline?.recoverMs ?? 720,
+    release: opts.timeline?.releaseMs ?? 1000,
+  };
 
   const seq = [
-    [0, () => {
+    [clock.anticipation, () => {
       // 蓄力前摇:蜷缩 + 朱红光晕预告"要挨打了", 给玩家一拍紧张感。
-      enemy.style.transition = 'transform 0.15s ease-out, filter 0.15s ease-out';
+      enemy.style.transition = 'transform 0.15s ease-out';
       enemy.style.transform = 'translateY(2px) scaleY(0.9) scale(0.96)';
-      if (t === 'attack') enemy.style.filter = 'drop-shadow(0 0 12px var(--vermillion-glow))';
     }],
-    [120, () => {
+    [clock.dash, () => {
       enemy.style.transition = 'transform 0.3s cubic-bezier(0.22,1,0.36,1)';
       const dx = gapX(enemy, player); // negative: player is to the left
       if (t === 'attack') {
@@ -865,18 +920,15 @@ export function playEnemyPuppetAnim(intent, opts) {
       } else if (t === 'buff') {
         enemy.style.transform = 'translateY(-4px) scale(1.06)';
         enemy.dataset.pose = 'heal'; // reuse heal glow for buffs
-        enemy.style.filter = 'drop-shadow(0 0 8px var(--gold))';
       } else if (t === 'debuff') {
         enemy.style.transform = `translateX(${Math.min(-24, dx * 0.45)}px)`;
         enemy.dataset.pose = 'attack';
-        enemy.style.filter = 'drop-shadow(0 0 8px var(--purple))';
       } else if (t === 'special') {
         enemy.style.transform = 'translateY(-4px)';
         enemy.dataset.pose = 'attack';
-        enemy.style.filter = 'drop-shadow(0 0 10px var(--cyan))';
       }
     }],
-    [IMPACT_MS, () => {
+    [clock.impact, () => {
       if (t === 'attack') {
         // 击退幅度要"看得见疼": 轻击退半步, 重击退一大步 + 身体收缩。
         player.style.transition = 'transform 0.25s ease-out';
@@ -890,19 +942,19 @@ export function playEnemyPuppetAnim(intent, opts) {
         setEmoji(player, '😵');
       }
     }],
-    [720, () => {
+    [clock.recover, () => {
       enemy.style.transition = 'transform 0.3s cubic-bezier(0.22,1,0.36,1)';
       enemy.style.transform = '';
-      enemy.style.filter = '';
       player.style.transition = 'transform 0.3s ease-out';
       player.style.transform = '';
+      enemy.dataset.pose = 'idle';
     }],
-    [1000, () => {
+    [clock.release, () => {
       enemy.style.transform = '';
-      enemy.style.filter = '';
       player.style.transform = '';
       player.classList.remove('puppet-impact');
       setEmoji(player, '');
+      player.dataset.pose = 'idle';
       player.dataset.chanting = '';
       enemy.dataset.chanting = '';
       // Sentence is empty after end-turn, so updatePuppets restores idle
@@ -940,6 +992,8 @@ export function playBestVerseReplay(bestLine, stageEl) {
   foe.style.cssText = 'position:absolute;right:8%;bottom:6%;width:22%;transform-origin:bottom center;';
   stageEl.appendChild(poet);
   stageEl.appendChild(foe);
+  ensureSpriteAnimator(poet);
+  ensureSpriteAnimator(foe);
 
   // Co-actors: replay the canonical list the evaluator already produced
   // (effects._coActors), not a re-scan — so we show exactly who fought, including
@@ -951,11 +1005,14 @@ export function playBestVerseReplay(bestLine, stageEl) {
   const extras = names.slice(0, 3).map((name, i) => {
     const el = document.createElement('div');
     el.className = 'puppet puppet-coactor';
+    el.dataset.spriteSide = 'ally';
+    el.dataset.spriteKey = coActorSpriteKey(name);
     el.dataset.pose = 'idle';
-    el.innerHTML = `${coActorSVG(name)}<div class="puppet-label">${name}</div>`;
+    el.innerHTML = coActorSprite(name);
     el.style.cssText = `position:absolute;left:${34 + i * 12}%;bottom:5%;width:17%;transform-origin:bottom center;z-index:${3 - i};`;
     setEmoji(el, coActorEmoji(name));
     stageEl.appendChild(el);
+    ensureSpriteAnimator(el);
     return el;
   });
 

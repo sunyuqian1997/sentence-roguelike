@@ -7,6 +7,10 @@ index.html.bak
 shot.png
 smoke-shot.png
 chantlog.ndjson
+.tmp/
+.env
+.env.*
+!.env.example
 
 # >>> TapTap Maker AI dev kit (local only) >>>
 .DS_Store
@@ -28,3 +32,5 @@ templates/
 tools/
 urhox-libs/
 # <<< TapTap Maker AI dev kit (local only) <<<
+.env*
+!.env.example

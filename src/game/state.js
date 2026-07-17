@@ -5,6 +5,7 @@ export const META_DEFAULT = {
   lang: 'zh',
   unlockedPacks: ['base', 'caodong', 'luxun'],
   tutorialCompleted: false,
+  battleMastery: {},
 };
 
 export function loadMeta() {
@@ -53,7 +54,7 @@ export const G = {
   enemyTargets: [],
   allCardsCostZero: false, poeticAura: false,
   musicStarted: false, muted: false,
-  actNames: ['', '第零夜·不存在的三楼', '第一夜·第十三广播室', '第二夜·地下学生档案'],
+  actNames: ['', '第零夜·多出来的三楼', '第一夜·第十三广播室', '第二夜·地下学生档案'],
   shopInventory: null,
   drawLessNextTurn: 0,
   sentenceJournal: [],

@@ -1,0 +1,4 @@
+4x4 pixel-art combat atlas from the supplied Lin Xi schoolgirl reference.
+Rows: idle, attack, hurt/recovery, defend+heal. 3/4 view facing right; fixed
+feet baseline; exact identity and teal/red school uniform; flat #FF00FF source
+background; no text, borders, detached effects, filters, shadows, or gradients.

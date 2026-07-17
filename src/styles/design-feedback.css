@@ -1,0 +1,430 @@
+/* Dynamic feedback from design-ref/战斗原型 3D 水色OS.dc.html.
+   Loaded after design-stage.css; it changes feedback, never the fixed canvas. */
+
+#design-feedback-layer {
+  position: absolute;
+  inset: 30px 0 0;
+  z-index: 90;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.df-focus-dim,
+.df-impact-flash {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.df-focus-dim {
+  background: radial-gradient(ellipse 55% 52% at 50% 34%, transparent 34%, rgba(20, 42, 38, .42) 82%);
+  transition: opacity 350ms ease;
+}
+
+#combat-screen[data-feedback-mode='attack'][data-feedback-phase='charge'] .df-focus-dim,
+#combat-screen[data-feedback-mode='attack'][data-feedback-phase='dash'] .df-focus-dim,
+#combat-screen[data-feedback-mode='attack'][data-feedback-phase='impact'] .df-focus-dim,
+#combat-screen[data-feedback-mode='attack'][data-feedback-phase='seal'] .df-focus-dim { opacity: 1; }
+#combat-screen[data-feedback-phase='enemy-telegraph'] #stage-enemy .enemy-intent {
+  transform: scale(1.5);
+  transition: transform 180ms cubic-bezier(.3, 1.5, .5, 1);
+}
+
+.df-impact-flash { background: rgba(246, 241, 226, .72); }
+#design-feedback-layer.df-impact .df-impact-flash { animation: dfFlash 90ms steps(2, end) both; }
+#combat-screen.df-shake-small { animation: dfShakeSmall 250ms ease; }
+#combat-screen.df-shake-big { animation: dfShakeBig 450ms ease; }
+
+/* Reference speech bubbles: pop-in at the acting puppet, no generic phase UI. */
+.df-bubble {
+  position: absolute;
+  z-index: 9;
+  display: none;
+  padding: 3px 10px;
+  border: 2px solid var(--os-ink, #1A1A18);
+  border-radius: 9px;
+  background: var(--os-paper, #F6F1E2);
+  box-shadow: 2px 2px 0 rgba(26, 26, 24, .35);
+  color: var(--os-ink, #1A1A18);
+  font-size: 14px;
+  white-space: nowrap;
+}
+.df-bubble.is-visible { display: block; animation: dfPopIn 200ms both; }
+
+/* Ink splashes, small seals and the center grand seal are direct ports of the
+   corresponding splashE/P, sealE/P and sealCenter reference components. */
+.df-splash {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  display: none;
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 50%, currentColor 0 13px, transparent 14px),
+    radial-gradient(circle at 24% 38%, currentColor 0 5px, transparent 6px),
+    radial-gradient(circle at 76% 34%, currentColor 0 4px, transparent 5px),
+    radial-gradient(circle at 68% 70%, currentColor 0 6px, transparent 7px),
+    radial-gradient(circle at 30% 70%, currentColor 0 4px, transparent 5px),
+    radial-gradient(circle at 50% 16%, currentColor 0 3px, transparent 4px),
+    radial-gradient(circle at 84% 54%, currentColor 0 3px, transparent 4px),
+    radial-gradient(circle at 14% 56%, currentColor 0 3px, transparent 4px);
+}
+.df-splash-player { color: var(--os-ink, #1A1A18); }
+.df-splash-enemy { color: var(--os-orange, #D96C3F); }
+.df-splash.is-visible { display: block; animation: dfSplashIn 500ms ease-out both; }
+.df-seal {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  z-index: 12;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid currentColor;
+  background: rgba(246, 241, 226, .92);
+  font-family: var(--font-brush);
+  font-size: 30px;
+}
+.df-seal-player { color: var(--os-teal-dark, #2E8B84); }
+.df-seal-enemy { color: var(--os-ink, #1A1A18); }
+.df-seal.is-visible { display: flex; animation: dfStampIn 420ms cubic-bezier(.2, 1.3, .4, 1) both; }
+.df-center-seal {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 150px;
+  height: 150px;
+  z-index: 30;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: 5px double var(--os-orange-dark, #B4471F);
+  background: #FFF3E2;
+  box-shadow: 5px 5px 0 rgba(26, 26, 24, .45);
+  color: var(--os-orange-dark, #B4471F);
+  font-family: var(--font-brush);
+  font-size: 58px;
+  letter-spacing: .1em;
+}
+.df-center-seal.is-visible { display: flex; animation: dfStampInCenter 420ms cubic-bezier(.2, 1.3, .4, 1) both; }
+
+/* The composition window reads as an editor line.  Wrappers remain generous
+   clickable/drag handles, but the nested card chrome disappears. */
+#sentence-slots-container > .sentence-half {
+  display: flex !important;
+  flex-flow: row nowrap !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
+  min-height: 98px !important;
+  gap: 14px !important;
+  padding: 4px 112px 8px 16px !important;
+}
+#sentence-slots-container .sentence-card-wrap {
+  position: relative;
+  width: auto !important;
+  min-width: 38px;
+  height: 98px;
+  justify-content: flex-end;
+  padding: 15px 0 0;
+  animation: dfWordLand 180ms cubic-bezier(.3, 1.45, .5, 1) both;
+}
+#sentence-slots-container .sentence-card-wrap:hover {
+  transform: translateY(-5px) scale(1.05);
+}
+#sentence-slots-container .sentence-mini-card {
+  width: auto !important;
+  min-width: 28px !important;
+  height: auto !important;
+  min-height: 68px !important;
+  overflow: visible !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 3px !important;
+  justify-content: flex-end !important;
+}
+#sentence-slots-container .sentence-mini-card::before,
+#sentence-slots-container .sentence-mini-card .card-cost,
+#sentence-slots-container .sentence-mini-card .card-effect-bar,
+#sentence-slots-container .sentence-mini-card .meaning-badge { display: none !important; }
+#sentence-slots-container .sentence-mini-card .card-pos-tag {
+  order: 2;
+  display: block !important;
+  width: auto !important;
+  margin-top: 3px;
+  padding: 0 4px !important;
+  color: var(--os-paper, #F6F1E2) !important;
+  font-size: 8.5px !important;
+  line-height: 14px !important;
+  letter-spacing: .1em !important;
+}
+#sentence-slots-container .sentence-mini-card .card-word {
+  order: 1;
+  writing-mode: horizontal-tb !important;
+  font-family: var(--font-brush) !important;
+  font-size: 38px !important;
+  line-height: 1.1 !important;
+  letter-spacing: .04em !important;
+  color: var(--os-ink, #1A1A18) !important;
+  white-space: nowrap;
+}
+#sentence-slots-container .target-self .card-word { color: var(--os-teal-dark, #2E8B84) !important; }
+#sentence-slots-container .target-enemy .card-word { color: var(--os-orange-dark, #B4471F) !important; }
+#sentence-slots-container .meaning-caption {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: auto;
+  max-width: 82px;
+  transform: translateX(-50%);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 5px;
+  border: 1px solid var(--os-ink, #1A1A18);
+  background: #DFF1EC;
+  color: var(--os-ink, #1A1A18);
+  font-size: 9.5px !important;
+  font-weight: 900;
+}
+#sentence-slots-container:empty::after,
+#sentence-slots-container > .sentence-half:empty::after {
+  content: '点击手牌，词落于此 ▌' !important;
+  animation: dfCaret 1s step-end infinite;
+}
+
+.chanted-line { min-height: 98px !important; font-size: 38px !important; }
+.df-chant-char {
+  display: inline-block;
+  opacity: .26;
+  transform: translateY(3px) scale(.92);
+  transition: transform 120ms cubic-bezier(.3, 1.5, .5, 1), opacity 100ms ease, color 100ms ease;
+}
+.df-chant-char.is-confirmed {
+  opacity: 1;
+  color: var(--os-teal-dark, #2E8B84);
+  transform: scale(1.12);
+  text-shadow: 0 0 10px rgba(46, 139, 132, .5);
+}
+.df-chant-char.is-active {
+  opacity: 1;
+  color: var(--os-teal-dark, #2E8B84);
+  transform: translateY(-6px) scale(1.45);
+  text-shadow: 0 0 14px rgba(46, 139, 132, .9), 0 0 5px rgba(46, 139, 132, .8);
+}
+.chanted-line.df-line-gone { opacity: 0; transform: translateY(-12px) scale(.7); transition: opacity 300ms ease, transform 300ms ease; }
+
+/* Exact reference window geometry and OS components. */
+#combat-screen > #sentence-dock { width: 580px !important; }
+.sentence-window-title { min-height: 22px !important; height: 22px !important; }
+#hand-area { left: 300px !important; right: 300px !important; height: 152px !important; min-height: 152px !important; bottom: 2px !important; }
+.hand-window-title { min-height: 20px !important; height: 20px !important; }
+#hand-cards .card,
+#target-cards .card,
+#target-cards-enemy .card { width: 56px !important; min-width: 56px !important; height: 104px !important; }
+#target-cards,
+#target-cards-enemy {
+  padding: 0 !important;
+  margin: 0 3px !important;
+  border: 0 !important;
+}
+/* The reference communicates targeting through the sentence word and enemy
+   posture; it does not draw the legacy rectangular target-acquire outline. */
+#player-char-card.target-selected,
+#stage-enemy .enemy.targeted {
+  outline: 0 !important;
+  animation: none !important;
+  box-shadow: none !important;
+}
+#combat-stage::after {
+  content: '◁　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　▷';
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  height: 20px;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  overflow: hidden;
+  padding: 0 4px;
+  border: 2px solid var(--os-ink, #1A1A18);
+  background:
+    radial-gradient(circle at 1px 1px, rgba(26, 26, 24, .25) .8px, transparent 1.1px) 0 0 / 3px 3px,
+    #DFF1EC;
+  color: var(--os-ink, #1A1A18);
+  font-size: 10px;
+  white-space: pre;
+  pointer-events: none;
+}
+#sentence-score-preview .sp-row {
+  border: 3px solid var(--os-orange, #D96C3F);
+  background: #FFF3E2;
+  box-shadow: 2px 2px 0 rgba(180, 71, 31, .3);
+  color: var(--os-orange-dark, #B4471F);
+  transform: rotate(2deg);
+}
+#sentence-score-preview {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+#sentence-score-preview:empty { display: none !important; }
+#sentence-score-preview:empty::before,
+#sentence-score-preview:empty::after { content: none !important; display: none !important; }
+#sentence-score-preview .sp-rules { display: none !important; }
+#sentence-score-preview.df-verdict-pulse { animation: dfVerdict 180ms cubic-bezier(.3, 1.5, .5, 1); }
+
+#sentence-score-preview .judge-pending,
+#sentence-score-preview .judge-verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  color: #324b45;
+  white-space: nowrap;
+}
+
+#sentence-score-preview .judge-pending-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid #ad4f42;
+  color: #ad4f42;
+  font-weight: 700;
+  animation: dfJudgeBreathe 760ms steps(2, end) infinite;
+}
+
+#sentence-score-preview .judge-verdict b {
+  color: #9e443a;
+  font-size: 15px;
+}
+
+#sentence-score-preview .judge-verdict em {
+  color: #466b61;
+  font-style: normal;
+}
+
+#sentence-score-preview .judge-verdict strong { color: #a06c21; }
+#sentence-score-preview .judge-verdict > span {
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#sentence-score-preview .judge-verdict i {
+  padding: 1px 4px;
+  border: 1px solid rgba(70, 107, 97, .4);
+  color: #5a756e;
+  font-size: 10px;
+  font-style: normal;
+}
+
+@keyframes dfJudgeBreathe {
+  50% { transform: scale(.9); opacity: .55; }
+}
+
+/* Reference desktop energy icon and separate OS action dialog. */
+#hand-controls {
+  left: 16px !important;
+  right: 16px !important;
+  bottom: 14px !important;
+  align-items: flex-end !important;
+}
+#hand-controls .energy-display {
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 3px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+#hand-controls .energy-orb {
+  width: 44px !important;
+  height: 44px !important;
+  border: 2px solid var(--os-ink, #1A1A18) !important;
+  border-radius: 0 !important;
+  box-shadow: 0 0 0 2px var(--os-gold, #C8B98A), 3px 3px 0 rgba(20, 42, 38, .4) !important;
+  font-size: 20px !important;
+}
+#hand-controls .energy-display > span {
+  padding: 0 6px;
+  border: 1px solid var(--os-ink, #1A1A18);
+  background: var(--os-paper, #F6F1E2);
+  font-size: 11px !important;
+}
+#hand-controls > div:last-child {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px !important;
+  padding: 8px 10px;
+  border: 2px solid var(--os-ink, #1A1A18);
+  background: var(--os-paper, #F6F1E2);
+  box-shadow: 0 0 0 2px var(--os-gold, #C8B98A), 5px 5px 0 rgba(20, 42, 38, .45);
+}
+#chant-btn {
+  padding: 6px 18px !important;
+  border: 2px solid var(--os-ink, #1A1A18) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 0 0 2px var(--os-paper, #F6F1E2), 0 0 0 4px var(--os-ink, #1A1A18) !important;
+  font-size: 15px !important;
+  letter-spacing: .08em !important;
+}
+#end-turn-btn {
+  padding: 2px 10px !important;
+  border: 2px solid var(--os-ink, #1A1A18) !important;
+  border-radius: 6px !important;
+  background: var(--os-paper, #F6F1E2) !important;
+  color: var(--os-ink, #1A1A18) !important;
+  font-size: 11px !important;
+  letter-spacing: .08em !important;
+}
+
+/* Input lock exists only during a real resolution. Overlays never eat input. */
+#combat-screen.df-busy #hand-cards-wrapper,
+#combat-screen.df-busy #hand-controls { pointer-events: none; }
+#combat-screen.df-busy #hand-area { cursor: wait; }
+
+/* Reference hand response: quick lift, firm pressed state, no layout shift. */
+#hand-cards .card,
+#target-cards .card,
+#target-cards-enemy .card { transition: transform 120ms ease, box-shadow 120ms ease, opacity 150ms ease !important; }
+#hand-cards .card:hover:not(.in-sentence),
+#target-cards .card:hover,
+#target-cards-enemy .card:hover {
+  transform: translateY(-14px) scale(1.04) !important;
+  box-shadow: 2px 2px 0 var(--os-teal, #2E8B84), 0 8px 14px rgba(26, 26, 24, .25) !important;
+}
+#hand-cards .card:active:not(.in-sentence),
+#target-cards .card:active,
+#target-cards-enemy .card:active { transform: translateY(-8px) scale(.96) !important; }
+
+@keyframes dfWordLand {
+  0% { opacity: 0; transform: translateY(9px) scale(.55); }
+  62% { opacity: 1; transform: translateY(-2px) scale(1.12); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes dfFlash { 0%, 100% { opacity: 0; } 45% { opacity: 1; } }
+@keyframes dfShakeSmall { 0%, 100% { translate: 0; } 25% { translate: -4px 2px; } 50% { translate: 4px -2px; } 75% { translate: -3px 1px; } }
+@keyframes dfShakeBig { 0%, 100% { translate: 0; rotate: 0deg; } 15% { translate: -11px 6px; rotate: -.4deg; } 30% { translate: 10px -6px; rotate: .4deg; } 45% { translate: -8px 4px; rotate: -.3deg; } 60% { translate: 7px -3px; rotate: .3deg; } 80% { translate: -4px 2px; } }
+@keyframes dfPopIn { from { transform: scale(.4); opacity: 0; } 60% { transform: scale(1.15); opacity: 1; } to { transform: scale(1); opacity: 1; } }
+@keyframes dfSplashIn { 0% { transform: scale(.2); opacity: 0; } 30% { opacity: 1; } 100% { transform: scale(1.35); opacity: 0; } }
+@keyframes dfStampIn { 0% { transform: scale(2.4) rotate(-8deg); opacity: 0; } 55% { transform: scale(.9) rotate(-8deg); opacity: 1; } 100% { transform: scale(1) rotate(-8deg); opacity: 1; } }
+@keyframes dfStampInCenter { 0% { transform: translate(-50%, -50%) scale(2.6) rotate(-6deg); opacity: 0; } 55% { transform: translate(-50%, -50%) scale(.92) rotate(-6deg); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1) rotate(-6deg); opacity: 1; } }
+@keyframes dfVerdict { 0%, 100% { transform: scale(1); } 55% { transform: scale(1.35); } }
+@keyframes dfCaret { 0%, 49% { opacity: .48; } 50%, 100% { opacity: .18; } }
+
+@media (prefers-reduced-motion: reduce) {
+  #design-feedback-layer *,
+  .df-chant-char,
+  #sentence-slots-container .sentence-card-wrap,
+  #hand-cards .card,
+  #target-cards .card,
+  #target-cards-enemy .card { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+}

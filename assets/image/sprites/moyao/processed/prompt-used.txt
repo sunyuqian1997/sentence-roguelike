@@ -1,0 +1,4 @@
+4x4 pixel-art combat atlas from the supplied ink-student reference.
+Rows: idle, attack, hurt/recovery, defend+buff. 3/4 view facing left; fixed feet
+baseline; cyan paper-bag head, black robes and book; flat #FF00FF source
+background; no text, borders, cast shadow, filter, mask, or gradient.

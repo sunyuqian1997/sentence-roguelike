@@ -75,7 +75,12 @@ html, body {
 #os-menubar strong { letter-spacing: .12em; }
 .os-menubar-spacer { flex: 1; }
 #os-night-label { border: 1px solid var(--os-ink); padding: 1px 8px; background: var(--os-water); }
-#mute-btn { top: 36px !important; right: 12px !important; border-radius: 0 !important; }
+#mute-btn {
+  top: 36px !important;
+  right: auto !important;
+  left: 12px !important;
+  border-radius: 0 !important;
+}
 
 .os-window,
 .overlay,
@@ -497,7 +502,7 @@ body:has(#combat-screen.active) #os-menubar { display: none; }
 }
 .reward-content::before { content: '结算.log'; }
 .rest-content::before { content: '保健室.dat'; }
-.event-content::before { content: '怪谈.txt'; }
+.event-content::before { content: '梦中便笺.txt'; }
 .shop-content::before { content: '失物招领.dict'; }
 .poetry-content::before { content: '黑板题字.txt'; }
 .overlay { padding-top: 46px !important; }

@@ -5,7 +5,7 @@ import { playSFX, initAudio, playAmbientMusic, playAmbientMusicDeferred, playCom
 import { VFX } from '../ui/vfx.js';
 import { WORD_DEFS, makeCard, createStarterDeck, randomCard, randomCardWeighted } from '../data/cards.js';
 import { showScreen, renderCombat, createCardElement, renderChantedSentence } from '../ui/render.js';
-import { playChantPuppetAnim, playEnemyPuppetAnim, playEnemyVsEnemyAnim, IMPACT_MS, playBestVerseReplay, stopBestVerseReplay } from '../ui/puppets.js';
+import { clearPuppetBubbles, playChantPuppetAnim, playEnemyPuppetAnim, playEnemyVsEnemyAnim, playBestVerseReplay, stopBestVerseReplay } from '../ui/puppets.js';
 import { toGameRect } from '../ui/uiScale.js';
 import { generateCharSVG } from '../ui/svgArt.js';
 import { dealDamageToPlayer, dealDamageToEnemy, checkEnemies, resetVictoryGuard } from './damage.js';
@@ -21,11 +21,30 @@ import { SCENES, sceneName, addSceneryWords, sceneTurnStartEffects } from './sce
 import { closeMetaScreen, showVictoryScreen } from '../ui/screens.js';
 import { logChant } from './chantLog.js';
 import { beginTutorial } from './tutorial.js';
+import { judgeSentence } from './sentenceJudge.js';
+import { applyJudgeToEvaluation } from './sentenceJudgeCore.js';
+import {
+  beginPlayerFeedback,
+  beginJudgingFeedback,
+  finishPlayerFeedback,
+  queueEnemyTurnFeedback,
+  beginEnemyFeedback,
+  playerTurnReadyFeedback,
+  REFERENCE_ENEMY_TIMING,
+  restoreChantedFeedback,
+  showJudgeVerdict,
+} from '../ui/designFeedback.js';
+import {
+  notifyResolvedPlayerAction,
+  resetBattleDialogueForCombat,
+  showEnemyTurnQuote,
+} from '../ui/battleDialogue.js';
 
 // ============================================================
 // GAME START
 // ============================================================
-export function startGame() {
+export function startGame(options = {}) {
+  const forceTutorial = options?.forceTutorial === true;
   initAudio(); closeMetaScreen();
   G.hp = 50; G.maxHp = 50; G.gold = 0; G.act = 1;
   G.deck = createStarterDeck();
@@ -34,6 +53,7 @@ export function startGame() {
   G.combatCount = 0;
   G.sentenceJournal = [];
   G.combatJournal = [];
+  G._chantResolving = false;
   G.lastRhymeKey = null;
   G.rhymeStreak = 0;
   G.currentRow = -1; G.currentNodeIndex = -1;
@@ -50,13 +70,13 @@ export function startGame() {
   META.runs++; saveMeta();
   G.map = generateMap(1);
   playAmbientMusic();
-  if (!META.tutorialCompleted) {
+  if (forceTutorial || !META.tutorialCompleted) {
     G.isTutorial = true;
     const tutorialEnemy = {
-      name: '被涂掉的「她」', nameEn: 'The Erased Girl', hp: 5,
+      name: '残句怪', nameEn: 'Fragment Fiend', hp: 5,
       act: 1, type: 'normal', emoji: '▨', portrait: '/canjuguai.png',
-      tags: ['word', 'school', 'anomaly'], tutorial: true,
-      ai(enemy) { enemy.nextIntent = { type: 'attack', value: 0, icon: '眼', label: '注视' }; },
+      tags: ['word', 'school', 'echo'], tutorial: true,
+      ai(enemy) { enemy.nextIntent = { type: 'attack', value: 0, icon: '…', label: '等候' }; },
       act_fn() {},
     };
     startCombat([tutorialEnemy]);
@@ -77,11 +97,16 @@ export function startGame() {
   }
 }
 
+export function replayTutorial() {
+  startGame({ forceTutorial: true });
+}
+
 // ============================================================
 // COMBAT
 // ============================================================
 export function startCombat(enemyDefs) {
   resetVictoryGuard();
+  resetBattleDialogueForCombat();
   G.combatCount = (G.combatCount || 0) + 1;
   const isBoss = enemyDefs.some(e => e.type === 'boss');
   // 同一 act 内越深越强:用本 act 已深入层数(currentRow)做缩放。boss 数值手调,不缩放。
@@ -105,6 +130,7 @@ export function startCombat(enemyDefs) {
   G.lastRhymeKey = null;
   G.rhymeStreak = 0;
   G.combatJournal = [];
+  G._chantResolving = false;
   G._bestLine = null;   // 本场最高倍率句，结算页动态重放用
   G.currentScene = null;   // 场景(P5)整场持续直到再换,新战斗回到无场景
   G.sceneryProps = [];     // 舞台景物道具(P5),整场持续,新战斗清空
@@ -158,6 +184,7 @@ export function startPlayerTurn() {
   guaranteeTutorialCombo();
   guaranteeOnboardingHand();
   renderCombat();
+  playerTurnReadyFeedback(G.turn);
   requestAnimationFrame(() => {
     document.querySelectorAll('#hand-cards .card').forEach((c, i) => {
       c.style.animationDelay = (i * 0.08) + 's';
@@ -413,21 +440,22 @@ export function addToSentence(handIndex) {
       sourceClone.style.margin = '0';
       sourceClone.style.zIndex = '9000';
       sourceClone.style.pointerEvents = 'none';
-      sourceClone.style.transition = 'all 0.28s cubic-bezier(0.4, 0, 0.2, 1)';
+      sourceClone.style.transition = 'all 0.17s ease-in';
       sourceClone.classList.add('card-flying');
       (document.getElementById('game') || document.body).appendChild(sourceClone);
 
-      requestAnimationFrame(() => {
+      setTimeout(() => {
         sourceClone.style.left = targetRect.left + 'px';
         sourceClone.style.top = targetRect.top + 'px';
         sourceClone.style.width = targetRect.width + 'px';
         sourceClone.style.height = targetRect.height + 'px';
-        sourceClone.style.opacity = '0.85';
-      });
+        sourceClone.style.transform = 'rotate(4deg) scale(.55)';
+        sourceClone.style.opacity = '0.9';
+      }, 30);
       setTimeout(() => {
         sourceClone.remove();
         targetWrap.style.opacity = '';
-      }, 300);
+      }, 200);
     }
   });
 }
@@ -475,7 +503,8 @@ function denyChant(reason) {
 // ============================================================
 // CHANT
 // ============================================================
-export function chantSentence() {
+export async function chantSentence() {
+  if (G._chantResolving) return;
   if (G.sentence.length === 0) { denyChant(); return; }
   const cost = getSentenceCost();
   if (cost > G.energy) { denyChant(`缺 ${cost - G.energy} 文力`); return; }
@@ -495,6 +524,9 @@ export function chantSentence() {
 
   if (G.isTutorial) document.dispatchEvent(new CustomEvent('tutorial:chant'));
 
+  // The judge is asynchronous. Lock before spending resources so repeated
+  // clicks cannot schedule the same line twice.
+  G._chantResolving = true;
   G.energy -= cost;
   G.sentencesChanted++;
   const journalText = G.sentence.map(c => c._isEnemyTarget ? c.word : (c._isSelfTarget ? '我' : c.word)).join('');
@@ -521,7 +553,15 @@ export function chantSentence() {
     }
   });
 
+  // Compose-time quips yield to the higher-priority resolved-action channel as
+  // soon as the chant is committed (including while the async judge answers).
+  clearPuppetBubbles();
+  beginJudgingFeedback(journalText);
+  const judge = await judgeSentence(journalText);
+  showJudgeVerdict(judge);
+
   if (summon) {
+    const feedbackTiming = beginPlayerFeedback(sentenceCards, journalText, { damage: 1 });
     logChant({ summon });
     const effect = SUMMON_EFFECTS[summon.summonName];
     const sentText = '「' + summon.text + '」';
@@ -537,20 +577,33 @@ export function chantSentence() {
       <div class="score-line" style="animation-delay:200ms;color:var(--paper-dark);">
         ${effect.desc}
       </div>
+      <div class="score-line" style="animation-delay:300ms;color:var(--gold);">
+        判句 ${judge.grade}·${judge.gradeLabel} ${judge.score}分　效果×${judge.multiplier.toFixed(2)}
+      </div>
     `;
-    overlay.classList.add('active');
-    VFX.excFlash('#00ffcc');
-    VFX.shake('sm');
-    playChantPuppetAnim({ damage: 1 }); // summon = dramatic dash + strike
-
+    setTimeout(() => overlay.classList.add('active'), feedbackTiming.verdictAt);
+    setTimeout(() => {
+      VFX.excFlash('#00ffcc');
+      VFX.shake('sm');
+      playChantPuppetAnim({ damage: 1 }, feedbackTiming.puppet);
+    }, feedbackTiming.actionStart);
     setTimeout(() => {
       overlay.classList.remove('active');
-      effect.apply();
+      effect.apply(judge);
+      notifyResolvedPlayerAction({ summon });
+      renderCombat();
+      renderChantedSentence(sentenceCards);
+      restoreChantedFeedback(sentenceCards);
+    }, feedbackTiming.impactAt);
+    setTimeout(() => {
       checkEnemies();
       renderCombat();
-    }, 1200);
+      finishPlayerFeedback();
+      G._chantResolving = false;
+    }, feedbackTiming.completeAt);
   } else {
-    const result = evaluateSentence(sentenceCards);
+    const result = applyJudgeToEvaluation(evaluateSentence(sentenceCards), judge);
+    const feedbackTiming = beginPlayerFeedback(sentenceCards, journalText, result.effects);
     logChant({ result });
     // Creativity ledger advances only on a REAL chant (after evaluation, so a
     // sentence never counts as its own repeat). Previews read, never write.
@@ -576,21 +629,28 @@ export function chantSentence() {
     // becomes the baseline for the next sentence.
     G._continuityStreak = (result && result.effects && result.effects._continuity)
       ? result.effects._continuity.streak : 0;
-    playChantPuppetAnim(result.effects);
-    // 驱虎吞狼:倒戈敌人的冲撞小剧场与主动画并行,命中帧同拍。
-    if (result.effects._enemyVsEnemy) playEnemyVsEnemyAnim(result.effects._enemyVsEnemy);
+    setTimeout(() => {
+      playChantPuppetAnim(result.effects, feedbackTiming.puppet);
+      // 驱虎吞狼:倒戈敌人的冲撞小剧场与主动画并行,命中帧同拍。
+      if (result.effects._enemyVsEnemy) playEnemyVsEnemyAnim(result.effects._enemyVsEnemy, feedbackTiming.puppet);
+    }, feedbackTiming.actionStart);
     // 伤害与木偶命中帧同拍落地(和敌方回合同一契约, 见 puppets.js 顶部注释):
     // 飘字/屏震/泼墨在"戳中"那一帧爆发, 浮层只负责文字解说, 关闭时才判胜负。
     setTimeout(() => {
       // 高倍率句的"爆点"音效与命中同帧, 大招听起来就是不一样。
       if (result.totalMult >= 2) playSFX('combo_break');
       applyEffects(result.effects);
+      notifyResolvedPlayerAction({ effects: result.effects });
       renderCombat();
-    }, IMPACT_MS);
-    showScoreAnimation(result, () => {
+      renderChantedSentence(sentenceCards);
+      restoreChantedFeedback(sentenceCards);
+    }, feedbackTiming.impactAt);
+    setTimeout(() => {
       checkEnemies();
       renderCombat();
-    });
+      finishPlayerFeedback();
+      G._chantResolving = false;
+    }, feedbackTiming.completeAt);
   }
 }
 
@@ -1125,9 +1185,14 @@ export function showScoreAnimation(result, callback) {
 // END TURN / ENEMY TURN
 // ============================================================
 export function endPlayerTurn() {
+  if (G._chantResolving) return;
   G.sentence = [];
   while (G.hand.length > 0) G.discardPile.push(G.hand.pop());
-  setTimeout(enemyTurn, 300);
+  clearPuppetBubbles();
+  queueEnemyTurnFeedback();
+  // Reference endTurnNow starts its 200/480/680ms enemy timeline immediately;
+  // the first 200ms *is* the readable pause, so no extra legacy 300ms delay.
+  setTimeout(enemyTurn, 0);
 }
 
 export function enemyTurn() {
@@ -1175,7 +1240,18 @@ export function enemyTurn() {
     setTimeout(() => {
       if (enemy.hp <= 0) return;
       const intentForAnim = enemy.nextIntent ? { ...enemy.nextIntent } : null;
-      playEnemyPuppetAnim(intentForAnim, { stunned: enemy.stunned });
+      showEnemyTurnQuote(enemy, enemy.stunned ? { type: 'stunned' } : intentForAnim);
+      beginEnemyFeedback(intentForAnim);
+      playEnemyPuppetAnim(intentForAnim, {
+        stunned: enemy.stunned,
+        timeline: {
+          anticipationMs: REFERENCE_ENEMY_TIMING.TELEGRAPH,
+          dashMs: REFERENCE_ENEMY_TIMING.DASH,
+          impactMs: REFERENCE_ENEMY_TIMING.IMPACT,
+          recoverMs: REFERENCE_ENEMY_TIMING.RECOVER,
+          releaseMs: REFERENCE_ENEMY_TIMING.COMPLETE,
+        },
+      });
       if (enemy.stunned) {
         enemy.stunned = enemy._stunNext || false;
         enemy._stunNext = false;
@@ -1216,9 +1292,9 @@ export function enemyTurn() {
           enemy.act_fn(enemy);
           finishAct();
         }
-      }, IMPACT_MS);
+      }, REFERENCE_ENEMY_TIMING.IMPACT);
     }, delay);
-    delay += 700 + (multiHits ? (multiHits - 1) * 180 : 0);
+    delay += REFERENCE_ENEMY_TIMING.COMPLETE + (multiHits ? (multiHits - 1) * 180 : 0);
   });
   G._reflectDmg = 0;
   setTimeout(() => {

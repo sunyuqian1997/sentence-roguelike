@@ -11,6 +11,10 @@
 // fixed 浮层"用 toGameRect 换算(拖拽幽灵、飞卡、伤害数字、墨渍)。
 export const DESIGN_W = 1240;
 export const DESIGN_H = 640;
+// The authoritative design preview fits the 1240×640 desktop inside a
+// 12px presentation gutter on every side (1264×664 fitting box).
+const FIT_GUTTER = 12;
+const MAX_SCALE = 1.4;
 
 let scale = 1;
 let originX = 0, originY = 0;
@@ -33,7 +37,11 @@ export function initUiScale() {
   const g = document.getElementById('game');
   if (!g) return;
   const fit = () => {
-    scale = Math.min(window.innerWidth / DESIGN_W, window.innerHeight / DESIGN_H);
+    scale = Math.min(
+      window.innerWidth / (DESIGN_W + FIT_GUTTER * 2),
+      window.innerHeight / (DESIGN_H + FIT_GUTTER * 2),
+      MAX_SCALE,
+    );
     originX = Math.round((window.innerWidth - DESIGN_W * scale) / 2);
     originY = Math.round((window.innerHeight - DESIGN_H * scale) / 2);
     Object.assign(g.style, {

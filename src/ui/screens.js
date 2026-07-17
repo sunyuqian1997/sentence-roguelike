@@ -323,7 +323,7 @@ export function showPoetryScreen() {
     { title: 'Answer Sheet', flavor: 'There is only one question: “Who left school alive?”' },
     { title: 'Notice Board', flavor: 'Every missing-person notice shows your face. Choose one line to change.' },
   ] : [
-    { title: '黑板留字', flavor: '粉笔比你的手先动。别让它写完你的名字。' },
+    { title: '黑板留字', flavor: '粉笔比你的手先动了一点，像在提醒你梦见过这句话。' },
     { title: '答题卡', flavor: '整张卷子只有一道题：「谁活着离开了学校？」' },
     { title: '公告栏', flavor: '每一张寻人启事都是你的脸。选一句，把它改掉。' },
   ];
@@ -353,7 +353,7 @@ function renderPoetryUI() {
   const scoreEl = document.getElementById('poetry-score-display');
   if (poetrySelected.length >= 2) {
     const score = evaluatePoetryScore();
-    scoreEl.innerHTML = `异常强度: <b>${score.total.toFixed(1)}</b> — ${score.grade}`;
+    scoreEl.innerHTML = `句子回响: <b>${score.total.toFixed(1)}</b> — ${score.grade}`;
   } else {
     scoreEl.innerHTML = '至少需要两个词';
   }

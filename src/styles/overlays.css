@@ -231,9 +231,7 @@
 }
 
 /* --- Mute Button --- */
-/* ♪ 是 fixed 定位(右上角 38px 圆钮),顶栏最右的按钮组必须给它让出通道,
-   否则「词库」永远被它盖住(所有视口都中招的老 bug)。 */
-#combat-top .combat-info:last-child { margin-right: 48px; }
+/* ♪ 是 fixed 定位；水色 OS 主题会把它放到左上角并为品牌文字留位。 */
 
 #mute-btn {
   position: fixed; top: 10px; right: 10px; z-index: 9999;

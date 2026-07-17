@@ -9,31 +9,31 @@ let typeTimer = null;
 const SCRIPT = [
   {
     phase: 'awakening', speaker: '旁白',
-    text: '晚自习结束后，林夕拐进了一条不在平面图上的走廊。墙上的钟停在 18:47。',
+    text: '晚自习结束后，林夕拐进了一条不在平面图上的走廊。窗外仍是傍晚，墙上的钟一直停在 18:47。',
   },
   {
     phase: 'awakening', speaker: '林夕',
-    text: '这是哪里……三楼应该没有这么长。',
+    text: '这是哪里……三楼应该没有这么长。空气里还有刚下过雨的味道。',
   },
   {
     phase: 'awakening', speaker: '校内广播',
-    text: '请未登记的学生，立刻交出自己的名字。重复：请交出自己的名字。',
+    text: '请还没有找到教室的同学，沿着蓝色灯光慢慢向前。重复：不用着急。',
   },
   {
     phase: 'awakening', speaker: '林夕',
-    text: '广播室早就拆了。谁在说话？',
+    text: '这段广播……好像在哪里听过。可学校从来没有蓝色的指示灯。',
   },
   {
     phase: 'encounter', speaker: '旁白',
-    text: '黑板上的粉笔字一笔一画地爬了下来。它没有脸，却穿着和她一样的校服。',
+    text: '黑板上的粉笔字轻轻飘了下来，拼成一个穿校服的纸片同学，像是谁忘在这里的一段梦。',
   },
   {
     phase: 'encounter', speaker: '林夕',
-    text: '刚才墙上的字……变成了东西。',
+    text: '刚才墙上的字……变成了一个人影。它好像在等我把句子写完。',
   },
   {
     phase: 'self', speaker: '？？？', waitFor: 'self',
-    text: '先写下「我」。没有主语的句子，会把施术者也一起抹掉。',
+    text: '先写下「我」。在这条走廊里，完整的句子才知道该往哪里去。',
     prompt: '点击手牌区最左侧的「我」',
   },
   {
@@ -43,21 +43,21 @@ const SCRIPT = [
   },
   {
     phase: 'target', speaker: '？？？', waitFor: 'target',
-    text: '点中它的名字。被准确命名的东西，才会被句子捕获。',
-    prompt: '选择右侧的怪物词牌',
+    text: '再点中那个纸片同学。句子需要知道，你想把动作送向谁。',
+    prompt: '选择右侧的纸片同学词牌',
   },
   {
     phase: 'chant', speaker: '林夕', waitFor: 'chant',
     text: '「我斩……」句子完成了。只差把它读出来。',
-    prompt: '点击「发行文字」',
+    prompt: '点击「吟诵」',
   },
   {
     phase: 'aftermath', speaker: '旁白',
-    text: '那东西被自己的名字钉回墙里。走廊深处，成百上千张嘴同时合上。',
+    text: '纸片同学散成几枚发亮的字，顺着地面游向走廊深处。远处传来一声很轻的放学铃。',
   },
   {
     phase: 'aftermath', speaker: '林夕', final: true,
-    text: '文字不是被写出来的……是被放出来的。我要找到出口，也要弄清是谁把它们关在学校里。',
+    text: '文字不是消失了，只是去了句子指向的地方。也许这所学校正在做一个很长的梦。',
   },
 ];
 
@@ -71,7 +71,7 @@ function ensureLayer() {
     <div class="tutorial-dialogue os-window">
       <div class="os-window-title"><span>夜自习.log</span></div>
       <div class="tutorial-dialogue-body">
-        <img class="tutorial-portrait" src="/lqz.png" alt="林夕">
+        <img class="tutorial-portrait" src="/main_characters/girl/00.png" alt="林夕">
         <div class="tutorial-copy">
           <div class="tutorial-speaker"></div>
           <div class="tutorial-text"></div>
@@ -141,7 +141,7 @@ function showEntry(index) {
   layer.querySelector('.tutorial-prompt').textContent = entry.prompt || '';
   const next = layer.querySelector('.tutorial-next');
   next.hidden = Boolean(entry.waitFor);
-  next.textContent = entry.final ? '走向走廊深处 ▸' : '继续 ▸';
+  next.textContent = entry.final ? '沿着蓝光继续 ▸' : '继续 ▸';
   focusCurrentAction(entry.phase);
 }
 

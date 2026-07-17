@@ -1,0 +1,5 @@
+canjuguai.png and zhihui.png are byte-identical source references
+(SHA-1 5ac8faa37fc8d1d1a1aa0479235cd174b15a4f6d).
+The generated zhigui 4x4 combat atlas is therefore reused as the canju runtime
+atlas without regenerating identical art. Runtime files live in
+public/sprites/canju/ so the role remains independently addressable.

@@ -7,9 +7,13 @@ import { G, META } from './game/state.js';
 import { toggleMute } from './game/audio.js';
 import { initInkBackground } from './ui/inkShader.js';
 import { initCRT, toggleCRT } from './ui/crt.js';
+import { initPuppetSprites } from './ui/spriteAnimator.js';
+import { initCharacterBlink } from './ui/characterBlink.js';
+import { initDesignFeedback } from './ui/designFeedback.js';
+import { initBattleDialogue } from './ui/battleDialogue.js';
 import { getLang, setLang, applyStaticI18n } from './i18n.js';
 import { initCheats } from './cheats.js';
-import { startGame, startCombat, endPlayerTurn, chantSentence, addToSentence, removeSentenceWord, skipReward } from './game/combat.js';
+import { startGame, replayTutorial, startCombat, endPlayerTurn, chantSentence, addToSentence, removeSentenceWord, skipReward } from './game/combat.js';
 import { renderCombat } from './ui/render.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import {
@@ -24,6 +28,7 @@ import {
 
 // Expose functions to window for HTML inline onclick handlers
 window.startGame = startGame;
+window.replayTutorial = replayTutorial;
 window.showMetaScreen = showMetaScreen;
 window.closeMetaScreen = closeMetaScreen;
 window.viewDeck = viewDeck;
@@ -74,6 +79,10 @@ import('./game/chantLog.js').then(m => {
 (function init() {
   initInkBackground();
   initCRT();
+  initPuppetSprites();
+  initCharacterBlink();
+  initDesignFeedback();
+  initBattleDialogue();
   initCheats();
 
   applyStaticI18n();

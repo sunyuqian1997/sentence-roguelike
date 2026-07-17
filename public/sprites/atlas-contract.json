@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "grid": { "columns": 4, "rows": 4, "frameWidth": 128, "frameHeight": 128 },
+  "anchor": { "x": 0.5, "y": 0.9375, "name": "feet" },
+  "direction": {
+    "player": "right",
+    "coactor": "right",
+    "identity": "right",
+    "enemy": "left",
+    "runtimeMirrorWhenReusedAcrossSides": true
+  },
+  "clips": {
+    "idle":   { "start": 0, "frames": 4, "fps": 3,  "loop": true, "sequence": [1, 2, 1, 2] },
+    "ready":  { "start": 4, "frames": 1, "fps": 0,  "loop": true, "hold": true },
+    "attack": { "start": 4, "frames": 4, "fps": 12, "loop": false, "next": "idle" },
+    "hurt":   { "start": 8, "frames": 4, "fps": 12, "loop": false, "next": "idle" },
+    "defend": { "start": 12, "frames": 1, "fps": 0, "loop": true, "hold": true },
+    "heal":   { "start": 14, "frames": 2, "fps": 2, "loop": true }
+  },
+  "rendering": { "imageRendering": "pixelated", "filters": false, "masks": false, "fade": false }
+}

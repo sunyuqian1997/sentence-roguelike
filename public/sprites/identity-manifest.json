@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "kind": "identity_combat_atlases",
+  "grid": { "columns": 4, "rows": 4, "frameWidth": 128, "frameHeight": 128 },
+  "anchor": { "name": "feet", "frameY": 118 },
+  "direction": "right",
+  "rendering": { "transparent": true, "filters": false, "fade": false },
+  "characters": [
+    { "key": "cat", "displayName": "猫", "concept": "/sprites/concepts/cat/concept.png", "atlas": "/sprites/cat/combat.png", "metadata": "/sprites/cat/pipeline-meta.json", "status": "runtime" },
+    { "key": "miku", "displayName": "初音未来", "concept": "/sprites/concepts/miku/concept.png", "atlas": "/sprites/miku/combat.png", "metadata": "/sprites/miku/pipeline-meta.json", "status": "runtime" },
+    { "key": "shadow", "displayName": "影子", "concept": "/sprites/concepts/shadow/concept.png", "atlas": "/sprites/shadow/combat.png", "metadata": "/sprites/shadow/pipeline-meta.json", "status": "runtime" },
+    { "key": "emperor", "displayName": "皇帝", "concept": "/sprites/concepts/emperor/concept.png", "atlas": "/sprites/emperor/combat.png", "metadata": "/sprites/emperor/pipeline-meta.json", "status": "runtime" },
+    { "key": "son", "displayName": "儿子", "concept": "/sprites/concepts/son/concept.png", "atlas": "/sprites/son/combat.png", "metadata": "/sprites/son/pipeline-meta.json", "status": "runtime" }
+  ]
+}

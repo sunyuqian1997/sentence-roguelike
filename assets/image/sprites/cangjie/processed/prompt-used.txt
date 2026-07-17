@@ -1,0 +1,4 @@
+4x4 pixel-art combat atlas from the supplied administration-projection boss
+reference. Rows: idle, attack, hurt/recovery, defend+buff. 3/4 view facing left;
+fixed feet baseline; third-eye bag head, written black robes, book and close
+orbiting slips; flat #FF00FF source background; no UI, borders or gradients.

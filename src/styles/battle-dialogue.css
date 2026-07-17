@@ -1,0 +1,105 @@
+/* ============================================================
+   Portrait-side dialogue — a different semantic layer from puppet speech.
+   It occupies the two 198px gutters beside the 836px theatre, so it never
+   covers the sentence editor, hand, stage, or bottom-right action buttons.
+   ============================================================ */
+#battle-aside-dialogue {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.portrait-dialogue {
+  position: absolute;
+  top: 54px;
+  width: 184px;
+  min-height: 74px;
+  padding: 25px 10px 9px;
+  border: 2px solid var(--os-ink);
+  background:
+    radial-gradient(circle at 1px 1px, rgba(20, 42, 38, .09) 1px, transparent 1.3px) 0 0 / 4px 4px,
+    color-mix(in srgb, var(--os-paper) 93%, var(--os-water));
+  box-shadow: 0 0 0 2px var(--os-gold), 3px 3px 0 rgba(20, 42, 38, .34);
+  box-sizing: border-box;
+  color: var(--os-ink);
+  opacity: 0;
+  transform: translateY(7px);
+  transition: opacity 160ms ease-out, transform 220ms cubic-bezier(.22, 1, .36, 1);
+}
+
+.portrait-dialogue-player { left: 10px; }
+.portrait-dialogue-enemy { right: 10px; }
+
+.portrait-dialogue::before {
+  content: '';
+  position: absolute;
+  top: auto;
+  bottom: -12px;
+  width: 18px;
+  height: 10px;
+  border-bottom: 2px solid var(--os-ink);
+  opacity: .72;
+}
+.portrait-dialogue-player::before {
+  left: 28px;
+  border-left: 2px solid var(--os-ink);
+}
+.portrait-dialogue-enemy::before {
+  right: 28px;
+  border-right: 2px solid var(--os-ink);
+}
+
+.portrait-dialogue.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.portrait-dialogue-title {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 19px;
+  padding: 2px 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  border-bottom: 2px solid var(--os-ink);
+  background: var(--os-teal-light);
+  font: 9px/1 var(--font-pixel);
+  letter-spacing: .05em;
+}
+.portrait-dialogue-enemy .portrait-dialogue-title {
+  justify-content: flex-end;
+  background: color-mix(in srgb, var(--os-orange) 30%, var(--os-paper));
+}
+.portrait-dialogue-title b {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+}
+.portrait-dialogue-kind {
+  flex: 0 0 auto;
+  padding: 1px 4px 2px;
+  color: var(--os-paper);
+  background: var(--os-ink);
+}
+
+.portrait-dialogue p {
+  margin: 0;
+  font: 500 12px/1.62 var(--font-serif);
+  letter-spacing: .035em;
+  text-align: left;
+  text-wrap: pretty;
+}
+.portrait-dialogue-player p { color: var(--os-night); }
+.portrait-dialogue-enemy p { color: var(--os-orange-dark); }
+
+/* AVG owns dialogue during onboarding; the side channels return afterwards. */
+#combat-screen.tutorial-mode .portrait-dialogue { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .portrait-dialogue { transition: opacity 80ms linear; transform: none; }
+}

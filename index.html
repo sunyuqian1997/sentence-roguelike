@@ -27,7 +27,7 @@
   <div id="title-screen" class="screen active">
     <div class="desktop-icons" aria-hidden="true">
       <div class="desktop-icon"><b>词</b><span>词库.dict</span></div>
-      <div class="desktop-icon"><b>夜</b><span>失踪.log</span></div>
+      <div class="desktop-icon"><b>夜</b><span>放学后.log</span></div>
       <div class="desktop-icon"><b>校</b><span>校舍.map</span></div>
     </div>
     <section class="title-logo-window os-window">
@@ -38,17 +38,18 @@
     </section>
     <section class="title-menu-window os-window">
       <div class="os-window-title"><span>menu.sys</span><i>×</i></div>
-      <button class="btn" onclick="startGame()" data-i18n="startBtn">进入旧校舍</button>
+      <button class="btn" onclick="startGame()" data-i18n="startBtn">走进放学后的校舍</button>
+      <button class="btn btn-small btn-secondary" onclick="replayTutorial()">重新体验教学</button>
       <button class="btn btn-small btn-secondary" onclick="showMetaScreen()" data-i18n="metaBtn">学生档案</button>
       <button class="btn btn-small btn-secondary" onclick="toggleLang()" id="lang-btn">EN / 中文</button>
       <div class="ink-display-title" id="title-ink-display"></div>
     </section>
-    <div class="credit" data-i18n="credit">林夕 · 高二（3）班 · 失联中</div>
+    <div class="credit" data-i18n="credit">林夕 · 高二（3）班 · 还没找到出口</div>
   </div>
 
   <!-- MAP -->
   <div id="map-screen" class="screen">
-    <div class="os-window-title map-window-title"><span>旧校舍.map — 不存在的三楼</span><i>×</i></div>
+    <div class="os-window-title map-window-title"><span>旧校舍.map — 多出来的三楼</span><i>×</i></div>
     <div id="map-header">
       <div class="player-stats">
         <span style="color:#e07070">♥ <span id="map-hp">50/50</span></span>
@@ -77,7 +78,7 @@
     </div>
 
     <div id="battle-sprite-player" class="battle-sprite battle-sprite-player" aria-hidden="true">
-      <img src="/lqz.png" alt="">
+      <img src="/main_characters/girl/00.png" alt="">
     </div>
     <div id="battle-sprite-enemy" class="battle-sprite battle-sprite-enemy" aria-hidden="true">
       <img id="battle-enemy-sprite-img" src="/enemies/moyao.png" alt="">
@@ -88,7 +89,7 @@
       <div class="os-window-title combat-stage-title"><span>词灵戏台.pict</span><i>×</i></div>
       <div id="stage-player" class="stage-side">
         <div class="standee player-standee" id="player-char-card" title="点击选「我」为目标">
-          <img id="player-portrait-img" src="/lqz.png" alt="林夕" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <img id="player-portrait-img" src="/main_characters/girl/00.png" alt="林夕" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
           <div class="portrait-placeholder" data-i18n="poet">林夕</div>
         </div>
         <div class="standee-name" id="player-portrait-name" data-i18n="poet">林夕</div>
@@ -103,7 +104,7 @@
         <!-- 本场诗册：贴左侧竖条，左对齐 -->
         <div id="round-journal">
           <div class="round-journal-header">
-            <span class="round-journal-title" data-i18n="roundJournal">异常语句</span>
+            <span class="round-journal-title" data-i18n="roundJournal">梦中语句</span>
             <span id="rhyme-streak-tag"></span>
           </div>
           <div id="round-journal-lines">
@@ -117,62 +118,16 @@
             <div class="theatre-wall theatre-wall-left"></div>
             <div class="theatre-wall theatre-wall-right"></div>
             <div class="theatre-valance"></div>
-            <div id="puppet-player" class="puppet" data-pose="idle">
-              <svg viewBox="0 0 80 100" class="puppet-svg" xmlns="http://www.w3.org/2000/svg">
-                <ellipse class="ground" cx="40" cy="97" rx="15" ry="2.5"/>
-                <g class="hair">
-                  <circle cx="40" cy="9" r="4.5"/>
-                  <line x1="31" y1="7.5" x2="49" y2="10.5"/>
-                </g>
-                <circle class="head" cx="40" cy="22" r="11"/>
-                <g class="face">
-                  <circle cx="36" cy="21.5" r="1.1"/>
-                  <circle cx="44" cy="21.5" r="1.1"/>
-                </g>
-                <path class="body" d="M40,33 C34,38 31,48 28,62 C26,71 25,81 24,88 L56,88 C55,81 54,71 52,62 C49,48 46,38 40,33 Z"/>
-                <path class="sash" d="M30,53 Q40,57 50,53"/>
-                <g class="arm arm-l">
-                  <path d="M38,40 Q28,46 22,56"/>
-                </g>
-                <g class="arm arm-r">
-                  <path d="M42,40 Q52,46 58,56"/>
-                  <g class="shield">
-                    <rect x="48" y="44" width="20" height="25" rx="3"/>
-                    <line x1="52" y1="50" x2="64" y2="50"/>
-                    <line x1="52" y1="56" x2="64" y2="56"/>
-                    <line x1="52" y1="62" x2="60" y2="62"/>
-                  </g>
-                  <g class="weapon">
-                    <line x1="58" y1="56" x2="70" y2="30"/>
-                    <path class="brush-tip" d="M70,30 L75,19 L72.5,31 Z"/>
-                  </g>
-                </g>
-                <line class="leg leg-l" x1="33" y1="88" x2="31" y2="96"/>
-                <line class="leg leg-r" x1="47" y1="88" x2="49" y2="96"/>
-                <text class="puppet-emoji" x="40" y="6" text-anchor="middle"></text>
-              </svg>
+            <div id="puppet-player" class="puppet" data-pose="idle" data-sprite-key="lqz" data-sprite-side="ally">
+              <div class="sprite-frame" role="img" aria-label="林夕"></div>
+              <span class="puppet-emoji" aria-hidden="true"></span>
               <div class="puppet-label" data-i18n="poet">林夕</div>
             </div>
             <div id="puppet-vs">⋯</div>
-            <div id="puppet-enemy" class="puppet" data-pose="idle">
-              <svg viewBox="0 0 80 100" class="puppet-svg" xmlns="http://www.w3.org/2000/svg">
-                <ellipse class="ground" cx="40" cy="97" rx="15" ry="2.5"/>
-                <circle class="head" cx="40" cy="24" r="12"/>
-                <g class="face">
-                  <circle cx="35" cy="23" r="1.3"/>
-                  <circle cx="45" cy="23" r="1.3"/>
-                </g>
-                <path class="body" d="M40,36 C31,42 28,52 28,62 C28,71 27,80 26,87 Q31,80 35,87 Q40,93 45,87 Q49,80 54,87 C53,79 52,70 52,62 C52,52 49,42 40,36 Z"/>
-                <path class="talisman" d="M36,52 L44,52 L44,66 L36,66 Z"/>
-                <g class="arm arm-l">
-                  <path d="M32,44 Q24,48 20,56"/>
-                </g>
-                <g class="arm arm-r">
-                  <path d="M48,44 Q56,48 60,56"/>
-                </g>
-                <text class="puppet-emoji" x="40" y="8" text-anchor="middle"></text>
-              </svg>
-              <div class="puppet-label" data-i18n="enemy">异常</div>
+            <div id="puppet-enemy" class="puppet" data-pose="idle" data-sprite-key="moyao" data-sprite-side="enemy">
+              <div class="sprite-frame" role="img" aria-label="回声"></div>
+              <span class="puppet-emoji" aria-hidden="true"></span>
+              <div class="puppet-label" data-i18n="enemy">回声</div>
             </div>
         </div>
       </div>
@@ -194,7 +149,7 @@
     </div>
 
     <div id="hand-area">
-      <div class="os-window-title hand-window-title"><span>手牌 · 待发行文字</span><i>×</i></div>
+      <div class="os-window-title hand-window-title"><span>手牌 · 待吟诵文字</span><i>×</i></div>
       <div id="hand-cards-wrapper">
         <!-- 我 目标卡在左端，敌人目标卡在最右端，手牌居中 -->
         <div id="target-cards"></div>
@@ -207,8 +162,8 @@
           <span style="font-size:0.75rem" data-i18n="energy">文力</span>
         </div>
         <div style="display:flex;gap:10px;">
-          <button class="btn btn-vermillion" id="chant-btn" onclick="chantSentence()" style="font-size:0.85rem;padding:0.5em 1.8em;" data-i18n="chant">发行文字</button>
-          <button class="btn btn-small btn-secondary" id="end-turn-btn" onclick="endPlayerTurn()" style="font-size:0.75rem;" data-i18n="endTurn">等待铃声</button>
+          <button class="btn btn-vermillion" id="chant-btn" onclick="chantSentence()" style="font-size:0.85rem;padding:0.5em 1.8em;" data-i18n="chant">吟诵</button>
+          <button class="btn btn-small btn-secondary" id="end-turn-btn" onclick="endPlayerTurn()" style="font-size:0.75rem;" data-i18n="endTurn">结束回合</button>
         </div>
       </div>
     </div>
@@ -228,7 +183,7 @@
       </div>
       <!-- 右栏：战利品 + 操作（金币 / 选牌 / 卡包 / 跳过） -->
       <div class="reward-col reward-col-loot">
-        <h2 data-i18n="victory">异常已压制</h2>
+        <h2 data-i18n="victory">回声已经安静</h2>
         <div class="reward-gold" id="reward-gold-text"></div>
         <h3 class="reward-section-title" data-i18n="selectCard">回收一枚文字：</h3>
         <div class="reward-cards" id="reward-cards"></div>
@@ -335,11 +290,11 @@
   <div id="gameover-screen" class="screen" style="overflow-y:auto;">
     <div class="end-content">
     <h2>档案已归零</h2>
-      <p style="font-style:italic;opacity:0.6;margin-bottom:14px;font-size:0.9rem;">广播念完了你的名字。走廊里又多了一件校服。</p>
+      <p style="font-style:italic;opacity:0.6;margin-bottom:14px;font-size:0.9rem;">放学铃从很远的地方响起。你睁开眼，又回到了那段傍晚。</p>
       <div class="end-stats" id="gameover-stats"></div>
       <div id="gameover-ink-breakdown"></div>
       <div class="death-buttons">
-        <button class="btn" onclick="startGame()">从18:47重来</button>
+        <button class="btn" onclick="startGame()">从18:47再走一次</button>
         <button class="btn btn-small btn-secondary" onclick="showMetaScreen()">学生档案</button>
       </div>
     </div>
@@ -349,7 +304,7 @@
   <div id="victory-screen" class="screen" style="overflow-y:auto;">
     <div class="end-content">
       <h2>天亮了</h2>
-      <p style="font-style:italic;opacity:0.6;margin-bottom:14px;font-size:0.9rem;">旧校舍从平面图上消失了。广播仍在叫你的名字。</p>
+      <p style="font-style:italic;opacity:0.6;margin-bottom:14px;font-size:0.9rem;">旧校舍像退潮一样淡出了平面图。蓝色灯光却还留在记忆里。</p>
       <div class="end-stats" id="victory-stats"></div>
       <div id="victory-ink-breakdown"></div>
       <div class="death-buttons">

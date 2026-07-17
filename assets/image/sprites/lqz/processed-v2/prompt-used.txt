@@ -1,0 +1,4 @@
+Targeted revision of the existing Lin Xi 4x4 combat atlas. Row 1 and row 3
+preserved. Row 2 cell 1 changed to a low aggressive ready crouch. Row 4 cells
+1-2 changed to planted forearm protection; cells 3-4 changed to eyes-closed
+self-embrace healing. Same identity, scale, feet baseline and #FF00FF cleanup.

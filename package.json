@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:judge": "node scripts/test-sentence-judge.mjs"
   },
   "devDependencies": {
     "vite": "^6.2.0",
