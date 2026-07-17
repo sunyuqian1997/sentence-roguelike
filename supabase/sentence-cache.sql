@@ -3,6 +3,7 @@
 
 create table if not exists public.sentence_judgments (
   fingerprint text primary key check (fingerprint ~ '^[0-9a-f]{64}$'),
+  sentence_text text,
   judge_version text not null,
   model text not null,
   score smallint not null check (score between 0 and 100),
@@ -13,12 +14,20 @@ create table if not exists public.sentence_judgments (
   last_seen_at timestamptz not null default now()
 );
 
+-- Existing installations created before readable sentence storage receive the
+-- column when this file is run again. Old rows remain null; new rows are filled.
+alter table public.sentence_judgments
+  add column if not exists sentence_text text;
+
 alter table public.sentence_judgments enable row level security;
 revoke all on table public.sentence_judgments from public, anon, authenticated;
 grant select, insert, update on table public.sentence_judgments to service_role;
 
+drop function if exists public.cache_sentence_judgment(text, text, text, smallint, text, jsonb);
+
 create or replace function public.cache_sentence_judgment(
   p_fingerprint text,
+  p_sentence_text text,
   p_judge_version text,
   p_model text,
   p_score smallint,
@@ -34,9 +43,9 @@ declare
   was_inserted boolean := false;
 begin
   insert into public.sentence_judgments (
-    fingerprint, judge_version, model, score, feedback, tags
+    fingerprint, sentence_text, judge_version, model, score, feedback, tags
   ) values (
-    p_fingerprint, p_judge_version, p_model, p_score, p_feedback, p_tags
+    p_fingerprint, left(p_sentence_text, 80), p_judge_version, p_model, p_score, p_feedback, p_tags
   )
   on conflict (fingerprint) do nothing
   returning true into was_inserted;
@@ -52,7 +61,7 @@ begin
 end;
 $$;
 
-revoke all on function public.cache_sentence_judgment(text, text, text, smallint, text, jsonb)
+revoke all on function public.cache_sentence_judgment(text, text, text, text, smallint, text, jsonb)
   from public, anon, authenticated;
-grant execute on function public.cache_sentence_judgment(text, text, text, smallint, text, jsonb)
+grant execute on function public.cache_sentence_judgment(text, text, text, text, smallint, text, jsonb)
   to service_role;

@@ -135,7 +135,7 @@ export default async function handler(request, response) {
 
   try {
     const result = await callDeepSeek(sentence, fallback);
-    const inserted = await persistJudgment({ fingerprint, model, result });
+    const inserted = await persistJudgment({ fingerprint, sentence, model, result });
     const noveltyBonus = noveltyBonusFor(result.score, inserted);
     const served = {
       ...result,

@@ -77,7 +77,7 @@ export async function readPersistentJudgment(fingerprint) {
   }
 }
 
-export async function persistJudgment({ fingerprint, model, result }) {
+export async function persistJudgment({ fingerprint, sentence, model, result }) {
   const config = cacheConfig();
   if (!config) return false;
   try {
@@ -86,6 +86,7 @@ export async function persistJudgment({ fingerprint, model, result }) {
       headers: headers(config.key, { Accept: 'application/json' }),
       body: JSON.stringify({
         p_fingerprint: fingerprint,
+        p_sentence_text: sentence,
         p_judge_version: JUDGE_VERSION,
         p_model: model,
         p_score: result.score,
