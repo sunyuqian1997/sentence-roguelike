@@ -3,10 +3,12 @@ import '../styles/system-settings.css';
 import {
   initAmbientMusicOnFirstInteraction,
   initAudioSettings,
+  initInteractionSFX,
 } from '../game/audio.js';
 
 initAudioSettings();
 initAmbientMusicOnFirstInteraction();
+initInteractionSFX();
 
 // The game has two authoritative top bars: the desktop menubar and the battle
 // status bar. Keep one settings control, but mount it inside whichever bar is

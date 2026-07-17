@@ -562,15 +562,37 @@ export function createCardElement(card, handIndex, opts={}) {
   return div;
 }
 
-export function showTooltip(e, card) {
-  const tt = document.getElementById('tooltip');
+function appendEmphasizedNumbers(element, text) {
+  element.replaceChildren();
+  const parts = String(text || '').split(/([+\-−]?\d+(?:\.\d+)?(?:%|点|层|回合|张|次)?)/g);
+  parts.forEach((part) => {
+    if (!part) return;
+    if (/^[+\-−]?\d/.test(part)) {
+      const value = document.createElement('strong');
+      value.className = 'tt-number';
+      value.textContent = part;
+      element.appendChild(value);
+    } else {
+      element.appendChild(document.createTextNode(part));
+    }
+  });
+}
+
+function renderTooltipContent(tt, card) {
   const posNames = t('posNames');
   const rarityNames = t('rarityNames');
-  tt.querySelector('.tt-name').textContent = getCardWord(card) + (card.upgraded ? '+' : '');
-  tt.querySelector('.tt-type').textContent = `${posNames[card.pos]} · ${rarityNames[card.rarity] || card.rarity} · ${t('cost')}${getEffectiveCost(card)}`;
-  let d = getCardDesc(card);
-  tt.querySelector('.tt-desc').textContent = d;
-  tt.querySelector('.tt-flavor').textContent = card.flavor ? `"${card.flavor}"` : '';
+  const type = tt.querySelector('.tt-type');
+  type.replaceChildren(document.createTextNode(`${posNames[card.pos]} · ${rarityNames[card.rarity] || card.rarity} · `));
+  const cost = document.createElement('strong');
+  cost.className = 'tt-cost';
+  cost.textContent = `${t('cost')}${getEffectiveCost(card)}`;
+  type.appendChild(cost);
+  appendEmphasizedNumbers(tt.querySelector('.tt-desc'), getCardDesc(card));
+}
+
+export function showTooltip(e, card) {
+  const tt = document.getElementById('tooltip');
+  renderTooltipContent(tt, card);
   tt.style.display = 'block';
   tt.style.transform = '';
   // Measure after content is set so height is accurate.
@@ -592,13 +614,7 @@ export function showTooltip(e, card) {
 
 function showTooltipMobile(card) {
   const tt = document.getElementById('tooltip');
-  const posNames = t('posNames');
-  const rarityNames = t('rarityNames');
-  tt.querySelector('.tt-name').textContent = getCardWord(card) + (card.upgraded ? '+' : '');
-  tt.querySelector('.tt-type').textContent = `${posNames[card.pos]} · ${rarityNames[card.rarity] || card.rarity} · ${t('cost')}${getEffectiveCost(card)}`;
-  let d = getCardDesc(card);
-  tt.querySelector('.tt-desc').textContent = d;
-  tt.querySelector('.tt-flavor').textContent = card.flavor ? `"${card.flavor}"` : '';
+  renderTooltipContent(tt, card);
   tt.style.display = 'block';
   tt.style.left = '50%';
   tt.style.top = '8px';

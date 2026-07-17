@@ -125,9 +125,9 @@ export function syncEnemyPuppets() {
 
   // Values are stable feet-anchor centres, not element left edges.
   const positions = alive.length === 1
-    ? [475]
-    : alive.length === 2 ? [436, 554]
-      : alive.map((_, i) => 385 + i * 96);
+    ? [565]
+    : alive.length === 2 ? [510, 650]
+      : alive.map((_, i) => 455 + i * 110);
 
   return alive.map(({ enemy, index }, order) => {
     let el = order === 0 ? primary : getEnemyPuppet(index);

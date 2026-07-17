@@ -10,3 +10,4 @@
 @import './design-stage.css'; /* design-ref 3D theatre + foreground Sprite composition */
 @import './design-feedback.css'; /* design-ref timing, hit-stop, sentence editor */
 @import './battle-dialogue.css'; /* portrait-side hints + enemy turn lines */
+@import './interaction-polish.css'; /* final audio/tooltip/theatre interaction pass */

@@ -1,0 +1,84 @@
+/* Final interaction pass. Kept last in the cascade so the fixed-design canvas
+   remains stable while these focused overrides win over the legacy skins. */
+
+/* Card hover only explains gameplay information the card itself cannot show
+   clearly. The repeated word heading and flavor quote are intentionally gone. */
+#tooltip {
+  min-width: 150px;
+  max-width: 220px !important;
+  padding: 9px 12px 10px !important;
+  border: 2px solid var(--os-ink) !important;
+  background: var(--os-paper) !important;
+  box-shadow: 4px 4px 0 rgba(20, 42, 38, .38) !important;
+}
+#tooltip .tt-type {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin: 0 !important;
+  color: rgba(20, 42, 38, .62) !important;
+  font-size: 10px !important;
+  line-height: 16px;
+  white-space: nowrap;
+}
+#tooltip .tt-cost {
+  display: inline-block;
+  padding: 0 4px;
+  border: 1px solid var(--os-ink);
+  background: var(--os-water);
+  color: var(--os-night);
+  font: 700 10px/14px var(--font-pixel);
+}
+#tooltip .tt-desc {
+  margin-top: 7px !important;
+  color: var(--os-night) !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
+#tooltip .tt-number {
+  display: inline-block;
+  margin: 0 2px;
+  color: var(--os-orange-dark);
+  font: 700 18px/1 var(--font-pixel);
+  letter-spacing: 0;
+  transform: translateY(1px);
+}
+
+/* The theatre now occupies the whole client area below its title bar. The old
+   700px insert left paper-colored gutters inside the 836px window. */
+#stage-center {
+  inset: 30px 0 0 !important;
+  background: #173833 !important;
+}
+#combat-stage::after { display: none !important; }
+#puppet-stage {
+  left: 0 !important;
+  top: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+}
+.theatre-backdrop,
+.theatre-wash {
+  left: -8px !important;
+  right: -8px !important;
+  bottom: 0 !important;
+}
+.theatre-floor {
+  left: -8px !important;
+  right: -8px !important;
+  bottom: -2px !important;
+  height: 176px !important;
+  border-color: #102925 !important;
+  background:
+    repeating-linear-gradient(0deg, rgba(223, 239, 229, .055) 0 2px, transparent 2px 10px),
+    radial-gradient(ellipse 72% 58% at 50% 28%, rgba(87, 182, 172, .24), transparent 74%),
+    linear-gradient(180deg, #315d55 0%, #1c423c 50%, #102925 100%) !important;
+}
+.theatre-wall { bottom: 0 !important; }
+#puppet-player { left: 260px !important; bottom: 24px !important; }
+#puppet-enemy { left: 565px !important; bottom: 30px !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  #tooltip .tt-number { transform: none; }
+}

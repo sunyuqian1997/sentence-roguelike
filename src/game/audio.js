@@ -3,6 +3,11 @@ import { t } from '../i18n.js';
 
 let audioCtx = null, masterGain = null, musicGain = null, sfxGain = null, musicInterval = null;
 
+// Synthesized effects were mixed for an earlier, much quieter UI. Keep BGM at
+// its existing level and lift only the SFX bus so impacts and interface clicks
+// read clearly against the music. WebAudio GainNode values may safely exceed 1.
+const SFX_OUTPUT_GAIN = 2;
+
 const AUDIO_SETTINGS_KEY = 'sentence_rogue_audio_settings';
 const DEFAULT_AUDIO_SETTINGS = Object.freeze({
   master: 0.8,
@@ -46,7 +51,7 @@ function applyAudioLevels() {
   G.muted = audioSettings.muted;
   if (masterGain) masterGain.gain.value = audioSettings.muted ? 0 : 0.12 * audioSettings.master;
   if (musicGain) musicGain.gain.value = audioSettings.bgm;
-  if (sfxGain) sfxGain.gain.value = audioSettings.sfx;
+  if (sfxGain) sfxGain.gain.value = audioSettings.sfx * SFX_OUTPUT_GAIN;
   if (bgmEl) bgmEl.volume = bgmVolume(BGM_VOLUME);
   activeMedia.forEach((el) => { el.volume = bgmVolume(el._baseVolume || 0.5); });
   syncAudioSettingsUI();
@@ -240,6 +245,37 @@ export function initAmbientMusicOnFirstInteraction() {
   document.addEventListener('keydown', start, true);
 }
 
+const CLICKABLE_SFX_SELECTOR = [
+  'button',
+  '[role="button"]',
+  '[onclick]',
+  '.rest-option',
+  '.event-choice',
+  '.map-node',
+  '.pack-item',
+].join(',');
+
+let interactionSfxBound = false;
+
+// One delegated capture listener covers static and dynamically-rendered
+// controls. AVG overlays are deliberately included as a full-surface advance
+// target, because their interaction is "click anywhere", not a real button.
+export function initInteractionSFX() {
+  if (interactionSfxBound) return;
+  interactionSfxBound = true;
+  document.addEventListener('click', (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    if (!target) return;
+    const storyOverlay = target.closest('#story-overlay.active');
+    const control = target.closest(CLICKABLE_SFX_SELECTOR);
+    if (!storyOverlay && !control) return;
+    if (control?.matches('[disabled], [data-sfx-silent="true"]')) return;
+    initAudio();
+    const isDialogue = Boolean(storyOverlay || target.closest('#tutorial-layer'));
+    playSFX(isDialogue ? 'dialogue_advance' : 'ui_click');
+  }, true);
+}
+
 function playNote(freq, dur, type, t, gain, bus = 'sfx') {
   if (!audioCtx) return;
   const o = audioCtx.createOscillator();
@@ -360,6 +396,14 @@ export function playSFX(type) {
     case 'card':
       playNote(500, 0.03, 'sine', t, 0.06);
       playNote(700, 0.03, 'sine', t + 0.02, 0.04);
+      break;
+    case 'ui_click':
+      playNote(360, 0.035, 'square', t, 0.075);
+      playNote(540, 0.045, 'triangle', t + 0.018, 0.065);
+      break;
+    case 'dialogue_advance':
+      playNote(440, 0.055, 'triangle', t, 0.08);
+      playNote(660, 0.07, 'sine', t + 0.025, 0.065);
       break;
     case 'card_stamp':
       playNote(200, 0.04, 'square', t, 0.1);
