@@ -16,7 +16,8 @@ import { playSFX } from '../game/audio.js';
 import { uiScale, toGameRect } from './uiScale.js';
 import { SCENERY } from '../game/scenes.js';
 import { isEn } from '../i18n.js';
-import { ensureSpriteAnimator, initPuppetSprites, makeSpriteMarkup } from './spriteAnimator.js';
+import { actorIdentity } from '../game/combatFacts.js';
+import { ensureSpriteAnimator, initPuppetSprites, makeSpriteMarkup, spriteKeyForEnemy } from './spriteAnimator.js';
 
 export const IMPACT_MS = 420;
 
@@ -49,10 +50,74 @@ export const PUN_TO_POSE = {
   daylight: { pose: 'charmed', emoji: '☀️' },
 };
 
-const els = () => ({
+export function getEnemyPuppet(index) {
+  if (index == null || index < 0) return document.getElementById('puppet-enemy');
+  return document.querySelector(`.puppet-enemy-unit[data-enemy-index="${index}"]`);
+}
+
+const els = (enemyIndex = null) => ({
   player: document.getElementById('puppet-player'),
-  enemy: document.getElementById('puppet-enemy'),
+  enemy: getEnemyPuppet(enemyIndex) || document.getElementById('puppet-enemy'),
 });
+
+export function syncEnemyPuppets() {
+  const stage = document.getElementById('puppet-stage');
+  const primary = document.getElementById('puppet-enemy');
+  if (!stage || !primary) return [];
+  const alive = (G.enemies || []).map((enemy, index) => ({ enemy, index }))
+    .filter(({ enemy }) => enemy && enemy.hp > 0);
+  const wanted = new Set(alive.map(({ index }) => String(index)));
+  stage.querySelectorAll('.puppet-enemy-unit[data-enemy-index]').forEach((el) => {
+    if (el !== primary && !wanted.has(el.dataset.enemyIndex)) el.remove();
+  });
+  if (!alive.length) {
+    primary.style.setProperty('display', 'none', 'important');
+    return [];
+  }
+  const primaryIndex = String(alive[0].index);
+  stage.querySelectorAll(`.puppet-enemy-unit[data-enemy-index="${primaryIndex}"]`).forEach((el) => {
+    if (el !== primary) el.remove();
+  });
+
+  const positions = alive.length === 1
+    ? [420]
+    : alive.length === 2 ? [382, 500]
+      : alive.map((_, i) => 330 + i * 96);
+
+  return alive.map(({ enemy, index }, order) => {
+    let el = order === 0 ? primary : getEnemyPuppet(index);
+    if (!el || el === primary) {
+      if (order > 0) {
+        el = document.createElement('div');
+        el.className = 'puppet puppet-enemy-unit';
+        el.dataset.pose = 'idle';
+        el.dataset.spriteSide = 'enemy';
+        el.innerHTML = makeSpriteMarkup(spriteKeyForEnemy(enemy), enemy.name || '敌人', enemy.emoji || '');
+        stage.appendChild(el);
+      }
+    }
+    el.classList.add('puppet-enemy-unit');
+    el.dataset.enemyIndex = String(index);
+    el.dataset.spriteSide = 'enemy';
+    el.dataset.spriteKey = spriteKeyForEnemy(enemy);
+    el.setAttribute('aria-label', enemy.name || '敌人');
+    el.style.setProperty('display', 'flex', 'important');
+    el.style.setProperty('position', 'absolute', 'important');
+    el.style.setProperty('left', `${positions[order]}px`, 'important');
+    el.style.setProperty('right', 'auto', 'important');
+    el.style.setProperty('bottom', order === 0 ? '26px' : '22px', 'important');
+    el.style.setProperty('width', '109px', 'important');
+    el.style.setProperty('height', '136px', 'important');
+    el.style.translate = '0 0 -88px';
+    el.style.zIndex = String(5 - order);
+    const frame = el.querySelector('.sprite-frame');
+    if (frame) frame.setAttribute('aria-label', enemy.name || '敌人');
+    const label = el.querySelector('.puppet-label');
+    if (label) label.style.display = 'none';
+    ensureSpriteAnimator(el);
+    return el;
+  });
+}
 
 function setEmoji(el, emoji) {
   const t = el && el.querySelector('.puppet-emoji');
@@ -507,7 +572,9 @@ export function syncScenery(props) {
 // Uses the SAME meaning-resolution as the evaluator so the preview can never
 // disagree with what chanting will do.
 export function updatePuppets() {
-  const { player, enemy } = els();
+  const enemyActors = syncEnemyPuppets();
+  const targetIndex = (G.sentence || []).find(c => c?._isEnemyTarget)?._enemyIdx;
+  const { player, enemy } = els(targetIndex);
   if (!player || !enemy) return;
   initPuppetSprites(document.getElementById('puppet-stage') || document);
 
@@ -518,7 +585,8 @@ export function updatePuppets() {
   const hasEnemyTarget = sentence.some(c => c && c._isEnemyTarget);
   const verbs = sentence.filter(c => c && c.pos === 'verb');
   const lastVerb = verbs[verbs.length - 1];
-  const stageEnemyIntent = (G.enemies || []).find(e => e && e.hp > 0)?.nextIntent || null;
+  const stageEnemyIntent = G.enemies?.[Number(enemy.dataset.enemyIndex)]?.nextIntent
+    || (G.enemies || []).find(e => e && e.hp > 0)?.nextIntent || null;
 
   let playerPose = 'idle';
   let enemyPose = 'idle';
@@ -624,9 +692,21 @@ export function updatePuppets() {
   // 身体状态覆盖句子驱动的姿态:全灭 → 倒地;濒死(≤30%) → 持续颤抖。
   // critical 类在 chanting 门之前同步——它是持续体征, 不该被吟诵动画冻结。
   const aliveEnemies = (G.enemies || []).filter(e => e && e.hp > 0);
-  const stageEnemy = aliveEnemies[0];
+  const stageEnemy = G.enemies?.[Number(enemy.dataset.enemyIndex)] || aliveEnemies[0];
   if ((G.enemies || []).length > 0 && aliveEnemies.length === 0) enemyPose = 'dying';
-  enemy.classList.toggle('puppet-critical', !!(stageEnemy && stageEnemy.hp <= stageEnemy.maxHp * 0.3));
+  enemyActors.forEach((actor) => {
+    const model = G.enemies?.[Number(actor.dataset.enemyIndex)];
+    actor.classList.toggle('puppet-critical', !!(model && model.hp <= model.maxHp * 0.3));
+    if (actor !== enemy && actor.dataset.chanting !== '1') {
+      const intent = model?.nextIntent;
+      const pose = intent?.type === 'defend' ? 'defend'
+        : intent?.type === 'buff' ? 'heal'
+          : ['attack', 'special', 'debuff'].includes(intent?.type) ? 'ready' : 'idle';
+      setPose(actor, pose);
+      setEmoji(actor, '');
+      setBodyScale(actor, 1);
+    }
+  });
   player.classList.toggle('puppet-critical', G.hp > 0 && G.hp <= G.maxHp * 0.3);
 
   // Never override a running battle animation
@@ -648,20 +728,28 @@ export function updatePuppets() {
   // Standby co-actors: named subjects (not 我) take the stage as soon as they
   // join a sentence with ANY verb (attack/defend/heal) — instant "ally arrived"
   // feedback while composing. They act only on chant. Mirrors the evaluator's rule.
-  const hasVerb = sentence.some(c => c && c.pos === 'verb');
-  const standbyNames = hasVerb
-    ? sentence.filter(c => c && c.pos === 'subject' && c.word !== '我'
+  const standbyNames = sentence.filter(c => c && c.pos === 'subject' && c.word !== '我'
         && !c._isEnemyTarget && !c._isSelfTarget
         && !isYouCard(c)                     // "你" = the enemy, not a友方 ally
         && !isCopulaPredicate(sentence, c))  // exclude "我是影子" identity B
-        .map(c => c.word)
-    : [];
+        .map(c => c.word);
   syncStandbyCoActors(standbyNames);
+
+  // A named actor appears immediately, even before a verb is added. Persistent
+  // identity rewrites from earlier chants are restored on every reconciliation.
+  document.querySelectorAll('.puppet-coactor.standby').forEach((el) => {
+    const name = el.dataset.coactor;
+    const transformed = actorIdentity(name);
+    el.dataset.spriteKey = transformed ? coActorSpriteKey(transformed) : coActorSpriteKey(name);
+    setBodyScale(el, transformed ? (IDENTITY_SPRITES[transformed]?.scale || 1) : 1);
+    setEmoji(el, transformed ? (COACTOR_EMOJI[transformed] || '') : coActorEmoji(name));
+  });
 
   // "初音未来是皇帝": put the crown (+ any body-scale) on that co-actor's puppet.
   if (coActorIdentity) {
     const el = document.querySelector(`.puppet-coactor.standby[data-coactor="${coActorIdentity.name}"]`);
     if (el) {
+      el.dataset.spriteKey = coActorSpriteKey(pred.identityWord);
       setEmoji(el, coActorIdentity.emoji);
       if (coActorIdentity.scale !== 1) setBodyScale(el, coActorIdentity.scale);
     }
@@ -674,7 +762,7 @@ export function updatePuppets() {
 // Chant sequence: anticipation → dash/pose → impact → recover.
 // effects is the evaluator result.effects (may be a stub for summons).
 export function playChantPuppetAnim(effects, timing) {
-  const { player, enemy } = els();
+  const { player, enemy } = els(effects?.targetEnemyIdx);
   if (!player || !enemy) return;
   clearPuppetBubbles(); // compose-time quips must not linger over the chant
   player.dataset.chanting = '1';
@@ -774,6 +862,14 @@ export function playChantPuppetAnim(effects, timing) {
         if (pred.target === 'self') {
           player.dataset.pose = 'heal';
           setEmoji(player, trait.emoji);
+        } else if (pred.target === 'coactor') {
+          const coEl = document.querySelector(`.puppet-coactor[data-coactor="${pred.subjectWord}"]`);
+          if (coEl) {
+            coEl.dataset.spriteKey = coActorSpriteKey(pred.identityWord);
+            coEl.dataset.pose = 'heal';
+            setBodyScale(coEl, IDENTITY_SPRITES[pred.identityWord]?.scale || 1);
+            setEmoji(coEl, trait.emoji);
+          }
         } else {
           enemy.dataset.pose = trait.enemyBuff ? 'attack' : 'dazed';
           setEmoji(enemy, trait.emoji);
@@ -820,7 +916,7 @@ export function playChantPuppetAnim(effects, timing) {
 // 侧后方现身、冲撞过去;命中与 IMPACT_MS 同拍(主敌人的受击后仰由
 // playChantPuppetAnim 的 _enemyVsEnemy 分支负责),演完自行淡出移除。
 export function playEnemyVsEnemyAnim(eve, timing) {
-  const { enemy } = els();
+  const { enemy } = els(eve?.dstIdx);
   const stage = document.getElementById('puppet-stage');
   if (!enemy || !stage || !eve) return;
   // 全部转设计坐标(uiScale 固定画布):tmp 是 stage 内的 absolute 元素。
@@ -871,7 +967,7 @@ export function playEnemyVsEnemyAnim(eve, timing) {
 // intent: { type:'attack'|'defend'|'buff'|'debuff'|'special', value, hits?, label? }
 export function playEnemyPuppetAnim(intent, opts) {
   opts = opts || {};
-  const { player, enemy } = els();
+  const { player, enemy } = els(opts.enemyIndex);
   if (!player || !enemy) return;
   player.dataset.chanting = '1';
   enemy.dataset.chanting = '1';

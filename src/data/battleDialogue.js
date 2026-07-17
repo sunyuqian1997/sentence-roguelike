@@ -3,27 +3,27 @@
 
 export const PLAYER_MASTERY_HINTS = Object.freeze({
   identity: {
-    title: '改写之后',
-    zh: ({ actor = '它' } = {}) => `“我是「${actor}」”……原来一句话，真的能暂时改写我。`,
+    title: '身份句已学会',
+    zh: ({ actor = '它' } = {}) => `你刚用了“我是「${actor}」”。这类句子会改变我方身份，并获得该身份的效果。`,
     en: ({ actor = 'it' } = {}) => `“I am ${actor}”... So a sentence really can rewrite me for a while.`,
   },
   namedAlly: {
-    title: '句外来客',
+    title: '个体助战已学会',
     zh: ({ actor = '猫', mode = 'actor' } = {}) => mode === 'summon'
-      ? `「${actor}」真的回应了。看来，叫出名字，也能请它替我战斗。`
-      : `「${actor}」照着句子动了起来。原来个体也能成为主语，替我战斗。`,
+      ? `你刚召唤了「${actor}」。以后可以用具名个体加入战斗。`
+      : `你刚让「${actor}」成为句子主语。具名主语会作为独立个体执行动作。`,
     en: ({ actor = 'Cat', mode = 'actor' } = {}) => mode === 'summon'
       ? `${actor} answered. Calling a name can invite someone into the fight.`
       : `${actor} followed the sentence. A named actor can fight as its subject.`,
   },
   defend: {
-    title: '留白也是一句',
-    zh: () => '这句没有伤到它，却把我护住了。先留下余地，也是一种写法。',
+    title: '防御句已学会',
+    zh: () => '防御句会获得格挡。敌方准备攻击时，先防御可以减少实际失血。',
     en: () => `That line did not hurt it, but it kept me safe. Leaving room is a kind of writing, too.`,
   },
   heal: {
-    title: '呼吸归句',
-    zh: () => '闭上眼，句子把散开的呼吸收了回来。',
+    title: '治疗句已学会',
+    zh: () => '治疗句会恢复生命。生命较低时，可以先组成治疗句再继续攻击。',
     en: () => 'With my eyes closed, the sentence gathered my scattered breath.',
   },
 });

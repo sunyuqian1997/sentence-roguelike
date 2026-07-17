@@ -1,6 +1,7 @@
 import { G, META, saveMeta } from '../game/state.js';
 import { isEn } from '../i18n.js';
 import { PLAYER_MASTERY_HINTS, quotePoolFor } from '../data/battleDialogue.js';
+import { uiScale } from './uiScale.js';
 
 const CHANNELS = ['player', 'enemy'];
 const state = {
@@ -9,6 +10,79 @@ const state = {
 };
 const quoteCursor = new Map();
 let root = null;
+const selectionTimers = new Set();
+
+export function clearSelectionPhaseDialogue() {
+  selectionTimers.forEach(window.clearTimeout);
+  selectionTimers.clear();
+  document.querySelectorAll('[data-selection-dialogue]').forEach((el) => el.remove());
+}
+
+function selectionPlayerLine(turn, summary) {
+  if (!summary) return turn <= 1 ? '先看意图，再决定这一句做什么。' : '新一回合，重新组织句子。';
+  const p = summary.player || {};
+  const lastIdentity = p.identities?.[p.identities.length - 1];
+  if (lastIdentity) return lastIdentity.actor === '我'
+    ? `刚才“我是${lastIdentity.identity}”生效了。`
+    : `${lastIdentity.actor}刚才变成了${lastIdentity.identity}。`;
+  const ally = p.summons?.[0] || p.coActors?.[0];
+  if (ally) return `刚才${ally}也参与了战斗。`;
+  if ((p.damageTaken || 0) > 0) return `上回合受了${p.damageTaken}点伤，注意防御或治疗。`;
+  if ((p.damageBlocked || 0) > 0) return `上回合格挡了${p.damageBlocked}点伤害。`;
+  if ((p.healed || 0) > 0) return `上回合恢复了${p.healed}点生命。`;
+  if ((p.damageDealt || 0) > 0) return `上回合一共造成${p.damageDealt}点伤害。`;
+  return '先看每个敌人的意图，再选择目标。';
+}
+
+function selectionEnemyLine(enemy, index, summary) {
+  const fact = summary?.enemies?.[index];
+  if (fact?.damageTaken > 0) return `刚才我受了${fact.damageTaken}点伤。`;
+  if (summary?.player?.summons?.length) return `${summary.player.summons[0]}也来帮忙了？`;
+  if (summary?.player?.identities?.length) return '你刚才改写了身份。';
+  if (fact?.damageDealt > 0) return `刚才我打中了${fact.damageDealt}点。`;
+  if (fact?.blocked > 0) return `你的格挡挡住了${fact.blocked}点。`;
+  if ((enemy.hp || 0) <= (enemy.maxHp || 1) * 0.35) return '我的生命已经不多了。';
+  const intent = enemy.nextIntent;
+  if (intent?.type === 'attack') return `这回合我准备攻击${intent.value || 0}${(intent.hits || 1) > 1 ? `×${intent.hits}` : ''}。`;
+  if (intent?.type === 'defend') return `这回合我准备${intent.label || '防御'}。`;
+  return `这回合我准备${intent?.label || '行动'}。`;
+}
+
+function placeHeadLine(anchor, text, who) {
+  const stage = document.getElementById('puppet-stage');
+  if (!stage || !anchor || !text) return;
+  const el = document.createElement('div');
+  el.className = 'puppet-bubble';
+  el.dataset.selectionDialogue = who;
+  el.textContent = text;
+  stage.appendChild(el);
+  const sr = stage.getBoundingClientRect();
+  const ar = anchor.getBoundingClientRect();
+  const scale = uiScale();
+  const left = (ar.left + ar.width / 2 - sr.left) / scale - el.offsetWidth / 2;
+  const top = (ar.top - sr.top) / scale - el.offsetHeight - 7;
+  el.style.left = `${Math.max(2, Math.min(left, stage.clientWidth - el.offsetWidth - 2))}px`;
+  el.style.top = `${Math.max(2, top)}px`;
+  const timer = window.setTimeout(() => {
+    selectionTimers.delete(timer);
+    el.classList.add('bubble-out');
+    window.setTimeout(() => el.remove(), 300);
+  }, 2500);
+  selectionTimers.add(timer);
+}
+
+export function showSelectionPhaseDialogue(turn, summary) {
+  clearSelectionPhaseDialogue();
+  if (G.isTutorial) return;
+  placeHeadLine(document.getElementById('puppet-player'), selectionPlayerLine(turn, summary), 'player');
+  (G.enemies || []).forEach((enemy, index) => {
+    if (!enemy || enemy.hp <= 0) return;
+    const anchor = document.querySelector(`.puppet-enemy-unit[data-enemy-index="${index}"]`)
+      || (document.getElementById('puppet-enemy')?.dataset.enemyIndex === String(index)
+        ? document.getElementById('puppet-enemy') : null);
+    placeHeadLine(anchor, selectionEnemyLine(enemy, index, summary), `enemy-${index}`);
+  });
+}
 
 function ensureRoot() {
   const combat = document.getElementById('combat-screen');
@@ -143,6 +217,7 @@ function firstUnmasteredEvidence({ summon, effects } = {}) {
 // actually discovered it.
 export function notifyResolvedPlayerAction(payload = {}) {
   if (G.isTutorial) return;
+  clearSelectionPhaseDialogue();
   const evidence = firstUnmasteredEvidence(payload);
   if (!evidence) return;
   markMastered(evidence.key);
@@ -151,6 +226,7 @@ export function notifyResolvedPlayerAction(payload = {}) {
 
 export function showEnemyTurnQuote(enemy, intent) {
   if (G.isTutorial || !enemy || enemy.hp <= 0) return;
+  clearSelectionPhaseDialogue();
   const pool = quotePoolFor(enemy, intent);
   if (!pool?.length) return;
   const key = `${enemy.name}|${intent?.type || 'special'}|${enemy.hp / Math.max(1, enemy.maxHp) <= 0.4 ? 'low' : 'normal'}`;
@@ -167,6 +243,7 @@ export function showEnemyTurnQuote(enemy, intent) {
 }
 
 export function resetBattleDialogueForCombat() {
+  clearSelectionPhaseDialogue();
   CHANNELS.forEach((channel) => {
     const lane = state[channel];
     window.clearTimeout(lane.timer);

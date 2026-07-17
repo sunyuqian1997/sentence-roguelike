@@ -5,12 +5,13 @@ import { showFloatingText, getPosColor } from '../utils.js';
 import { playSFX } from '../game/audio.js';
 import { getEnemyPortraitSVG } from './svgArt.js';
 import { enemyName } from '../data/enemies.js';
-import { detectDuizhang, detectSummon, SUMMON_EFFECTS, evaluateSentence, checkExclamationPosition } from '../game/sentence.js';
+import { detectDuizhang, SUMMON_EFFECTS, evaluateSentence, checkExclamationPosition } from '../game/sentence.js';
 import { PUN_STATUS, getRhymeKey, checkRhyme } from '../game/poetics.js';
 import { applyMeaningsToSentence } from '../game/meanings.js';
 import { updatePuppets } from './puppets.js';
 import { attachSentenceDrag, attachHandDrag } from './dragSort.js';
 import { spriteKeyForEnemy } from './spriteAnimator.js';
+import { getSentenceValidity } from '../game/sentenceValidity.js';
 
 // Puppet animations live in ./puppets.js; re-export for legacy importers.
 export { updatePuppets, playChantPuppetAnim, playEnemyPuppetAnim } from './puppets.js';
@@ -59,7 +60,19 @@ export function renderCombat() {
   renderJournalBtnBadge();
   renderHand();
   updateChantButton();
+  renderChantButtonVerdict();
   updatePuppets();
+}
+
+function renderChantButtonVerdict() {
+  const btn = document.getElementById('chant-btn');
+  const validity = G.sentenceValidity;
+  const invalidSentence = G.sentence.length > 0 && validity && !validity.ok;
+  btn?.classList.toggle('btn-invalid-sentence', Boolean(invalidSentence));
+  if (!btn) return;
+  if (!invalidSentence) { btn.removeAttribute('aria-label'); return; }
+  btn.textContent = t('cannotChant');
+  btn.setAttribute('aria-label', `${t('cannotChant')}：${validity.reason || ''}`);
 }
 
 function renderRoundJournal() {
@@ -118,6 +131,9 @@ export function renderEnemies() {
     if (enemy.hp <= 0) return;
     const div = document.createElement('div');
     div.className = 'enemy';
+    div.id = `enemy-hud-${idx}`;
+    div.dataset.enemyIndex = String(idx);
+    div.setAttribute('aria-label', `${enemyName(enemy)}，生命${enemy.hp}/${enemy.maxHp}`);
     if (idx === targetedIdx) div.classList.add('targeted');
 
     let ic = 'attack-intent', it = '';
@@ -224,8 +240,13 @@ export function renderSentenceSlots() {
 
   const sp = document.getElementById('sentence-score-preview');
   if (G.sentence.length > 0) {
-    const summonCheck = detectSummon(G.sentence);
-    if (summonCheck) {
+    const validity = getSentenceValidity(G.sentence);
+    G.sentenceValidity = validity;
+    const summonCheck = validity.summon || null;
+    if (!validity.ok) {
+      G._previewEval = null;
+      sp.innerHTML = `<span class="sp-chip sp-bad">✗ ${validity.reason}</span>`;
+    } else if (summonCheck) {
       const eff = SUMMON_EFFECTS[summonCheck.summonName];
       sp.innerHTML = `<span class="sp-cost">${t('cost')}${getSentenceCost()}</span><span class="sp-chip sp-good">${eff.emoji} ${t('summon')}·${eff.name}</span><span class="sp-flavor">${eff.desc}</span>`;
     } else {
@@ -275,8 +296,10 @@ export function renderSentenceSlots() {
           ? `<div class="sp-rules">${allHits.map(n => `<span class="sp-rule">${n}</span>`).join('')}</div>`
           : '');
     }
-    } // close summon else
+    } // close valid sentence else
   } else {
+    G.sentenceValidity = getSentenceValidity([]);
+    G._previewEval = null;
     sp.innerHTML = '';
   }
 }

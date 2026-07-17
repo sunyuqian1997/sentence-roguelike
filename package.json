@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test:judge": "node scripts/test-sentence-judge.mjs"
+    "test:judge": "node scripts/test-sentence-judge.mjs",
+    "test:battle-rules": "node scripts/test-battle-rules.mjs"
   },
   "devDependencies": {
     "vite": "^6.2.0",

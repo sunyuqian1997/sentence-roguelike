@@ -1,6 +1,7 @@
 // Exact dynamic component/timing port from
 // design-ref/战斗原型 3D 水色OS.dc.html.
 // This layer owns presentation only; combat.js remains the sole state settler.
+import { toGameRect } from './uiScale.js';
 
 export const REFERENCE_ENEMY_TIMING = Object.freeze({
   TELEGRAPH: 200,
@@ -59,6 +60,9 @@ function later(ms, fn) {
 }
 function clearTimers() { timers.forEach(window.clearTimeout); timers.clear(); }
 const screen = () => document.getElementById('combat-screen');
+const enemyAnchorSelector = (index) => Number.isInteger(index) && index >= 0
+  ? `.puppet-enemy-unit[data-enemy-index="${index}"]`
+  : '#puppet-enemy';
 
 function ensureLayer() {
   const host = screen();
@@ -106,16 +110,19 @@ function anchorPart(el, hostSelector, kind) {
   const root = ensureLayer();
   const host = document.querySelector(hostSelector);
   if (!root || !host) return;
-  const rootRect = root.getBoundingClientRect();
-  const hostRect = host.getBoundingClientRect();
-  const scale = window.__uiScale || 1;
-  const centerX = (hostRect.left + hostRect.width / 2 - rootRect.left) / scale;
+  // The fixed sprite viewport is the visual anchor. The puppet host can be
+  // wider/shorter and is animated independently, which previously put bubbles
+  // over stale coordinates after the 3D-stage scale pass.
+  const visualHost = host.querySelector('.sprite-frame') || host;
+  const rootRect = toGameRect(root.getBoundingClientRect());
+  const hostRect = toGameRect(visualHost.getBoundingClientRect());
+  const centerX = hostRect.left + hostRect.width / 2 - rootRect.left;
   if (kind === 'bubble') {
     el.style.left = `${centerX - el.offsetWidth / 2}px`;
-    el.style.top = `${(hostRect.top - rootRect.top) / scale - el.offsetHeight - 6}px`;
+    el.style.top = `${hostRect.top - rootRect.top - el.offsetHeight - 6}px`;
     return;
   }
-  const centerY = (hostRect.top + hostRect.height * 0.36 - rootRect.top) / scale;
+  const centerY = hostRect.top + hostRect.height * 0.36 - rootRect.top;
   el.style.left = `${centerX - el.offsetWidth / 2}px`;
   el.style.top = `${centerY - el.offsetHeight / 2}px`;
 }
@@ -151,7 +158,10 @@ function hidePart(selector) {
 function clearParts() {
   const root = ensureLayer();
   if (!root) return;
-  root.querySelectorAll('.is-visible').forEach((el) => el.classList.remove('is-visible'));
+  root.querySelectorAll('.is-visible').forEach((el) => {
+    window.cancelAnimationFrame(el._dfAnchorRaf || 0);
+    el.classList.remove('is-visible');
+  });
   root.classList.remove('df-impact', 'df-impact-heavy');
 }
 
@@ -247,6 +257,7 @@ export function beginPlayerFeedback(cardsOrCount, sentenceText, effects = {}) {
     ? cardsOrCount.map((card) => card._isSelfTarget ? '我' : (card.word || ''))
     : Array.from({ length: Math.max(1, cardsOrCount | 0) }, () => '');
   const timing = referencePlayerTiming(words.length, effects);
+  const enemyAnchor = enemyAnchorSelector(effects.targetEnemyIdx);
   const host = screen();
   if (host) host.dataset.feedbackMode = timing.isAttack ? 'attack' : 'support';
   setBusy(true); setPhase('confirm');
@@ -283,7 +294,7 @@ export function beginPlayerFeedback(cardsOrCount, sentenceText, effects = {}) {
       timing.isAttack ? '.df-splash-enemy' : '.df-seal-player',
       undefined,
       timing.isAttack
-        ? { host: '#puppet-enemy', kind: 'impact' }
+        ? { host: enemyAnchor, kind: 'impact' }
         : { host: '#puppet-player', kind: 'impact' },
     );
     setShake(timing.isAttack ? 'big' : null);
@@ -294,7 +305,7 @@ export function beginPlayerFeedback(cardsOrCount, sentenceText, effects = {}) {
     setPhase('seal');
     if (timing.isAttack) {
       hidePart('.df-splash-enemy');
-      showPart('.df-seal-enemy', undefined, { host: '#puppet-enemy', kind: 'impact' });
+      showPart('.df-seal-enemy', undefined, { host: enemyAnchor, kind: 'impact' });
       showPart('.df-center-seal');
       document.querySelector('.chanted-line')?.classList.add('df-line-gone');
     }
@@ -322,14 +333,14 @@ export function queueEnemyTurnFeedback() {
   ++token; clearTimers(); clearParts(); setBusy(true); setPhase('enemy-wait');
 }
 
-export function beginEnemyFeedback(intent) {
+export function beginEnemyFeedback(intent, enemyIndex = -1) {
   clearTimers(); clearParts();
   const run = ++token;
   setBusy(true); setPhase('enemy-wait');
   later(REFERENCE_ENEMY_TIMING.TELEGRAPH, () => {
     if (run !== token) return;
     setPhase('enemy-telegraph');
-    showPart('.df-bubble-enemy', enemyIntentText(intent), { host: '#puppet-enemy', kind: 'bubble' });
+    showPart('.df-bubble-enemy', enemyIntentText(intent), { host: enemyAnchorSelector(enemyIndex), kind: 'bubble' });
   });
   later(REFERENCE_ENEMY_TIMING.DASH, () => {
     if (run !== token) return;

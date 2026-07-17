@@ -64,5 +64,9 @@ export const G = {
   currentScene: null,   // 场景(P5): { id, name, sinceTurn } | null
   sceneryProps: [],     // 舞台景物道具(P5): [{ id, word, turn }],上限 3
   scenesVisited: [],    // 本局到过的场景: [{ id, turn, combatCount }](P6 连环画原料)
+  sentenceValidity: { ok: false, code: 'empty', reason: '请先放入文字' },
+  actorIdentities: {},  // 具名个体的持续身份改写，如 皇帝→儿子
+  combatFacts: null,    // 每轮真实伤害/防御/召唤摘要，供选择阶段台词读取
+  lastRoundSummary: null,
   isTutorial: false,
 };

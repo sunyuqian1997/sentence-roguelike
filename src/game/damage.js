@@ -4,6 +4,7 @@ import { playSFX } from './audio.js';
 import { VFX } from '../ui/vfx.js';
 import { gameOver } from '../ui/screens.js';
 import { combatVictory } from './combat.js';
+import { recordEnemyDamage } from './combatFacts.js';
 
 export function dealDamageToEnemy(idx, amount, ignoreBlock) {
   const enemy = G.enemies[idx];
@@ -75,9 +76,11 @@ export function dealDamageToPlayer(amount, source) {
     if (source.element) showFloatingText(source.element, `-${thornsDmg}反伤`, 'var(--orange)');
   }
 
+  let blockedAmount = 0;
   if (G.block > 0) {
     if (amount <= G.block) {
       G.block -= amount;
+      recordEnemyDamage(source, { hpDamage: 0, blocked: amount, intent: source?.nextIntent });
       showFloatingText(document.querySelector('#combat-top'), `挡住${amount}`, 'var(--blue-ink)');
       playSFX('block');
       return;
@@ -85,12 +88,19 @@ export function dealDamageToPlayer(amount, source) {
     const blocked = G.block;
     amount -= G.block;
     G.block = 0;
+    blockedAmount = blocked;
     showFloatingText(document.querySelector('#combat-top'), `挡住${blocked}`, 'var(--blue-ink)');
     playSFX('block');
   }
 
+  const hpBefore = G.hp;
   G.hp -= amount;
   if (G.hp < 0) G.hp = 0;
+  recordEnemyDamage(source, {
+    hpDamage: Math.max(0, hpBefore - G.hp),
+    blocked: blockedAmount,
+    intent: source?.nextIntent,
+  });
 
   const isBig = amount >= 15;
   playSFX(isBig ? 'impact_player_heavy' : 'impact_player');

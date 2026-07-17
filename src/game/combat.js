@@ -14,7 +14,7 @@ import { generateMap, renderMap } from './map.js';
 import { CARD_PACKS, packName, packDesc } from '../data/packs.js';
 import { playStory, STORY_CHAPTERS_REF } from '../ui/storyOverlay.js';
 import STORY_CHAPTERS from '../data/story.json';
-import { detectSummon, SUMMON_EFFECTS, evaluateSentence, checkExclamationPosition, detectDuizhang, isWellFormed } from './sentence.js';
+import { SUMMON_EFFECTS, evaluateSentence, checkExclamationPosition, detectDuizhang } from './sentence.js';
 import { processEnemyPuns, PUN_STATUS, PUN_ON_APPLY, resolveIdentityTrait, detectPredicates } from './poetics.js';
 import { EVENTS_BY_ACT, EVENTS_FALLBACK } from '../data/events.js';
 import { SCENES, sceneName, addSceneryWords, sceneTurnStartEffects } from './scenes.js';
@@ -23,6 +23,15 @@ import { logChant } from './chantLog.js';
 import { beginTutorial } from './tutorial.js';
 import { judgeSentence } from './sentenceJudge.js';
 import { applyJudgeToEvaluation } from './sentenceJudgeCore.js';
+import { getSentenceValidity } from './sentenceValidity.js';
+import {
+  beginSelectionFacts,
+  recordEnemyAction,
+  recordResolvedPlayerAction,
+  rememberActorIdentity,
+  resetCombatFacts,
+  snapshotCombatVitals,
+} from './combatFacts.js';
 import {
   beginPlayerFeedback,
   beginJudgingFeedback,
@@ -35,8 +44,10 @@ import {
   showJudgeVerdict,
 } from '../ui/designFeedback.js';
 import {
+  clearSelectionPhaseDialogue,
   notifyResolvedPlayerAction,
   resetBattleDialogueForCombat,
+  showSelectionPhaseDialogue,
   showEnemyTurnQuote,
 } from '../ui/battleDialogue.js';
 
@@ -61,6 +72,7 @@ export function startGame(options = {}) {
   G.allCardsCostZero = false; G.poeticAura = false;
   G.shopInventory = null; G.drawLessNextTurn = 0;
   G.scenesVisited = [];   // 本局到过的场景(P5,连环画 P6 的原料)
+  G.actorIdentities = {};
   G.isTutorial = false;
 
   if (META.perks.includes('thick_paper')) { G.maxHp += 5; G.hp += 5; }
@@ -107,6 +119,7 @@ export function replayTutorial() {
 export function startCombat(enemyDefs) {
   resetVictoryGuard();
   resetBattleDialogueForCombat();
+  resetCombatFacts();
   G.combatCount = (G.combatCount || 0) + 1;
   const isBoss = enemyDefs.some(e => e.type === 'boss');
   // 同一 act 内越深越强:用本 act 已深入层数(currentRow)做缩放。boss 数值手调,不缩放。
@@ -154,6 +167,7 @@ export function startPlayerTurn() {
     return;
   }
   G.turn++;
+  const previousRound = beginSelectionFacts(G.turn);
   G.energy = G.maxEnergy + (G._bonusEnergyNext || 0);
   G._bonusEnergyNext = 0;
   G.allCardsCostZero = false;
@@ -186,6 +200,7 @@ export function startPlayerTurn() {
   renderCombat();
   playerTurnReadyFeedback(G.turn);
   requestAnimationFrame(() => {
+    showSelectionPhaseDialogue(G.turn, previousRound);
     document.querySelectorAll('#hand-cards .card').forEach((c, i) => {
       c.style.animationDelay = (i * 0.08) + 's';
       c.classList.add('card-deal-anim');
@@ -471,20 +486,21 @@ export function removeSentenceWord(idx) {
 export function updateChantButton() {
   const btn = document.getElementById('chant-btn');
   const cost = getSentenceCost();
-  const hasVerb = G.sentence.some(c => c.pos === 'verb' || c.pos === 'special');
-  const isSummon = detectSummon(G.sentence) !== null;
-  const hasExcl = G.sentence.some(c => c.pos === 'exclamation');
-  const hasSubject = G.sentence.some(c => c.pos === 'subject' || c._isFixedWo);
-  const isDeclaration = hasSubject && hasExcl;
-  const canChant = hasVerb || isSummon || isDeclaration;
-  const blocked = G.sentence.length === 0 || cost > G.energy || !canChant;
+  const validity = getSentenceValidity(G.sentence);
+  G.sentenceValidity = validity;
+  const isSummon = validity.code === 'summon';
+  const blocked = !validity.ok || cost > G.energy;
   // 不用真 disabled——死按钮会吞掉点击, 玩家得不到"为什么不行"的回应。
   // .btn-blocked 负责禁用观感, chantSentence 的守卫负责拒绝反馈。
   btn.disabled = false;
+  btn.setAttribute('aria-disabled', blocked ? 'true' : 'false');
+  btn.dataset.validity = validity.code;
+  btn.title = !validity.ok ? validity.reason : (cost > G.energy ? `缺 ${cost - G.energy} 文力` : '');
   btn.classList.toggle('btn-blocked', blocked);
   btn.style.opacity = blocked ? '0.35' : '1';
-  const label = isSummon ? t('summon') : isDeclaration && !hasVerb ? t('declare') : t('chant');
+  const label = isSummon ? t('summon') : t('chant');
   btn.textContent = G.sentence.length > 0 ? `${label} (${cost} ${t('energy')})` : t('chant');
+  document.getElementById('combat-screen')?.setAttribute('data-sentence-validity', validity.code);
 }
 
 // 点了不能用的吟诵按钮:抖一下 + 低嗡 + 说清原因。拒绝要"被感觉到"。
@@ -505,22 +521,15 @@ function denyChant(reason) {
 // ============================================================
 export async function chantSentence() {
   if (G._chantResolving) return;
-  if (G.sentence.length === 0) { denyChant(); return; }
+  const validity = getSentenceValidity(G.sentence);
+  G.sentenceValidity = validity;
+  if (!validity.ok) { denyChant(validity.reason); return; }
   const cost = getSentenceCost();
   if (cost > G.energy) { denyChant(`缺 ${cost - G.energy} 文力`); return; }
 
-  // 召唤式不是普通句子，走自己的识别路径，不受成句性门槛约束。
-  const summon = detectSummon(G.sentence);
-  if (!summon) {
-    // 成句性硬门槛：拒绝不成句的废串（纯名词/纯修饰/纯连词/悬空连词等），
-    // 给出可读原因。语序/省略/倒装等仍交给下游倍率层软性评分，不在此拦截。
-    const wf = isWellFormed(G.sentence);
-    if (!wf.ok) {
-      showFloatingText(document.querySelector('#combat-top'), `✗ 不成句：${wf.reason}`, '#C54B3C');
-      playSFX('forbidden');
-      return;
-    }
-  }
+  // Summons are the only alternate valid construction. Everything else has
+  // already passed the same deterministic gate exposed to the button/UI.
+  const summon = validity.summon || null;
 
   if (G.isTutorial) document.dispatchEvent(new CustomEvent('tutorial:chant'));
 
@@ -555,6 +564,7 @@ export async function chantSentence() {
 
   // Compose-time quips yield to the higher-priority resolved-action channel as
   // soon as the chant is committed (including while the async judge answers).
+  clearSelectionPhaseDialogue();
   clearPuppetBubbles();
   beginJudgingFeedback(journalText);
   const judge = await judgeSentence(journalText);
@@ -589,7 +599,9 @@ export async function chantSentence() {
     }, feedbackTiming.actionStart);
     setTimeout(() => {
       overlay.classList.remove('active');
+      const before = snapshotCombatVitals();
       effect.apply(judge);
+      recordResolvedPlayerAction({ before, summon, sentence: journalText });
       notifyResolvedPlayerAction({ summon });
       renderCombat();
       renderChantedSentence(sentenceCards);
@@ -639,7 +651,9 @@ export async function chantSentence() {
     setTimeout(() => {
       // 高倍率句的"爆点"音效与命中同帧, 大招听起来就是不一样。
       if (result.totalMult >= 2) playSFX('combo_break');
+      const before = snapshotCombatVitals();
       applyEffects(result.effects);
+      recordResolvedPlayerAction({ before, effects: result.effects, sentence: journalText });
       notifyResolvedPlayerAction({ effects: result.effects });
       renderCombat();
       renderChantedSentence(sentenceCards);
@@ -963,6 +977,10 @@ export function applyEffects(effects) {
           if (se.vulnerable) G.vulnerable += se.vulnerable;
           if (se.poeticAuraNext) G.poeticAuraNext = true;
           showFloatingText(document.querySelector('#combat-top'), `${trait.emoji} ${trait.selfLabel}`, '#9B59B6');
+        } else if (p.target === 'coactor') {
+          rememberActorIdentity(p.subjectWord, p.identityWord);
+          showFloatingText(document.querySelector('#combat-top'),
+            `${trait.emoji} ${p.subjectWord}成为${p.identityWord}`, '#9B59B6');
         } else {
           const ee = trait.enemyEffect || {};
           const applyToEnemy = (e) => {
@@ -1186,6 +1204,7 @@ export function showScoreAnimation(result, callback) {
 // ============================================================
 export function endPlayerTurn() {
   if (G._chantResolving) return;
+  clearSelectionPhaseDialogue();
   G.sentence = [];
   while (G.hand.length > 0) G.discardPile.push(G.hand.pop());
   clearPuppetBubbles();
@@ -1205,7 +1224,7 @@ export function enemyTurn() {
     }, i * 350);
   });
   let delay = fired.length * 350;
-  G.enemies.forEach((enemy) => {
+  G.enemies.forEach((enemy, enemyIdx) => {
     if (enemy.hp <= 0) return;
     // 敌方护甲在自己回合开始清旧护甲, 紧接着 act_fn 可能加新护甲, 新护甲撑过我方下回合。
     // 易伤/虚弱的衰减改由 endRound() 统一处理(整轮一次)。
@@ -1241,8 +1260,9 @@ export function enemyTurn() {
       if (enemy.hp <= 0) return;
       const intentForAnim = enemy.nextIntent ? { ...enemy.nextIntent } : null;
       showEnemyTurnQuote(enemy, enemy.stunned ? { type: 'stunned' } : intentForAnim);
-      beginEnemyFeedback(intentForAnim);
+      beginEnemyFeedback(intentForAnim, enemyIdx);
       playEnemyPuppetAnim(intentForAnim, {
+        enemyIndex: enemyIdx,
         stunned: enemy.stunned,
         timeline: {
           anticipationMs: REFERENCE_ENEMY_TIMING.TELEGRAPH,
@@ -1265,6 +1285,7 @@ export function enemyTurn() {
       setTimeout(() => {
         if (enemy.hp <= 0) return;
         const hpBefore = G.hp;
+        const enemyBefore = { block: enemy.block || 0, strength: enemy.strength || 0 };
         const finishAct = () => {
           if (G._reflectDmg && G._reflectDmg > 0 && G.hp < hpBefore) {
             const reflected = Math.floor((hpBefore - G.hp) * G._reflectDmg);
@@ -1273,6 +1294,7 @@ export function enemyTurn() {
               if (enemy.element) showFloatingText(enemy.element, `反弹${reflected}`, '#B87333');
             }
           }
+          recordEnemyAction(enemy, enemyBefore);
           enemy.ai(enemy);
           renderCombat();
         };
@@ -1403,7 +1425,7 @@ export function showRewardScreen() {
   const journalEl = document.getElementById('reward-journal');
   if (journalEl && G.sentenceJournal.length > 0) {
     let h = '<div style="margin-top:14px;padding:10px;border:1px solid var(--panel-border);border-radius:6px;background:rgba(255,255,255,0.3);">';
-    h += '<div style="font-family:var(--font-brush);font-size:0.9rem;color:var(--ink);text-align:center;margin-bottom:6px;">— 今夜发行记录 —</div>';
+    h += '<div style="font-family:var(--font-brush);font-size:0.9rem;color:var(--ink);text-align:center;margin-bottom:6px;">— 句子记录 —</div>';
     G.sentenceJournal.forEach(s => {
       h += `<div style="font-family:var(--font-brush);font-size:0.85rem;color:var(--ink-light);text-align:center;line-height:1.8;">「${s}」</div>`;
     });

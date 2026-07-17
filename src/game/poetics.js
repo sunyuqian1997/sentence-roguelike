@@ -410,7 +410,10 @@ export function detectPredicates(cards) {
       }
     } else {
       // B is a subject card or an enemy name → identity rewrite
-      const target = subjectKind === 'enemy' ? 'enemy' : subjectKind === 'self' ? 'self' : 'broadcast';
+      // A named subject owns its identity rewrite. "皇帝是儿子" changes 皇帝,
+      // not every enemy on the field. `broadcast` remains accepted at apply
+      // sites for old saved logs, but new predicates use the precise coactor target.
+      const target = subjectKind === 'enemy' ? 'enemy' : subjectKind === 'self' ? 'self' : 'coactor';
       results.push({
         ...base, kind: 'identity', target,
         identityWord: pred.word,

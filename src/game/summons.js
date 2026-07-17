@@ -7,10 +7,11 @@ import { VFX } from '../ui/vfx.js';
 import { dealDamageToEnemy } from './damage.js';
 import { drawCards } from './combat.js';
 import { scaleSummonValue } from './sentenceJudgeCore.js';
+import { detectSummonPattern } from './summonPattern.js';
 
 export const SUMMON_EFFECTS = {
   '初音未来': {
-    name: '初音唱歌', emoji: '🎤', desc: '音波伤害全体敌人4点',
+    name: '初音未来', emoji: '🎤', desc: '音波伤害全体敌人4点',
     apply(judge) {
       const damage = scaleSummonValue(4, judge);
       G.enemies.forEach((e, i) => {
@@ -113,21 +114,6 @@ export const SUMMON_EFFECTS = {
 // Detect summon pattern: exclamation + comma + subject(non-我), no verb.
 // Returns { summonName, exclamationCards, text } or null.
 export function detectSummon(cards) {
-  const hasVerb = cards.some(c => c.pos === 'verb');
-  if (hasVerb) return null;
-
-  const hasExclamation = cards.some(c => c.pos === 'exclamation');
-  const hasComma = cards.some(c => c.pos === 'punctuation' && c.punctType === 'comma');
-  const subjects = cards.filter(c => c.pos === 'subject' && c.word !== '我');
-
-  if (!hasExclamation || !hasComma || subjects.length === 0) return null;
-
-  const summonName = subjects[0].word;
-  if (!SUMMON_EFFECTS[summonName]) return null;
-
-  return {
-    summonName,
-    exclamationCards: cards.filter(c => c.pos === 'exclamation'),
-    text: cards.map(c => c.word).join(''),
-  };
+  const match = detectSummonPattern(cards);
+  return match && SUMMON_EFFECTS[match.summonName] ? match : null;
 }

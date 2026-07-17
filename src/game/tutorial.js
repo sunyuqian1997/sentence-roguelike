@@ -25,11 +25,11 @@ const SCRIPT = [
   },
   {
     phase: 'encounter', speaker: '旁白',
-    text: '黑板上的粉笔字轻轻飘了下来，拼成一个穿校服的纸片同学，像是谁忘在这里的一段梦。',
+    text: '黑板上的粉笔字轻轻飘了下来，却没有组成形状。戏台仍是空的，像在等一句话决定谁该出现。',
   },
   {
     phase: 'encounter', speaker: '林夕',
-    text: '刚才墙上的字……变成了一个人影。它好像在等我把句子写完。',
+    text: '它们在等我放入句子的主体。先确认“谁”要行动。',
   },
   {
     phase: 'self', speaker: '？？？', waitFor: 'self',
@@ -121,6 +121,22 @@ function focusCurrentAction(phase) {
   });
 }
 
+function syncTutorialEntities() {
+  if (!active) return;
+  const hasSelf = G.sentence.some((card) => card._isFixedWo || card._isSelfTarget);
+  const hasEnemy = G.sentence.some((card) => card._isEnemyTarget);
+  const combat = document.getElementById('combat-screen');
+  if (combat) combat.dataset.tutorialActors = `${hasSelf ? 'player' : 'empty'}-${hasEnemy ? 'enemy' : 'empty'}`;
+  ['#puppet-player', '#stage-player', '#battle-sprite-player'].forEach((selector) => {
+    const el = document.querySelector(selector);
+    if (el) el.style.visibility = hasSelf ? 'visible' : 'hidden';
+  });
+  ['#puppet-enemy', '#stage-enemy', '#battle-sprite-enemy'].forEach((selector) => {
+    const el = document.querySelector(selector);
+    if (el) el.style.visibility = hasEnemy ? 'visible' : 'hidden';
+  });
+}
+
 function showEntry(index) {
   const entry = SCRIPT[index];
   if (!entry) {
@@ -143,6 +159,7 @@ function showEntry(index) {
   next.hidden = Boolean(entry.waitFor);
   next.textContent = entry.final ? '沿着蓝光继续 ▸' : '继续 ▸';
   focusCurrentAction(entry.phase);
+  syncTutorialEntities();
 }
 
 function advance() {
@@ -160,6 +177,7 @@ function handleSentenceChanged() {
   const hasSelf = G.sentence.some((card) => card._isFixedWo);
   const hasVerb = G.sentence.some((card) => card.key === 'zhan' || card.pos === 'verb');
   const hasTarget = G.sentence.some((card) => card._isEnemyTarget);
+  syncTutorialEntities();
   if (waitingFor === 'self' && hasSelf) showEntry(cursor + 1);
   else if (waitingFor === 'verb' && hasVerb) showEntry(cursor + 1);
   else if (waitingFor === 'target' && hasTarget) showEntry(cursor + 1);
@@ -186,6 +204,12 @@ function cleanup() {
   const combat = document.getElementById('combat-screen');
   combat?.classList.remove('tutorial-mode');
   if (combat) delete combat.dataset.tutorialStep;
+  if (combat) delete combat.dataset.tutorialActors;
+  ['#puppet-player', '#stage-player', '#battle-sprite-player', '#puppet-enemy', '#stage-enemy', '#battle-sprite-enemy']
+    .forEach((selector) => {
+      const el = document.querySelector(selector);
+      if (el) el.style.removeProperty('visibility');
+    });
   document.getElementById('tutorial-layer')?.remove();
 }
 

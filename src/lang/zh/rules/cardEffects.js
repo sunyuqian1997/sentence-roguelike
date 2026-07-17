@@ -3,6 +3,8 @@
 // registry — to add one, define the flag in cards.json and register a handler
 // here; do NOT hardcode word checks in the pipeline.
 import { G } from '../../../game/state.js';
+import { actorIdentity } from '../../../game/combatFacts.js';
+import { resolveIdentityTrait } from '../../../game/poetics.js';
 
 export function applySubjects(ctx) {
   const { effects, bonus } = ctx;
@@ -29,16 +31,24 @@ export function applySubjects(ctx) {
     if (isCoActor) {
       // Power from the subject's martial stat (attack) or generic, min 3.
       const martial = (s.bonusType === 'attack' || s.bonusType === 'all') ? ub : 0;
-      const power = Math.max(3, martial);
+      const transformedIdentity = actorIdentity(s.word);
+      const identityEffect = transformedIdentity
+        ? (resolveIdentityTrait(transformedIdentity, false).selfEffect || {}) : {};
+      const identityPower = coActVerbType === 'defense' ? (identityEffect.block || 0)
+        : coActVerbType === 'heal' ? (identityEffect.heal || 0)
+          : (identityEffect.strength || 0);
+      const power = Math.max(3, martial + identityPower);
       (effects._coActors ||= []).push({
         name: s.word, power,
         verbType: coActVerbType,
         targetsEnemy: coActTargetsEnemy,
+        identity: transformedIdentity || null,
       });
       const actLabel = coActVerbType === 'attack' ? `独立攻击${power}`
         : coActVerbType === 'defense' ? `独立格挡${power}`
         : coActVerbType === 'heal' ? `独立治疗${power}` : `独立行动${power}`;
       ctx.grammarNotes.push(`🥷 ${s.word}·助战 (${actLabel})`);
+      if (transformedIdentity) ctx.grammarNotes.push(`🪞 ${s.word}以「${transformedIdentity}」身份行动`);
       // riders (draw/thorns/etc.) still count; the main stat is the co-actor's
       // own independent action so we do NOT also pad 我's numbers (no double-count).
       if (s.defenseBonus) bonus.subjectDefense += (s.upgraded ? Math.ceil(s.defenseBonus * 1.5) : s.defenseBonus);
