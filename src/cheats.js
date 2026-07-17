@@ -106,15 +106,21 @@ export function initCheats() {
     // 调试/截图入口：?autocombat=1 直接进入一场战斗（跳过地图与剧情），
     // 可选 ?enemy=zhigui 指定敌人，?sentence=纸鬼,给,我,戳 预填造句区。
     if (params.get('autocombat') === '1') {
-      const enemyKey = params.get('enemy') || 'zhigui';
+      const enemyKeys = (params.get('enemies') || params.get('enemy') || 'zhigui')
+        .split(',')
+        .map((key) => key.trim())
+        .filter(Boolean)
+        .slice(0, 3);
       const tryStart = () => {
         if (!window.__startCombat || !window.__ENEMY_DEFS) { setTimeout(tryStart, 120); return; }
         try {
           const defs = window.__ENEMY_DEFS;
-          const def = defs[enemyKey] || Object.values(defs)[0];
+          const fallback = Object.values(defs)[0];
+          const selected = enemyKeys.map((key) => defs[key]).filter(Boolean);
+          if (!selected.length) selected.push(fallback);
           // __startCombat skips startGame, so seed a deck or drawCards finds nothing.
           if (!G.deck || G.deck.length === 0) G.deck = createStarterDeck();
-          window.__startCombat([{ ...def }]);
+          window.__startCombat(selected.map((def) => ({ ...def })));
           const pre = params.get('sentence');
           if (pre) setTimeout(() => prefillSentence(pre.split(',')), 200);
         } catch (e) { console.error('autocombat failed', e); }
