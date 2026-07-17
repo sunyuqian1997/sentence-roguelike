@@ -4,33 +4,37 @@
    ============================================================ */
 
 #settings-btn {
-  position: absolute;
-  left: 12px;
-  top: 36px;
-  z-index: 32010;
+  position: static;
+  z-index: auto;
+  flex: 0 0 auto;
   min-width: 76px;
-  height: 30px;
+  height: 28px;
   padding: 0 8px;
-  border: 2px solid var(--os-ink, #1a1a18);
+  border: 0;
+  border-left: 1px solid var(--os-ink, #1a1a18);
+  border-right: 1px solid var(--os-ink, #1a1a18);
   border-radius: 0;
-  background: var(--os-paper, #f6f1e2);
+  background: transparent;
   color: var(--os-ink, #1a1a18);
-  box-shadow: 3px 3px 0 rgba(20, 42, 38, .4);
+  box-shadow: none;
   font: 10px/1 var(--font-pixel);
   cursor: pointer;
 }
 #settings-btn:hover,
-#settings-btn:focus-visible { background: var(--os-water, #bcded7); outline: 2px solid var(--os-orange, #d96c3f); outline-offset: 2px; }
+#settings-btn:focus-visible { background: var(--os-water, #bcded7); outline: 2px solid var(--os-orange, #d96c3f); outline-offset: -3px; }
 #settings-btn.is-muted::after { content: '×'; margin-left: 4px; color: var(--os-orange-dark, #9d402a); }
 
-body:has(#combat-screen.active) #settings-btn {
-  top: 3px;
-  left: 12px;
-  height: 24px;
-  min-height: 24px;
+#combat-top > #settings-btn {
+  order: -2;
+  height: 28px;
+  min-height: 28px;
+  margin-left: 0;
 }
-body:has(#combat-screen.active) #combat-top::before { left: 98px !important; }
-body:has(#combat-screen.active) #combat-top { padding-left: 202px !important; }
+body:has(#combat-screen.active) #combat-top::before { left: 14px !important; }
+body:has(#combat-screen.active) #combat-top {
+  padding-left: 100px !important;
+  gap: 12px;
+}
 
 .audio-settings-panel[hidden] { display: none !important; }
 .audio-settings-panel {
@@ -47,7 +51,6 @@ body:has(#combat-screen.active) #combat-top { padding-left: 202px !important; }
   box-shadow: 0 0 0 2px var(--os-gold, #c8b98a), 6px 6px 0 rgba(20, 42, 38, .42) !important;
   font-family: var(--font-pixel);
 }
-body:has(#combat-screen.active) .audio-settings-panel { top: 34px; }
 .audio-settings-title {
   height: 24px;
   display: flex;
