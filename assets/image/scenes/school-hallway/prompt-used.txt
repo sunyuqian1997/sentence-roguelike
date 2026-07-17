@@ -1,0 +1,9 @@
+Use case: stylized-concept
+Asset type: wide 2D battle-stage background for a retro sentence roguelike
+Primary request: Create an empty Japanese/Chinese high-school corridor after classes, dreamcore and quietly mysterious but not horror. It should feel like a half-remembered school: long corridor perspective, classroom doors and windows, bulletin board, shoe-locker or cleaning cabinet hints, late afternoon blue-green light, no people.
+Input images: public/scenes/jiuguan.jpg and public/scenes/yuexia.jpg are style references only; match their restrained ink-and-watercolor linework, warm paper grain, sparse hand-drawn detail, broad negative space, and soft washes.
+Composition/framing: 16:9 landscape, straight-on corridor with a strong central vanishing point; keep the lower middle relatively uncluttered so pixel combat sprites remain readable; architecture fills the full frame with no vignette.
+Lighting/mood: after-school twilight, celadon/blue-gray watercolor with a faint warm window glow; nostalgic dreamcore, tranquil and uncanny only through emptiness.
+Color palette: pale paper, celadon, desaturated blue-gray, a very small amount of faded persimmon warmth.
+Materials/textures: visible rice-paper/fibrous paper texture, pencil and ink outlines, transparent watercolor wash.
+Constraints: no characters, no silhouettes, no ghosts, no monsters, no text, no signage letters, no UI, no borders, no stage curtains, no watermark; background must remain readable under a teal darkening overlay and CRT scanlines.
