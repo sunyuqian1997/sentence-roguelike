@@ -431,20 +431,20 @@
 #hand-cards { gap: 6px !important; }
 #hand-cards-wrapper .card-effect-bar { display: none !important; }
 
-/* Tutorial disclosure includes the foreground Sprite layer. */
+/* Tutorial starts with ghost actors, then the chosen subject becomes solid. */
 #combat-screen.tutorial-mode .battle-sprite,
-#combat-screen.tutorial-mode #puppet-player { opacity: 0; pointer-events: none; }
-#combat-screen.tutorial-mode[data-tutorial-step='encounter'] .battle-sprite,
-#combat-screen.tutorial-mode[data-tutorial-step='self'] .battle-sprite,
-#combat-screen.tutorial-mode[data-tutorial-step='verb'] .battle-sprite,
-#combat-screen.tutorial-mode[data-tutorial-step='target'] .battle-sprite,
-#combat-screen.tutorial-mode[data-tutorial-step='chant'] .battle-sprite,
+#combat-screen.tutorial-mode #puppet-player,
+#combat-screen.tutorial-mode #puppet-enemy { opacity: .28; pointer-events: none; }
+#combat-screen.tutorial-mode[data-tutorial-actors^='player'] #battle-sprite-player,
+#combat-screen.tutorial-mode[data-tutorial-actors^='player'] #puppet-player,
+#combat-screen.tutorial-mode[data-tutorial-actors$='enemy'] #battle-sprite-enemy,
+#combat-screen.tutorial-mode[data-tutorial-actors$='enemy'] #puppet-enemy,
 #combat-screen.tutorial-mode[data-tutorial-step='attack'] .battle-sprite,
-#combat-screen.tutorial-mode[data-tutorial-step='aftermath'] .battle-sprite { opacity: 1; }
-#combat-screen.tutorial-mode:not([data-tutorial-step='awakening']) #puppet-player {
-  opacity: 1;
-  pointer-events: auto;
-}
+#combat-screen.tutorial-mode[data-tutorial-step='attack'] #puppet-player,
+#combat-screen.tutorial-mode[data-tutorial-step='attack'] #puppet-enemy,
+#combat-screen.tutorial-mode[data-tutorial-step='aftermath'] .battle-sprite,
+#combat-screen.tutorial-mode[data-tutorial-step='aftermath'] #puppet-player,
+#combat-screen.tutorial-mode[data-tutorial-step='aftermath'] #puppet-enemy { opacity: 1; }
 #tutorial-layer.watching-attack .tutorial-skip { pointer-events: none; }
 
 /* ============================================================

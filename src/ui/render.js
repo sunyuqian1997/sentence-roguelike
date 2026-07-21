@@ -264,6 +264,10 @@ export function renderSentenceSlots() {
       if (ef.block > 0) chips.push(good(`🛡${ef.block}`));
       if (ef.heal > 0) chips.push(good(`♥${ef.heal}`));
       if (ef.strengthGain > 0) chips.push(good(`↑${ef.strengthGain}${t('strength')}`));
+      if (ef._enemyBlock?.amount > 0) chips.push(bad(`敌🛡${ef._enemyBlock.amount}`));
+      if (ef._enemyHeal?.amount > 0) chips.push(bad(`敌♥${ef._enemyHeal.amount}`));
+      if (ef._enemyStrength?.amount > 0) chips.push(bad(`敌↑${ef._enemyStrength.amount}${t('strength')}`));
+      if (ef._enemyRest) chips.push(good('🛌停攻'));
       if (ef.draw > 0) chips.push(good(`📜${ef.draw}${t('cardUnit')}`));
       if (ef.multiTargetIndices && ef.multiTargetIndices.length > 1) chips.push(bad(`🎯×${ef.multiTargetIndices.length}`));
       if (ef.aoe) chips.push(bad(`🌊${t('aoe')}`));

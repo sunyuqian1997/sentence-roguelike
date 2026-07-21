@@ -212,6 +212,7 @@ const COACTOR_SPRITE_KEYS = Object.freeze({
   '猫': 'cat',
   '初音未来': 'miku',
   '影子': 'shadow',
+  '无名者': 'shadow',
   '皇帝': 'emperor',
   '儿子': 'son',
 });
@@ -230,7 +231,7 @@ const IDENTITY_SPRITES = Object.freeze({
   '将军': { key: 'wenqu', scale: 1.12 },
   '皇帝': { key: 'emperor', scale: 1.0 },
   '巨人': { key: 'cangjie', scale: 1.38 },
-  '无名者': { key: 'cangjie', scale: 0.96 },
+  '无名者': { key: 'shadow', scale: 1.0 },
   '李清照': { key: 'wenqu', scale: 0.94 },
   '书生': { key: 'wenqu', scale: 0.92 },
   '月兔': { key: 'zhigui', scale: 0.78 },
@@ -684,18 +685,38 @@ export function updatePuppets() {
   else if (stageEnemyIntent?.type === 'buff') enemyPose = 'heal';
 
   if (lastVerb) {
+    const verbIdx = sentence.lastIndexOf(lastVerb);
+    let clauseStart = 0;
+    for (let i = verbIdx - 1; i >= 0; i--) {
+      if (sentence[i]?.pos === 'punctuation' && sentence[i]?.punctType === 'comma') {
+        clauseStart = i + 1;
+        break;
+      }
+    }
+    const enemySubject = sentence.slice(clauseStart, verbIdx).some(c => c && (
+      c._isEnemyTarget || isYouCard(c) || (G.enemies || []).some(e => e && e.hp > 0 && e.name === c.word)
+    ));
     if (lastVerb.combatType === 'attack') {
       if (playerIsActing) playerPose = 'ready';
       if (hasEnemyTarget) enemyPose = 'targeted';
     } else if (lastVerb.combatType === 'defense') {
-      if (playerIsActing) playerPose = 'defend';
+      if (enemySubject) {
+        enemyPose = lastVerb.enemyRestVerb ? 'lying' : 'defend';
+        enemyEmoji = lastVerb.enemyRestVerb ? '🛌' : '🛡️';
+      } else if (playerIsActing) playerPose = 'defend';
     } else if (lastVerb.combatType === 'heal') {
-      if (playerIsActing) playerPose = 'heal';
+      if (enemySubject) {
+        enemyPose = 'heal';
+        enemyEmoji = '♥';
+      } else if (playerIsActing) playerPose = 'heal';
+    } else if (lastVerb.combatType === 'buff' && enemySubject) {
+      enemyPose = 'heal';
+      enemyEmoji = '↑';
     }
     // 及物动词(valence trans/ditrans)+ 已选敌方目标 ⇒ 我方向前逼近,预告"即将把
     // 这个动作施加到目标身上"。不及物动词(摸鱼/逃)只在原地摆姿势,不前压。
     const isTransitive = lastVerb.valence === 'trans' || lastVerb.valence === 'ditrans';
-    if (playerIsActing && isTransitive && hasEnemyTarget && lastVerb.combatType !== 'defense' && lastVerb.combatType !== 'heal') {
+    if (!enemySubject && playerIsActing && isTransitive && hasEnemyTarget && lastVerb.combatType !== 'defense' && lastVerb.combatType !== 'heal') {
       playerAiming = true;
     }
   }
@@ -861,6 +882,10 @@ export function playChantPuppetAnim(effects, timing) {
   const isAttack = !!(effects && (effects.damage > 0 || effects.aoe));
   const isHeal = !!(effects && effects.heal > 0 && !isAttack);
   const isBlock = !!(effects && effects.block > 0 && !isAttack);
+  const isEnemyRest = !!effects?._enemyRest;
+  const isEnemyHeal = !!(effects?._enemyHeal?.amount > 0);
+  const isEnemyBlock = !!(effects?._enemyBlock?.amount > 0);
+  const isEnemyDirected = isEnemyRest || isEnemyHeal || isEnemyBlock || !!effects?._enemyStrength;
   // 祈使/驱虎吞狼:动手的不是诗人 —— 诗人只上前一步点将,不冲锋。
   const imperative = !!(effects && (effects._imperative || effects._enemyVsEnemy));
   const pred = (effects && effects._predicates && effects._predicates[0]) || null;
@@ -880,14 +905,19 @@ export function playChantPuppetAnim(effects, timing) {
     // 0ms — anticipation crouch
     [0, () => {
       player.style.transition = 'transform 0.15s ease-out';
-      player.style.transform = 'translateY(2px) scaleY(0.94)';
+      player.style.transform = isEnemyDirected ? '' : 'translateY(2px) scaleY(0.94)';
       enemy.style.transition = 'transform 0.15s ease-out';
     }],
     // 120ms — dash / pose
     [clock.dash, () => {
       player.style.transition = 'transform 0.3s cubic-bezier(0.22,1,0.36,1)';
       const dx = gapX(player, enemy);
-      if (imperative) {
+      if (isEnemyDirected) {
+        player.style.transform = '';
+        player.dataset.pose = 'idle';
+        enemy.dataset.pose = isEnemyRest ? 'lying' : isEnemyHeal ? 'heal' : 'defend';
+        setEmoji(enemy, isEnemyRest ? '🛌' : isEnemyHeal ? '♥' : '🛡️');
+      } else if (imperative) {
         // Commander stays put — a short step and a pointed finger
         player.style.transform = 'translateX(14px)';
         player.dataset.pose = 'attack';
@@ -910,7 +940,9 @@ export function playChantPuppetAnim(effects, timing) {
     }],
     // IMPACT — enemy reacts
     [clock.impact, () => {
-      if (effects && effects._enemyVsEnemy) {
+      if (isEnemyDirected) {
+        enemy.dataset.pose = isEnemyRest ? 'lying' : isEnemyHeal ? 'heal' : 'defend';
+      } else if (effects && effects._enemyVsEnemy) {
         // 驱虎吞狼:主敌人棍人(=被打的宾语敌)吃冲撞后仰;
         // 出手的"倒戈敌人"由 playEnemyVsEnemyAnim 的临时棍人演。
         enemy.style.transition = 'transform 0.25s ease-out';

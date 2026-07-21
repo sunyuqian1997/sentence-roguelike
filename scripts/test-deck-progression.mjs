@@ -10,6 +10,7 @@ import {
 import { getSentenceValidity } from '../src/game/sentenceValidity.js';
 import { evaluateSentence } from '../src/game/evaluator/index.js';
 import { G } from '../src/game/state.js';
+import { auditEffectEntries } from '../src/game/effectAudit.js';
 
 const WORD_DEFS = JSON.parse(fs.readFileSync(new URL('../src/data/cards.json', import.meta.url), 'utf8'));
 const card = (key) => ({ ...WORD_DEFS[key], key });
@@ -68,5 +69,34 @@ assert(shadow, 'named subject in second clause acts independently');
 assert.equal(shadow.targetEnemyIdx, 1, 'co-actor follows its own clause target');
 assert.deepEqual(compound.effects.multiTargetIndices, [0, 1]);
 assert(compound.effects.damage < 20, 'compound main damage is split instead of duplicated per enemy');
+
+const enemyRest = evaluateSentence([enemy(0), card('tangping')]);
+assert.equal(enemyRest.effects.block, 0, 'enemy-subject defense must not block for the player');
+assert.equal(enemyRest.effects.heal, 0, 'enemy-subject heal rider must not heal the player');
+assert.equal(enemyRest.effects._enemyBlock?.enemyIdx, 0, 'paper ghost receives its own block');
+assert(enemyRest.effects._enemyBlock?.amount > 0, 'paper ghost block has a real value');
+assert.equal(enemyRest.effects._enemyHeal?.enemyIdx, 0, 'paper ghost receives its own heal');
+assert.equal(enemyRest.effects._enemyRest?.enemyIdx, 0, 'paper ghost skips its own attack');
+
+const correctlyLoggedRest = {
+  n: 1,
+  kind: 'sentence',
+  text: '纸鬼躺平',
+  cards: [
+    { word: '纸鬼', role: 'enemy-target', idx: 0 },
+    { word: '躺平', pos: 'verb', combatType: 'defense', enemyRestVerb: true, ruleType: 'generic' },
+  ],
+  effects: {
+    enemyBlock: enemyRest.effects._enemyBlock,
+    enemyHeal: enemyRest.effects._enemyHeal,
+    enemyRest: enemyRest.effects._enemyRest,
+  },
+};
+assert.deepEqual(auditEffectEntries([correctlyLoggedRest]), [], 'effect audit accepts correctly directed rest');
+assert.equal(
+  auditEffectEntries([{ ...correctlyLoggedRest, effects: { block: 6, heal: 2 } }]).length,
+  2,
+  'effect audit catches both wrong block direction and missing rest',
+);
 
 console.log('deck-progression-ok');

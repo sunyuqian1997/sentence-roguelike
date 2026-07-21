@@ -561,6 +561,7 @@
     "basePower": 6,
     "upgPower": 9,
     "healAlsoVerb": 2,
+    "enemyRestVerb": true,
     "flavor": "不卷了不卷了",
     "desc": "格挡 {power}+回血2·A是躺平→施加躺平",
     "pun": {

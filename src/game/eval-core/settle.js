@@ -59,6 +59,12 @@ export function settle(ir) {
   }
   effects.block = Math.floor(effects.block * totalMult * finalExcDefense);
   effects.heal = Math.floor(effects.heal * totalMult * finalExcHeal);
+  if (effects._enemyBlock) {
+    effects._enemyBlock.amount = Math.floor(effects._enemyBlock.amount * totalMult * finalExcDefense);
+  }
+  if (effects._enemyHeal) {
+    effects._enemyHeal.amount = Math.floor(effects._enemyHeal.amount * totalMult * finalExcHeal);
+  }
   if (effects.selfHarm) effects.selfHarmDmg = Math.floor(effects.selfHarmDmg * totalMult);
   effects.draw += exc.extraDraw;
   effects.heal += exc.extraHeal;
@@ -80,6 +86,8 @@ export function settle(ir) {
     effects.damage = Math.floor(effects.damage * 2);
     effects.block = Math.floor(effects.block * 2);
     effects.heal = Math.floor(effects.heal * 2);
+    if (effects._enemyBlock) effects._enemyBlock.amount = Math.floor(effects._enemyBlock.amount * 2);
+    if (effects._enemyHeal) effects._enemyHeal.amount = Math.floor(effects._enemyHeal.amount * 2);
     grammarNotes.push('🔁 效果×2！');
   }
 

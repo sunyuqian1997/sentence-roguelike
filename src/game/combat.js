@@ -688,6 +688,48 @@ export function applyEffects(effects) {
     VFX.rollHp(document.getElementById('combat-hp'));
   }
 
+  const directedEnemy = (payload) => {
+    const requested = Number(payload?.enemyIdx);
+    const idx = requested >= 0 && G.enemies[requested]?.hp > 0
+      ? requested
+      : G.enemies.findIndex(e => e && e.hp > 0);
+    return idx >= 0 ? G.enemies[idx] : null;
+  };
+
+  if (effects._enemyBlock?.amount > 0) {
+    const target = directedEnemy(effects._enemyBlock);
+    if (target) {
+      target.block = (target.block || 0) + effects._enemyBlock.amount;
+      playSFX('block');
+      showFloatingText(target.element, `+${effects._enemyBlock.amount}🛡`, '#2D4B73');
+    }
+  }
+
+  if (effects._enemyHeal?.amount > 0) {
+    const target = directedEnemy(effects._enemyHeal);
+    if (target) {
+      target.hp = Math.min(target.maxHp, target.hp + effects._enemyHeal.amount);
+      playSFX('heal');
+      showFloatingText(target.element, `+${effects._enemyHeal.amount}♥`, '#4A7C6B');
+    }
+  }
+
+  if (effects._enemyStrength?.amount > 0) {
+    const target = directedEnemy(effects._enemyStrength);
+    if (target) {
+      target.strength = (target.strength || 0) + effects._enemyStrength.amount;
+      showFloatingText(target.element, `+${effects._enemyStrength.amount}力量`, '#B87333');
+    }
+  }
+
+  if (effects._enemyRest) {
+    const target = directedEnemy(effects._enemyRest);
+    if (target) {
+      target.stunned = true;
+      showFloatingText(target.element, '🛌 躺平·跳过攻击', '#6B4C6E');
+    }
+  }
+
   if (effects.strengthGain > 0) {
     G.strength += effects.strengthGain;
     showFloatingText(document.querySelector('#combat-top'), `+${effects.strengthGain}力量`, '#4A7C6B');

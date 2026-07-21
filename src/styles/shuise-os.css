@@ -614,9 +614,6 @@ body:has(#combat-screen.active) #os-menubar { display: none; }
 #combat-screen.tutorial-mode #combat-top,
 #combat-screen.tutorial-mode #sentence-dock,
 #combat-screen.tutorial-mode #hand-area,
-#combat-screen.tutorial-mode #stage-player,
-#combat-screen.tutorial-mode #stage-enemy,
-#combat-screen.tutorial-mode #puppet-enemy,
 #combat-screen.tutorial-mode #round-journal {
   opacity: 0;
   pointer-events: none;
@@ -624,27 +621,14 @@ body:has(#combat-screen.active) #os-menubar { display: none; }
 }
 
 #combat-screen.tutorial-mode #combat-stage { opacity: 1; }
-#combat-screen.tutorial-mode[data-tutorial-step='encounter'] #stage-player,
-#combat-screen.tutorial-mode[data-tutorial-step='encounter'] #stage-enemy,
-#combat-screen.tutorial-mode[data-tutorial-step='encounter'] #puppet-enemy,
-#combat-screen.tutorial-mode[data-tutorial-step='self'] #stage-player,
-#combat-screen.tutorial-mode[data-tutorial-step='self'] #stage-enemy,
-#combat-screen.tutorial-mode[data-tutorial-step='self'] #puppet-enemy,
-#combat-screen.tutorial-mode[data-tutorial-step='verb'] #stage-player,
-#combat-screen.tutorial-mode[data-tutorial-step='verb'] #stage-enemy,
-#combat-screen.tutorial-mode[data-tutorial-step='verb'] #puppet-enemy,
-#combat-screen.tutorial-mode[data-tutorial-step='target'] #stage-player,
-#combat-screen.tutorial-mode[data-tutorial-step='target'] #stage-enemy,
-#combat-screen.tutorial-mode[data-tutorial-step='target'] #puppet-enemy,
-#combat-screen.tutorial-mode[data-tutorial-step='chant'] #stage-player,
-#combat-screen.tutorial-mode[data-tutorial-step='chant'] #stage-enemy,
-#combat-screen.tutorial-mode[data-tutorial-step='chant'] #puppet-enemy,
+#combat-screen.tutorial-mode #stage-player,
+#combat-screen.tutorial-mode #stage-enemy { opacity: .28; pointer-events: none; transition: opacity .24s ease; }
+#combat-screen.tutorial-mode[data-tutorial-actors^='player'] #stage-player,
+#combat-screen.tutorial-mode[data-tutorial-actors$='enemy'] #stage-enemy,
 #combat-screen.tutorial-mode[data-tutorial-step='attack'] #stage-player,
 #combat-screen.tutorial-mode[data-tutorial-step='attack'] #stage-enemy,
-#combat-screen.tutorial-mode[data-tutorial-step='attack'] #puppet-enemy,
 #combat-screen.tutorial-mode[data-tutorial-step='aftermath'] #stage-player,
-#combat-screen.tutorial-mode[data-tutorial-step='aftermath'] #stage-enemy,
-#combat-screen.tutorial-mode[data-tutorial-step='aftermath'] #puppet-enemy { opacity: 1; pointer-events: auto; }
+#combat-screen.tutorial-mode[data-tutorial-step='aftermath'] #stage-enemy { opacity: 1; }
 
 #combat-screen.tutorial-mode[data-tutorial-step='self'] #hand-area,
 #combat-screen.tutorial-mode[data-tutorial-step='verb'] #hand-area,

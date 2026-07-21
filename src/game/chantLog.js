@@ -3,6 +3,7 @@
 // or nonsensical rulings. Persisted to localStorage; inspectable from the
 // console (window.__chantLog / __exportLog / __clearLog) and via probe.mjs.
 import { G } from './state.js';
+import { auditEffectEntries } from './effectAudit.js';
 
 const KEY = 'sentence_rogue_chantlog';
 const MAX_ENTRIES = 500;
@@ -22,6 +23,17 @@ function cardSnapshot(c) {
   if (c._isEnemyTarget) return { word: c.word, role: 'enemy-target', idx: c._enemyIdx };
   if (c._isSelfTarget || c._isFixedWo) return { word: '我', role: 'self-target' };
   const s = { word: c.word, pos: c.pos };
+  if (c.punctType) s.punctType = c.punctType;
+  if (c.pos === 'verb') {
+    s.combatType = c.combatType;
+    s.enemyRestVerb = !!c.enemyRestVerb;
+    const specialKeys = [
+      'moyuSpecial', 'bailanSpecial', 'liuleSpecial', 'huashuiSpecial', 'pengciSpecial',
+      'tiredSpecial', 'sleepSpecial', 'fallenSpecial', 'shuaiguoSpecial', 'tangyingSpecial',
+      'kaibaiSpecial', 'puaSpecial', 'stealStrength', 'poisonVerb', 'dodgeNext', 'executeVerb',
+    ];
+    s.ruleType = specialKeys.some((key) => c[key]) ? 'special' : 'generic';
+  }
   if (c._activeMeaning) s.meaning = c._activeMeaning.id || c._activeMeaning.label;
   return s;
 }
@@ -73,11 +85,20 @@ export function logChant({ result, summon } = {}) {
         selfHarm: e.selfHarm ? (e.selfHarmDmg || 0) : 0,
         multiTarget: (e.multiTargetIndices && e.multiTargetIndices.length) || 0,
         targetEnemyIdx: e.targetEnemyIdx,
+        enemyBlock: e._enemyBlock || null,
+        enemyHeal: e._enemyHeal || null,
+        enemyStrength: e._enemyStrength || null,
+        enemyRest: e._enemyRest || null,
       },
       enemies,
     };
   } else {
     return;
+  }
+  const auditIssues = auditEffectEntries([entry]);
+  if (auditIssues.length) {
+    entry.auditIssues = auditIssues;
+    console.warn('[词灵录·效果审计]', ...auditIssues);
   }
   log.push(entry);
   save(log);
@@ -104,6 +125,13 @@ function round(x) { return typeof x === 'number' ? Math.round(x * 1000) / 1000 :
 export function getLog() { return load(); }
 export function clearLog() { save([]); return 'chant log cleared'; }
 
+export function auditLog() {
+  const issues = auditEffectEntries(load());
+  if (issues.length) console.warn(`%c词灵录 · 发现 ${issues.length} 个作用对象问题`, 'color:#C54B3C;font-weight:bold', issues);
+  else console.log('%c词灵录 · 未发现作用对象错误', 'color:#2E8B84;font-weight:bold');
+  return issues;
+}
+
 export function printLog() {
   const log = load();
   /* eslint-disable no-console */
@@ -117,6 +145,9 @@ export function printLog() {
       if (ef.damage) parts.push(`⚔${ef.damage}${ef.aoe ? '(群)' : ''}${ef.ignoreBlock ? '(穿)' : ''}`);
       if (ef.block) parts.push(`🛡${ef.block}`);
       if (ef.heal) parts.push(`♥${ef.heal}`);
+      if (ef.enemyBlock?.amount) parts.push(`敌🛡${ef.enemyBlock.amount}`);
+      if (ef.enemyHeal?.amount) parts.push(`敌♥${ef.enemyHeal.amount}`);
+      if (ef.enemyRest) parts.push('敌🛌停攻');
       if (ef.selfHarm) parts.push(`💔${ef.selfHarm}`);
       console.log(
         `#${e.n} 「${e.text}」 ×${e.mult.total}  ${parts.join(' ')}\n` +

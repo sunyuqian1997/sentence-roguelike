@@ -74,6 +74,7 @@ import('./game/chantLog.js').then(m => {
   window.__exportLog = m.exportLog;
   window.__clearLog = m.clearLog;
   window.__getLog = m.getLog;
+  window.__auditLog = m.auditLog;
 });
 
 // Init

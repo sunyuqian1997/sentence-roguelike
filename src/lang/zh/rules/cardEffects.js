@@ -408,8 +408,16 @@ export function applyVerbs(ctx) {
     // forceSubjectIsEnemy (imperatives) still overrides globally.
     const clause = clauseOf(v);
     const vIdx = clause.indexOf(v);
+    const subjectEnemyCard = vIdx > 0
+      ? [...clause.slice(0, vIdx)].reverse().find(isEnemySubjectCard)
+      : null;
+    const subjectEnemyIdx = subjectEnemyCard?._enemyIdx
+      ?? G.enemies.findIndex(e => e && e.hp > 0 && e.name === subjectEnemyCard?.word);
+    const enemyIdx = subjectEnemyIdx >= 0
+      ? subjectEnemyIdx
+      : (ctx.targetEnemyIdx >= 0 ? ctx.targetEnemyIdx : G.enemies.findIndex(e => e && e.hp > 0));
     const subjectIsEnemy = ctx.forceSubjectIsEnemy
-      || (vIdx > 0 && clause.slice(0, vIdx).some(isEnemySubjectCard));
+      || !!subjectEnemyCard;
 
     const special = VERB_SPECIALS.find(([flag]) => v[flag]);
     if (special) {
@@ -432,16 +440,46 @@ export function applyVerbs(ctx) {
       if (v.tauntVerb) effects._taunt = true;
       if (v.confuseVerb) effects._confuse = true;
     } else if (v.combatType === 'defense') {
-      effects.block += Math.floor((power + bonus.subjectDefense + bonus.objDefense) * bonus.defenseMod);
-      if (v.drawLessNext) effects.drawLessNext += v.drawLessNext;
-      if (v.healAlsoVerb) effects.heal += v.healAlsoVerb;
-      if (v.vulnSelfNext) effects._vulnSelfNext = true;
+      const block = Math.floor((power + bonus.subjectDefense + bonus.objDefense) * bonus.defenseMod);
+      if (subjectIsEnemy) {
+        effects._enemyBlock = { enemyIdx, amount: (effects._enemyBlock?.amount || 0) + block };
+        if (v.healAlsoVerb) {
+          effects._enemyHeal = { enemyIdx, amount: (effects._enemyHeal?.amount || 0) + v.healAlsoVerb };
+        }
+        if (v.enemyRestVerb) effects._enemyRest = { enemyIdx, source: v.word };
+        ctx.grammarNotes.push(`↩ ${subjectEnemyCard?.word || '敌人'}获得格挡${block}${v.healAlsoVerb ? `、回血${v.healAlsoVerb}` : ''}${v.enemyRestVerb ? '并停止攻击' : ''}`);
+      } else {
+        effects.block += block;
+        if (v.drawLessNext) effects.drawLessNext += v.drawLessNext;
+        if (v.healAlsoVerb) effects.heal += v.healAlsoVerb;
+        if (v.vulnSelfNext) effects._vulnSelfNext = true;
+      }
     } else if (v.combatType === 'heal') {
-      effects.heal += Math.floor((power + bonus.subjectHeal + bonus.objHeal) * bonus.healMod);
-      if (v.blockAlso) effects.block += Math.floor((v.upgraded ? Math.ceil(v.blockAlso * 1.5) : v.blockAlso) * bonus.defenseMod);
+      const heal = Math.floor((power + bonus.subjectHeal + bonus.objHeal) * bonus.healMod);
+      const blockAlso = v.blockAlso
+        ? Math.floor((v.upgraded ? Math.ceil(v.blockAlso * 1.5) : v.blockAlso) * bonus.defenseMod)
+        : 0;
+      if (subjectIsEnemy) {
+        effects._enemyHeal = { enemyIdx, amount: (effects._enemyHeal?.amount || 0) + heal };
+        if (blockAlso) effects._enemyBlock = { enemyIdx, amount: (effects._enemyBlock?.amount || 0) + blockAlso };
+        ctx.grammarNotes.push(`↩ ${subjectEnemyCard?.word || '敌人'}获得治疗${heal}${blockAlso ? `、格挡${blockAlso}` : ''}`);
+      } else {
+        effects.heal += heal;
+        if (blockAlso) effects.block += blockAlso;
+      }
     } else if (v.combatType === 'buff') {
-      effects.strengthGain += v.upgraded ? (v.upgPower || v.basePower) : v.basePower;
-      if (v.blockAlso) effects.block += Math.floor((v.upgraded ? Math.ceil(v.blockAlso * 1.5) : v.blockAlso) * bonus.defenseMod);
+      const strength = v.upgraded ? (v.upgPower || v.basePower) : v.basePower;
+      const blockAlso = v.blockAlso
+        ? Math.floor((v.upgraded ? Math.ceil(v.blockAlso * 1.5) : v.blockAlso) * bonus.defenseMod)
+        : 0;
+      if (subjectIsEnemy) {
+        effects._enemyStrength = { enemyIdx, amount: (effects._enemyStrength?.amount || 0) + strength };
+        if (blockAlso) effects._enemyBlock = { enemyIdx, amount: (effects._enemyBlock?.amount || 0) + blockAlso };
+        ctx.grammarNotes.push(`↩ ${subjectEnemyCard?.word || '敌人'}获得力量${strength}${blockAlso ? `、格挡${blockAlso}` : ''}`);
+      } else {
+        effects.strengthGain += strength;
+        if (blockAlso) effects.block += blockAlso;
+      }
     } else if (v.combatType === 'special') {
       if (v.special === 'zeroCost') effects.zeroCost = true;
     }

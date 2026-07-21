@@ -25,7 +25,7 @@ const SCRIPT = [
   },
   {
     phase: 'encounter', speaker: '旁白',
-    text: '黑板上的粉笔字轻轻飘了下来，却没有组成形状。戏台仍是空的，像在等一句话决定谁该出现。',
+    text: '黑板上的粉笔字轻轻飘了下来。戏台上留下两道半透明的轮廓，像在等一句话把它们写实。',
   },
   {
     phase: 'encounter', speaker: '林夕',
@@ -129,11 +129,11 @@ function syncTutorialEntities() {
   if (combat) combat.dataset.tutorialActors = `${hasSelf ? 'player' : 'empty'}-${hasEnemy ? 'enemy' : 'empty'}`;
   ['#puppet-player', '#stage-player', '#battle-sprite-player'].forEach((selector) => {
     const el = document.querySelector(selector);
-    if (el) el.style.visibility = hasSelf ? 'visible' : 'hidden';
+    if (el) el.style.visibility = 'visible';
   });
   ['#puppet-enemy', '#stage-enemy', '#battle-sprite-enemy'].forEach((selector) => {
     const el = document.querySelector(selector);
-    if (el) el.style.visibility = hasEnemy ? 'visible' : 'hidden';
+    if (el) el.style.visibility = 'visible';
   });
 }
 

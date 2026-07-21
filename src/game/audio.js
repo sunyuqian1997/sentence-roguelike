@@ -6,7 +6,7 @@ let audioCtx = null, masterGain = null, musicGain = null, sfxGain = null, musicI
 // Synthesized effects were mixed for an earlier, much quieter UI. Keep BGM at
 // its existing level and lift only the SFX bus so impacts and interface clicks
 // read clearly against the music. WebAudio GainNode values may safely exceed 1.
-const SFX_OUTPUT_GAIN = 2;
+const SFX_OUTPUT_GAIN = 4;
 
 const AUDIO_SETTINGS_KEY = 'sentence_rogue_audio_settings';
 const DEFAULT_AUDIO_SETTINGS = Object.freeze({
