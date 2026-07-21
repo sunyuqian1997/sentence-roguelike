@@ -216,7 +216,33 @@ export function renderSentenceSlots() {
   const half = document.createElement('div');
   half.className = 'sentence-half';
   displayCards.forEach((card, idx) => {
-    half.appendChild(createSentenceWordEl(card, idx));
+    const wordEl = createSentenceWordEl(card, idx);
+    if (card._isEnemyTarget || card._isSelfTarget || card._isFixedWo) {
+      let clauseStart = 0;
+      for (let i = idx - 1; i >= 0; i--) {
+        if (displayCards[i]?.pos === 'punctuation'
+            && (displayCards[i].punctType === 'comma' || displayCards[i].punctType === 'period')) {
+          clauseStart = i + 1;
+          break;
+        }
+      }
+      const governingVerb = [...displayCards.slice(clauseStart, idx)]
+        .reverse().find(c => c && (c.pos === 'verb' || c.pos === 'special'));
+      let clauseEnd = displayCards.length;
+      for (let i = idx + 1; i < displayCards.length; i++) {
+        if (displayCards[i]?.pos === 'punctuation'
+            && (displayCards[i].punctType === 'comma' || displayCards[i].punctType === 'period')) {
+          clauseEnd = i;
+          break;
+        }
+      }
+      const selfAffectingVerb = displayCards.slice(idx + 1, clauseEnd)
+        .find(c => c && (c.pos === 'verb' || c.pos === 'special') && c.selfAffectingVerb);
+      if ((governingVerb && governingVerb.valence !== 'intrans') || selfAffectingVerb) {
+        wordEl.classList.add('transitive-patient');
+      }
+    }
+    half.appendChild(wordEl);
   });
   container.appendChild(half);
 

@@ -53,13 +53,18 @@ function roleOf(c) {
   }
 }
 
-// 按逗号把句子切成分句。
+const isClauseBreak = (c) => c.pos === 'punctuation'
+  && (c.punctType === 'comma' || c.punctType === 'period');
+
+// 逗号或句中句号都能切分句；末尾句号不会制造一个空分句。
 function splitClauses(body) {
   const clauses = [[]];
   for (const c of body) {
-    if (c.pos === 'punctuation' && c.punctType === 'comma') clauses.push([]);
+    if (isClauseBreak(c)) clauses.push([]);
     else clauses[clauses.length - 1].push(c);
   }
+  if (clauses.length > 1 && clauses[clauses.length - 1].length === 0
+      && body[body.length - 1]?.punctType === 'period') clauses.pop();
   return clauses;
 }
 
@@ -163,7 +168,12 @@ function clauseOk(clause) {
     const tailHasV = tail.includes('V');
 
     if (preN > 1) return { ok: false, reason: '主语过多，不成句' };        // N N V…
-    if (tailN > 1) return { ok: false, reason: '动词后名词堆砌，不成句' }; // …V N N (守戳挡我猫)
+    const lastVerbWordIdx = words.map(roleOf).lastIndexOf('V');
+    const patientWords = words.slice(lastVerbWordIdx + 1).filter(c => roleOf(c) === 'NP');
+    const isTargetBodyPart = tailN === 2
+      && Boolean(patientWords[0]?._isEnemyTarget)
+      && Boolean(patientWords[1]?.bodyPart);
+    if (tailN > 1 && !isTargetBodyPart) return { ok: false, reason: '动词后名词堆砌，不成句' }; // …V N N (守戳挡我猫)
     if (tailHasV) return { ok: false, reason: '动词宾语交错，不成句' };     // …V N V…
     // 纯动词堆: 动词链 ≥2 且全程无主语无宾语 → 不像人话(砍漂 / 漂给 / 溜怼卷)。
     // 真连动几乎总带主或宾(我去买药 / 去买药);裸 V V 没头没尾绝大多数是垃圾。
@@ -230,8 +240,9 @@ export function isWellFormed(rawCards) {
   const meaningful = resolved.filter(c => c.pos !== 'punctuation');
   if (meaningful.length === 0) return { ok: false, reason: '空句' };
 
-  // 末尾句号/问号/感叹号不参与分句切分; 逗号才切。
-  const body = resolved.filter(c => !(c.pos === 'punctuation' && c.punctType !== 'comma'));
+  // 句中句号是明确的分句边界；问号/叹号仍只做语气，不参与骨架。
+  const body = resolved.filter(c => !(c.pos === 'punctuation'
+    && c.punctType !== 'comma' && c.punctType !== 'period'));
   const clauses = splitClauses(body);
 
   for (const clause of clauses) {

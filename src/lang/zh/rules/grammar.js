@@ -15,11 +15,15 @@ function checkClauseOrder(clauseCards) {
 }
 
 export function checkWordOrder(cards) {
-  const hasComma = cards.some(c => c.pos === 'punctuation' && c.punctType === 'comma');
+  const hasComma = cards.some((c, index) => c.pos === 'punctuation'
+    && (c.punctType === 'comma' || c.punctType === 'period')
+    && cards.slice(index + 1).some(next => next.pos !== 'punctuation' && next.pos !== 'exclamation'));
   const notes = [];
 
   if (hasComma) {
-    const commaIdx = cards.findIndex(c => c.pos === 'punctuation' && c.punctType === 'comma');
+    const commaIdx = cards.findIndex((c, index) => c.pos === 'punctuation'
+      && (c.punctType === 'comma' || c.punctType === 'period')
+      && cards.slice(index + 1).some(next => next.pos !== 'punctuation' && next.pos !== 'exclamation'));
     const clause1 = cards.slice(0, commaIdx).filter(c => c.pos !== 'punctuation' && c.pos !== 'exclamation');
     const clause2 = cards.slice(commaIdx + 1).filter(c => c.pos !== 'punctuation' && c.pos !== 'exclamation');
 
@@ -72,7 +76,7 @@ export function checkWordOrder(cards) {
 
 export function applyGrammar(ctx) {
   const { cards, subjects, realVerbs, modifiers, connectors, handObjects,
-          hasVerb, isDeclaration, hasEnemyTarget, hasSelfTarget, hasComma } = ctx;
+          hasVerb, isDeclaration, hasEnemyTarget, hasSelfTarget, hasClauseBreak } = ctx;
 
   let baseMult = hasVerb ? 1.0 : isDeclaration ? 0.8 : 0.3;
   if (!hasVerb && !isDeclaration) ctx.grammarNotes.push('⚠ 没有谓语！废句 ×0.3');
@@ -84,7 +88,7 @@ export function applyGrammar(ctx) {
   const hasObject = handObjects.length > 0 || hasEnemyTarget || hasSelfTarget;
   const hasModifier = modifiers.length > 0;
 
-  const isCompound = hasComma && subjects.length > 1 && realVerbs.length > 1;
+  const isCompound = hasClauseBreak && subjects.length > 1 && realVerbs.length > 1;
   if (hasVerb) {
     if (isCompound) { structMult = 1.35; ctx.grammarNotes.push('复合句（多主多谓）×1.35'); }
     else if (hasSubject && hasObject && hasModifier) { structMult = 1.25; ctx.grammarNotes.push('修+主+谓+宾 ×1.25'); }

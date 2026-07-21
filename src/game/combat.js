@@ -1124,10 +1124,12 @@ export function applyEffects(effects) {
           checkEnemies();
         } else if (a.block > 0) {
           G.block += a.block;
-          showFloatingText(document.querySelector('#combat-top'), `🥷 ${a.name} 挡${a.block}`, '#3E7CA6');
+          playSFX('block');
+          VFX.damageNum(document.getElementById('player-status-bar'), `🥷 ${a.name}守护 +${a.block}🛡`, '#3E7CA6', 2.2);
         } else if (a.heal > 0) {
           G.hp = Math.min(G.maxHp, G.hp + a.heal);
-          showFloatingText(document.querySelector('#combat-top'), `🥷 ${a.name} 回${a.heal}`, '#3E7CA6');
+          playSFX('heal');
+          VFX.damageNum(document.getElementById('player-status-bar'), `🥷 ${a.name}照料 +${a.heal}♥`, '#3E7CA6', 2.2);
         }
         renderCombat();
       }, 220 * (i + 1));

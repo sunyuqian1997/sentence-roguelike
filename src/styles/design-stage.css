@@ -265,6 +265,14 @@
   height: var(--stage-sprite-size) !important;
   margin-left: calc(var(--stage-sprite-size) / -2) !important;
 }
+.puppet.puppet-protected-target .sprite-frame {
+  outline: 3px dashed var(--os-teal-dark, #2E8B84);
+  outline-offset: -18px;
+}
+.puppet-coactor.puppet-protecting::before {
+  border-color: var(--os-teal-dark, #2E8B84);
+  background: radial-gradient(ellipse at center, rgba(46, 139, 132, .42), rgba(46, 139, 132, 0) 72%);
+}
 #puppet-player[data-identity]::after {
   content: attr(data-identity);
   position: absolute;

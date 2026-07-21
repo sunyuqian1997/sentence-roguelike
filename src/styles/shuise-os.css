@@ -307,7 +307,7 @@ html, body {
   width: 900px !important;
   min-height: 470px;
   margin-top: 0 !important;
-  padding: 18px 20px !important;
+  padding: 70px 20px 24px !important;
   border: 2px solid var(--os-ink);
   background:
     radial-gradient(circle, rgba(246, 241, 226, .11) 0 1px, transparent 1.5px) 0 0 / 4px 4px,

@@ -14,8 +14,9 @@ export function normalizeSentence(cards) {
   const endPuncts = [];
   const exclamations = [];
   const rest = [];
-  cards.forEach(c => {
-    if (c.pos === 'punctuation' && c.punctType !== 'comma') endPuncts.push(c);
+  cards.forEach((c, index) => {
+    const hasWordsAfter = cards.slice(index + 1).some(next => next.pos !== 'punctuation' && next.pos !== 'exclamation');
+    if (c.pos === 'punctuation' && c.punctType !== 'comma' && !hasWordsAfter) endPuncts.push(c);
     else if (c.pos === 'exclamation') exclamations.push(c);
     else rest.push(c);
   });
@@ -57,8 +58,11 @@ export function buildContext(inputCards) {
   const hasQuestion = punctCards.some(c => c.punctType === 'question' || c.punctType === 'interrobang');
   const hasExclamation = punctCards.some(c => c.punctType === 'exclamation' || c.punctType === 'interrobang');
   const hasComma = punctCards.some(c => c.punctType === 'comma');
+  const hasClauseBreak = cards.some((c, index) => c.pos === 'punctuation'
+    && (c.punctType === 'comma' || c.punctType === 'period')
+    && cards.slice(index + 1).some(next => next.pos !== 'punctuation' && next.pos !== 'exclamation'));
 
-  const hasMultiTarget = (connectors.some(c => c.multiTarget) || hasComma) && enemyObjCards.length > 1;
+  const hasMultiTarget = (connectors.some(c => c.multiTarget) || hasClauseBreak) && enemyObjCards.length > 1;
   const multiTargetIndices = hasMultiTarget ? enemyObjCards.map(c => c._enemyIdx) : [];
 
   const hasVerb = realVerbs.length > 0 || verbs.length > 0;
@@ -70,7 +74,7 @@ export function buildContext(inputCards) {
     subjects, verbs, realVerbs, objects, handObjects, modifiers, connectors,
     coActors,
     hasSelfTarget, enemyObjCards, hasEnemyTarget, targetEnemyIdx,
-    hasPeriod, hasQuestion, hasExclamation, hasComma,
+    hasPeriod, hasQuestion, hasExclamation, hasComma, hasClauseBreak,
     hasMultiTarget, multiTargetIndices,
     hasVerb, isDeclaration,
 

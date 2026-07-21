@@ -188,6 +188,17 @@
 }
 #sentence-slots-container .target-self .card-word { color: var(--os-teal-dark, #2E8B84) !important; }
 #sentence-slots-container .target-enemy .card-word { color: var(--os-orange-dark, #B4471F) !important; }
+
+/* A transitive target is an explicit patient, not merely another word card. */
+#sentence-slots-container .transitive-patient .sentence-mini-card {
+  outline: 3px double var(--os-orange-dark, #B4471F);
+  outline-offset: 3px;
+  animation: patientFocus 1.05s steps(2, end) infinite;
+}
+#sentence-slots-container .transitive-patient.target-self .sentence-mini-card {
+  outline-color: var(--os-teal-dark, #2E8B84);
+}
+@keyframes patientFocus { 50% { outline-offset: 6px; } }
 #sentence-slots-container .meaning-caption {
   position: absolute;
   left: 50%;

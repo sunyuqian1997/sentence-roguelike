@@ -11,6 +11,7 @@ import { initPuppetSprites } from './ui/spriteAnimator.js';
 import { initCharacterBlink } from './ui/characterBlink.js';
 import { initDesignFeedback } from './ui/designFeedback.js';
 import { initBattleDialogue } from './ui/battleDialogue.js';
+import { initMicroTransitions } from './ui/microTransitions.js';
 import { getLang, setLang, applyStaticI18n } from './i18n.js';
 import { initCheats } from './cheats.js';
 import { startGame, replayTutorial, startCombat, endPlayerTurn, chantSentence, addToSentence, removeSentenceWord, skipReward, showRewardScreen } from './game/combat.js';
@@ -85,6 +86,7 @@ import('./game/chantLog.js').then(m => {
   initCharacterBlink();
   initDesignFeedback();
   initBattleDialogue();
+  initMicroTransitions();
   initCheats();
 
   // Local-only visual QA entry for the settlement screen. It is stripped from

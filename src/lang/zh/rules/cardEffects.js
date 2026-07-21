@@ -22,8 +22,9 @@ export function applySubjects(ctx) {
     let start = 0;
     for (let i = 0; i <= ctx.cards.length; i++) {
       const atEnd = i === ctx.cards.length;
-      const atComma = !atEnd && ctx.cards[i].pos === 'punctuation' && ctx.cards[i].punctType === 'comma';
-      if (!atEnd && !atComma) continue;
+      const atBreak = !atEnd && ctx.cards[i].pos === 'punctuation'
+        && (ctx.cards[i].punctType === 'comma' || ctx.cards[i].punctType === 'period');
+      if (!atEnd && !atBreak) continue;
       const clause = ctx.cards.slice(start, i);
       if (clause.includes(subject)) return clause;
       start = i + 1;
@@ -52,9 +53,10 @@ export function applySubjects(ctx) {
       ? clause.slice(clause.indexOf(primaryVerb) + 1).find(c => c._isEnemyTarget)
       : null;
     const coActTargetsEnemy = coActVerbType === 'attack';
-    const canCoAct = !!primaryVerb && (!!clauseTarget || coActVerbType !== 'attack');
+    const canCoAct = !!primaryVerb && (!!clauseTarget || ctx.hasEnemyTarget || coActVerbType !== 'attack');
     const isCoActor = canCoAct && ctx.coActors.includes(s) && !instrumentSubjects.has(s);
     if (isCoActor) {
+      primaryVerb._coActorOwned = true;
       // Power from the subject's martial stat (attack) or generic, min 3.
       const martial = (s.bonusType === 'attack' || s.bonusType === 'all') ? ub : 0;
       const transformedIdentity = actorIdentity(s.word);
@@ -68,7 +70,8 @@ export function applySubjects(ctx) {
         name: s.word, power,
         verbType: coActVerbType,
         targetsEnemy: coActTargetsEnemy,
-        targetEnemyIdx: clauseTarget?._enemyIdx ?? -1,
+        targetEnemyIdx: clauseTarget?._enemyIdx ?? ctx.targetEnemyIdx,
+        patient: clause.slice(clause.indexOf(primaryVerb) + 1).some(c => c._isSelfTarget || c._isFixedWo) ? 'self' : 'enemy',
         identity: transformedIdentity || null,
       });
       const actLabel = coActVerbType === 'attack' ? `独立攻击${power}`
@@ -379,7 +382,7 @@ function buildClauses(cards) {
   const clauses = [];
   let cur = [];
   for (const c of cards) {
-    if (c.pos === 'punctuation' && c.punctType === 'comma') { clauses.push(cur); cur = []; }
+    if (c.pos === 'punctuation' && (c.punctType === 'comma' || c.punctType === 'period')) { clauses.push(cur); cur = []; }
     else cur.push(c);
   }
   clauses.push(cur);
@@ -425,11 +428,25 @@ export function applyVerbs(ctx) {
       continue;
     }
 
+    // This verb's main stat belongs to the named stage actor (猫守我 / 无名者戳),
+    // and was already materialized in effects._coActors by applySubjects.
+    if (v._coActorOwned) {
+      if (v.draw) effects.draw += (v.upgraded && v.draw ? v.draw + 1 : v.draw);
+      if (v.exhaust) v._shouldExhaust = true;
+      continue;
+    }
+
     if (v.combatType === 'attack') {
       let dmg = (power + bonus.subjectAttack + bonus.objAttack + G.strength) * bonus.attackMod;
       if (G.weak > 0 && !bonus.hasIgnoreAllLimits) dmg *= 0.75;
       const hits = v.hits || 1;
       effects.damage += Math.floor(dmg) * hits;
+      const explicitPatient = clause.slice(vIdx + 1).some(c => c._isEnemyTarget || c._isSelfTarget || c._isFixedWo);
+      if (subjectIsEnemy && v.selfAffectingVerb && !explicitPatient) {
+        effects.targetEnemyIdx = enemyIdx;
+        effects._enemySelfAction = { enemyIdx, source: v.word };
+        ctx.grammarNotes.push(`💥 ${subjectEnemyCard?.word || '敌人'}自身${v.word}`);
+      }
       if (v.forceAoe) effects.aoe = true;
       if (v.ignoreBlock) effects.ignoreBlock = true;
       if (v.applyWeakVerb) effects.applyWeak = Math.max(effects.applyWeak, v.applyWeakVerb);

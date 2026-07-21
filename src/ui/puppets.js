@@ -391,24 +391,36 @@ export function syncStandbyCoActors(names) {
 export function playCoActors(coActors) {
   const stage = document.getElementById('puppet-stage');
   const enemy = document.getElementById('puppet-enemy');
-  if (!stage || !enemy) return;
+  const player = document.getElementById('puppet-player');
+  if (!stage || !enemy || !player) return;
   const standbys = [...stage.querySelectorAll('.puppet-coactor.standby')];
-  const verbOf = (name) => {
-    const a = (coActors || []).find(c => c.name === name);
-    return a ? (a.verbType || 'attack') : 'attack';
-  };
+  const actorOf = (name) => (coActors || []).find(c => c.name === name) || { verbType: 'attack' };
   standbys.forEach((el, i) => {
-    const vt = verbOf(el.dataset.coactor);
+    const actor = actorOf(el.dataset.coactor);
+    const vt = actor.verbType || 'attack';
     const dx = gapX(el, enemy);
     if (vt === 'attack') {
       setTimeout(() => { el.dataset.pose = 'attack'; el.style.transform = `translateX(${Math.max(40, dx - 30)}px) scale(${COACTOR_SCALE})`; }, 300 * i + 120);
       setTimeout(() => { enemy.dataset.pose = 'hit'; impactFlash(enemy); }, 300 * i + 400);
     } else {
-      // defend/heal: act in place (no dash at enemy) — 守/挡/治 are for 我.
+      // 守/治有明确受事“我”时，个体走到我方身前，目标同步高亮。
       const pose = vt === 'heal' ? 'heal' : 'defend';
-      setTimeout(() => { el.dataset.pose = pose; el.style.transform = `translateY(-4px) scale(${COACTOR_SCALE})`; }, 300 * i + 120);
+      const protectDx = gapX(el, player);
+      setTimeout(() => {
+        el.dataset.pose = pose;
+        el.classList.toggle('puppet-protecting', actor.patient === 'self');
+        player.classList.toggle('puppet-protected-target', actor.patient === 'self');
+        el.style.transform = actor.patient === 'self'
+          ? `translateX(${Math.min(-24, protectDx + 58)}px) translateY(-4px) scale(${COACTOR_SCALE})`
+          : `translateY(-4px) scale(${COACTOR_SCALE})`;
+      }, 300 * i + 120);
     }
-    setTimeout(() => { el.dataset.pose = 'idle'; el.style.transform = `scale(${COACTOR_SCALE})`; }, 300 * i + 620);
+    setTimeout(() => {
+      el.dataset.pose = 'idle';
+      el.classList.remove('puppet-protecting');
+      player.classList.remove('puppet-protected-target');
+      el.style.transform = `scale(${COACTOR_SCALE})`;
+    }, 300 * i + 620);
     setTimeout(() => el.remove(), 300 * i + 900);
   });
 }
@@ -688,7 +700,8 @@ export function updatePuppets() {
     const verbIdx = sentence.lastIndexOf(lastVerb);
     let clauseStart = 0;
     for (let i = verbIdx - 1; i >= 0; i--) {
-      if (sentence[i]?.pos === 'punctuation' && sentence[i]?.punctType === 'comma') {
+      if (sentence[i]?.pos === 'punctuation'
+          && (sentence[i]?.punctType === 'comma' || sentence[i]?.punctType === 'period')) {
         clauseStart = i + 1;
         break;
       }
@@ -697,8 +710,13 @@ export function updatePuppets() {
       c._isEnemyTarget || isYouCard(c) || (G.enemies || []).some(e => e && e.hp > 0 && e.name === c.word)
     ));
     if (lastVerb.combatType === 'attack') {
-      if (playerIsActing) playerPose = 'ready';
-      if (hasEnemyTarget) enemyPose = 'targeted';
+      if (enemySubject && lastVerb.selfAffectingVerb) {
+        enemyPose = 'doomed';
+        enemyEmoji = '💥';
+      } else {
+        if (playerIsActing) playerPose = 'ready';
+        if (hasEnemyTarget) enemyPose = 'targeted';
+      }
     } else if (lastVerb.combatType === 'defense') {
       if (enemySubject) {
         enemyPose = lastVerb.enemyRestVerb ? 'lying' : 'defend';
@@ -715,7 +733,7 @@ export function updatePuppets() {
     }
     // 及物动词(valence trans/ditrans)+ 已选敌方目标 ⇒ 我方向前逼近,预告"即将把
     // 这个动作施加到目标身上"。不及物动词(摸鱼/逃)只在原地摆姿势,不前压。
-    const isTransitive = lastVerb.valence === 'trans' || lastVerb.valence === 'ditrans';
+    const isTransitive = lastVerb.valence === 'trans' || lastVerb.valence === 'ditrans' || lastVerb.valence === 'ambitrans';
     if (!enemySubject && playerIsActing && isTransitive && hasEnemyTarget && lastVerb.combatType !== 'defense' && lastVerb.combatType !== 'heal') {
       playerAiming = true;
     }
@@ -821,6 +839,12 @@ export function updatePuppets() {
   setEmoji(enemy, enemyEmoji);
   setBodyScale(player, playerScale);   // identity-driven size (我是儿子→小, 巨人→大)
   setBodyScale(enemy, enemyScale);
+  const lastVerbIndex = lastVerb ? sentence.lastIndexOf(lastVerb) : -1;
+  const selfIsPatient = lastVerbIndex >= 0
+    && sentence.slice(lastVerbIndex + 1).some(c => c?._isSelfTarget || c?._isFixedWo);
+  const coActorProtectsSelf = !!lastVerb && standbyNames.length > 0 && selfIsPatient
+    && (lastVerb.combatType === 'defense' || lastVerb.combatType === 'heal');
+  player.classList.toggle('puppet-protected-target', coActorProtectsSelf);
   // Play a one-shot cue when a puppet first enters a notable state.
   cuePose('enemy', enemyPose);
   cuePose('player', playerPose);
@@ -846,6 +870,7 @@ export function updatePuppets() {
           : lastVerb.combatType === 'defense' ? 'defend'
             : lastVerb.combatType === 'heal' ? 'heal' : 'idle';
       setPose(el, previewPose);
+      el.classList.toggle('puppet-protecting', coActorProtectsSelf && isActiveActor);
       el.classList.toggle('puppet-aiming', isAttackReady && hasEnemyTarget);
       el.style.transform = isAttackReady && hasEnemyTarget
         ? `translateX(18px) scale(${COACTOR_SCALE})`
@@ -882,10 +907,13 @@ export function playChantPuppetAnim(effects, timing) {
   const isAttack = !!(effects && (effects.damage > 0 || effects.aoe));
   const isHeal = !!(effects && effects.heal > 0 && !isAttack);
   const isBlock = !!(effects && effects.block > 0 && !isAttack);
-  const isEnemyRest = !!effects?._enemyRest;
+  const coActors = (effects && effects._coActors) || [];
+  const isEnemyRest = Boolean(effects?._enemyRest);
   const isEnemyHeal = !!(effects?._enemyHeal?.amount > 0);
   const isEnemyBlock = !!(effects?._enemyBlock?.amount > 0);
-  const isEnemyDirected = isEnemyRest || isEnemyHeal || isEnemyBlock || !!effects?._enemyStrength;
+  const isEnemyDirected = isEnemyRest || isEnemyHeal || isEnemyBlock || Boolean(effects?._enemyStrength);
+  const isEnemySelfAction = Boolean(effects?._enemySelfAction);
+  const coActorOnly = coActors.length > 0 && !isAttack && !isHeal && !isBlock && !isEnemyDirected;
   // 祈使/驱虎吞狼:动手的不是诗人 —— 诗人只上前一步点将,不冲锋。
   const imperative = !!(effects && (effects._imperative || effects._enemyVsEnemy));
   const pred = (effects && effects._predicates && effects._predicates[0]) || null;
@@ -893,7 +921,6 @@ export function playChantPuppetAnim(effects, timing) {
   const punTag = pred && pred.kind === 'pun' && pred.target !== 'self' ? pred.pun.tag : null;
   const motif = (effects && effects._motifTriggers && effects._motifTriggers.length > 0)
     ? effects._motifTriggers[0].motif.id : null;
-  const coActors = (effects && effects._coActors) || [];
   const clock = {
     dash: timing?.dashMs ?? 120,
     impact: timing?.impactMs ?? IMPACT_MS,
@@ -905,18 +932,26 @@ export function playChantPuppetAnim(effects, timing) {
     // 0ms — anticipation crouch
     [0, () => {
       player.style.transition = 'transform 0.15s ease-out';
-      player.style.transform = isEnemyDirected ? '' : 'translateY(2px) scaleY(0.94)';
+      player.style.transform = (isEnemyDirected || isEnemySelfAction || coActorOnly) ? '' : 'translateY(2px) scaleY(0.94)';
       enemy.style.transition = 'transform 0.15s ease-out';
     }],
     // 120ms — dash / pose
     [clock.dash, () => {
       player.style.transition = 'transform 0.3s cubic-bezier(0.22,1,0.36,1)';
       const dx = gapX(player, enemy);
-      if (isEnemyDirected) {
+      if (isEnemySelfAction) {
+        player.style.transform = '';
+        player.dataset.pose = 'idle';
+        enemy.dataset.pose = 'doomed';
+        setEmoji(enemy, '💥');
+      } else if (isEnemyDirected) {
         player.style.transform = '';
         player.dataset.pose = 'idle';
         enemy.dataset.pose = isEnemyRest ? 'lying' : isEnemyHeal ? 'heal' : 'defend';
         setEmoji(enemy, isEnemyRest ? '🛌' : isEnemyHeal ? '♥' : '🛡️');
+      } else if (coActorOnly) {
+        player.style.transform = '';
+        player.dataset.pose = 'idle';
       } else if (imperative) {
         // Commander stays put — a short step and a pointed finger
         player.style.transform = 'translateX(14px)';
@@ -940,7 +975,11 @@ export function playChantPuppetAnim(effects, timing) {
     }],
     // IMPACT — enemy reacts
     [clock.impact, () => {
-      if (isEnemyDirected) {
+      if (isEnemySelfAction) {
+        enemy.dataset.pose = 'hit';
+        impactFlash(enemy);
+        setEmoji(enemy, '💥');
+      } else if (isEnemyDirected) {
         enemy.dataset.pose = isEnemyRest ? 'lying' : isEnemyHeal ? 'heal' : 'defend';
       } else if (effects && effects._enemyVsEnemy) {
         // 驱虎吞狼:主敌人棍人(=被打的宾语敌)吃冲撞后仰;

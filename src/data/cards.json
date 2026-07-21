@@ -3721,6 +3721,8 @@
   "sui": {
     "word": "碎",
     "pos": "verb",
+    "valence": "ambitrans",
+    "selfAffectingVerb": true,
     "cost": 1,
     "rarity": "starter",
     "combatType": "attack",
@@ -3799,6 +3801,7 @@
   "guge": {
     "word": "骨",
     "pos": "object",
+    "bodyPart": true,
     "cost": 0,
     "rarity": "starter",
     "desc": "宾语·暴击(伤害+50%)",

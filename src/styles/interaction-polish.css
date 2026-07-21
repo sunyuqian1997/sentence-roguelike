@@ -79,6 +79,126 @@
 #puppet-player { left: 260px !important; bottom: 24px !important; }
 #puppet-enemy { left: 565px !important; bottom: 30px !important; }
 
+/* Amicro-inspired native micro-transitions. The reference is React/Motion;
+   this project keeps the same motion grammar without changing its DOM stack. */
+.micro-transitions-ready .card,
+.micro-transitions-ready .sentence-mini-card,
+.micro-transitions-ready .pack-item,
+.micro-transitions-ready .map-node,
+.micro-transitions-ready button,
+.micro-transitions-ready .os-window-title i {
+  --micro-tilt: 0deg;
+  isolation: isolate;
+  transition:
+    transform 360ms cubic-bezier(.18, .88, .28, 1.24),
+    box-shadow 280ms cubic-bezier(.2, .8, .2, 1),
+    opacity 220ms ease,
+    background-position 420ms ease !important;
+  will-change: transform;
+}
+.micro-transitions-ready #hand-cards .card,
+.micro-transitions-ready #target-cards .card,
+.micro-transitions-ready #target-cards-enemy .card,
+.micro-transitions-ready #sentence-slots-container .sentence-mini-card {
+  transition:
+    transform 360ms cubic-bezier(.18, .88, .28, 1.24),
+    box-shadow 280ms cubic-bezier(.2, .8, .2, 1),
+    opacity 220ms ease !important;
+}
+
+/* FocusBlur, translated to opacity only so text remains crisp and retro. */
+.micro-transitions-ready #hand-cards:has(.card:hover) .card:not(:hover),
+.micro-transitions-ready #sentence-slots-container:has(.sentence-mini-card:hover) .sentence-mini-card:not(:hover),
+.micro-transitions-ready .pack-list:has(.pack-item:hover) .pack-item:not(:hover) {
+  opacity: .72;
+  transform: translateY(3px) scale(.975) !important;
+}
+
+/* Spring lift + pointer-responsive tilt. Transforms never affect layout. */
+.micro-transitions-ready #hand-cards .card:hover:not(.in-sentence),
+.micro-transitions-ready #target-cards .card:hover,
+.micro-transitions-ready #target-cards-enemy .card:hover,
+.micro-transitions-ready .sentence-mini-card:hover,
+.micro-transitions-ready .pack-item:hover {
+  z-index: 40 !important;
+  transform: translateY(-14px) rotate(var(--micro-tilt)) scale(1.045) !important;
+  box-shadow: 5px 7px 0 rgba(20, 42, 38, .42) !important;
+}
+
+.micro-transitions-ready button:hover:not(:disabled),
+.micro-transitions-ready .map-node:hover,
+.micro-transitions-ready .rest-option:hover,
+.micro-transitions-ready .event-choice:hover,
+.micro-transitions-ready .os-window-title i:hover {
+  transform: translateY(-2px) scale(1.02) !important;
+}
+
+.micro-transitions-ready .micro-tap {
+  transform: translate(2px, 2px) scale(.96) !important;
+  transition-duration: 80ms !important;
+}
+
+/* Glare Shine: one restrained water-colored pass, not a permanent glossy skin. */
+.micro-glare-sweep {
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: -55%;
+  width: 34%;
+  z-index: 90;
+  pointer-events: none;
+  opacity: 0;
+  transform: skewX(-18deg);
+  background: linear-gradient(90deg, transparent, rgba(87, 182, 172, .25), rgba(246, 241, 226, .38), transparent);
+}
+.micro-glare-sweep.is-running { animation: microGlare 620ms ease-in-out both; }
+
+/* Expand Ring: click confirmation stays inside the interaction, then vanishes. */
+.micro-expand-ring {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  z-index: 91;
+  border: 2px solid var(--os-teal-dark, #2E8B84);
+  pointer-events: none;
+  translate: -50% -50%;
+  animation: microRing 420ms ease-out both;
+}
+
+/* AnimatePresence equivalent for windows/screens: quick scale + 3px settle. */
+.micro-window-enter {
+  animation: microWindowIn 360ms cubic-bezier(.18, .88, .28, 1.24) both !important;
+  transform-origin: 50% 18%;
+}
+.os-window:hover > .os-window-title,
+.reward-content:hover > .os-window-title,
+.rest-content:hover > .os-window-title,
+.event-content:hover > .os-window-title,
+.shop-content:hover > .os-window-title {
+  box-shadow: inset 0 -2px 0 var(--os-teal, #2E8B84);
+}
+
+@keyframes microGlare {
+  0% { opacity: 0; transform: translateX(0) skewX(-18deg); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(520%) skewX(-18deg); }
+}
+@keyframes microRing {
+  from { opacity: .9; transform: scale(.35); }
+  to { opacity: 0; transform: scale(4.2); }
+}
+@keyframes microWindowIn {
+  0% { opacity: 0; translate: 0 7px; scale: .985; }
+  72% { opacity: 1; translate: 0 -1px; scale: 1.003; }
+  100% { opacity: 1; translate: none; scale: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   #tooltip .tt-number { transform: none; }
+  .micro-transitions-ready .card,
+  .micro-transitions-ready .sentence-mini-card,
+  .micro-transitions-ready button,
+  .micro-window-enter { animation: none !important; transition-duration: 1ms !important; }
+  .micro-glare-sweep,
+  .micro-expand-ring { display: none !important; }
 }

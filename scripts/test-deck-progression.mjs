@@ -21,6 +21,7 @@ const enemy = (index) => ({
   _isEnemyTarget: true,
   _enemyIdx: index,
 });
+const selfTarget = () => ({ word: '我', pos: 'object', _isSelfTarget: true });
 
 assert.equal(new Set(STARTER_DECK_KEYS).size, STARTER_DECK_KEYS.length, 'starter deck has no duplicates');
 assert.equal(STARTER_DECK_KEYS.length, 15, 'starter deck stays compact enough to learn');
@@ -98,5 +99,33 @@ assert.equal(
   2,
   'effect audit catches both wrong block direction and missing rest',
 );
+
+const catGuardsMeCards = [card('mao'), card('shou'), selfTarget()];
+assert.equal(getSentenceValidity(catGuardsMeCards).ok, true, '猫守我 is a valid transitive defense');
+const catGuardsMe = evaluateSentence(catGuardsMeCards);
+const guardianCat = catGuardsMe.effects._coActors?.find((actor) => actor.name === '猫');
+assert(guardianCat?.block > 0, '猫 provides its own block');
+assert.equal(guardianCat.patient, 'self', '猫守我 records 我 as the protected patient');
+assert.equal(catGuardsMe.effects.block, 0, '猫守我 does not duplicate the block as a player action');
+
+const shatterTarget = evaluateSentence([me(), card('sui'), enemy(0)]);
+assert(shatterTarget.effects.damage > 0, '我碎X damages X');
+assert.equal(shatterTarget.effects.targetEnemyIdx, 0);
+const targetShatters = evaluateSentence([enemy(0), card('sui')]);
+assert(targetShatters.effects.damage > 0, 'X碎 damages X');
+assert.equal(targetShatters.effects._enemySelfAction?.enemyIdx, 0, 'X碎 is presented as X shattering itself');
+
+const shatterBoneCards = [me(), card('sui'), enemy(1), card('guge')];
+assert.equal(getSentenceValidity(shatterBoneCards).ok, true, '我碎X骨 treats 骨 as X body part');
+const shatterBone = evaluateSentence(shatterBoneCards);
+assert.equal(shatterBone.effects.targetEnemyIdx, 1, 'body-part phrase keeps X as combat target');
+assert(shatterBone.effects.damage > shatterTarget.effects.damage, '骨 still supplies its critical modifier');
+
+const periodCompoundCards = [me(), card('cu'), enemy(0), card('period'), card('wuming'), card('cu')];
+assert.equal(getSentenceValidity(periodCompoundCards).ok, true, '句号 separates two complete combat clauses');
+const periodCompound = evaluateSentence(periodCompoundCards);
+const nameless = periodCompound.effects._coActors?.find((actor) => actor.name === '无名者');
+assert(nameless?.damage > 0, '无名者 performs the second-clause verb');
+assert.equal(nameless.targetEnemyIdx, 0, 'second clause inherits the established enemy target');
 
 console.log('deck-progression-ok');

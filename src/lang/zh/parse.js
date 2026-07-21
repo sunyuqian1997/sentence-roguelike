@@ -44,7 +44,7 @@ function clauseToFact(clause) {
 function buildClauses(cards) {
   const out = []; let cur = [];
   for (const c of cards) {
-    if (c.pos === 'punctuation' && c.punctType === 'comma') { out.push(cur); cur = []; }
+    if (c.pos === 'punctuation' && (c.punctType === 'comma' || c.punctType === 'period')) { out.push(cur); cur = []; }
     else cur.push(c);
   }
   out.push(cur);
@@ -65,9 +65,10 @@ function detectRoles(ctx) {
 
   const isMe = (c) => c._isSelfTarget || c._isFixedWo || (c.pos === 'subject' && c.word === '我');
   const isEnemyRef = (c) => c._isEnemyTarget || isYouCard(c);
-  const isComma = (c) => c.pos === 'punctuation' && c.punctType === 'comma';
+  const isClauseBreak = (c) => c.pos === 'punctuation'
+    && (c.punctType === 'comma' || c.punctType === 'period');
   const clauses = []; { let cur = [];
-    for (const c of ctx.cards) { if (isComma(c)) { clauses.push(cur); cur = []; } else cur.push(c); }
+    for (const c of ctx.cards) { if (isClauseBreak(c)) { clauses.push(cur); cur = []; } else cur.push(c); }
     clauses.push(cur);
   }
   const enemyStrikesMe = !effects._imperative && clauses.some(clause => {
