@@ -1,0 +1,60 @@
+/* Motion-owned accents only. Window roots keep their existing positioning
+   transforms; the interaction module animates root opacity and these children. */
+.motion-window-focus-rail {
+  position: absolute;
+  left: 5px;
+  right: 5px;
+  bottom: 1px;
+  height: 2px;
+  z-index: 4;
+  display: block;
+  opacity: 0;
+  pointer-events: none;
+  transform: scaleX(.18);
+  transform-origin: 50% 50%;
+  background: var(--os-teal, #2e8b84);
+}
+
+.os-window-title:has(> .motion-window-focus-rail),
+.audio-settings-title:has(> .motion-window-focus-rail),
+[data-motion-window-title]:has(> .motion-window-focus-rail) {
+  position: relative;
+}
+
+[data-motion-window-focused='true'] > .os-window-title,
+[data-motion-window-focused='true'] > .audio-settings-title,
+[data-motion-window-focused='true'] > [data-motion-window-title] {
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--os-teal, #2e8b84) 72%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-window-focus-rail { display: none; }
+}
+
+/* AVG click feedback is a separate child so it never filters or recolors the
+   portrait artwork. Existing dialogue positioning transforms remain intact. */
+.motion-avg-advance-pulse {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  z-index: 8;
+  display: block;
+  border: 1px solid color-mix(in srgb, var(--os-teal, #2e8b84) 78%, transparent);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  translate: -50% -50%;
+  transform: scale(.5);
+}
+
+/* The migration deliberately presents source artwork as authored. This wins
+   over the legacy tutorial tint only while the Motion AVG adapter is active. */
+[data-motion-avg-state] [data-motion-avg-portrait],
+[data-motion-avg-state] .tutorial-portrait,
+[data-motion-avg-state] .story-portrait img {
+  filter: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-avg-advance-pulse { display: none; }
+}

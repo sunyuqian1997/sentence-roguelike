@@ -12,6 +12,7 @@ import { initCharacterBlink } from './ui/characterBlink.js';
 import { initDesignFeedback } from './ui/designFeedback.js';
 import { initBattleDialogue } from './ui/battleDialogue.js';
 import { initMicroTransitions } from './ui/microTransitions.js';
+import { initReactMotionRuntime } from './react/entry.jsx';
 import { getLang, setLang, applyStaticI18n } from './i18n.js';
 import { initCheats } from './cheats.js';
 import { startGame, replayTutorial, startCombat, endPlayerTurn, chantSentence, addToSentence, removeSentenceWord, skipReward, showRewardScreen } from './game/combat.js';
@@ -80,13 +81,18 @@ import('./game/chantLog.js').then(m => {
 
 // Init
 (function init() {
+  const reactMotionStarted = initReactMotionRuntime();
+  // The local Motion lab is a React-owned QA surface. Avoid starting the game
+  // canvas, audio and sprite loops behind it; this keeps screenshots stable.
+  if (document.body.classList.contains('react-motion-debug-active')) return;
+
   initInkBackground();
   initCRT();
   initPuppetSprites();
   initCharacterBlink();
   initDesignFeedback();
   initBattleDialogue();
-  initMicroTransitions();
+  if (!reactMotionStarted) initMicroTransitions();
   initCheats();
 
   // Local-only visual QA entry for the settlement screen. It is stripped from

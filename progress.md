@@ -13,6 +13,14 @@
   - 阅读 React 官方渐进接入与 createRoot 文档，以及 Motion 的布局/退出动画文档。
   - 盘点战斗时序、DOM 所有权、全局状态写入与 Vercel 构建边界。
   - 决定不把 Vite 主版本升级与 React 迁移绑定在同一批。
+  - 创建并切换到 `codex/react-motion-migration` 分支。
+  - 安装 React 19.2.7、Motion 12.42.2 和兼容的 React Vite 插件。
+  - 将 Vite 修补到 6.4.3，并将依赖审计清零。
+  - Runtime sub-agent 完成 `src/react/runtime/**`。
+  - Card agent 完成 Motion 卡牌/按钮适配器；Window agent 完成窗口/AVG 适配器和 React DebugLab。
+  - 主线程建立 `src/react/entry.jsx`，默认 React Motion、支持 `?motion=off` 回滚和 `?motiondebug=1` 检视台。
+  - 浏览器验证 DebugLab、主界面、战斗、教程、动态卡牌绑定和 legacy 回滚。
+  - 根据浏览器结果修复 Document 初始扫描与设置标题焦点轨。
 - Files created/modified:
   - `task_plan.md`
   - `findings.md`
@@ -35,6 +43,10 @@
 | Timestamp | Error | Attempt | Resolution |
 |-----------|-------|---------|------------|
 | 2026-07-20 | planning-with-files 首次路径错误 | 1 | 改用 `/Users/Sunyuqian/.codex/skills/planning-with-files/SKILL.md` |
+| 2026-07-20 | 安装后 `npm audit` 报 Vite/picomatch/PostCSS 漏洞 | 1 | Vite 同主版本升级到 6.4.3，再执行仅含传递依赖修补的 `npm audit fix`；最终 0 漏洞 |
+| 2026-07-22 | in-app browser 截图连续超时 | 1 | 阅读 browser troubleshooting，继续用同一浏览器的 DOM snapshot、布局矩形、computed style、交互结果与 console logs 验收 |
+| 2026-07-22 | Window/AVG observer 使用 Document 根时未扫描初始节点 | 1 | 让 `windowsWithin/dialoguesWithin` 接受任何带 `querySelectorAll` 的根 |
+| 2026-07-22 | 设置窗口没有焦点轨 | 1 | 将 `.audio-settings-title` 纳入 focus rail 标题选择器 |
 
 ## 5-Question Reboot Check
 | Question | Answer |

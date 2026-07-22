@@ -1,0 +1,77 @@
+/* Motion owns timing and spring interpolation. This file only composes its
+   variables with the legacy layout transforms and provides non-layout paint. */
+
+.motion-card-perspective-context {
+  perspective: 880px;
+  perspective-origin: 50% 62%;
+}
+
+.motion-card-interaction {
+  --motion-card-axis-x: 0;
+  --motion-card-axis-y: 1;
+  --motion-card-angle: 0deg;
+  --motion-card-lift: 0px;
+  --motion-card-scale: 1;
+  --motion-card-focus: 0;
+  transform-origin: 50% 78%;
+  transform-style: preserve-3d;
+  translate: 0 var(--motion-card-lift);
+  rotate: var(--motion-card-axis-x) var(--motion-card-axis-y) 0 var(--motion-card-angle);
+  scale: var(--motion-card-scale);
+  outline: 2px solid rgba(46, 139, 132, var(--motion-card-focus));
+  outline-offset: 3px;
+  will-change: translate, rotate, scale;
+}
+
+.motion-card-glare {
+  --motion-glare-x: -75%;
+  position: absolute;
+  inset: -18% auto -18% -38%;
+  z-index: 80;
+  width: 30%;
+  pointer-events: none;
+  opacity: 0;
+  translate: var(--motion-glare-x) 0;
+  rotate: -16deg;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(87, 182, 172, 0.2),
+    rgba(246, 241, 226, 0.32),
+    transparent
+  );
+}
+
+.motion-button-interaction {
+  --motion-button-lift: 0px;
+  --motion-button-scale: 1;
+  --motion-button-focus: 0;
+  translate: 0 var(--motion-button-lift);
+  scale: var(--motion-button-scale);
+  outline: 2px solid rgba(46, 139, 132, var(--motion-button-focus));
+  outline-offset: 3px;
+  will-change: translate, scale;
+}
+
+.motion-card-interaction[data-motion-disabled],
+.motion-button-interaction[data-motion-disabled] {
+  --motion-card-lift: 0px;
+  --motion-card-scale: 1;
+  --motion-card-angle: 0deg;
+  --motion-button-lift: 0px;
+  --motion-button-scale: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-card-interaction,
+  .motion-button-interaction {
+    translate: 0 0 !important;
+    rotate: none !important;
+    scale: 1 !important;
+    will-change: auto;
+  }
+
+  .motion-card-glare {
+    display: none;
+  }
+}

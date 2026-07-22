@@ -29,27 +29,27 @@ Phase 5
 ### Phase 4: Deliverable
 - [x] 编写 `docs/REACT_MIGRATION_PLAN.md`
 - [x] 审阅文档，确认可执行性
-- [ ] 提交规划文档
-- **Status:** in_progress
+- [x] 提交规划文档
+- **Status:** complete
 
 ### Phase 5: React/Motion Runtime
-- [ ] 创建迁移分支
-- [ ] 引入依赖、React root、MotionConfig 和 UI bridge
-- [ ] 保留 legacy 回滚路径
-- **Status:** pending
+- [x] 创建迁移分支
+- [x] 引入依赖、React root、MotionConfig 和 UI bridge
+- [x] 保留 legacy 回滚路径
+- **Status:** complete
 
 ### Phase 6: Interaction Recipes & Debug Loop
-- [ ] 并行实现卡牌/按钮 recipe
-- [ ] 并行实现窗口/AVG recipe
-- [ ] 建立开发环境动效 debug 页面
-- **Status:** pending
+- [x] 并行实现卡牌/按钮 recipe
+- [x] 并行实现窗口/AVG recipe
+- [x] 建立开发环境动效 debug 页面
+- **Status:** complete
 
 ### Phase 7: Integration & Browser QA
-- [ ] 统一接入全部卡牌、按钮和窗口
-- [ ] 移除重复旧动效
-- [ ] 完整测试、截图、效果审计和生产构建
+- [x] 统一接入全部卡牌、按钮和窗口
+- [x] 移除重复旧动效
+- [ ] 完整测试、视觉/DOM 验收、效果审计和生产构建
 - [ ] 分阶段提交
-- **Status:** pending
+- **Status:** in_progress
 
 ## Key Questions
 1. 是否应该一次性重写？预期答案：不应该，应渐进迁移。
