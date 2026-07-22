@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 import {
   appendFileSync,
   existsSync,
@@ -118,8 +119,18 @@ function spriteDebugManifestPlugin() {
 
 export default defineConfig({
   root: '.',
-  plugins: [chantLogPlugin(), spriteDebugManifestPlugin()],
+  plugins: [react(), chantLogPlugin(), spriteDebugManifestPlugin()],
   build: {
     outDir: 'dist',
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (/node_modules\/(?:react|react-dom|scheduler|motion|motion-dom|motion-utils)\//.test(id)) {
+            return 'react-motion';
+          }
+          return undefined;
+        },
+      },
+    },
   },
 });

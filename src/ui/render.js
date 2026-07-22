@@ -12,6 +12,7 @@ import { updatePuppets } from './puppets.js';
 import { attachSentenceDrag, attachHandDrag } from './dragSort.js';
 import { spriteKeyForEnemy } from './spriteAnimator.js';
 import { getSentenceValidity } from '../game/sentenceValidity.js';
+import { uiBridge } from '../react/runtime/uiBridge.js';
 
 // Puppet animations live in ./puppets.js; re-export for legacy importers.
 export { updatePuppets, playChantPuppetAnim, playEnemyPuppetAnim } from './puppets.js';
@@ -24,6 +25,7 @@ import { uiScale, toGameRect, DESIGN_W, DESIGN_H } from './uiScale.js';
 export function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  uiBridge.emit('screen:change', { id });
 }
 
 // ============================================================
@@ -62,6 +64,7 @@ export function renderCombat() {
   updateChantButton();
   renderChantButtonVerdict();
   updatePuppets();
+  uiBridge.emit('combat:render');
 }
 
 function renderChantButtonVerdict() {

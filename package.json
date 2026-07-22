@@ -10,10 +10,17 @@
     "test:judge": "node scripts/test-sentence-judge.mjs",
     "test:battle-rules": "node scripts/test-battle-rules.mjs",
     "test:deck-loop": "node scripts/test-deck-progression.mjs",
+    "test:react-motion": "node scripts/test-react-motion-runtime.mjs",
     "audit:effects": "node scripts/audit-effects.mjs"
   },
   "devDependencies": {
-    "vite": "^6.2.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "vite": "^6.4.3",
     "ws": "^8.21.0"
+  },
+  "dependencies": {
+    "motion": "^12.42.2",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
   }
 }
