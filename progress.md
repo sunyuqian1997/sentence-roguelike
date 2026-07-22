@@ -38,6 +38,15 @@
 | Test | Input | Expected | Actual | Status |
 |------|-------|----------|--------|--------|
 | Git 状态确认 | `git status --short` | 前一批代码已提交 | 无未提交代码（创建规划文件之前） | ✓ |
+| React runtime | `npm run test:react-motion` | bridge 生命周期与导出正常 | assertions passed | ✓ |
+| 牌组循环 | `npm run test:deck-loop` | 无规则回归 | deck-progression-ok | ✓ |
+| 战斗规则 | `npm run test:battle-rules` | 无战斗回归 | battle-rules-ok | ✓ |
+| 句子判定 | `npm run test:judge` | 无判定回归 | assertions passed | ✓ |
+| 效果审计 | `npm run audit:effects` | 本地历史作用对象正确 | 227 条全部通过 | ✓ |
+| 生产构建 | `npm run build` | Vercel 静态构建成功 | Vite 6.4.3 构建成功，React/Motion 独立 chunk | ✓ |
+| 依赖审计 | `npm audit --audit-level=high` | 0 漏洞 | 0 vulnerabilities | ✓ |
+| 浏览器 DebugLab | `?motiondebug=1` | 状态、AVG、模态、reduced motion 可检查 | 全部交互通过 | ✓ |
+| 浏览器 live/rollback | 默认与 `?motion=off` | React 默认、旧模式可回滚 | 两种模式均通过 | ✓ |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |

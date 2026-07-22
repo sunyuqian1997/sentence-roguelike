@@ -4,7 +4,7 @@
 在不破坏现有游戏规则、存档、视觉布局和 Vercel/API 能力的前提下，形成一份可由多个 sub-agent 分阶段执行、以 React 与 Motion 提升互动品质的迁移计划。
 
 ## Current Phase
-Phase 5
+Complete
 
 ## Phases
 
@@ -47,9 +47,9 @@ Phase 5
 ### Phase 7: Integration & Browser QA
 - [x] 统一接入全部卡牌、按钮和窗口
 - [x] 移除重复旧动效
-- [ ] 完整测试、视觉/DOM 验收、效果审计和生产构建
-- [ ] 分阶段提交
-- **Status:** in_progress
+- [x] 完整测试、视觉/DOM 验收、效果审计和生产构建
+- [x] 分阶段提交
+- **Status:** complete
 
 ## Key Questions
 1. 是否应该一次性重写？预期答案：不应该，应渐进迁移。
