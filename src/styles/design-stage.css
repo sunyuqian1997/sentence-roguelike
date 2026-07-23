@@ -440,17 +440,12 @@
 #hand-cards-wrapper .card-effect-bar { display: none !important; }
 
 /* Tutorial starts with ghost actors, then the chosen subject becomes solid. */
-#combat-screen.tutorial-mode .battle-sprite,
 #combat-screen.tutorial-mode #puppet-player,
 #combat-screen.tutorial-mode #puppet-enemy { opacity: .28; pointer-events: none; }
-#combat-screen.tutorial-mode[data-tutorial-actors^='player'] #battle-sprite-player,
 #combat-screen.tutorial-mode[data-tutorial-actors^='player'] #puppet-player,
-#combat-screen.tutorial-mode[data-tutorial-actors$='enemy'] #battle-sprite-enemy,
 #combat-screen.tutorial-mode[data-tutorial-actors$='enemy'] #puppet-enemy,
-#combat-screen.tutorial-mode[data-tutorial-step='attack'] .battle-sprite,
 #combat-screen.tutorial-mode[data-tutorial-step='attack'] #puppet-player,
 #combat-screen.tutorial-mode[data-tutorial-step='attack'] #puppet-enemy,
-#combat-screen.tutorial-mode[data-tutorial-step='aftermath'] .battle-sprite,
 #combat-screen.tutorial-mode[data-tutorial-step='aftermath'] #puppet-player,
 #combat-screen.tutorial-mode[data-tutorial-step='aftermath'] #puppet-enemy { opacity: 1; }
 #tutorial-layer.watching-attack .tutorial-skip { pointer-events: none; }

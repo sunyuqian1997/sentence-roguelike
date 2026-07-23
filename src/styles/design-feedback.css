@@ -186,6 +186,34 @@
   color: var(--os-ink, #1A1A18) !important;
   white-space: nowrap;
 }
+#sentence-slots-container[data-density='compact'] > .sentence-half {
+  gap: 8px !important;
+}
+#sentence-slots-container[data-density='compact'] .sentence-card-wrap {
+  min-width: 30px;
+}
+#sentence-slots-container[data-density='compact'] .sentence-mini-card .card-word {
+  font-size: 31px !important;
+  letter-spacing: .02em !important;
+}
+#sentence-slots-container[data-density='dense'] > .sentence-half {
+  gap: 3px !important;
+  padding-left: 8px !important;
+}
+#sentence-slots-container[data-density='dense'] .sentence-card-wrap {
+  min-width: 24px;
+}
+#sentence-slots-container[data-density='dense'] .sentence-mini-card {
+  padding-inline: 1px !important;
+}
+#sentence-slots-container[data-density='dense'] .sentence-mini-card .card-word {
+  font-size: 25px !important;
+  letter-spacing: 0 !important;
+}
+#sentence-slots-container[data-density='dense'] .sentence-mini-card .card-pos-tag {
+  padding-inline: 3px !important;
+  font-size: 7.5px !important;
+}
 #sentence-slots-container .target-self .card-word { color: var(--os-teal-dark, #2E8B84) !important; }
 #sentence-slots-container .target-enemy .card-word { color: var(--os-orange-dark, #B4471F) !important; }
 

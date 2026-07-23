@@ -215,12 +215,24 @@ export function renderSentenceSlots() {
   // Resolve meanings once — slot cards render their ACTIVE usage (pos color,
   // caption), guaranteed in sync with the evaluator.
   const displayCards = applyMeaningsToSentence(G.sentence);
+  const visualWeight = displayCards.reduce((sum, card) => {
+    const word = String(card?.word || '');
+    return sum + Math.max(1, Math.min(4, [...word].length));
+  }, 0);
+  container.dataset.density = displayCards.length >= 7 || visualWeight >= 13
+    ? 'dense'
+    : displayCards.length >= 5 || visualWeight >= 9
+      ? 'compact'
+      : 'normal';
 
   const half = document.createElement('div');
   half.className = 'sentence-half';
   displayCards.forEach((card, idx) => {
     const wordEl = createSentenceWordEl(card, idx);
-    if (card._isEnemyTarget || card._isSelfTarget || card._isFixedWo) {
+    // Only an explicit noun AFTER a transitive verb is its patient. A subject
+    // ("我碎纸鬼"里的「我」 / "纸鬼碎"里的「纸鬼」) must never receive
+    // the patient outline merely because it uses a target-shaped card.
+    if (card._isEnemyTarget || card._isSelfTarget) {
       let clauseStart = 0;
       for (let i = idx - 1; i >= 0; i--) {
         if (displayCards[i]?.pos === 'punctuation'
@@ -231,17 +243,7 @@ export function renderSentenceSlots() {
       }
       const governingVerb = [...displayCards.slice(clauseStart, idx)]
         .reverse().find(c => c && (c.pos === 'verb' || c.pos === 'special'));
-      let clauseEnd = displayCards.length;
-      for (let i = idx + 1; i < displayCards.length; i++) {
-        if (displayCards[i]?.pos === 'punctuation'
-            && (displayCards[i].punctType === 'comma' || displayCards[i].punctType === 'period')) {
-          clauseEnd = i;
-          break;
-        }
-      }
-      const selfAffectingVerb = displayCards.slice(idx + 1, clauseEnd)
-        .find(c => c && (c.pos === 'verb' || c.pos === 'special') && c.selfAffectingVerb);
-      if ((governingVerb && governingVerb.valence !== 'intrans') || selfAffectingVerb) {
+      if (governingVerb && governingVerb.valence !== 'intrans') {
         wordEl.classList.add('transitive-patient');
       }
     }

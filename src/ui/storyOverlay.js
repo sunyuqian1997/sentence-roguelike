@@ -56,7 +56,7 @@ export function showNextStoryLine() {
   typeChar();
   const portraitEl = document.getElementById('story-portrait');
   if (line.speaker === '林夕' || line.speaker === '李清照') {
-    portraitEl.innerHTML = `<img src="/main_characters/girl/00.png" alt="林夕" style="width:100%;height:100%;object-fit:contain;object-position:bottom;transition:none;">`;
+    portraitEl.innerHTML = `<img data-character="girl" src="/main_characters/girl/00.png" alt="林夕" style="width:100%;height:100%;object-fit:contain;object-position:bottom;transition:none;">`;
   } else {
     const speakerMap = {
       '仓颉之影': 'cangjie', '诗圣残魂': 'shisheng',

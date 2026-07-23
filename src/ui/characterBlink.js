@@ -8,8 +8,8 @@ const GIRL_FRAMES = Object.freeze([
 const GIRL_SELECTOR = [
   '#battle-sprite-player img',
   '#player-portrait-img',
-  '.tutorial-portrait',
-  '#story-portrait img',
+  '.tutorial-portrait[data-character="girl"]',
+  '#story-portrait img[data-character="girl"]',
 ].join(',');
 
 let blinkTimer = 0;

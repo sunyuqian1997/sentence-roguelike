@@ -29,7 +29,11 @@ const SCRIPT = [
   },
   {
     phase: 'encounter', speaker: '林夕',
-    text: '它们在等我放入句子的主体。先确认“谁”要行动。',
+    text: '那位同学也被困在句子里……它在等我先写下“谁”要行动。',
+  },
+  {
+    phase: 'encounter', speaker: '纸片同学', portrait: '/canjuguai.png',
+    text: '……别怕。我只记得一件事：在这里，完整的句子会变成真的。',
   },
   {
     phase: 'self', speaker: '？？？', waitFor: 'self',
@@ -153,6 +157,16 @@ function showEntry(index) {
   layer.classList.remove('watching-attack');
   layer.querySelector('.tutorial-speaker').textContent = entry.speaker;
   layer.classList.toggle('speaker-linxi', entry.speaker === '林夕');
+  const portrait = layer.querySelector('.tutorial-portrait');
+  const portraitSrc = entry.portrait || (entry.speaker === '林夕' ? '/main_characters/girl/00.png' : '');
+  portrait.hidden = !portraitSrc;
+  if (portraitSrc) {
+    portrait.dataset.character = entry.speaker === '林夕' ? 'girl' : 'paper-classmate';
+    portrait.src = portraitSrc;
+    portrait.alt = entry.speaker;
+  } else {
+    delete portrait.dataset.character;
+  }
   typeText(layer.querySelector('.tutorial-text'), entry.text);
   layer.querySelector('.tutorial-prompt').textContent = entry.prompt || '';
   const next = layer.querySelector('.tutorial-next');
