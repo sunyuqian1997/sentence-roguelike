@@ -14,7 +14,10 @@ function clauses(cards) {
   const out = [];
   let current = [];
   for (const card of cards || []) {
-    if (card?.pos === 'punctuation' && card?.punctType === 'comma') {
+    if (
+      card?.pos === 'punctuation'
+      && (card?.punctType === 'comma' || card?.punctType === 'period')
+    ) {
       out.push(current);
       current = [];
     } else current.push(card);

@@ -110,6 +110,25 @@ assert.equal(
   2,
   'effect audit catches both wrong block direction and missing rest',
 );
+const periodSeparatedGuard = {
+  n: 2,
+  kind: 'sentence',
+  text: '我斩纸鬼。影子守',
+  cards: [
+    me(),
+    card('zhan'),
+    { ...enemy(0), role: 'enemy-target' },
+    card('period'),
+    card('yingzi'),
+    card('shou'),
+  ],
+  effects: {},
+};
+assert.deepEqual(
+  auditEffectEntries([periodSeparatedGuard]),
+  [],
+  'effect audit does not carry an enemy subject across a period',
+);
 
 const catGuardsMeCards = [card('mao'), card('shou'), selfTarget()];
 assert.equal(getSentenceValidity(catGuardsMeCards).ok, true, '猫守我 is a valid transitive defense');
