@@ -1,6 +1,33 @@
 /* Final interaction pass. Kept last in the cascade so the fixed-design canvas
    remains stable while these focused overrides win over the legacy skins. */
 
+/* Word cards read like labels, never like vertical plaques. Multi-character
+   words step down in size while retaining the existing 58px card footprint. */
+.card .card-word {
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+  white-space: nowrap;
+  letter-spacing: .02em !important;
+  padding-inline: 3px !important;
+}
+#hand-cards .card[data-word-length='2'] .card-word,
+#target-cards .card[data-word-length='2'] .card-word,
+#target-cards-enemy .card[data-word-length='2'] .card-word {
+  font-size: 21px !important;
+}
+#hand-cards .card.card-word-long .card-word,
+#target-cards .card.card-word-long .card-word,
+#target-cards-enemy .card.card-word-long .card-word {
+  font-size: 15px !important;
+  letter-spacing: -.04em !important;
+}
+#hand-cards .card.card-word-xlong .card-word,
+#target-cards .card.card-word-xlong .card-word,
+#target-cards-enemy .card.card-word-xlong .card-word {
+  font-size: 11px !important;
+  letter-spacing: -.08em !important;
+}
+
 /* Card hover only explains gameplay information the card itself cannot show
    clearly. The repeated word heading and flavor quote are intentionally gone. */
 #tooltip {

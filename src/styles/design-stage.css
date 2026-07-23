@@ -53,6 +53,17 @@
 }
 .battle-sprite[hidden] { display: none !important; }
 
+/* 教程首帧只保留林夕的大立绘。林夕在剧情里注意到“同学”后，
+   tutorial.js 才切换此状态并让纸鬼立绘直接出现。 */
+#combat-screen.tutorial-mode[data-tutorial-enemy-portrait='hidden'] #battle-sprite-enemy {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+#combat-screen.tutorial-mode[data-tutorial-enemy-portrait='visible'] #battle-sprite-enemy {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
 /* Reference stage window: 836px centered, independent of the Sprite layer. */
 #combat-stage {
   flex: 0 0 356px !important;

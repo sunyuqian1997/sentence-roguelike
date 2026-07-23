@@ -5,6 +5,7 @@ let cursor = 0;
 let waitingFor = null;
 let onComplete = null;
 let typeTimer = null;
+let enemyPortraitRevealed = false;
 
 const SCRIPT = [
   {
@@ -29,7 +30,8 @@ const SCRIPT = [
   },
   {
     phase: 'encounter', speaker: '林夕',
-    text: '那位同学也被困在句子里……它在等我先写下“谁”要行动。',
+    revealEnemyPortrait: true,
+    text: '等等……那边还有一位同学？那位同学也被困在句子里……它在等我先写下“谁”要行动。',
   },
   {
     phase: 'encounter', speaker: '纸片同学', portrait: '/canjuguai.png',
@@ -153,6 +155,8 @@ function showEntry(index) {
   const combat = document.getElementById('combat-screen');
   combat.classList.add('tutorial-mode');
   combat.dataset.tutorialStep = entry.phase;
+  if (entry.revealEnemyPortrait) enemyPortraitRevealed = true;
+  combat.dataset.tutorialEnemyPortrait = enemyPortraitRevealed ? 'visible' : 'hidden';
   layer.classList.add('active');
   layer.classList.remove('watching-attack');
   layer.querySelector('.tutorial-speaker').textContent = entry.speaker;
@@ -219,6 +223,7 @@ function cleanup() {
   combat?.classList.remove('tutorial-mode');
   if (combat) delete combat.dataset.tutorialStep;
   if (combat) delete combat.dataset.tutorialActors;
+  if (combat) delete combat.dataset.tutorialEnemyPortrait;
   ['#puppet-player', '#stage-player', '#battle-sprite-player', '#puppet-enemy', '#stage-enemy', '#battle-sprite-enemy']
     .forEach((selector) => {
       const el = document.querySelector(selector);
@@ -244,6 +249,7 @@ export function beginTutorial(callback) {
   active = true;
   cursor = 0;
   waitingFor = null;
+  enemyPortraitRevealed = false;
   onComplete = callback || null;
   showEntry(0);
 }

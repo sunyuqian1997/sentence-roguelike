@@ -574,6 +574,10 @@ export function createCardElement(card, handIndex, opts={}) {
   const posNames = t('posNames');
   const word = getCardWord(card);
   const desc = getCardDesc(card);
+  const wordLength = Array.from(String(word || '')).length;
+  div.dataset.wordLength = String(wordLength);
+  if (wordLength >= 3) div.classList.add('card-word-long');
+  if (wordLength >= 5) div.classList.add('card-word-xlong');
 
   const multiMeaningBadge = (Array.isArray(card.meanings) && card.meanings.length > 0)
     ? `<div class="meaning-badge" title="${t('multiCard')}">💡</div>`

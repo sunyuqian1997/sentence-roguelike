@@ -586,17 +586,18 @@ body:has(#combat-screen.active) #os-menubar { display: none; }
 #tutorial-layer.watching-attack .tutorial-dialogue { opacity: 0; transform: translate(-50%, 20px); pointer-events: none; }
 #tutorial-layer.watching-attack .tutorial-skip { opacity: 0; }
 
-/* 需要玩家操作时，AVG 框收成舞台左上的“现场指令”，不遮住造句区和手牌。 */
+/* 需要玩家操作时，AVG 框收成舞台中央的横向“现场指令”。
+   固定居中避免缩放后压住左右立绘，也不触碰造句区和手牌坐标。 */
 #combat-screen[data-tutorial-step='self'] ~ #tutorial-layer .tutorial-dialogue,
 #combat-screen[data-tutorial-step='verb'] ~ #tutorial-layer .tutorial-dialogue,
 #combat-screen[data-tutorial-step='target'] ~ #tutorial-layer .tutorial-dialogue,
 #combat-screen[data-tutorial-step='chant'] ~ #tutorial-layer .tutorial-dialogue {
-  left: 18px;
-  top: 102px;
+  left: 50%;
+  top: 92px;
   bottom: auto;
-  width: 430px;
-  min-height: 126px;
-  transform: none;
+  width: 520px;
+  min-height: 112px;
+  transform: translateX(-50%);
   animation: none;
 }
 #combat-screen[data-tutorial-step='self'] ~ #tutorial-layer .tutorial-dialogue-body,
@@ -613,6 +614,13 @@ body:has(#combat-screen.active) #os-menubar { display: none; }
 #combat-screen[data-tutorial-step='chant'] ~ #tutorial-layer .tutorial-portrait {
   width: 76px;
   height: 100px;
+}
+#combat-screen[data-tutorial-step='self'] ~ #tutorial-layer .tutorial-dialogue-body:has(.tutorial-portrait[hidden]),
+#combat-screen[data-tutorial-step='verb'] ~ #tutorial-layer .tutorial-dialogue-body:has(.tutorial-portrait[hidden]),
+#combat-screen[data-tutorial-step='target'] ~ #tutorial-layer .tutorial-dialogue-body:has(.tutorial-portrait[hidden]),
+#combat-screen[data-tutorial-step='chant'] ~ #tutorial-layer .tutorial-dialogue-body:has(.tutorial-portrait[hidden]) {
+  grid-template-columns: minmax(0, 1fr);
+  padding: 10px 14px;
 }
 
 #combat-screen.tutorial-mode #combat-top,
