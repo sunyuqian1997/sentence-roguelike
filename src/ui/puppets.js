@@ -204,7 +204,7 @@ const COACTOR_EMOJI = {
   '猫': '🐱', '影子': '🌑', '无名者': '👤', '初音未来': '🎤', '剑客': '🗡️',
   '书生': '📚', '月兔': '🐰', '僧人': '🙏', '女侠': '⚔️', '酒仙': '🍶',
   '狐仙': '🦊', '将军': '🎖️', '皇帝': '👑', '李清照': '📜', '日': '☀️',
-  '大哥': '🕶️',
+  '大哥': '🕶️', '灰烬': '🌫️', 'Ashes': '🌫️',
 };
 const coActorEmoji = (name) => COACTOR_EMOJI[name] || '🥷';
 
@@ -213,10 +213,13 @@ const COACTOR_SPRITE_KEYS = Object.freeze({
   '初音未来': 'miku',
   '影子': 'shadow',
   '无名者': 'shadow',
+  '灰烬': 'shadow',
+  'Ashes': 'shadow',
   '皇帝': 'emperor',
   '儿子': 'son',
 });
 const coActorSpriteKey = (name) => COACTOR_SPRITE_KEYS[name] || 'coactor';
+const EMBODIED_OBJECTS = new Set(['灰烬', 'Ashes']);
 
 // Identity sentences visibly recast the player into an available pixel body.
 // First-act atlases cover this pass; later identities reuse the nearest shape.
@@ -328,19 +331,22 @@ function coActorSprite(name) {
 
 // Build one standby co-actor with the shared pixel co-actor atlas. The label and
 // emoji preserve identity while the animation remains a stable fixed grid.
-function makeStandby(name, indexFromZero) {
+function makeStandby(name, indexFromZero, semanticRole = 'actor') {
   const clone = document.createElement('div');
   clone.className = 'puppet puppet-coactor standby';
-  clone.dataset.spriteSide = 'ally';
+  clone.dataset.spriteSide = semanticRole === 'object' ? 'enemy' : 'ally';
   clone.dataset.spriteKey = coActorSpriteKey(name);
   clone.dataset.pose = 'idle';
   clone.dataset.coactor = name;
+  clone.dataset.semanticRole = semanticRole;
   clone.innerHTML = coActorSprite(name);
   const label = clone.querySelector('.puppet-label');
   if (label) { label.style.opacity = '0.7'; label.style.display = 'block'; }
   setEmoji(clone, coActorEmoji(name));
   clone.style.position = 'absolute';
-  clone.style.left = (COACTOR_BASE_LEFT + indexFromZero * COACTOR_STEP) + '%';
+  clone.style.left = semanticRole === 'object'
+    ? `${64 + indexFromZero * 8}%`
+    : `${COACTOR_BASE_LEFT + indexFromZero * COACTOR_STEP}%`;
   clone.style.bottom = '4%';
   clone.style.zIndex = String(3 - indexFromZero);
   clone.style.opacity = '1';
@@ -355,7 +361,7 @@ function makeStandby(name, indexFromZero) {
 // subjects currently in the sentence. Called every render while composing, so
 // summoning a subject card makes its puppet appear immediately (and removing
 // the card dismisses it) — instant feedback before chanting.
-export function syncStandbyCoActors(names) {
+export function syncStandbyCoActors(names, embodiedObjects = []) {
   const stage = document.getElementById('puppet-stage');
   if (!stage) return;
   // Don't reshuffle mid-battle-animation.
@@ -363,25 +369,34 @@ export function syncStandbyCoActors(names) {
   if (player && player.dataset.chanting === '1') return;
 
   const existing = [...stage.querySelectorAll('.puppet-coactor.standby')];
-  const want = names || [];
+  const want = [
+    ...(names || []).map((name) => ({ name, role: 'actor' })),
+    ...(embodiedObjects || []).map((name) => ({ name, role: 'object' })),
+  ];
+  const wantedKeys = new Set(want.map(({ name, role }) => `${role}:${name}`));
 
   // Direct removal: sprites never fade or dissolve.
   existing.forEach(el => {
-    if (!want.includes(el.dataset.coactor)) {
+    const key = `${el.dataset.semanticRole || 'actor'}:${el.dataset.coactor}`;
+    if (!wantedKeys.has(key)) {
       el.remove();
     }
   });
 
   // Add missing standbys, fanned out by their order of appearance.
-  want.forEach((name, i) => {
-    const live = existing.find(e => e.dataset.coactor === name && e.isConnected);
+  want.forEach(({ name, role }, i) => {
+    const roleIndex = want.slice(0, i).filter((entry) => entry.role === role).length;
+    const live = existing.find(e => e.dataset.coactor === name
+      && (e.dataset.semanticRole || 'actor') === role && e.isConnected);
     if (live) {
-      live.style.left = (COACTOR_BASE_LEFT + i * COACTOR_STEP) + '%';
+      live.style.left = role === 'object'
+        ? `${64 + roleIndex * 8}%`
+        : `${COACTOR_BASE_LEFT + roleIndex * COACTOR_STEP}%`;
       return;
     }
-    const el = makeStandby(name, i);
+    const el = makeStandby(name, roleIndex, role);
     stage.appendChild(el);
-    playSFX('summon'); // a new ally just stepped onto the stage
+    playSFX('summon');
   });
 }
 
@@ -393,7 +408,8 @@ export function playCoActors(coActors) {
   const enemy = document.getElementById('puppet-enemy');
   const player = document.getElementById('puppet-player');
   if (!stage || !enemy || !player) return;
-  const standbys = [...stage.querySelectorAll('.puppet-coactor.standby')];
+  const standbys = [...stage.querySelectorAll('.puppet-coactor.standby')]
+    .filter((el) => (el.dataset.semanticRole || 'actor') === 'actor');
   const actorOf = (name) => (coActors || []).find(c => c.name === name) || { verbType: 'attack' };
   standbys.forEach((el, i) => {
     const actor = actorOf(el.dataset.coactor);
@@ -573,7 +589,7 @@ function maybeShowBubbles() {
     && G.enemies[tCard._enemyIdx].hp > 0) ? G.enemies[tCard._enemyIdx] : null;
 
   const standbyNames = [...stage.querySelectorAll('.puppet-coactor.standby')]
-    .filter(e => e.dataset.removing !== '1')
+    .filter(e => e.dataset.removing !== '1' && (e.dataset.semanticRole || 'actor') === 'actor')
     .map(e => e.dataset.coactor);
   const newStandby = standbyNames.filter(n => !_lastStandbyNames.includes(n));
   _lastStandbyNames = standbyNames;
@@ -661,6 +677,14 @@ export function updatePuppets() {
   const hasEnemyTarget = sentence.some(c => c && c._isEnemyTarget);
   const verbs = sentence.filter(c => c && c.pos === 'verb');
   const lastVerb = verbs[verbs.length - 1];
+  const lastVerbIndex = lastVerb ? sentence.lastIndexOf(lastVerb) : -1;
+  const selfIsPatient = lastVerbIndex >= 0
+    && sentence.slice(lastVerbIndex + 1).some(c => c?._isSelfTarget || c?._isFixedWo);
+  const embodiedObjectNames = [...new Set(sentence
+    .filter((card) => card && card.pos === 'object'
+      && !card._isEnemyTarget && !card._isSelfTarget
+      && EMBODIED_OBJECTS.has(card.word))
+    .map((card) => card.word))];
   const instrumentSubjects = new Set();
   for (let i = 0; i < sentence.length; i++) {
     if (sentence[i]?.word !== '用' || sentence[i]?.pos !== 'connector') continue;
@@ -710,9 +734,16 @@ export function updatePuppets() {
       c._isEnemyTarget || isYouCard(c) || (G.enemies || []).some(e => e && e.hp > 0 && e.name === c.word)
     ));
     if (lastVerb.combatType === 'attack') {
-      if (enemySubject && lastVerb.selfAffectingVerb) {
-        enemyPose = 'doomed';
-        enemyEmoji = '💥';
+      if (enemySubject) {
+        if (selfIsPatient) {
+          enemyPose = 'ready';
+          playerPose = 'hit-ready';
+        } else if (lastVerb.selfAffectingVerb) {
+          enemyPose = 'doomed';
+          enemyEmoji = '💥';
+        } else {
+          enemyPose = 'ready';
+        }
       } else {
         if (playerIsActing) playerPose = 'ready';
         if (hasEnemyTarget) enemyPose = 'targeted';
@@ -748,14 +779,16 @@ export function updatePuppets() {
 
   // "A 是 B" preview — the same detector the evaluator uses
   const pred = detectPredicates(sentence)[0];
+  const predicateOwnsPose = !!pred
+    && (!lastVerb || (Number.isInteger(pred.predicateIndex) && pred.predicateIndex > lastVerbIndex));
   if (pred) {
     if (pred.kind === 'pun' && PUN_TO_POSE[pred.pun.tag]) {
       if (pred.target === 'self') {
         // "我是给" — the wisecrack buffs the poet, not the enemy
-        playerPose = 'heal';
+        if (predicateOwnsPose) playerPose = 'heal';
         playerEmoji = PUN_TO_POSE[pred.pun.tag].emoji;
       } else {
-        enemyPose = PUN_TO_POSE[pred.pun.tag].pose;
+        if (predicateOwnsPose) enemyPose = PUN_TO_POSE[pred.pun.tag].pose;
         enemyEmoji = PUN_TO_POSE[pred.pun.tag].emoji;
       }
     } else if (pred.kind === 'identity') {
@@ -763,7 +796,8 @@ export function updatePuppets() {
       const subjIsCoActor = sentence.some(c => c && c.pos === 'subject' && c.word === pred.subjectWord
         && c.word !== '我' && !isYouCard(c) && !c._isEnemyTarget);
       if (pred.target === 'self') {
-        playerPose = 'heal'; playerEmoji = trait.emoji;
+        if (predicateOwnsPose) playerPose = 'heal';
+        playerEmoji = trait.emoji;
         const identitySprite = IDENTITY_SPRITES[pred.identityWord];
         if (identitySprite) {
           playerSpriteKey = identitySprite.key;
@@ -776,7 +810,7 @@ export function updatePuppets() {
       } else {
         // "敌人是大哥" 这类 enemyBuff 身份:敌人不是被削,而是气场全开 → 用攻击姿势
         // (前压)而非眩晕脸,免得视觉上误导成"敌人倒霉"。
-        enemyPose = trait.enemyBuff ? 'attack' : 'dazed';
+        if (predicateOwnsPose) enemyPose = trait.enemyBuff ? 'attack' : 'dazed';
         enemyEmoji = trait.emoji;
         if (trait.bodyScale) enemyScale = trait.bodyScale;
       }
@@ -839,9 +873,6 @@ export function updatePuppets() {
   setEmoji(enemy, enemyEmoji);
   setBodyScale(player, playerScale);   // identity-driven size (我是儿子→小, 巨人→大)
   setBodyScale(enemy, enemyScale);
-  const lastVerbIndex = lastVerb ? sentence.lastIndexOf(lastVerb) : -1;
-  const selfIsPatient = lastVerbIndex >= 0
-    && sentence.slice(lastVerbIndex + 1).some(c => c?._isSelfTarget || c?._isFixedWo);
   const coActorProtectsSelf = !!lastVerb && standbyNames.length > 0 && selfIsPatient
     && (lastVerb.combatType === 'defense' || lastVerb.combatType === 'heal');
   player.classList.toggle('puppet-protected-target', coActorProtectsSelf);
@@ -852,11 +883,11 @@ export function updatePuppets() {
   // Standby co-actors: named subjects (not 我) take the stage as soon as they
   // join a sentence with ANY verb (attack/defend/heal) — instant "ally arrived"
   // feedback while composing. They act only on chant. Mirrors the evaluator's rule.
-  syncStandbyCoActors(standbyNames);
+  syncStandbyCoActors(standbyNames, embodiedObjectNames);
 
   // A named actor appears immediately, even before a verb is added. Persistent
   // identity rewrites from earlier chants are restored on every reconciliation.
-  document.querySelectorAll('.puppet-coactor.standby').forEach((el) => {
+  document.querySelectorAll('.puppet-coactor.standby[data-semantic-role="actor"]').forEach((el) => {
     const name = el.dataset.coactor;
     const transformed = actorIdentity(name);
     el.dataset.spriteKey = transformed ? coActorSpriteKey(transformed) : coActorSpriteKey(name);
@@ -878,9 +909,23 @@ export function updatePuppets() {
     }
   });
 
+  // Concrete object cards can still occupy the stage even when they are not
+  // grammatical subjects. 灰烬 borrows the shadow sheet; as an attack patient
+  // it faces left and holds the first hurt frame before the chant resolves.
+  document.querySelectorAll('.puppet-coactor.standby[data-semantic-role="object"]').forEach((el) => {
+    const objectCardIndex = sentence.findIndex((card) => card?.word === el.dataset.coactor
+      && card.pos === 'object' && !card._isEnemyTarget);
+    const isAttackPatient = !!lastVerb && lastVerb.combatType === 'attack'
+      && objectCardIndex > lastVerbIndex;
+    el.dataset.spriteKey = coActorSpriteKey(el.dataset.coactor);
+    el.dataset.spriteSide = isAttackPatient ? 'enemy' : 'ally';
+    setPose(el, isAttackPatient ? 'hit-ready' : 'idle');
+    setEmoji(el, coActorEmoji(el.dataset.coactor));
+  });
+
   // "初音未来是皇帝": put the crown (+ any body-scale) on that co-actor's puppet.
   if (coActorIdentity) {
-    const el = document.querySelector(`.puppet-coactor.standby[data-coactor="${coActorIdentity.name}"]`);
+    const el = document.querySelector(`.puppet-coactor.standby[data-semantic-role="actor"][data-coactor="${coActorIdentity.name}"]`);
     if (el) {
       el.dataset.spriteKey = coActorSpriteKey(pred.identityWord);
       setEmoji(el, coActorIdentity.emoji);
@@ -898,6 +943,13 @@ export function playChantPuppetAnim(effects, timing) {
   const { player, enemy } = els(effects?.targetEnemyIdx);
   if (!player || !enemy) return;
   clearPuppetBubbles(); // compose-time quips must not linger over the chant
+  if (effects?._enemyAttacksPlayer) {
+    playEnemyPuppetAnim(
+      { type: 'attack', value: effects.selfHarmDmg || 0, hits: 1, label: '句意反转' },
+      { enemyIndex: effects.targetEnemyIdx, timeline: timing },
+    );
+    return;
+  }
   player.dataset.chanting = '1';
   enemy.dataset.chanting = '1';
   // Drop the compose-time aim lean so the chant's own inline transform (a full

@@ -389,6 +389,9 @@ export function detectPredicates(cards) {
     const base = {
       subjectKind, subjectEnemyIdx, subjectWord,
       srcWord: pred.word, copulaWord: c.word,
+      subjectIndex: head,
+      copulaIndex: i,
+      predicateIndex: predIdx,
     };
 
     if (predType === 'pun') {

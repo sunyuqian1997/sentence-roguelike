@@ -16,7 +16,11 @@ export async function judgeSentence(sentence, options = {}) {
   const cached = responseCache.get(normalized);
   if (cached) {
     await wait(Math.min(MIN_JUDGE_BEAT_MS, 160));
-    return { ...cached, source: 'client-cache' };
+    return {
+      ...cached,
+      source: 'client-cache',
+      sourceOrigin: cached.sourceOrigin || cached.source,
+    };
   }
 
   const startedAt = performance.now();
@@ -50,10 +54,11 @@ export async function judgeSentence(sentence, options = {}) {
   // response so the same browser cannot replay the bonus during this run.
   responseCache.set(normalized, result.isNovel ? {
     ...result,
+    sourceOrigin: result.sourceOrigin || result.source,
     isNovel: false,
     noveltyBonus: 0,
     noveltyMultiplier: 1,
-  } : result);
+  } : { ...result, sourceOrigin: result.sourceOrigin || result.source });
   if (responseCache.size > 64) responseCache.delete(responseCache.keys().next().value);
   return { ...result };
 }

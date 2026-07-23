@@ -15,7 +15,8 @@ export function referencePlayerTiming(wordCount, effects = {}) {
   const count = Math.max(1, wordCount | 0);
   const verdictAt = 40 + count * 95 + 60;
   const actionStart = verdictAt + 300;
-  const isAttack = !!(effects.damage > 0 || effects.aoe);
+  const isPlayerHit = !!effects._enemyAttacksPlayer;
+  const isAttack = !!(effects.damage > 0 || effects.aoe || isPlayerHit);
   if (!isAttack) {
     return Object.freeze({
       confirmFirst: 40,
@@ -30,6 +31,7 @@ export function referencePlayerTiming(wordCount, effects = {}) {
       releaseAt: actionStart + 780,
       completeAt: actionStart + 1000,
       isAttack: false,
+      isPlayerHit: false,
       puppet: Object.freeze({ dashMs: 120, impactMs: 240, recoverMs: 780, releaseMs: 1000 }),
     });
   }
@@ -46,6 +48,7 @@ export function referencePlayerTiming(wordCount, effects = {}) {
     releaseAt: actionStart + 1350,
     completeAt: actionStart + 1500,
     isAttack: true,
+    isPlayerHit,
     puppet: Object.freeze({ dashMs: 260, impactMs: 480, recoverMs: 860, releaseMs: 1500 }),
   });
 }
@@ -238,11 +241,22 @@ export function showJudgeVerdict(judge) {
   if (!preview || !judge) return;
   const safeFeedback = String(judge.feedback || '').replace(/[<>]/g, '');
   const tags = Array.isArray(judge.tags) ? judge.tags.slice(0, 3) : [];
+  const source = judge.sourceOrigin || judge.source || 'local-fallback';
+  const sourceLabel = source === 'deepseek'
+    ? (judge.source === 'deepseek' ? 'AI判句' : 'AI结果复用')
+    : source === 'supabase-cache'
+      ? 'Supabase复用'
+      : source.startsWith('server-fallback') || source === 'local-fallback'
+        ? '本地判句'
+        : judge.source === 'client-cache' || judge.source === 'server-cache'
+          ? '缓存复用'
+          : '判句';
   preview.innerHTML = `
     <span class="judge-verdict judge-grade-${judge.grade || 'C'}">
       <b>${judge.grade || 'C'}·${judge.gradeLabel || '成句'}</b>
       <em>${judge.score || 0}分</em>
       <strong>×${Number(judge.multiplier || 1).toFixed(2)}</strong>
+      <i class="judge-source">${sourceLabel}</i>
       <span>${safeFeedback}</span>
       ${tags.map((tag) => `<i>${String(tag).replace(/[<>]/g, '')}</i>`).join('')}
     </span>`;
@@ -290,12 +304,15 @@ export function beginPlayerFeedback(cardsOrCount, sentenceText, effects = {}) {
   later(timing.impactAt, () => {
     if (run !== token) return;
     setPhase('impact');
+    const impactPlayer = timing.isPlayerHit;
     showPart(
-      timing.isAttack ? '.df-splash-enemy' : '.df-seal-player',
+      impactPlayer ? '.df-splash-player' : (timing.isAttack ? '.df-splash-enemy' : '.df-seal-player'),
       undefined,
-      timing.isAttack
-        ? { host: enemyAnchor, kind: 'impact' }
-        : { host: '#puppet-player', kind: 'impact' },
+      impactPlayer
+        ? { host: '#puppet-player', kind: 'impact' }
+        : (timing.isAttack
+          ? { host: enemyAnchor, kind: 'impact' }
+          : { host: '#puppet-player', kind: 'impact' }),
     );
     setShake(timing.isAttack ? 'big' : null);
     impact(false);
@@ -303,7 +320,10 @@ export function beginPlayerFeedback(cardsOrCount, sentenceText, effects = {}) {
   later(timing.sealAt, () => {
     if (run !== token) return;
     setPhase('seal');
-    if (timing.isAttack) {
+    if (timing.isPlayerHit) {
+      hidePart('.df-splash-player');
+      document.querySelector('.chanted-line')?.classList.add('df-line-gone');
+    } else if (timing.isAttack) {
       hidePart('.df-splash-enemy');
       showPart('.df-seal-enemy', undefined, { host: enemyAnchor, kind: 'impact' });
       showPart('.df-center-seal');

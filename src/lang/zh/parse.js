@@ -80,6 +80,7 @@ function detectRoles(ctx) {
     const enemyAfterVerb = after.some(isEnemyRef);
     return (enemyBeforeVerb || !enemyAfterVerb);
   });
+  if (enemyStrikesMe) effects._enemyAttacksPlayer = true;
   if ((ctx.hasSelfTarget || enemyStrikesMe) && effects.damage > 0) {
     effects.selfHarm = true;
     effects.selfHarmDmg = (effects.selfHarmDmg || 0) + effects.damage;

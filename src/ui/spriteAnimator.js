@@ -8,6 +8,9 @@ export const SPRITE_CLIPS = Object.freeze({
   idle:   { start: 0,  frames: 4, fps: 3,  loop: true, sequence: [1, 2, 1, 2] },
   ready:  { start: 4,  frames: 1, fps: 0,  loop: true },
   attack: { start: 4,  frames: 4, fps: 12, loop: false },
+  // Preview-only victim telegraph: hold the first hurt frame until the player
+  // commits the sentence. The real impact still plays the complete hurt clip.
+  hurtReady: { start: 8, frames: 1, fps: 0, loop: true },
   hurt:   { start: 8,  frames: 4, fps: 12, loop: false },
   // Defense is a deliberate held guard. Keeping one frame avoids the small
   // generated silhouette differences reading as whole-body jitter.
@@ -18,6 +21,7 @@ export const SPRITE_CLIPS = Object.freeze({
 const POSE_TO_CLIP = Object.freeze({
   idle: 'idle', targeted: 'idle', charmed: 'idle', old: 'idle', ready: 'ready',
   attack: 'attack', juan: 'attack',
+  'hit-ready': 'hurtReady',
   hit: 'hurt', dazed: 'hurt', doomed: 'hurt', lying: 'hurt',
   defend: 'defend', heal: 'heal',
 });

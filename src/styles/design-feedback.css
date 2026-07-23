@@ -378,6 +378,11 @@
   font-size: 10px;
   font-style: normal;
 }
+#sentence-score-preview .judge-verdict .judge-source {
+  border-color: var(--os-orange-dark, #B4471F);
+  color: var(--os-orange-dark, #B4471F);
+  font-weight: 700;
+}
 
 @keyframes dfJudgeBreathe {
   50% { transform: scale(.9); opacity: .55; }

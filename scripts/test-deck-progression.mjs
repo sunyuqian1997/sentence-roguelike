@@ -85,6 +85,11 @@ assert(enemyRest.effects._enemyBlock?.amount > 0, 'paper ghost block has a real 
 assert.equal(enemyRest.effects._enemyHeal?.enemyIdx, 0, 'paper ghost receives its own heal');
 assert.equal(enemyRest.effects._enemyRest?.enemyIdx, 0, 'paper ghost skips its own attack');
 
+const enemyAttacksMe = evaluateSentence([enemy(0), card('zhan'), selfTarget()]);
+assert.equal(enemyAttacksMe.effects._enemyAttacksPlayer, true, 'enemy-subject attack exposes its visual direction');
+assert.equal(enemyAttacksMe.effects.damage, 0, 'enemy-subject attack does not damage the enemy');
+assert(enemyAttacksMe.effects.selfHarmDmg > 0, 'enemy-subject attack damages the player');
+
 const correctlyLoggedRest = {
   n: 1,
   kind: 'sentence',

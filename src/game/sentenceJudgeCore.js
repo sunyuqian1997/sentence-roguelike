@@ -81,6 +81,9 @@ export function normalizeJudgeResult(candidate, fallbackResult = null) {
     feedback: cleanFeedback(candidate?.feedback, fallback.feedback),
     tags: cleanTags(candidate?.tags, fallback.tags),
     source: typeof candidate?.source === 'string' ? candidate.source.slice(0, 24) : 'deepseek',
+    sourceOrigin: typeof candidate?.sourceOrigin === 'string'
+      ? candidate.sourceOrigin.slice(0, 24)
+      : undefined,
     isNovel: noveltyBonus > 0,
     noveltyBonus,
     noveltyMultiplier: noveltyBonus > 0 ? 1 + noveltyBonus / 100 : 1,

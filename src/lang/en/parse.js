@@ -130,6 +130,7 @@ function detectRolesEn(ctx) {
     const enemyAfter = after.some(isEnemyRefEn);
     return enemyBefore || !enemyAfter;
   });
+  if (enemyStrikesMe) effects._enemyAttacksPlayer = true;
   if ((ctx.hasSelfTarget || enemyStrikesMe) && effects.damage > 0) {
     effects.selfHarm = true;
     effects.selfHarmDmg = (effects.selfHarmDmg || 0) + effects.damage;

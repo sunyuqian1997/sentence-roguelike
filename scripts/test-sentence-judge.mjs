@@ -54,6 +54,10 @@ const dream = heuristicJudge('走廊尽头的月亮，在广播里醒来。');
 const flat = heuristicJudge('我我我我我');
 assert.ok(dream.score > flat.score, `${dream.score} should exceed ${flat.score}`);
 assert.deepEqual(heuristicJudge('月亮走进教室'), heuristicJudge('月亮走进教室'));
+assert.equal(
+  normalizeJudgeResult({ score: 75, source: 'server-cache', sourceOrigin: 'deepseek' }).sourceOrigin,
+  'deepseek',
+);
 
 const hostile = normalizeJudgeResult({
   score: 999,

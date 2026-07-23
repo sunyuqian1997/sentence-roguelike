@@ -57,7 +57,11 @@ function readCached(fingerprint) {
     if (hit) cache.delete(fingerprint);
     return null;
   }
-  return { ...hit.value, source: 'server-cache' };
+  return {
+    ...hit.value,
+    source: 'server-cache',
+    sourceOrigin: hit.value.sourceOrigin || hit.value.source,
+  };
 }
 
 function writeCached(fingerprint, value) {

@@ -662,11 +662,15 @@ export function applyEffects(effects) {
   }
 
   if (effects.selfHarm) {
-    playSFX('selfharm');
+    playSFX(effects._enemyAttacksPlayer ? 'impact_player' : 'selfharm');
     const dmg = effects.selfHarmDmg;
     G.hp -= dmg;
     if (G.hp < 1) G.hp = 1;
-    showFloatingText(document.querySelector('#combat-top'), `-${dmg}自伤`, '#6B4C6E');
+    showFloatingText(
+      document.querySelector('#combat-top'),
+      effects._enemyAttacksPlayer ? `-${dmg}受击` : `-${dmg}自伤`,
+      effects._enemyAttacksPlayer ? '#B4471F' : '#6B4C6E',
+    );
     if (effects.selfHarmBuff) {
       G.strength += effects.selfHarmBuff;
       showFloatingText(document.querySelector('#combat-top'), `+${effects.selfHarmBuff}力量`, '#4A7C6B');
@@ -1190,7 +1194,10 @@ export function showScoreAnimation(result, callback) {
   delay += 200;
 
   const parts = [];
-  if (result.effects.selfHarm) parts.push(`💔 自伤${result.effects.selfHarmDmg}${result.effects.selfHarmBuff ? ' +'+result.effects.selfHarmBuff+'力量' : ''}`);
+  if (result.effects.selfHarm) {
+    const harmLabel = result.effects._enemyAttacksPlayer ? '🩸 受击' : '💔 自伤';
+    parts.push(`${harmLabel}${result.effects.selfHarmDmg}${result.effects.selfHarmBuff ? ' +'+result.effects.selfHarmBuff+'力量' : ''}`);
+  }
   if (result.effects.damage > 0) parts.push(`⚔ ${result.effects.damage}伤害${result.effects.aoe?' (群体)':''}${result.effects.ignoreBlock?' (穿透)':''}`);
   if (result.effects.isQuestion) parts.push(`❓ 削弱${result.effects.applyWeak}回合`);
   if (result.effects.block > 0) parts.push(`🛡 ${result.effects.block}格挡`);
