@@ -258,14 +258,23 @@ export function renderSentenceSlots() {
   const hasCommaInSentence = displayCards.some(c => c.pos === 'punctuation' && c.punctType === 'comma');
   if (hasCommaInSentence) {
     const dzResult = detectDuizhang(G.sentence);
-    if (dzResult) {
-      dzEl.className = dzResult.matched ? 'duizhang-good' : 'duizhang-bad';
+    const sequenceWord = displayCards.find(c =>
+      c.pos === 'connector' && ['然后', '于是', '接着', '之后'].includes(c.word));
+    if (sequenceWord) {
+      dzEl.className = 'duizhang-neutral';
+      dzEl.textContent = `✓ ${sequenceWord.word}·顺承复句`;
+    } else if (dzResult?.matched) {
+      dzEl.className = 'duizhang-good';
       dzEl.textContent = dzResult.label;
     } else {
-      dzEl.className = 'duizhang-bad';
-      dzEl.textContent = t('needWords');
+      // A comma can simply join two actions. Do not accuse every valid
+      // compound sentence of "failed antithesis"; only celebrate antithesis
+      // when the two halves actually match.
+      dzEl.className = 'duizhang-neutral';
+      dzEl.textContent = '✓ 复句已连接';
     }
   } else {
+    dzEl.className = '';
     dzEl.textContent = '';
   }
 

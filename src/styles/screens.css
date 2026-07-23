@@ -436,6 +436,17 @@
 }
 .reward-col-review { justify-content: center; gap: 12px; }
 .reward-col-loot { justify-content: flex-start; gap: 6px; }
+.reward-col-loot .reward-cards {
+  gap: 8px;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+}
+.reward-col-loot .reward-card-wrapper {
+  box-sizing: border-box;
+  flex: 0 0 158px;
+  width: 158px;
+  min-width: 0;
+}
 .reward-section-title { color: var(--paper-dark); font-size: 0.95rem; margin: 6px 0 4px; }
 /* Stack to single column on narrow / portrait viewports: columns size to their
    content and the whole card scrolls (flex:1 1 0 would collapse them to 0). */
@@ -450,6 +461,7 @@
     align-items: stretch;
   }
   .reward-col { flex: 0 0 auto; overflow: visible; }
+  .reward-col-loot .reward-cards { flex-wrap: wrap; }
 }
 .reward-card-wrapper { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .reward-gold {
@@ -458,7 +470,8 @@
 .rarity-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 700; }
 .syntax-lesson-label { color: var(--teal-dark); letter-spacing: 0.05em; }
 .reward-choice-note {
-  width: 176px;
+  width: 150px;
+  max-width: 100%;
   color: var(--ink-light);
   font-family: var(--font-brush);
   font-size: 0.68rem;
@@ -469,6 +482,7 @@
 .reward-choice-note span { display: block; }
 .reward-choice-note strong { color: var(--ink); margin-bottom: 2px; }
 .reward-syntax-choice {
+  box-sizing: border-box;
   padding: 7px 9px;
   border: 2px solid var(--teal-dark);
   background: rgba(107, 180, 171, .09);

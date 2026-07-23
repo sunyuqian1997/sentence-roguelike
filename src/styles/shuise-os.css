@@ -644,10 +644,10 @@ body:has(#combat-screen.active) #os-menubar { display: none; }
 #combat-screen.tutorial-mode[data-tutorial-step='aftermath'] #sentence-dock { opacity: 1; pointer-events: auto; }
 
 #combat-screen.tutorial-mode .card,
-#combat-screen.tutorial-mode .enemy,
-#combat-screen.tutorial-mode #player-char-card,
 #combat-screen.tutorial-mode #chant-btn,
 #combat-screen.tutorial-mode #end-turn-btn { pointer-events: none !important; opacity: .34; }
+#combat-screen.tutorial-mode .enemy,
+#combat-screen.tutorial-mode #player-char-card { pointer-events: none !important; opacity: 1; }
 
 #combat-screen.tutorial-mode .tutorial-focus {
   pointer-events: auto !important;
