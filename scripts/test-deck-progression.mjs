@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import {
   STARTER_DECK_KEYS,
   SYNTAX_LESSONS,
+  draftRewardKeys,
   isCardAvailableAtFloor,
   lessonRewardKeys,
   nextSyntaxLesson,
@@ -51,6 +52,11 @@ const examples = [
   ['呼名登场', [card('oh'), card('comma'), card('hatsunemiku')], 'summon'],
   ['祈使命令', [enemy(0), card('gei'), me(), card('cu')], 'sentence'],
   ['移步换景', [me(), card('qu_verb'), card('haibian')], 'sentence'],
+  ['结伴主语', [card('mao'), card('he'), card('yingzi'), card('shou'), selfTarget()], 'sentence'],
+  ['关系句', [card('mao'), card('bang'), me(), card('cu'), enemy(0)], 'sentence'],
+  ['兼语命令', [me(), card('rang'), enemy(0), card('cu')], 'sentence'],
+  ['疑问反转', [me(), card('cu'), enemy(0), card('question')], 'sentence'],
+  ['顺承复句', [me(), card('shou'), card('comma'), card('ranhou'), card('yingzi'), card('cu'), enemy(0)], 'sentence'],
 ];
 for (const [label, cards, code] of examples) {
   const validity = getSentenceValidity(cards);
@@ -127,5 +133,24 @@ const periodCompound = evaluateSentence(periodCompoundCards);
 const nameless = periodCompound.effects._coActors?.find((actor) => actor.name === '无名者');
 assert(nameless?.damage > 0, '无名者 performs the second-clause verb');
 assert.equal(nameless.targetEnemyIdx, 0, 'second clause inherits the established enemy target');
+
+const rewardDeck = STARTER_DECK_KEYS.map(card);
+const rewardDraft = draftRewardKeys({
+  definitions: WORD_DEFS,
+  deck: rewardDeck,
+  floor: 5,
+  count: 3,
+  excludeKeys: ['shi_copula'],
+  rng: () => 0,
+});
+assert.equal(rewardDraft.length, 3, 'reward draft fills all non-lesson slots');
+assert.equal(new Set(rewardDraft.map(choice => choice.key)).size, 3, 'reward choices have distinct keys');
+assert(rewardDraft.every(choice => !STARTER_DECK_KEYS.includes(choice.key)), 'reward draft favors genuinely new words');
+assert.deepEqual(
+  rewardDraft.map(choice => choice.label),
+  ['新词入句', '补全搭配', '风格变奏'],
+  'every reward slot communicates a distinct expressive direction',
+);
+assert(rewardDraft.every(choice => choice.example && choice.note), 'every reward explains how it changes a sentence');
 
 console.log('deck-progression-ok');

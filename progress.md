@@ -65,3 +65,36 @@
 | What's the goal? | 可安全执行的 React + Motion 渐进迁移计划 |
 | What have I learned? | 当前是 Vite + 原生 DOM，规则内核已模块化 |
 | What have I done? | 已建立持久规划文件并开始架构盘点 |
+
+## Session: 2026-07-22 — 教程修整与句法成长
+
+### Phase 1: UI / Tutorial Diagnosis
+- **Status:** complete
+- Actions taken:
+  - 检查用户截图，确认主语「我」被患者边框误标。
+  - 定位长句固定字号与教程透明状态的 CSS/渲染来源。
+  - 盘点现有五阶段句法课和奖励三选一实现。
+  - 修正主语患者边框、长句字号分档、教程透明层和说话者立绘。
+  - 为纸片同学补充独立台词，并修复女主眨眼覆盖其他角色图片的问题。
+
+### Phase 2–3: Progression Loop & Dogfood
+- **Status:** complete
+- Actions taken:
+  - 将句法课程扩展为 10 个真实可结算结构。
+  - 把奖励改为“新句式 / 新词入句 / 补全搭配 / 风格变奏”分轨选择。
+  - 新增纯数据奖励规划器，保证选项 key 不重复并优先未拥有词。
+  - 新增 9 路线成长模拟，验证不同选牌倾向下句式与词汇都非递减。
+  - 浏览器实测教程、长句和结算页，根据实测降低普通连词的早期权重。
+
+### Phase 4: Verification & Commit
+- **Status:** complete
+- Actions taken:
+  - 句法、战斗、AI 判定、React Motion、效果审计、生产构建与依赖审计全部通过。
+  - 教程/造句界面提交为 `b6200ae`。
+  - 成长循环与规划记录作为独立提交收尾。
+
+## Error Log (current iteration)
+| Timestamp | Error | Attempt | Resolution |
+|-----------|-------|---------|------------|
+| 2026-07-22 | Node 测试导入浏览器 `cards.js` 时触发 JSON import attribute 错误 | 1 | 将奖励规划抽成 `deckProgression.js` 的纯函数，浏览器模块只负责实例化卡牌 |
+| 2026-07-22 | in-app browser 截图接口再次超时 | 1 | 沿用同一浏览器，以 DOM snapshot、属性、class、资源路径和样式状态完成验收 |

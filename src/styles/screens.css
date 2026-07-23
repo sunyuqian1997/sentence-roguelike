@@ -457,7 +457,7 @@
 }
 .rarity-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 700; }
 .syntax-lesson-label { color: var(--teal-dark); letter-spacing: 0.05em; }
-.syntax-lesson-note {
+.reward-choice-note {
   width: 176px;
   color: var(--ink-light);
   font-family: var(--font-brush);
@@ -465,9 +465,15 @@
   line-height: 1.4;
   text-align: center;
 }
-.syntax-lesson-note strong,
-.syntax-lesson-note span { display: block; }
-.syntax-lesson-note strong { color: var(--ink); margin-bottom: 2px; }
+.reward-choice-note strong,
+.reward-choice-note span { display: block; }
+.reward-choice-note strong { color: var(--ink); margin-bottom: 2px; }
+.reward-syntax-choice {
+  padding: 7px 9px;
+  border: 2px solid var(--teal-dark);
+  background: rgba(107, 180, 171, .09);
+  box-shadow: 4px 4px 0 rgba(26, 26, 24, .18);
+}
 .rarity-starter { color: var(--smoke); }
 .rarity-common { color: var(--ink-faint); }
 .rarity-uncommon { color: var(--blue-ink); }

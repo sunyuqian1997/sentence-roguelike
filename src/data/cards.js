@@ -2,7 +2,7 @@ import { G, META } from '../game/state.js';
 import { isEn } from '../i18n.js';
 import zhCards from './cards.json';
 import enCards from '../lang/en/cards.json';
-import { STARTER_DECK_KEYS, isCardAvailableAtFloor } from './deckProgression.js';
+import { STARTER_DECK_KEYS, draftRewardKeys, isCardAvailableAtFloor } from './deckProgression.js';
 
 // 语言切换会 reload 页面,故在模块加载期按当前语言选卡库即可。
 // 英文版用 en 卡库;卡面/句子评估都走对应语言。
@@ -133,4 +133,34 @@ export function randomCardWeighted(rarity, options = {}) {
 
   const key = chosen[Math.floor(Math.random() * chosen.length)];
   return makeCard({ ...WORD_DEFS[key], key });
+}
+
+/**
+ * Build post-battle choices that are useful with the current deck.
+ * Syntax lessons occupy their own slot in combat.js; these choices provide
+ * vocabulary, role balance, and stylistic variation without duplicate keys.
+ */
+export function draftRewardCards({
+  deck = G.deck,
+  floor = G.floorsCleared || 0,
+  count = 3,
+  excludeKeys = [],
+  rng = Math.random,
+} = {}) {
+  return draftRewardKeys({
+    definitions: WORD_DEFS,
+    deck,
+    floor,
+    count,
+    excludeKeys,
+    selfKey: getSelfCardKey(),
+    rng,
+    isEligible(key, def) {
+      if (def.unlockable && !META.unlockedCards.includes(key)) return false;
+      return !(def.pack && !META.unlockedPacks?.includes(def.pack));
+    },
+  }).map((choice) => ({
+    ...choice,
+    card: makeCard({ ...WORD_DEFS[choice.key], key: choice.key }),
+  }));
 }

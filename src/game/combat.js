@@ -3,7 +3,7 @@ import { t, isEn } from '../i18n.js';
 import { showFloatingText, shuffleArray } from '../utils.js';
 import { playSFX, initAudio, playAmbientMusic, playAmbientMusicDeferred, playCombatMusic, playBossMusic, stopMusic, playVictoryJingle } from './audio.js';
 import { VFX } from '../ui/vfx.js';
-import { WORD_DEFS, makeCard, createStarterDeck, randomCard, randomCardWeighted } from '../data/cards.js';
+import { WORD_DEFS, makeCard, createStarterDeck, randomCard, draftRewardCards } from '../data/cards.js';
 import { showScreen, renderCombat, createCardElement, renderChantedSentence } from '../ui/render.js';
 import { clearPuppetBubbles, playChantPuppetAnim, playEnemyPuppetAnim, playEnemyVsEnemyAnim, playBestVerseReplay, stopBestVerseReplay } from '../ui/puppets.js';
 import { toGameRect } from '../ui/uiScale.js';
@@ -1415,22 +1415,28 @@ export function showRewardScreen() {
   const syntaxLesson = isEn() ? null
     : nextSyntaxLesson(G.deck.map(card => card.key), G.floorsCleared);
   const offeredKeys = new Set(lessonRewardKeys(syntaxLesson));
-  for (let i = 0; i < 3; i++) {
-    const lesson = i === 0 ? syntaxLesson : null;
-    let card;
-    if (lesson) card = makeCard({ ...WORD_DEFS[lesson.key], key: lesson.key });
-    else {
-      const roll = Math.random();
-      let rarity;
-      if (roll < 0.50) rarity = 'common';
-      else if (roll < 0.82) rarity = 'uncommon';
-      else rarity = 'rare';
-      card = randomCardWeighted(rarity, { excludeKeys: [...offeredKeys] });
-    }
-    offeredKeys.add(card.key);
+  const drafted = draftRewardCards({
+    deck: G.deck,
+    floor: G.floorsCleared,
+    count: syntaxLesson ? 2 : 3,
+    excludeKeys: [...offeredKeys],
+  });
+  const choices = [];
+  if (syntaxLesson) {
+    choices.push({
+      lesson: syntaxLesson,
+      card: makeCard({ ...WORD_DEFS[syntaxLesson.key], key: syntaxLesson.key }),
+      label: `新句式 · ${syntaxLesson.title}`,
+      example: syntaxLesson.example,
+      note: syntaxLesson.note,
+    });
+  }
+  choices.push(...drafted);
+
+  choices.forEach(({ lesson = null, card, label, example, note }) => {
 
     const wrapper = document.createElement('div');
-    wrapper.className = 'reward-card-wrapper';
+    wrapper.className = `reward-card-wrapper${lesson ? ' reward-syntax-choice' : ''}`;
     const cardEl = createCardElement(card, null, { noClick: true });
     cardEl.style.cursor = 'pointer';
     cardEl.onclick = () => {
@@ -1446,18 +1452,15 @@ export function showRewardScreen() {
     };
     const rl = document.createElement('div');
     rl.className = `rarity-label rarity-${card.rarity}${lesson ? ' syntax-lesson-label' : ''}`;
-    rl.textContent = lesson ? `新句式 · ${lesson.title}`
-      : card.rarity === 'common' ? '普通' : card.rarity === 'uncommon' ? '非凡' : '稀有';
+    rl.textContent = label;
     wrapper.appendChild(cardEl);
     wrapper.appendChild(rl);
-    if (lesson) {
-      const note = document.createElement('div');
-      note.className = 'syntax-lesson-note';
-      note.innerHTML = `<strong>${lesson.example}</strong><span>${lesson.note}</span>`;
-      wrapper.appendChild(note);
-    }
+    const noteEl = document.createElement('div');
+    noteEl.className = `reward-choice-note${lesson ? ' syntax-lesson-note' : ''}`;
+    noteEl.innerHTML = `<strong>${example}</strong><span>${note}</span>`;
+    wrapper.appendChild(noteEl);
     container.appendChild(wrapper);
-  }
+  });
 
   const journalEl = document.getElementById('reward-journal');
   if (journalEl && G.sentenceJournal.length > 0) {

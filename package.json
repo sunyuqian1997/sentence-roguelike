@@ -10,6 +10,7 @@
     "test:judge": "node scripts/test-sentence-judge.mjs",
     "test:battle-rules": "node scripts/test-battle-rules.mjs",
     "test:deck-loop": "node scripts/test-deck-progression.mjs",
+    "test:progression-loop": "node scripts/simulate-progression-loop.mjs",
     "test:react-motion": "node scripts/test-react-motion-runtime.mjs",
     "audit:effects": "node scripts/audit-effects.mjs"
   },
